@@ -18,5 +18,6 @@ Imports:
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 Collate:
+    'dependencies.R'
     'lockfile.R'
     'packrat.R'

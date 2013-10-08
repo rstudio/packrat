@@ -9,9 +9,8 @@
 #' 
 #' @param appDir Directory containing application. Defaults to current working 
 #'   directory.
-#' @return Returns a data frame listing the package
-#'   dependencies detected for the application: \tabular{ll}{ \code{package}
-#'   \tab Name of package \cr \code{version} \tab Version of package\cr }
+#' @return Returns a list of the names of the packages on which R code in the
+#'   application depends.
 #' @details Dependencies are determined by parsing application source code and 
 #'   looking for calls to \code{library}, \code{require}, \code{::}, and 
 #'   \code{:::}.
@@ -26,14 +25,7 @@
 #' appDependencies("~/projects/shiny/app1")
 #' }
 appDependencies <- function(appDir = getwd()) {
-  deps <- dirDependencies(appDir)
-  versions <- sapply(deps, function(dep)  {
-    utils::packageDescription(dep, fields="Version")
-  })
-  data.frame(package = deps, 
-             version = versions, 
-             row.names = c(1:length(deps)),
-             stringsAsFactors=FALSE)
+  dirDependencies(appDir)
 }
 
 # detect all package dependencies for a directory of files
