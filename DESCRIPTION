@@ -13,8 +13,10 @@ Depends:
 Imports:
     tools,
     utils,
-    methods
+    methods,
+    RJSONIO
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 Collate:
+    'lockfile.R'
     'packrat.R'
