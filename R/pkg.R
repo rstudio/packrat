@@ -18,18 +18,28 @@
 
 
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames) {
+getPackageRecords <- function(pkgNames, recursive=TRUE) {
   lapply(pkgNames, function(pkgName) {
     pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
-    return(inferRecordFromDescriptionFile(pkgDescFile))
+    df <- as.data.frame(read.dcf(pkgDescFile))
+    record <- inferPackageRecord(df)
+    if (isTRUE(recursive)) {
+      deps <- tools::package_dependencies(
+        record$name,
+        installed.packages(priority='NA'),
+        c("Depends", "Imports", "LinkingTo"),
+        recursive=FALSE
+      )[[record$name]]
+      record$depends <- getPackageRecords(deps)
+    }
+    return(record)
   })
 }
 
 # Reads a description file and attempts to infer where the package came from.
 # Currently works only for packages installed from CRAN or from GitHub using
 # devtools 1.4 or later.
-inferRecordFromDescriptionFile <- function(file) {
-  df <- as.data.frame(read.dcf(file))
+inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
   
