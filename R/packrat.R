@@ -32,8 +32,7 @@ install <- function(appDir = getwd()) {
   
   # Install CRAN dependencies and then Github dependencies. 
   description <- getDescription(appDir)
-  installCRAN(description$Source, installList, libDir)
-  installGithub(installList, libDir)
+  snapshotSources(appDir, description$Source, installList)
 }
 
 pack <- function() {
