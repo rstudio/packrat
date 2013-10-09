@@ -1,0 +1,5 @@
+local({
+  localLib <- file.path('library', R.version$platform, getRversion()[1,1:2])
+  dir.create(localLib, recursive=TRUE)
+  .libPaths(localLib)
+})
