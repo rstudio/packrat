@@ -14,12 +14,16 @@ Imports:
     tools,
     utils,
     methods,
-    RJSONIO
+    RJSONIO,
+    devtools
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 Collate:
     'dependencies.R'
-    'pkg.R'
+    'descfile.R'
+    'install.R'
     'lockfile.R'
     'packrat.R'
+    'pkg.R'
     'snapshot.R'
+

@@ -1,2 +1,3 @@
 importFrom(RJSONIO, fromJSON, toJSON)
 export(bootstrap)
+export(install)

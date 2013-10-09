@@ -132,8 +132,7 @@ makePkgInstallList <- function(packageDepSubtree, installed) {
         # This package is not already installed; install it
         else {
           installed[[package$name]] <- package$version
-          installList <- c(installList, list(name = package$name, 
-                                             version = package$version))
+          installList[[length(installList) + 1]] <- package
         }
       }
     }

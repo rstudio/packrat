@@ -11,14 +11,29 @@ bootstrap <- function(appDir = getwd()) {
 }
 
 install <- function(appDir = getwd()) {
+  # Get and parse the lockfile
   lockFilePath <- file.path(appDir, "packrat.lock")
   if (!file.exists(lockFilePath)) {
     stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
                appDir, "') to generate it.", sep = ""))
   }
   packages <- readLockFile(lockFilePath)
+  
+  # Generate the list of packages to install
   installList <- makeInstallList(packages)
-  print(installList)
+  installCRANList <- lapply(installList, function(pkgRecord) {
+    if (identical(pkgRecord$source, "CRAN")) pkgRecord else NULL    
+  })
+  
+  # Make sure the library directory exists
+  libDir <- file.path(appDir, "library")
+  if (!file.exists(libDir)) {
+    dir.create(libDir)
+  }
+  
+  # Install CRAN dependencies
+  description <- getDescription(appDir)
+  installCRAN(description$Source, installCRANList, libDir)
 }
 
 pack <- function() {
