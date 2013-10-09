@@ -25,7 +25,9 @@ install <- function(appDir = getwd()) {
     if (identical(pkgRecord$source, "CRAN")) pkgRecord else NULL    
   })
   
-  # Make sure the library directory exists
+  # Make sure the library directory exists 
+  # TODO: remove when Rprofile/Renviron is set up properly in bootstrap, so we
+  # can just rely on .libPaths
   libDir <- file.path(appDir, "library")
   if (!file.exists(libDir)) {
     dir.create(libDir)

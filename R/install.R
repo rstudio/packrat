@@ -19,11 +19,10 @@ installCRAN <- function(repos, pkgRecords, lib) {
         tryCatch({
           srcPackageName <- paste(pkgRecord$name, "_", pkgRecord$version, 
                                   ".tar.gz", sep = "")  
-          archiveUrl <- file.path(repo, "src/contrib/Archive", name, 
+          archiveUrl <- file.path(repo, "src/contrib/Archive", pkgRecord$name, 
                                   srcPackageName)
-          install_url(file.path(archiveUrl, "Archive", name, srcPackageName), 
-                      name = name, reload = FALSE, dependencies = FALSE,
-                      args = paste("-l", lib))
+          devtools::install_url(archiveUrl, reload = FALSE, 
+                                dependencies = FALSE, args = paste("-l", lib))
           foundVersion <- TRUE
           break
         }, error = function(e) {
