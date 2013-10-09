@@ -21,9 +21,14 @@
 getPackageRecords <- function(pkgNames, recursive=TRUE) {
   lapply(pkgNames, function(pkgName) {
     pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
+    if (nchar(pkgDescFile) == 0) {
+      warning(paste("The package", pkgName, "is listed as a dependency but",
+                    "is missing a DESCRIPTION; it will be ignored."))
+      return(NULL)
+    }
     df <- as.data.frame(read.dcf(pkgDescFile))
     record <- inferPackageRecord(df)
-    if (isTRUE(recursive)) {
+    if (isTRUE(recursive && !is.null(record))) {
       deps <- tools::package_dependencies(
         record$name,
         installed.packages(priority='NA'),
@@ -43,7 +48,8 @@ inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
   
-  if (!is.null(df$Repository) && identical(df$Repository, 'CRAN')) {
+  if (!is.null(df$Repository) &&
+      identical(as.character(df$Repository), 'CRAN')) {
     # It's CRAN!
     return(structure(list(
       name = name,
@@ -61,6 +67,9 @@ inferPackageRecord <- function(df) {
       gh_ref = as.character(df$GithubRef),
       gh_sha1 = as.character(df$GithubSHA1)
     ), class='packageRecord github'))
+  } else if (identical(as.character(df$Priority), 'base')) {
+    # It's a base package!
+    return(NULL)
   } else {
     warning("Couldn't figure out the origin of package ", name)
     return(structure(list(

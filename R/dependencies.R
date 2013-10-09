@@ -49,9 +49,14 @@ fileDependencies <- function(file) {
   pkgs <- character()
   
   # parse file and examine expressions
-  exprs <- parse(file, n = -1L) 
-  for (i in seq_along(exprs))
-    pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
+  tryCatch({
+    exprs <- parse(file, n = -1L) 
+    for (i in seq_along(exprs))
+      pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
+  }, error = function(e) {
+    warning(paste("Failed to parse", file, "; dependencies in this file will",
+                  "not be discovered."))
+  })
   
   # return packages
   unique(pkgs)
