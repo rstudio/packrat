@@ -1,5 +1,9 @@
+# Use private package library
 local({
-  localLib <- file.path('library', R.version$platform, getRversion()[1,1:2])
-  dir.create(localLib, recursive=TRUE)
+  localLib <- file.path(normalizePath('.'), 'library', R.version$platform, getRversion()[1,1:2])
+  if (!file.exists(localLib)) {
+    message('Creating private package library at ', localLib)
+    dir.create(localLib, recursive=TRUE)
+  }
   .libPaths(localLib)
 })
