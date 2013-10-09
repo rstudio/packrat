@@ -109,3 +109,44 @@ expressionDependencies <- function(e) {
   unique(pkgs)
 }
 
+# Given a subtree of package dependencies and an environment containing the 
+# names of packages to be considered already installed, return an ordered list
+# of packages from the subtree to be installed.
+makePkgInstallList <- function(packageDepSubtree, installed) {
+  installList <- list()
+  for (package in packageDepSubtree) {
+    if (!is.null(package)) {
+      # This package has dependencies; recursively process them
+      if (length(package$depends) > 0) {
+        installList <- c(installList, makePkgInstallList(package$depends, 
+                                                         installed))
+      } else {
+        # This package was already installed to fulfill another dependency; 
+        # make sure that the version installed satisfies this version
+        if (exists(package$name, envir = installed)) {
+          if (!identical(installed[[package$name]], package$version)) {
+            stop(paste("Conflicting version requirements for ", package$name, 
+                       ": ", package$version, ", ", installed[[package$name]]))
+          }
+        }
+        # This package is not already installed; install it
+        else {
+          installed[[package$name]] <- package$version
+          installList <- c(installList, list(name = package$name, 
+                                             version = package$version))
+        }
+      }
+    }
+  }
+  return(installList)
+}
+
+# Given a package dependency tree, return a list of the packages to be installed
+# to fulfill the tree, in the order of installation (i.e. each package's 
+# dependencies must be installed before the package itself). 
+makeInstallList <- function(packageDepTree) {
+  installed <- new.env(hash = TRUE, parent = emptyenv())
+  makePkgInstallList(packageDepTree, installed)
+}
+
+
