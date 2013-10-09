@@ -5,6 +5,10 @@ installCRAN <- function(repos, pkgRecords, lib) {
   
   # Process and install each package
   for (pkgRecord in pkgRecords) {
+    if (!identical(pkgRecord$source, "CRAN")) {
+      # Package is not from CRAN, ignore it
+      next
+    }
     # See if the version requested is the current version in the repository
     currentVersion <- availablePkgs[pkgRecord$name,][["Version"]]
     if (identical(pkgRecord$version, currentVersion)) {
@@ -35,5 +39,18 @@ installCRAN <- function(repos, pkgRecords, lib) {
                    sep = ""))
       }
     }
+  }
+}
+
+installGithub <- function(pkgRecords, lib){
+  # Process and install each package
+  for (pkgRecord in pkgRecords) {
+    if (!identical(pkgRecord$source, "github")) {
+      # Package is not from Github, ignore it
+      next
+    }
+    devtools::install_github(pkgRecord$gh_repo, 
+                             username = pkgRecord$gh_username,
+                             ref = pkgRecord$gh_sha1, args = paste("-l", lib))
   }
 }

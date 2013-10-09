@@ -116,24 +116,24 @@ makePkgInstallList <- function(packageDepSubtree, installed) {
   installList <- list()
   for (package in packageDepSubtree) {
     if (!is.null(package)) {
-      # This package has dependencies; recursively process them
       if (length(package$depends) > 0) {
+        # This package has dependencies; recursively process them.
         installList <- c(installList, makePkgInstallList(package$depends, 
                                                          installed))
-      } else {
+      } 
+      if (exists(package$name, envir = installed)) {
         # This package was already installed to fulfill another dependency; 
         # make sure that the version installed satisfies this version
-        if (exists(package$name, envir = installed)) {
-          if (!identical(installed[[package$name]], package$version)) {
-            stop(paste("Conflicting version requirements for ", package$name, 
-                       ": ", package$version, ", ", installed[[package$name]]))
-          }
+        if (!identical(installed[[package$name]], package$version)) {
+          stop(paste("Conflicting version requirements for ", package$name, 
+                     ": ", package$version, ", ", installed[[package$name]]))
         }
+      }
+      else {
         # This package is not already installed; install it
-        else {
-          installed[[package$name]] <- package$version
-          installList[[length(installList) + 1]] <- package
-        }
+        package$depends <- NULL
+        installed[[package$name]] <- package$version
+        installList[[length(installList) + 1]] <- package
       }
     }
   }

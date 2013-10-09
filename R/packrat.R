@@ -21,9 +21,6 @@ install <- function(appDir = getwd()) {
   
   # Generate the list of packages to install
   installList <- makeInstallList(packages)
-  installCRANList <- lapply(installList, function(pkgRecord) {
-    if (identical(pkgRecord$source, "CRAN")) pkgRecord else NULL    
-  })
   
   # Make sure the library directory exists 
   # TODO: remove when Rprofile/Renviron is set up properly in bootstrap, so we
@@ -33,9 +30,10 @@ install <- function(appDir = getwd()) {
     dir.create(libDir)
   }
   
-  # Install CRAN dependencies
+  # Install CRAN dependencies and then Github dependencies. 
   description <- getDescription(appDir)
-  installCRAN(description$Source, installCRANList, libDir)
+  installCRAN(description$Source, installList, libDir)
+  installGithub(installList, libDir)
 }
 
 pack <- function() {
