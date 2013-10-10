@@ -3,11 +3,23 @@
 #' 
 #' @export
 bootstrap <- function(appDir = getwd()) {
+  
+  descriptionFile <- file.path(appDir, 'DESCRIPTION')
+  
+  if (file.exists(descriptionFile)) {
+    description <- as.data.frame(read.dcf(descriptionFile))
+    type <- description$Type
+    if (is.null(type) || identical(tolower(type), 'package')) {
+      stop("This project appears to be an R package. Packrat doesn't work on ",
+           "packages.")
+    }
+  }
+  
   # Get the inferred set of dependencies and write the lockfile
   dependencies <- data.frame(Source = getOption("repos")[[1]],
                              Dependencies = paste(appDependencies(appDir),
                                                   collapse=", "))
-  write.dcf(dependencies, file = paste(appDir, "/DESCRIPTION", sep = ""))
+  write.dcf(dependencies, file = descriptionFile)
   snapshot(appDir)
   
   # Use the lockfile to copy sources and install packages to the library
