@@ -17,6 +17,13 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
   
   # Get the sources for each package
   for (pkgRecord in pkgRecords) {
+    # Skip packages for which we can't find sources
+    if (is.null(pkgRecord$source)) {
+      warning("Sources missing for ", pkgRecord$name, " (", pkgRecord$version, 
+              ")")
+      next
+    }
+    
     # Create the directory in which to place this package's sources
     pkgSrcDir <- file.path(sourceDir, pkgRecord$name)
     if (!file.exists(pkgSrcDir))    
@@ -26,8 +33,9 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
     if (file.exists(file.path(pkgSrcDir, pkgSrcFilename(pkgRecord)))) 
       next
     
-    if (identical(pkgRecord$source, "CRAN")) {
-      currentVersion <- availablePkgs[pkgRecord$name,][["Version"]]
+    if (identical(pkgRecord$source, "CRAN") &&
+        pkgRecord$name %in% rownames(availablePkgs)) {
+      currentVersion <- availablePkgs[pkgRecord$name,"Version"]
       # Is the source for this version of the package on CRAN?
       if (identical(pkgRecord$version, currentVersion)) {
         # Get the source package from CRAN
@@ -83,7 +91,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
     # is the version desired, and (c) R is set to download binaries.
     if (identical(pkgRecord$source, "CRAN") && 
         identical(pkgRecord$version, 
-                  availablePkgs[pkgRecord$name,][["Version"]]) &&
+                  availablePkgs[pkgRecord$name,"Version"]) &&
          !identical(getOption("pkgType"), "source")) {
       tempdir <- tempdir()
       downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 

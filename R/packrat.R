@@ -57,6 +57,16 @@ install <- function(appDir = getwd()) {
 pack <- function() {
 }
 
+clean <- function(appDir = getwd()) {
+  # Clean up dependency information
+  unlink(file.path(appDir, "DESCRIPTION"))
+  unlink(file.path(appDir, "packrat.lock"))
+  
+  # Clean up downloaded sources and library directories
+  unlink(libdir(appDir), recursive = TRUE)
+  unlink(file.path(appDir, "packrat.sources"), recursive = TRUE)
+ }
+
 #' Install .Rprofile and .Renviron files in the given directory to make it
 #' use a private package library.
 #' 

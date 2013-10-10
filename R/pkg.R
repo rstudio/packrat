@@ -18,12 +18,12 @@
 
 
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames, recursive=TRUE) {
+getPackageRecords <- function(pkgNames, available, recursive=TRUE) {
   records <- lapply(pkgNames, function(pkgName) {
     pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
-    if (nchar(pkgDescFile) == 0) {
-      warning(paste("The package", pkgName, "is listed as a dependency but",
-                    "is missing a DESCRIPTION."))
+    if (nchar(pkgDescFile) == 0 &&
+        pkgName %in% rownames(available)) {
+      # TODO: Download from repo so we can get dependencies
       return(NULL)
     }
     df <- as.data.frame(read.dcf(pkgDescFile))

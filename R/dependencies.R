@@ -28,15 +28,24 @@ appDependencies <- function(appDir = getwd()) {
   dirDependencies(appDir)
 }
 
+# does str1 start with str2?
+startswith <- function(str1, str2) {
+  identical(substr(str1, 1, min(nchar(str1), nchar(str2))), str2)
+}
+  
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
-  
+  libdir <- normalizePath(libdir(dir))
+  dir <- normalizePath(dir)
+
   # first get the packages referred to in source code
   pkgs <- character()
   sapply(list.files(dir, pattern=glob2rx("*.R"), 
                     ignore.case=TRUE, recursive=TRUE),
          function(file) {
-           pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
+           # ignore files in the library directory 
+           if (!startswith(file.path(dir, file), libdir)) 
+             pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
          })
   unique(pkgs)  
 }
@@ -44,7 +53,6 @@ dirDependencies <- function(dir) {
 # detect all package dependencies for a source file (parses the file and then
 # recursively examines all expressions in the file)
 fileDependencies <- function(file) {
-  
   # build a list of package dependencies to return
   pkgs <- character()
   
