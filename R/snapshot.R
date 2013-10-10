@@ -5,5 +5,5 @@ snapshot <- function(appDir) {
   packageDependencies <- 
     strsplit(as.character(description$Dependencies), ", ")[[1]]
   writeLockFile(file.path(appDir, "packrat.lock"),
-                          getPackageRecords(packageDependencies))
+                getPackageRecords(packageDependencies))
 }

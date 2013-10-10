@@ -30,9 +30,11 @@ install <- function(appDir = getwd()) {
     dir.create(libDir)
   }
   
-  # Install CRAN dependencies and then Github dependencies. 
+  # Snapshot the sources for each package, then install them in turn from CRAN
+  # or github, from binaries when available and then from sources.
   description <- getDescription(appDir)
   snapshotSources(appDir, description$Source, installList)
+  installPkgs(appDir, description$Source, installList, libDir)    
 }
 
 pack <- function() {

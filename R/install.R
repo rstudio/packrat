@@ -1,3 +1,10 @@
+pkgSrcFilename <- function(pkgRecord) {
+  if (identical(pkgRecord$source, "CRAN"))
+    paste(pkgRecord$name, "_", pkgRecord$version, ".tar.gz", sep = "")
+  else if (identical(pkgRecord$source, "github"))
+    paste(pkgRecord$gh_sha1, ".zip", sep = "")
+}
+
 snapshotSources <- function(appDir, repos, pkgRecords) {
   # Get a list of source packages available on the repositories
   availablePkgs <- available.packages(contrib.url(repos, "source"), 
@@ -14,10 +21,10 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
     pkgSrcDir <- file.path(sourceDir, pkgRecord$name)
     dir.create(pkgSrcDir)
     
-    if (pkgRecord$source == "CRAN") {
+    if (identical(pkgRecord$source, "CRAN")) {
+      currentVersion <- availablePkgs[pkgRecord$name,][["Version"]]
       # Is the source for this version of the package on CRAN?
-      if (identical(pkgRecord$version, 
-          availablePkgs[pkgRecord$name,][["Version"]])) {
+      if (identical(pkgRecord$version, currentVersion)) {
         # Get the source package from CRAN
         download.packages(pkgRecord$name, destdir = pkgSrcDir, 
                           available = availablePkgs, repos = repos, 
@@ -29,8 +36,7 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
         foundVersion <- FALSE
         for (repo in repos) {
           tryCatch({
-            srcPackageName <- paste(pkgRecord$name, "_", pkgRecord$version, 
-                                    ".tar.gz", sep = "")
+            srcPackageName <- pkgSrcFilename(pkgRecord)
             archiveUrl <- file.path(repo, "src/contrib/Archive", pkgRecord$name, 
                                     srcPackageName)
             download.file(archiveUrl, file.path(pkgSrcDir, srcPackageName), 
@@ -48,7 +54,7 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
         }
       }
     } else if (identical(pkgRecord$source, "github")) {
-      srcPackageName <- paste(pkgRecord$gh_sha1, ".zip", sep = "")
+      srcPackageName <- pkgSrcFilename(pkgRecord)
       archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
                           pkgRecord$gh_repo, "/archive/", srcPackageName,
                           sep = "")
@@ -59,59 +65,28 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
   }
 }
 
-installPkgs <- function(repos, pkgRecords, lib) {
+installPkgs <- function(appDir, repos, pkgRecords, lib) {
   # Get the list of available packages and the latest version of those packages
   # from the repositories
   availablePkgs <- available.packages(contrib.url(repos))
   
   # Process and install each package
   for (pkgRecord in pkgRecords) {
-    if (!identical(pkgRecord$source, "CRAN")) {
-      # Package is not from CRAN, ignore it
-      next
-    }
-    # See if the version requested is the current version in the repository
-    currentVersion <- availablePkgs[pkgRecord$name,][["Version"]]
-    if (identical(pkgRecord$version, currentVersion)) {
-      # The version requested is the current one; let install.packages handle it
+    if (identical(pkgRecord$source, "CRAN") && 
+        identical(pkgRecord$version, 
+                  availablePkgs[pkgRecord$name,][["Version"]])) {
+      # When installing the current version of a package from CRAN, just let
+      # install.packages do its thing (it may install a pre-built binary)
       install.packages(pkgRecord$name, repos = repos, lib = lib, 
                        dependencies = FALSE)
     } else {
-      # The version requested is not current; try each given repository to find
-      # the sources for the older version
-      foundVersion <- FALSE
-      for (repo in repos) {
-        tryCatch({
-          srcPackageName <- paste(pkgRecord$name, "_", pkgRecord$version, 
-                                  ".tar.gz", sep = "")  
-          archiveUrl <- file.path(repo, "src/contrib/Archive", pkgRecord$name, 
-                                  srcPackageName)
-          devtools::install_url(archiveUrl, reload = FALSE, 
-                                dependencies = FALSE, args = paste("-l", lib))
-          foundVersion <- TRUE
-          break
-        }, error = function(e) {
-          # Ignore error and try the next repository
-        })
-      }
-      if (!foundVersion) {
-        stop(paste("Couldn't find version ", pkgRecord$version, " of ",
-                   pkgRecord$name, " (", currentVersion, " is current)", 
-                   sep = ""))
-      }
-    }
+      # When installing from github or an older version, use the cached source
+      # tarball or zip created in snapshotSources
+      pkgSrc = file.path(appDir, "packrat.sources", pkgRecord$name, 
+                         pkgSrcFilename(pkgRecord))
+      install.packages(pkgSrc, lib = lib, repos = NULL, dependencies = FALSE,
+                       type = "source")
+    } 
   }
 }
 
-installGithub <- function(pkgRecords, lib){
-  # Process and install each package
-  for (pkgRecord in pkgRecords) {
-    if (!identical(pkgRecord$source, "github")) {
-      # Package is not from Github, ignore it
-      next
-    }
-    devtools::install_github(pkgRecord$gh_repo, 
-                             username = pkgRecord$gh_username,
-                             ref = pkgRecord$gh_sha1, args = paste("-l", lib))
-  }
-}
