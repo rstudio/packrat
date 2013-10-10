@@ -10,7 +10,7 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
   availablePkgs <- available.packages(contrib.url(repos, "source"), 
                                       type = "source")
 
-  # Clean the source directory if it exists and recreate it
+  # Find the source directory (create it if necessary)
   sourceDir <- file.path(appDir, "packrat.sources")
   if (!file.exists(sourceDir))
     dir.create(sourceDir)
@@ -78,9 +78,13 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
   
   # Process and install each package
   for (pkgRecord in pkgRecords) {
+    # Generally we want to install from sources, but we will download a pre-
+    # built binary if (a) the package exists on CRAN, (b) the version on CRAN
+    # is the version desired, and (c) R is set to download binaries.
     if (identical(pkgRecord$source, "CRAN") && 
         identical(pkgRecord$version, 
-                  availablePkgs[pkgRecord$name,][["Version"]])) {
+                  availablePkgs[pkgRecord$name,][["Version"]]) &&
+         !identical(getOption("pkgType"), "source")) {
       tempdir <- tempdir()
       downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
                                       repos = repos, available = availablePkgs)

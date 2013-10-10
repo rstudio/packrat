@@ -3,11 +3,18 @@
 #' 
 #' @export
 bootstrap <- function(appDir = getwd()) {
+  # Get the inferred set of dependencies and write the lockfile
   dependencies <- data.frame(Source = getOption("repos")[[1]],
                              Dependencies = paste(appDependencies(appDir),
                                                   collapse=", "))
   write.dcf(dependencies, file = paste(appDir, "/DESCRIPTION", sep = ""))
   snapshot(appDir)
+  
+  # Use the lockfile to copy sources and install packages to the library
+  install(appDir)
+  
+  # Write the .Rprofile and .Renviron files
+  packify(appDir)
 }
 
 install <- function(appDir = getwd()) {
@@ -23,9 +30,7 @@ install <- function(appDir = getwd()) {
   installList <- makeInstallList(packages)
   
   # Make sure the library directory exists 
-  # TODO: remove when Rprofile/Renviron is set up properly in bootstrap, so we
-  # can just rely on .libPaths
-  libDir <- file.path(appDir, "library")
+  libDir <- libdir(appDir)
   if (!file.exists(libDir)) {
     dir.create(libDir)
   }
@@ -100,4 +105,9 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
   writeLines(target[[1]], targetFile)
   
   invisible()
+}
+
+libdir <- function(appDir) {
+  file.path(normalizePath(appDir), 'library', R.version$platform, 
+            getRversion()[1,1:2])
 }

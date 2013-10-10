@@ -23,7 +23,7 @@ getPackageRecords <- function(pkgNames, recursive=TRUE) {
     pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
     if (nchar(pkgDescFile) == 0) {
       warning(paste("The package", pkgName, "is listed as a dependency but",
-                    "is missing a DESCRIPTION; it will be ignored."))
+                    "is missing a DESCRIPTION."))
       return(NULL)
     }
     df <- as.data.frame(read.dcf(pkgDescFile))
