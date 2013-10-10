@@ -19,7 +19,7 @@
 
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames, recursive=TRUE) {
-  lapply(pkgNames, function(pkgName) {
+  records <- lapply(pkgNames, function(pkgName) {
     pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
     if (nchar(pkgDescFile) == 0) {
       warning(paste("The package", pkgName, "is listed as a dependency but",
@@ -39,6 +39,7 @@ getPackageRecords <- function(pkgNames, recursive=TRUE) {
     }
     return(record)
   })
+  return(records[!sapply(records, is.null)])
 }
 
 # Reads a description file and attempts to infer where the package came from.
