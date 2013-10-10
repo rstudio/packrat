@@ -12,14 +12,19 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
 
   # Clean the source directory if it exists and recreate it
   sourceDir <- file.path(appDir, "packrat.sources")
-  unlink(sourceDir, recursive = TRUE)
-  dir.create(sourceDir)
+  if (!file.exists(sourceDir))
+    dir.create(sourceDir)
   
   # Get the sources for each package
   for (pkgRecord in pkgRecords) {
     # Create the directory in which to place this package's sources
     pkgSrcDir <- file.path(sourceDir, pkgRecord$name)
-    dir.create(pkgSrcDir)
+    if (!file.exists(pkgSrcDir))    
+      dir.create(pkgSrcDir)
+    
+    # If the file we want to download already exists, skip it
+    if (file.exists(file.path(pkgSrcDir, pkgSrcFilename(pkgRecord)))) 
+      next
     
     if (identical(pkgRecord$source, "CRAN")) {
       currentVersion <- availablePkgs[pkgRecord$name,][["Version"]]
@@ -37,7 +42,8 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
         for (repo in repos) {
           tryCatch({
             srcPackageName <- pkgSrcFilename(pkgRecord)
-            archiveUrl <- file.path(repo, "src/contrib/Archive", pkgRecord$name, 
+            archiveUrl <- file.path(repo, "src/contrib/Archive", 
+                                    pkgRecord$name, 
                                     srcPackageName)
             download.file(archiveUrl, file.path(pkgSrcDir, srcPackageName), 
                           mode = "wb")
@@ -60,7 +66,7 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
                           sep = "")
       request <- httr::GET(archiveUrl)
       httr::stop_for_status(request)
-      writeBin(content(request), file.path(pkgSrcDir, srcPackageName))
+      writeBin(httr::content(request), file.path(pkgSrcDir, srcPackageName))
     }
   }
 }
@@ -75,18 +81,18 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
     if (identical(pkgRecord$source, "CRAN") && 
         identical(pkgRecord$version, 
                   availablePkgs[pkgRecord$name,][["Version"]])) {
-      # When installing the current version of a package from CRAN, just let
-      # install.packages do its thing (it may install a pre-built binary)
-      install.packages(pkgRecord$name, repos = repos, lib = lib, 
-                       dependencies = FALSE)
+      tempdir <- tempdir()
+      downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
+                                      repos = repos, available = availablePkgs)
+      pkgSrc <- downloaded[2]
     } else {
       # When installing from github or an older version, use the cached source
       # tarball or zip created in snapshotSources
       pkgSrc = file.path(appDir, "packrat.sources", pkgRecord$name, 
                          pkgSrcFilename(pkgRecord))
-      install.packages(pkgSrc, lib = lib, repos = NULL, dependencies = FALSE,
-                       type = "source")
     } 
+    devtools::install_local(path = pkgSrc, reload = FALSE, 
+                            args = paste("-l", lib), dependencies = FALSE)
   }
 }
 
