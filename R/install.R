@@ -96,7 +96,8 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
                          pkgSrcFilename(pkgRecord))
     } 
     devtools::install_local(path = pkgSrc, reload = FALSE, 
-                            args = paste("-l", lib), dependencies = FALSE)
+                            args = paste("-l", lib), dependencies = FALSE,
+                            quick = TRUE)
   }
 }
 

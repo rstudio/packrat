@@ -44,7 +44,7 @@ install <- function(appDir = getwd()) {
   # Make sure the library directory exists 
   libDir <- libdir(appDir)
   if (!file.exists(libDir)) {
-    dir.create(libDir)
+    dir.create(libDir, recursive=TRUE)
   }
   
   # Snapshot the sources for each package, then install them in turn from CRAN
