@@ -64,49 +64,46 @@ fileDependencies <- function(file) {
 
 # detect the pacakge dependencies of an expression (adapted from 
 # tools:::.check_packages_used)
+#
+# expressionDependencies(quote(library("h")))
+# expressionDependencies(quote(library(10, package = "h")))
+# expressionDependencies(quote(library(h)))
+# expressionDependencies(quote({library(h); library(g)}))
+# expressionDependencies(quote(h::f))
 expressionDependencies <- function(e) {
+  # base case
+  if (is.atomic(e) || is.name(e)) return()
   
-  # build a list of packages to return
-  pkgs <- character()
-  
-  # examine calls
-  if (is.call(e) || is.expression(e)) {
-    
-    # extract call
-    call <- deparse(e[[1L]])[1L]
-    
-    # check for library or require and extract package argument
-    if ((call %in% c("library", "require")) && (length(e) >= 2L)) {
-      keep <- sapply(e, function(x) deparse(x)[1L] != "...")
-      mc <- match.call(get(call, baseenv()), e[keep])
-      if (!is.null(pkg <- mc$package)) {
-        # ensure that types are rational
-        if (!identical(mc$character.only, TRUE) || 
-              identical(class(pkg), "character")) {
-          pkg <- sub("^\"(.*)\"$", "\\1", deparse(pkg))
-          pkgs <- append(pkgs, pkg)
-        }
-      }
-    }
-    
-    # check for :: or :::
-    else if (call %in% c("::", ":::")) {
-      pkg <- deparse(e[[2L]])
-      pkgs <- append(pkgs, pkg)
-    }
-    
-    # check for uses of methods
-    else if (call %in% c("setClass", "setMethod")) {
-      pkgs <- append(pkgs, "methods")
-    }
-    
-    # process subexpressions
-    for (i in seq_along(e)) 
-      pkgs <- append(pkgs, Recall(e[[i]]))
+  # recursive case: expression (= list of calls)
+  if (is.expression(e)) {
+    unlist(lapply(e, expressionDependencies))
   }
   
-  # return packages
-  unique(pkgs)
+  # base case: a call
+  fname <- as.character(e[[1L]])
+  
+  # base case: call to library/require
+  if (fname %in% c("library", "require")) {
+    mc <- match.call(get(fname, baseenv()), e)
+    if (is.null(mc$package)) return(NULL)
+    if (isTRUE(mc$character.only)) return(NULL)
+    
+    return(as.character(mc$package))
+  } 
+  
+  # base case: call to :: or :::
+  if (fname %in% c("::", ":::")) (
+    return(as.character(e[[2L]]))
+  )
+  
+  # base case: methods functions
+  if (fname %in% c("setClass", "setRefClass", "setMethod", "setGeneric")) {
+    return("methods")
+  }
+
+  # recursive case: all other calls
+  children <- lapply(as.list(e[-1]), expressionDependencies)
+  unique(unlist(children))
 }
 
 # Given a subtree of package dependencies and an environment containing the 
