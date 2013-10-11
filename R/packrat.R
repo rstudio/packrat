@@ -54,6 +54,109 @@ install <- function(appDir = getwd()) {
   installPkgs(appDir, description$Source, installList, libDir)    
 }
 
+#' @export
+status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
+  lockFilePath <- file.path(appDir, "packrat.lock")
+  if (!file.exists(lockFilePath)) {
+    stop(lockFilePath, " is missing; this project doesn't seem to use packrat.")
+  }
+  packages <- readLockFile(lockFilePath)
+  recsLock <- flattenPackageRecords(packages)
+  
+  installedList <- as.vector(installed.packages(libdir(appDir))[,'Package'])
+  recsLib <- flattenPackageRecords(getPackageRecords(installedList, NULL, lib.loc=lib.loc))
+  
+  onlyLock <- recsLock[!recsLock %in% recsLib]
+  onlyLib <- recsLib[!recsLib %in% recsLock]
+  
+  list(onlyLock = onlyLock, onlyLib = onlyLib)
+  
+  if (!isTRUE(quiet)) {
+    prettyPrint(onlyLock,
+                'Packrat thinks these packages are missing from your library:',
+                'You can install them using "packrat::install()".')
+  }
+  
+  dirDeps <- dirDependencies(appDir)
+  recsDir <- flattenPackageRecords(getPackageRecords(dirDeps, NULL, lib.loc=lib.loc, fatal=FALSE))
+  # What packages are missing from packrat, but present in the source?
+  libsInSourceIndex <- onlyLib %in% recsDir
+  probablyInstall <- onlyLib[libsInSourceIndex]
+  # What packages are missing from packrat and not present in the source?
+  probablyRemove <- onlyLib[!libsInSourceIndex]
+  
+  if (!isTRUE(quiet)) {
+    prettyPrint(
+      probablyInstall,
+      'These packages are installed and used in your R scripts, but\nmissing from packrat:',
+      'You can add them with "packrat::add()".')
+    
+    prettyPrint(
+      probablyRemove,
+      'These packages are installed, but not used in your R scripts,\nand not present in packrat:',
+      'You can remove them with "packrat::remove()".')
+  }
+  
+  onlyInSource <- recsDir[!(recsDir %in% recsLib | recsDir %in% recsLock)]
+  if (!isTRUE(quiet)) {
+    prettyPrint(
+      onlyInSource,
+      'These packages are in neither packrat nor your library, but\nthey appear to be used in your R scripts.',
+      'You can try to install the latest versions from CRAN using\n"packrat::bootstrap()". Or, install them manually, and then\nrun "packrat::add()".')
+  }
+  
+  result <- list(
+    PackratOnly = onlyLock,
+    LibraryOnly = onlyLib,
+    SourceOnly = onlyInSource,
+    ProbablyInstall = probablyInstall,
+    ProbablyRemove = probablyRemove
+  )
+  
+  # If any of the lists have length > 0, return result; otherwise NULL
+  if (any(sapply(result, length) > 0)) {
+    return(invisible(result))
+  } else {
+    return(invisible())
+  }
+}
+
+#' @keywords internal
+prettyPrint <- function(packages, header, footer = NULL) {
+  if (length(packages) > 0) {
+    cat('\n')
+    if (!is.null(header)) {
+      cat(paste(header, collapse=''))
+      cat('\n')
+    }
+    print.simple.list(lapply(packages, function(pkg) {
+      result <- ifelse(is.na(pkg$version), '', pkg$version)
+      names(result) <- paste("   ", pkg$name)
+      result
+    }))
+    if (!is.null(footer)) {
+      cat(paste(footer, collapse=''))
+    }
+    cat('\n')
+  }
+}
+
+#' @keyword internal
+flattenPackageRecords <- function(packageRecords) {
+  visited <- new.env(parent=emptyenv())
+  visit <- function(pkgRecs) {
+    for (rec in pkgRecs) {
+      visit(rec$depends)
+      rec['depends'] <- NULL
+      visited[[rec$name]] <- rec
+    }
+  }
+  visit(packageRecords)
+  lapply(sort(ls(visited)), function(name) {
+    visited[[name]]
+  })
+}
+
 pack <- function() {
 }
 

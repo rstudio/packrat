@@ -18,20 +18,31 @@
 
 
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames, available, recursive=TRUE) {
+getPackageRecords <- function(pkgNames, available, recursive=TRUE, 
+                              lib.loc=NULL, fatal=TRUE) {
   records <- lapply(pkgNames, function(pkgName) {
-    pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
-    if (nchar(pkgDescFile) == 0 &&
-        pkgName %in% rownames(available)) {
-      # The package's DESCRIPTION doesn't exist locally--get its version and
-      # dependency information from the repo, and use the database of available 
-      # packages to compute its dependencies
-      pkg <- available[pkgName,]
-      df <- data.frame(
-        Package = pkg[["Package"]],
-        Version = pkg[["Version"]],
-        Repository = "CRAN")
-      db <- available
+    pkgDescFile <- system.file('DESCRIPTION', package=pkgName, lib.loc = lib.loc)
+    if (nchar(pkgDescFile) == 0) {
+      if (pkgName %in% rownames(available)) {
+        # The package's DESCRIPTION doesn't exist locally--get its version and
+        # dependency information from the repo, and use the database of available 
+        # packages to compute its dependencies
+        pkg <- available[pkgName,]
+        df <- data.frame(
+          Package = pkg[["Package"]],
+          Version = pkg[["Version"]],
+          Repository = "CRAN")
+        db <- available
+      } else if (fatal) {
+        where <- ifelse(is.null(lib.loc), 'the current libpath', lib.loc)
+        stop('The package "', pkgName, '" is not installed in ', where)
+      } else {
+        return(list(
+          name = pkgName,
+          version = NA,
+          source = NA
+        ))
+      }
     } else {
       # Thie package's DESCRIPTION exists locally--read it, and use the database
       # of installed packages to compute its dependencies.
@@ -45,7 +56,8 @@ getPackageRecords <- function(pkgNames, available, recursive=TRUE) {
         c("Depends", "Imports", "LinkingTo"),
         recursive=FALSE
       )[[record$name]]
-      record$depends <- getPackageRecords(deps)
+      record$depends <- getPackageRecords(
+        deps, available, TRUE, lib.loc=lib.loc, fatal=fatal)
     }
     return(record)
   })
@@ -66,7 +78,7 @@ inferPackageRecord <- function(df) {
       name = name,
       source = 'CRAN',
       version = ver
-    ), class='packageRecord CRAN'))
+    ), class=c('packageRecord', 'CRAN')))
   } else if (!is.null(df$GithubRepo)) {
     # It's GitHub!
     return(structure(list(
@@ -77,7 +89,7 @@ inferPackageRecord <- function(df) {
       gh_username = as.character(df$GithubUsername),
       gh_ref = as.character(df$GithubRef),
       gh_sha1 = as.character(df$GithubSHA1)
-    ), class='packageRecord github'))
+    ), class=c('packageRecord', 'github')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
