@@ -4,9 +4,9 @@ Packrat is a dependency management system for R.
 
 Use packrat to make your R projects more:
 
-* **Isolated:** Installing a new or updated package for one project won't affect your other projects, and vice versa. That's because packrat gives each project its own private package library.
+* **Isolated:** Installing a new or updated package for one project won't break your other projects, and vice versa. That's because packrat gives each project its own private package library.
 * **Portable:** Easily transport your projects from one computer to another, even across different platforms. Packrat makes it easy to install the packages your project depends on.
-* **Reproducible:** Packrat records the exact package versions you depend on, and ensures those exact versions get installed in the future.
+* **Reproducible:** Packrat records the exact package versions you depend on, and ensures those exact versions are the ones that get installed wherever you go.
 
 ## Commands
 
@@ -14,9 +14,9 @@ Use packrat to make your R projects more:
 
 > Initializes a regular R project directory as a packrat project. This creates the supporting files and directories listed below in "Anatomy of a packrat project". **You must restart your R session after running `bootstrap()` in order to use packrat.**
 
-#### `diff(projectDir = ".", scan.sources = TRUE)`
+#### `status(appDir = '.', lib.loc = NULL, quiet = FALSE)`
 
-> Shows the differences between the project's packrat dependencies and private package library.
+> Shows the differences between the project's packrat dependencies, its private package library, and its R scripts.
 
 > These differences are created when you use the normal R package management commands like `install.packages()`, `update.packages()`, and `remove.packages()`. To reconcile these differences with packrat, you can use `add()` and `remove()`.
 
