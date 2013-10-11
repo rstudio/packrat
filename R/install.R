@@ -92,7 +92,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
     if (identical(pkgRecord$source, "CRAN") && 
         identical(pkgRecord$version, 
                   availablePkgs[pkgRecord$name,"Version"]) &&
-         !identical(getOption("pkgType"), "source")) {
+        !identical(getOption("pkgType"), "source")) {
       tempdir <- tempdir()
       downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
                                       repos = repos, available = availablePkgs)

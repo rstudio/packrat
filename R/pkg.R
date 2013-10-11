@@ -23,15 +23,25 @@ getPackageRecords <- function(pkgNames, available, recursive=TRUE) {
     pkgDescFile <- system.file('DESCRIPTION', package=pkgName)
     if (nchar(pkgDescFile) == 0 &&
         pkgName %in% rownames(available)) {
-      # TODO: Download from repo so we can get dependencies
-      return(NULL)
+      # The package's DESCRIPTION doesn't exist locally--get its version and
+      # dependency information from the repo, and use the database of available 
+      # packages to compute its dependencies
+      pkg <- available[pkgName,]
+      df <- data.frame(
+        Package = pkg[["Package"]],
+        Version = pkg[["Version"]],
+        Repository = "CRAN")
+      db <- available
+    } else {
+      # Thie package's DESCRIPTION exists locally--read it, and use the database
+      # of installed packages to compute its dependencies.
+      df <- as.data.frame(read.dcf(pkgDescFile))
+      db <- installed.packages(priority='NA')
     }
-    df <- as.data.frame(read.dcf(pkgDescFile))
     record <- inferPackageRecord(df)
     if (isTRUE(recursive && !is.null(record))) {
       deps <- tools::package_dependencies(
-        record$name,
-        installed.packages(priority='NA'),
+        record$name, db,
         c("Depends", "Imports", "LinkingTo"),
         recursive=FALSE
       )[[record$name]]

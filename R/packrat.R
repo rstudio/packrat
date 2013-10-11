@@ -20,7 +20,7 @@ bootstrap <- function(appDir = getwd()) {
                              Dependencies = paste(appDependencies(appDir),
                                                   collapse=", "))
   write.dcf(dependencies, file = descriptionFile)
-  snapshot(appDir)
+  snapshot(appDir, getOption("repos"))
   
   # Use the lockfile to copy sources and install packages to the library
   install(appDir)
