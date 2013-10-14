@@ -81,6 +81,8 @@ expressionDependencies <- function(e) {
   
   # base case: a call
   fname <- as.character(e[[1L]])
+  # a refclass method call, so return
+  if (length(fname) > 1) return()
   
   # base case: call to library/require
   if (fname %in% c("library", "require")) {
