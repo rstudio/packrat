@@ -43,13 +43,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 }
 
 install <- function(appDir = getwd()) {
-  # Get and parse the lockfile
-  lockFilePath <- file.path(appDir, "packrat.lock")
-  if (!file.exists(lockFilePath)) {
-    stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
-               appDir, "') to generate it.", sep = ""))
-  }
-  packages <- readLockFile(lockFilePath)
+  packages <- lockInfo()
   
   # Generate the list of packages to install
   installList <- makeInstallList(packages)
@@ -69,11 +63,7 @@ install <- function(appDir = getwd()) {
 
 #' @export
 status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
-  lockFilePath <- file.path(appDir, "packrat.lock")
-  if (!file.exists(lockFilePath)) {
-    stop(lockFilePath, " is missing; this project doesn't seem to use packrat.")
-  }
-  packages <- readLockFile(lockFilePath)
+  packages <- lockInfo()
   recsLock <- flattenPackageRecords(packages)
   
   installedList <- as.vector(installed.packages(libdir(appDir))[,'Package'])
@@ -171,7 +161,72 @@ flattenPackageRecords <- function(packageRecords) {
   })
 }
 
-pack <- function() {
+#' @export
+add <- function(packages = NULL, appDir = '.', lib.loc = NULL) {
+  
+}
+
+#' @keywords internal
+addPackage <- function(package, appDir, lib.loc, allow.downgrade = FALSE) {
+  # TODO: Check if package is a base package and stop?
+  
+  packages <- lockInfo()
+  pkgInfo <- searchPackages(packages, package)
+  
+  # In library?
+  if (find.package(package, lib.loc=lib.loc, quiet=TRUE)) {
+    # Check if installed copy of package has all its dependencies
+    recLib <- getPackageRecords(pkgNames, NULL, recursive=TRUE, lib.loc=lib.loc,
+                                fatal=TRUE)
+
+    # In packrat?
+    if (is.null(pkgInfo)) {
+      # In library, not in packrat
+      addDependencies(appDir, package)
+      return(invisible(TRUE))
+    } else {
+      # In library, and also in packrat.
+      # Compare versions to see what to do next.
+      installedVer <- packageVersion(package, lib.loc=lib.loc)
+      comp <- compareVersion(installedVer, pkgInfo$version)
+      if (comp == 0) {
+        # Already consistent. No work was required.
+        return(invisible(FALSE))
+      } else if (comp > 0) {
+        # It's an upgrade; don't change the description, but update the lockfile
+        return(invisible(TRUE))
+      } else { # comp < 0
+        if (!isTRUE(allow.downgrade)) {
+          warning(
+            'The installed version of package "', package, '" is earlier\n',
+            'than the one in the lockfile. Run install() to upgrade the\n',
+            'library, or, if you really want to downgrade, re-run the ',
+            'add() function with allow.downgrade = TRUE.')
+          return(invisible(FALSE))
+        } else {
+          # It's a downgrade; update the lockfile
+          return(invisible(TRUE))
+        }
+      }
+    }
+  } else {
+    # Not in library
+    if (is.null(pkgInfo)) {
+      # In neither packrat nor library
+      warning(
+        'The package "', package, '" is not installed. Please install it\n',
+        'and then run add() again.')
+      return(invisible(FALSE))
+    } else {
+      # In packrat, but not library
+      warning(
+        'The package "', package, '" is not installed in your library,\n',
+        'but it is present in packrat. If you meant to install it into\n',
+        'your library using the information in packrat, then use the\n',
+        'install() command instead.')
+      return(invisible(FALSE))
+    }
+  }
 }
 
 clean <- function(appDir = getwd()) {
@@ -249,4 +304,14 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
 libdir <- function(appDir) {
   file.path(normalizePath(appDir), 'library', R.version$platform, 
             getRversion()[1,1:2])
+}
+
+lockInfo <- function(appDir = '.') {
+  # Get and parse the lockfile
+  lockFilePath <- file.path(appDir, "packrat.lock")
+  if (!file.exists(lockFilePath)) {
+    stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
+               appDir, "') to generate it.", sep = ""))
+  }
+  return(readLockFile(lockFilePath))
 }
