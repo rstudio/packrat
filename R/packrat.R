@@ -33,7 +33,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   # Check to see whether Bioconductor is installed. Bioconductor maintains a 
   # private set of repos, which we need to expose here so we can download 
   # sources to Bioconducter packages.
-  if (nchar(find.package("BiocInstaller", quiet = TRUE)) > 0) {
+  if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
     # Bioconductor repos may include repos already accounted for above 
     repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))                   
   } 
@@ -218,7 +218,7 @@ addPackage <- function(package, appDir, lib.loc, allow.downgrade) {
   pkgInfo <- searchPackages(packages, package)
   
   # In library?
-  if (nzchar(find.package(package, lib.loc=lib.loc, quiet=TRUE))) {
+  if (isTRUE(nchar(find.package(package, lib.loc=lib.loc, quiet=TRUE)) > 0)) {
     # Check if installed copy of package has all its dependencies
     recLib <- getPackageRecords(package, NULL, recursive=TRUE, lib.loc=lib.loc,
                                 fatal=TRUE)
