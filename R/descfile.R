@@ -14,7 +14,10 @@ setDescription <- function(appDir, desc) {
 
 addDependencies <- function(appDir, packages) {
   desc <- getDescription(appDir)
-  depends <- strsplit(as.character(desc$Depends), '\\s*,\\s*')[[1]]
+  if (is.null(desc$Depends))
+    depends <- character(0)
+  else
+    depends <- strsplit(as.character(desc$Depends), '\\s*,\\s*')[[1]]
   toAdd <- sapply(packages, function(package) {
     !any(grepl(paste('\\b\\Q', package, '\\E\\b', sep=''), depends))
   })

@@ -30,8 +30,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
   # Get the inferred set of dependencies and write the lockfile
   dependencies <- data.frame(Source = getOption("repos")[[1]],
-                             Dependencies = paste(inferredDependencies,
-                                                  collapse=", "))
+                             Depends = paste(inferredDependencies,
+                                             collapse=", "))
   write.dcf(dependencies, file = descriptionFile)
   snapshot(appDir, getOption("repos"), sourcePackages)
   
@@ -162,21 +162,46 @@ flattenPackageRecords <- function(packageRecords) {
 }
 
 #' @export
-add <- function(packages = NULL, appDir = '.', lib.loc = NULL) {
+add <- function(packages = NULL, appDir = '.', lib.loc = NULL,
+                repos = getOption("repos"), allow.downgrade = FALSE,
+                sourcePackagePaths = character(0)) {
+  needsSnapshot <- any(sapply(packages, function(pkg) {
+    addPackage(pkg, appDir, lib.loc)
+  }))
   
+  if (!needsSnapshot) {
+    message('No changes were made.')
+  } else {
+    cat('Rebuilding snapshot\n')
+    sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
+    snapshot(appDir=appDir, repos=repos, sourcePackages=sourcePackages)
+  }
+  return(invisible(needsSnapshot))
+}
+
+# Searches package records recursively looking for a package
+searchPackages <- function(packages, package) {
+  for (pkg in packages) {
+    if (pkg$name == package)
+      return(pkg)
+    found <- searchPackages(pkg$depends, package)
+    if (!is.null(found))
+      return(found)
+  }  
+  return(NULL)
 }
 
 #' @keywords internal
-addPackage <- function(package, appDir, lib.loc, allow.downgrade = FALSE) {
+addPackage <- function(package, appDir, lib.loc, allow.downgrade) {
   # TODO: Check if package is a base package and stop?
   
   packages <- lockInfo(appDir)
   pkgInfo <- searchPackages(packages, package)
   
   # In library?
-  if (find.package(package, lib.loc=lib.loc, quiet=TRUE)) {
+  if (nzchar(find.package(package, lib.loc=lib.loc, quiet=TRUE))) {
     # Check if installed copy of package has all its dependencies
-    recLib <- getPackageRecords(pkgNames, NULL, recursive=TRUE, lib.loc=lib.loc,
+    recLib <- getPackageRecords(package, NULL, recursive=TRUE, lib.loc=lib.loc,
                                 fatal=TRUE)
 
     # In packrat?
@@ -187,7 +212,7 @@ addPackage <- function(package, appDir, lib.loc, allow.downgrade = FALSE) {
     } else {
       # In library, and also in packrat.
       # Compare versions to see what to do next.
-      installedVer <- packageVersion(package, lib.loc=lib.loc)
+      installedVer <- as.character(packageVersion(package, lib.loc=lib.loc))
       comp <- compareVersion(installedVer, pkgInfo$version)
       if (comp == 0) {
         # Already consistent. No work was required.
