@@ -75,7 +75,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
           download.file(archiveUrl, file.path(pkgSrcDir, pkgSrcFile), 
                         mode = "wb", quiet = TRUE)
           foundVersion <- TRUE
-          type <- "archived"
+          type <- paste(type, "archived")
           break
         }, error = function(e) {
           # Ignore error and try the next repository
@@ -85,7 +85,6 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         stop("Couldn't find source for version ", pkgRecord$version, " of ",
              pkgRecord$name, " (", currentVersion, " is current)")
       }
-      type <- paste(type, "archive")      
     }
   } else if (identical(pkgRecord$source, "github")) {
     archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
@@ -175,56 +174,68 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
   # Get the list of available packages and the latest version of those packages
   # from the repositories
   availablePkgs <- available.packages(contrib.url(repos))
+  installedPkgs <- installed.packages(priority = "NA")
   
   # Process and install each package
   for (pkgRecord in pkgRecords) {
     pkgSrc <- NULL
-    type <- "source"
+    type <- "built source"
     
     message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
             appendLF = FALSE)
     
-    # Generally we want to install from sources, but we will download a pre-
-    # built binary if (a) the package exists on CRAN, (b) the version on CRAN
-    # is the version desired, and (c) R is set to download binaries.
-    if (identical(pkgRecord$source, "CRAN") && 
+    # If the version of the package requested is already installed, just copy
+    # the built binary to the requested library. 
+    if (pkgRecord$name %in% rownames(installedPkgs) &&
         identical(pkgRecord$version, 
-                  availablePkgs[pkgRecord$name,"Version"]) &&
-        !identical(getOption("pkgType"), "source")) {
-      tempdir <- tempdir()
-      tryCatch ({
-        downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
-                                        repos = repos, 
-                                        available = availablePkgs, quiet = TRUE)
-        if (length(downloaded) > 1) {
-          pkgSrc <- downloaded[2]
-          type <- "binary"
-        }
-      }, error = function(e) {
-        # Do nothing here, we'll try local sources if we fail to download from
-        # the repo
-      })  
-    } 
-    if (is.null(pkgSrc)) {
-      # When installing from github or an older version, use the cached source
-      # tarball or zip created in snapshotSources
-      pkgSrc <- file.path(appDir, "packrat.sources", pkgRecord$name, 
-                          pkgSrcFilename(pkgRecord))      
-    } 
-    if (!file.exists(pkgSrc)) {
-      # If the source file is missing, try to download it. (Could happen in the
-      # case where the packrat lockfile is present but cached sources are 
-      # missing.)
-      getSourceForPkgRecord(pkgRecord, file.path(appDir, "packrat.sources"),
-                            availblePkgs, repos, quiet = TRUE)
+                  installedPkgs[pkgRecord$name,"Version"])) {
+      file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
+      type <- "copied local binary"
+    } else {
+      # Generally we want to install from sources, but we will download a pre-
+      # built binary if (a) the package exists on CRAN, (b) the version on CRAN
+      # is the version desired, and (c) R is set to download binaries.
+      if ((identical(pkgRecord$source, "CRAN") ||
+           identical(pkgRecord$source, "Bioconductor")) && 
+          pkgRecord$name %in% rownames(availablePkgs) &&
+          identical(pkgRecord$version, 
+                    availablePkgs[pkgRecord$name,"Version"]) &&
+          !identical(getOption("pkgType"), "source")) {
+        tempdir <- tempdir()
+        tryCatch ({
+          downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
+                                          repos = repos, 
+                                          available = availablePkgs, quiet = TRUE)
+          if (length(downloaded) > 1) {
+            pkgSrc <- downloaded[2]
+            type <- "downloaded binary"
+          }
+        }, error = function(e) {
+          # Do nothing here, we'll try local sources if we fail to download from
+          # the repo
+        })  
+      } 
+      if (is.null(pkgSrc)) {
+        # When installing from github or an older version, use the cached source
+        # tarball or zip created in snapshotSources
+        pkgSrc <- file.path(appDir, "packrat.sources", pkgRecord$name, 
+                            pkgSrcFilename(pkgRecord))      
+      } 
       if (!file.exists(pkgSrc)) {
-        stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
-             ": sources missing at ", pkgSrc)
+        # If the source file is missing, try to download it. (Could happen in the
+        # case where the packrat lockfile is present but cached sources are 
+        # missing.)
+        getSourceForPkgRecord(pkgRecord, file.path(appDir, "packrat.sources"),
+                              availblePkgs, repos, quiet = TRUE)
+        if (!file.exists(pkgSrc)) {
+          stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
+               ": sources missing at ", pkgSrc)
+        }
       }
+      devtools::install_local(path = pkgSrc, reload = FALSE, 
+                              args = paste("-l", lib), dependencies = FALSE,
+                              quick = TRUE, quiet = TRUE)
     }
-    devtools::install_local(path = pkgSrc, reload = FALSE, 
-                            args = paste("-l", lib), dependencies = FALSE,
-                            quick = TRUE, quiet = TRUE)
     message("OK (", type, ")")
   }
 }
