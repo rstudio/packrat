@@ -125,7 +125,8 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         GithubRef = pkgRecord$gh_ref,
         GithubSHA1 = pkgRecord$gh_sha1
       )
-      cat('\n', sep='', file=file.path(basedir, 'DESCRIPTION'), append=TRUE)
+      if (!ends_with_newline(file.path(basedir, 'DESCRIPTION')))
+        cat('\n', sep='', file=file.path(basedir, 'DESCRIPTION'), append=TRUE)
       write.dcf(ghinfo, file.path(basedir, 'DESCRIPTION'), append = TRUE)
       
       file.create(file.path(pkgSrcDir, pkgSrcFile))
@@ -143,6 +144,15 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
   if (!quiet) {
     message("OK (", type, ")")
   }
+}
+
+# check whether the specified file ends with newline
+ends_with_newline <- function(path) {
+  conn <- file(path, open = "rb", raw = TRUE)
+  on.exit(close(conn))
+  seek(conn, where = -1, origin = "end")
+  lastByte <- readBin(conn, "raw", n = 1)
+  lastByte == 0x0a
 }
 
 snapshotSources <- function(appDir, repos, pkgRecords) {
