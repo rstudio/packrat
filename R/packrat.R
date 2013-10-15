@@ -43,7 +43,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 }
 
 install <- function(appDir = getwd()) {
-  packages <- lockInfo()
+  packages <- lockInfo(appDir)
   
   # Generate the list of packages to install
   installList <- makeInstallList(packages)
@@ -63,7 +63,7 @@ install <- function(appDir = getwd()) {
 
 #' @export
 status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
-  packages <- lockInfo()
+  packages <- lockInfo(appDir)
   recsLock <- flattenPackageRecords(packages)
   
   installedList <- as.vector(installed.packages(libdir(appDir))[,'Package'])
@@ -170,7 +170,7 @@ add <- function(packages = NULL, appDir = '.', lib.loc = NULL) {
 addPackage <- function(package, appDir, lib.loc, allow.downgrade = FALSE) {
   # TODO: Check if package is a base package and stop?
   
-  packages <- lockInfo()
+  packages <- lockInfo(appDir)
   pkgInfo <- searchPackages(packages, package)
   
   # In library?
@@ -306,7 +306,7 @@ libdir <- function(appDir) {
             getRversion()[1,1:2])
 }
 
-lockInfo <- function(appDir = '.') {
+lockInfo <- function(appDir) {
   # Get and parse the lockfile
   lockFilePath <- file.path(appDir, "packrat.lock")
   if (!file.exists(lockFilePath)) {
