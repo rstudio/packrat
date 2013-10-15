@@ -9,7 +9,7 @@ pkgSrcFilename <- function(pkgRecord) {
 # Given a package record, fetch the sources for the package and place them in 
 # the source directory root given by sourceDir.
 getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos, 
-                                  quiet = FALSE) {
+                                  sourcePackages, quiet = FALSE) {
   # Skip packages for which we can't find sources
   if (is.null(pkgRecord$source) ||
       is.na(pkgRecord$source)) {
@@ -26,7 +26,8 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     dir.create(pkgSrcDir, recursive = TRUE)
   
   # If the file we want to download already exists, skip it
-  if (file.exists(file.path(pkgSrcDir, pkgSrcFilename(pkgRecord)))) 
+  pkgSrcFile <- pkgSrcFilename(pkgRecord)
+  if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) 
     return(NULL)
 
   if (!quiet) {
@@ -35,50 +36,62 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
   }
   type <- "current"
 
-  if (identical(pkgRecord$source, "CRAN") &&
-      pkgRecord$name %in% rownames(availablePkgs)) {
+  # If this is a local source path, compress the local sources rather than 
+  # trying to download from an external source
+  if (identical(pkgRecord$source, "source")) {
+    # R's tar command preserves paths relative to the current directory in
+    # the archive, so temporarily set the working directory there while
+    # we create the tarball
+    (function() { 
+      wd <- getwd()
+      on.exit(setwd(wd), add = TRUE)
+      setwd(file.path(pkgRecord$source_path, ".."))
+      tar(file.path(pkgSrcDir, pkgSrcFile), files = pkgRecord$name, 
+          compression = "gzip", tar = "internal")
+    })()
+    type <- "local"
+  } else if (identical(pkgRecord$source, "CRAN") &&
+             pkgRecord$name %in% rownames(availablePkgs)) {
     currentVersion <- availablePkgs[pkgRecord$name,"Version"]
     # Is the source for this version of the package on CRAN?
     if (identical(pkgRecord$version, currentVersion)) {
-        # Get the source package from CRAN
-        download.packages(pkgRecord$name, destdir = pkgSrcDir, 
-                          available = availablePkgs, repos = repos, 
-                          type = "source", quiet = TRUE)
-      } else {
-        # The version requested is not the version on CRAN; it may be an 
-        # older version. Look for the older version in the CRAN archive for
-        # each named repository.
-        foundVersion <- FALSE
-        for (repo in repos) {
-          tryCatch({
-            srcPackageName <- pkgSrcFilename(pkgRecord)
-            archiveUrl <- file.path(repo, "src/contrib/Archive", 
-                                    pkgRecord$name, 
-                                    srcPackageName)
-            download.file(archiveUrl, file.path(pkgSrcDir, srcPackageName), 
-                          mode = "wb", quiet = TRUE)
-            foundVersion <- TRUE
-            type <- "archived"
-            break
-          }, error = function(e) {
-            # Ignore error and try the next repository
-          })
-        }
-        if (!foundVersion) {
-          stop("Couldn't find source for version ", pkgRecord$version, " of ",
-               pkgRecord$name, " (", currentVersion, ") is current)")
-        }
+      # Get the source package from CRAN
+      download.packages(pkgRecord$name, destdir = pkgSrcDir, 
+                        available = availablePkgs, repos = repos, 
+                        type = "source", quiet = TRUE)
+    } else {
+      # The version requested is not the version on CRAN; it may be an 
+      # older version. Look for the older version in the CRAN archive for
+      # each named repository.
+      foundVersion <- FALSE
+      for (repo in repos) {
+        tryCatch({
+          archiveUrl <- file.path(repo, "src/contrib/Archive", 
+                                  pkgRecord$name, 
+                                  pkgSrcFile)
+          download.file(archiveUrl, file.path(pkgSrcDir, pkgSrcFile), 
+                        mode = "wb", quiet = TRUE)
+          foundVersion <- TRUE
+          type <- "archived"
+          break
+        }, error = function(e) {
+          # Ignore error and try the next repository
+        })
       }
-    } else if (identical(pkgRecord$source, "github")) {
-      srcPackageName <- pkgSrcFilename(pkgRecord)
-      archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
-                          pkgRecord$gh_repo, "/archive/", srcPackageName,
-                          sep = "")
-      request <- httr::GET(archiveUrl)
-      httr::stop_for_status(request)
-      writeBin(httr::content(request), file.path(pkgSrcDir, srcPackageName))
-      type <- "Github"
+      if (!foundVersion) {
+        stop("Couldn't find source for version ", pkgRecord$version, " of ",
+             pkgRecord$name, " (", currentVersion, ") is current)")
+      }
     }
+  } else if (identical(pkgRecord$source, "github")) {
+    archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
+                        pkgRecord$gh_repo, "/archive/", pkgSrcFile,
+                        sep = "")
+    request <- httr::GET(archiveUrl)
+    httr::stop_for_status(request)
+    writeBin(httr::content(request), file.path(pkgSrcDir, pkgSrcFile))
+    type <- "Github"
+  }
   if (!quiet) {
     message("OK (", type, ")")
   }

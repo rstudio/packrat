@@ -16,40 +16,55 @@
 #   gh_sha1 = '66b81e9307793029f6083fc6108592786a564b09'
 # )
 
-
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames, available, recursive=TRUE, 
-                              lib.loc=NULL, fatal=TRUE) {
+getPackageRecords <- function(pkgNames, available, sourcePackages=NULL, 
+                              recursive=TRUE, lib.loc=NULL, fatal=TRUE) {
   records <- lapply(pkgNames, function(pkgName) {
-    pkgDescFile <- system.file('DESCRIPTION', package=pkgName, lib.loc = lib.loc)
-    if (nchar(pkgDescFile) == 0) {
-      if (pkgName %in% rownames(available)) {
-        # The package's DESCRIPTION doesn't exist locally--get its version and
-        # dependency information from the repo, and use the database of available 
-        # packages to compute its dependencies
-        pkg <- available[pkgName,]
-        df <- data.frame(
-          Package = pkg[["Package"]],
-          Version = pkg[["Version"]],
-          Repository = "CRAN")
-        db <- available
-      } else if (fatal) {
-        where <- ifelse(is.null(lib.loc), 'the current libpath', lib.loc)
-        stop('The package "', pkgName, '" is not installed in ', where)
-      } else {
-        return(list(
-          name = pkgName,
-          version = NA,
-          source = NA
-        ))
-      }
-    } else {
-      # Thie package's DESCRIPTION exists locally--read it, and use the database
-      # of installed packages to compute its dependencies.
-      df <- as.data.frame(read.dcf(pkgDescFile))
+    if (!is.null(sourcePackages) &&
+        pkgName %in% rownames(sourcePackages)) {
+      # This package was a manually specified source package; use the 
+      # description file from there
+      record <- structure(list(
+        name = pkgName,
+        source = 'source',
+        version = as.character(sourcePackages[pkgName,"version"]),
+        source_path = as.character(sourcePackages[pkgName,"path"])
+      ), class=c('packageRecord', 'source'))
       db <- installed.packages(priority='NA')
+    } else {
+      # This package is from an external source (CRAN-like repo or github); 
+      # attempt to get its description from the installed package database.
+      pkgDescFile <- system.file('DESCRIPTION', package=pkgName, 
+                                 lib.loc = lib.loc)
+      if (nchar(pkgDescFile) == 0) {
+        if (pkgName %in% rownames(available)) {
+          # The package's DESCRIPTION doesn't exist locally--get its version and
+          # dependency information from the repo, and use the database of 
+          # available packages to compute its dependencies
+          pkg <- available[pkgName,]
+          df <- data.frame(
+            Package = pkg[["Package"]],
+            Version = pkg[["Version"]],
+            Repository = "CRAN")
+          db <- available
+        } else if (fatal) {
+          where <- ifelse(is.null(lib.loc), 'the current libpath', lib.loc)
+          stop('The package "', pkgName, '" is not installed in ', where)
+        } else {
+          return(list(
+            name = pkgName,
+            version = NA,
+            source = NA
+          ))
+        }
+      } else {
+        # This package's DESCRIPTION exists locally--read it, and use the database
+        # of installed packages to compute its dependencies.
+        df <- as.data.frame(read.dcf(pkgDescFile))
+        db <- installed.packages(priority='NA')
+      }
+      record <- inferPackageRecord(df)
     }
-    record <- inferPackageRecord(df)
     if (isTRUE(recursive && !is.null(record))) {
       deps <- tools::package_dependencies(
         record$name, db,
@@ -57,7 +72,7 @@ getPackageRecords <- function(pkgNames, available, recursive=TRUE,
         recursive=FALSE
       )[[record$name]]
       record$depends <- getPackageRecords(
-        deps, available, TRUE, lib.loc=lib.loc, fatal=fatal)
+        deps, available, sourcePackages, TRUE, lib.loc=lib.loc, fatal=fatal)
     }
     return(record)
   })
@@ -101,3 +116,25 @@ inferPackageRecord <- function(df) {
     ), class='packageRecord'))
   }
 }
+
+# Given a list of source package paths, parses the DESCRIPTION for each and
+# returns a data frame containing each (with row names given by package names)
+getSourcePackageInfo <- function(sourcePackagePaths) {
+  results <- data.frame()
+  names <- lapply(sourcePackagePaths, function(path) {
+    descPath <- file.path(path, "DESCRIPTION") 
+    if (!file.exists(descPath)) {
+      stop("Cannot treat ", path, " as a source package directory; ", descPath, 
+           " is missing.")
+    }
+    desc <- as.data.frame(read.dcf(descPath))
+    results <<- rbind(results, data.frame(
+      name = as.character(desc$Package), 
+      version = as.character(desc$Version), 
+      path = normalizePath(path)))
+    as.character(desc$Package)
+  })
+  row.names(results) <- names
+  results
+}
+

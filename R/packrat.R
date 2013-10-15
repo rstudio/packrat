@@ -2,7 +2,7 @@
 #' and places the application's dependencies under packrat control. 
 #' 
 #' @export
-bootstrap <- function(appDir = getwd()) {
+bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
   descriptionFile <- file.path(appDir, 'DESCRIPTION')
   
@@ -15,12 +15,25 @@ bootstrap <- function(appDir = getwd()) {
     }
   }
   
+  # Get the inferred set of dependencies
+  inferredDependencies <- appDependencies(appDir)
+  
+  # Since source packages are manually specified, assume that they are 
+  # dependencies even if we didn't detect R code that uses them
+  sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
+  for (sourcePackage in rownames(sourcePackages)) {
+    if (!(as.character(sourcePackage) %in% inferredDependencies)) {
+      inferredDependencies <- c(inferredDependencies, 
+                                as.character(sourcePackage))
+    }
+  }
+  
   # Get the inferred set of dependencies and write the lockfile
   dependencies <- data.frame(Source = getOption("repos")[[1]],
-                             Dependencies = paste(appDependencies(appDir),
+                             Dependencies = paste(inferredDependencies,
                                                   collapse=", "))
   write.dcf(dependencies, file = descriptionFile)
-  snapshot(appDir, getOption("repos"))
+  snapshot(appDir, getOption("repos"), sourcePackages)
   
   # Use the lockfile to copy sources and install packages to the library
   install(appDir)
@@ -79,6 +92,7 @@ status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
   
   dirDeps <- dirDependencies(appDir)
   recsDir <- flattenPackageRecords(getPackageRecords(dirDeps, NULL, lib.loc=lib.loc, fatal=FALSE))
+  
   # What packages are missing from packrat, but present in the source?
   libsInSourceIndex <- onlyLib %in% recsDir
   probablyInstall <- onlyLib[libsInSourceIndex]
@@ -168,7 +182,7 @@ clean <- function(appDir = getwd()) {
   # Clean up downloaded sources and library directories
   unlink(libdir(appDir), recursive = TRUE)
   unlink(file.path(appDir, "packrat.sources"), recursive = TRUE)
- }
+}
 
 #' Install .Rprofile and .Renviron files in the given directory to make it
 #' use a private package library.
@@ -226,7 +240,7 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
   target <- gsub(headerFooterRegex,
                  paste(header, src, '\n', footer, sep=''),
                  target)
-
+  
   writeLines(target[[1]], targetFile)
   
   invisible()
