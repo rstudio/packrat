@@ -8,8 +8,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
   if (file.exists(descriptionFile)) {
     description <- as.data.frame(read.dcf(descriptionFile))
-    type <- description$Type
-    if (is.null(type) || identical(tolower(type), 'package')) {
+    package <- description$Package
+    if (!is.null(package)) {
       stop("This project appears to be an R package. Packrat doesn't work on ",
            "packages.")
     }
