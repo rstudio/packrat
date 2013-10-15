@@ -125,6 +125,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         GithubRef = pkgRecord$gh_ref,
         GithubSHA1 = pkgRecord$gh_sha1
       )
+      cat('\n', sep='', file=file.path(basedir, 'DESCRIPTION'), append=TRUE)
       write.dcf(ghinfo, file.path(basedir, 'DESCRIPTION'), append = TRUE)
       
       file.create(file.path(pkgSrcDir, pkgSrcFile))
