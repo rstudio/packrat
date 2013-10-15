@@ -43,7 +43,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
                              Depends = paste(inferredDependencies,
                                              collapse=", "),
                              Type = "Packrat Application")
-  write.dcf(dependencies, file = descriptionFile)
+  setDescription(appDir, dependencies)
   snapshot(appDir, getOption("repos"), sourcePackages)
   
   # Use the lockfile to copy sources and install packages to the library
