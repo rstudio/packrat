@@ -16,7 +16,7 @@ getDescription <- function(appDir) {
   if (is.null(description$FormatVersion)) {
     stop(descFilePath, " exists but is not a valid Packrat application ",
          "description file.");
-  } else if (as.integer(description$FormatVersion) > 
+  } else if (as.integer(as.character(description$FormatVersion)) > 
              CURRENT_DESCRIPTION_VERSION) {
     stop(appDir, " is managed by a newer version of Packrat. Upgrade to the ", 
          "newest version of Packrat and try again.")
