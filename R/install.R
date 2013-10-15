@@ -1,7 +1,7 @@
 # Given a package record, indicate the name we expect its source archive to have.
 pkgSrcFilename <- function(pkgRecord) {
   if (identical(pkgRecord$source, "github"))
-    paste(pkgRecord$gh_sha1, ".zip", sep = "")
+    paste(pkgRecord$gh_sha1, ".tar.gz", sep = "")
   else 
     paste(pkgRecord$name, "_", pkgRecord$version, ".tar.gz", sep = "")
 }
@@ -83,7 +83,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       }
       if (!foundVersion) {
         stop("Couldn't find source for version ", pkgRecord$version, " of ",
-             pkgRecord$name, " (", currentVersion, ") is current)")
+             pkgRecord$name, " (", currentVersion, " is current)")
       }
       type <- paste(type, "archive")      
     }
@@ -93,7 +93,50 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
                         sep = "")
     request <- httr::GET(archiveUrl)
     httr::stop_for_status(request)
-    writeBin(httr::content(request), file.path(pkgSrcDir, pkgSrcFile))
+    
+    srczip <- tempfile(fileext='.zip')
+    on.exit({
+      if (file.exists(srczip))
+        unlink(srczip, recursive=TRUE)
+    })
+    
+    writeBin(httr::content(request), srczip)
+
+    local({
+      scratchDir <- tempfile()
+      on.exit({
+        if (file.exists(scratchDir))
+          unlink(scratchDir, recursive=TRUE)
+      })
+      untar(srczip, exdir=scratchDir)
+      # Find the base directory
+      basedir <- if (length(dir(scratchDir)) == 1)
+        file.path(scratchDir, dir(scratchDir))
+      else
+        scratchDir
+      
+      if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
+        stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
+      }
+      
+      ghinfo <- data.frame(
+        GithubRepo = pkgRecord$gh_repo,
+        GithubUsername = pkgRecord$gh_username,
+        GithubRef = pkgRecord$gh_ref,
+        GithubSHA1 = pkgRecord$gh_sha1
+      )
+      write.dcf(ghinfo, file.path(basedir, 'DESCRIPTION'), append = TRUE)
+      
+      file.create(file.path(pkgSrcDir, pkgSrcFile))
+      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile))
+
+      oldDir <- getwd()
+      on.exit(setwd(oldDir))
+      setwd(basedir)
+      
+      tar(tarfile=dest, files='.', compression='gzip', tar='internal')
+    })
+    
     type <- "Github"
   }
   if (!quiet) {
