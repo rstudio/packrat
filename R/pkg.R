@@ -108,6 +108,13 @@ inferPackageRecord <- function(df) {
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
+  } else if (!is.null(df$biocViews)) {
+    # It's Bioconductor!
+    return(structure(list(
+      name = name,
+      source = 'Bioconductor',
+      version = ver
+      ), class=c('packageRecord', 'Bioconductor')))
   } else {
     warning("Couldn't figure out the origin of package ", name)
     return(structure(list(

@@ -27,11 +27,22 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
                                 as.character(sourcePackage))
     }
   }
+
+  repos <- as.vector(getOption("repos"))
+  
+  # Check to see whether Bioconductor is installed. Bioconductor maintains a 
+  # private set of repos, which we need to expose here so we can download 
+  # sources to Bioconducter packages.
+  if (nchar(find.package("BiocInstaller", quiet = TRUE)) > 0) {
+    # Bioconductor repos may include repos already accounted for above 
+    repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))                   
+  } 
   
   # Get the inferred set of dependencies and write the lockfile
-  dependencies <- data.frame(Source = getOption("repos")[[1]],
+  dependencies <- data.frame(Source = paste(repos, collapse=", "),
                              Depends = paste(inferredDependencies,
-                                             collapse=", "))
+                                             collapse=", "),
+                             Type = "Packrat Application")
   write.dcf(dependencies, file = descriptionFile)
   snapshot(appDir, getOption("repos"), sourcePackages)
   
@@ -57,8 +68,9 @@ install <- function(appDir = getwd()) {
   # Snapshot the sources for each package, then install them in turn from CRAN
   # or github, from binaries when available and then from sources.
   description <- getDescription(appDir)
-  snapshotSources(appDir, description$Source, installList)
-  installPkgs(appDir, description$Source, installList, libDir)    
+  repos <- strsplit(as.character(description$Source), '\\s*,\\s*')[[1]]
+  snapshotSources(appDir, repos, installList)
+  installPkgs(appDir, repos, installList, libDir)    
 }
 
 #' @export

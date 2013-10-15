@@ -34,7 +34,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     message("Fetching sources for ", pkgRecord$name, " (", pkgRecord$version, 
             ") ... ", appendLF = FALSE)
   }
-  type <- "current"
+  type <- pkgRecord$source
 
   # If this is a local source path, compress the local sources rather than 
   # trying to download from an external source
@@ -50,15 +50,18 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
           compression = "gzip", tar = "internal")
     })()
     type <- "local"
-  } else if (identical(pkgRecord$source, "CRAN") &&
+  } else if ((identical(pkgRecord$source, "CRAN") ||
+              identical(pkgRecord$source, "Bioconductor")) &&
              pkgRecord$name %in% rownames(availablePkgs)) {
     currentVersion <- availablePkgs[pkgRecord$name,"Version"]
-    # Is the source for this version of the package on CRAN?
+    # Is the source for this version of the package on CRAN and/or a 
+    # Bioconductor repo? 
     if (identical(pkgRecord$version, currentVersion)) {
-      # Get the source package from CRAN
+      # Get the source package
       download.packages(pkgRecord$name, destdir = pkgSrcDir, 
                         available = availablePkgs, repos = repos, 
                         type = "source", quiet = TRUE)
+      type <- paste(type, "current")
     } else {
       # The version requested is not the version on CRAN; it may be an 
       # older version. Look for the older version in the CRAN archive for
@@ -82,6 +85,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         stop("Couldn't find source for version ", pkgRecord$version, " of ",
              pkgRecord$name, " (", currentVersion, ") is current)")
       }
+      type <- paste(type, "archive")      
     }
   } else if (identical(pkgRecord$source, "github")) {
     archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
@@ -157,7 +161,8 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
       # If the source file is missing, try to download it. (Could happen in the
       # case where the packrat lockfile is present but cached sources are 
       # missing.)
-      getSourceForPkgRecord(pkgRecord, quiet = TRUE)
+      getSourceForPkgRecord(pkgRecord, file.path(appDir, "packrat.sources"),
+                            availblePkgs, repos, quiet = TRUE)
       if (!file.exists(pkgSrc)) {
         stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
              ": sources missing at ", pkgSrc)
