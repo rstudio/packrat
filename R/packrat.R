@@ -77,9 +77,11 @@ install <- function(appDir = getwd()) {
 status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
   packages <- lockInfo(appDir)
   recsLock <- flattenPackageRecords(packages)
+  namesLock <- sapply(recsLock, pickName)
   
   installedList <- as.vector(installed.packages(libdir(appDir))[,'Package'])
   recsLib <- flattenPackageRecords(getPackageRecords(installedList, NULL, lib.loc=lib.loc))
+  namesLib <- sapply(recsLib, pickName)
   
   onlyLock <- recsLock[!recsLock %in% recsLib]
   onlyLib <- recsLib[!recsLib %in% recsLock]
@@ -94,9 +96,10 @@ status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
   
   dirDeps <- dirDependencies(appDir)
   recsDir <- flattenPackageRecords(getPackageRecords(dirDeps, NULL, lib.loc=lib.loc, fatal=FALSE))
+  namesDir <- sapply(recsDir, pickName)
   
   # What packages are missing from packrat, but present in the source?
-  libsInSourceIndex <- onlyLib %in% recsDir
+  libsInSourceIndex <- sapply(onlyLib, pickName) %in% sapply(recsDir, pickName)
   probablyInstall <- onlyLib[libsInSourceIndex]
   # What packages are missing from packrat and not present in the source?
   probablyRemove <- onlyLib[!libsInSourceIndex]
@@ -113,7 +116,7 @@ status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
       'You can remove them with "packrat::remove()".')
   }
   
-  onlyInSource <- recsDir[!(recsDir %in% recsLib | recsDir %in% recsLock)]
+  onlyInSource <- recsDir[!(namesDir %in% namesLib | namesDir %in% namesLock)]
   if (!isTRUE(quiet)) {
     prettyPrint(
       onlyInSource,
@@ -135,6 +138,10 @@ status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
   } else {
     return(invisible())
   }
+}
+
+pickName <- function(packageRecord) {
+  packageRecord$name
 }
 
 #' @keywords internal
