@@ -3,7 +3,7 @@ snapshot <- function(appDir, repos, sourcePackages) {
   # the lock file
   description <- getDescription(appDir)
   packageDependencies <- 
-    strsplit(as.character(description$Dependencies), "\\s*,\\s*")[[1]]
+    strsplit(as.character(description$Depends), "\\s*,\\s*")[[1]]
   
   # Every package implicitly depends on packrat itself 
   if (!("packrat" %in% packageDependencies))
