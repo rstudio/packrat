@@ -1,4 +1,4 @@
-snapshot <- function(appDir, repos) {  
+snapshot <- function(appDir, repos, sourcePackages) {  
   # Compute the package dependency information from the DESCRIPTION and write 
   # the lock file
   description <- getDescription(appDir)
@@ -6,9 +6,11 @@ snapshot <- function(appDir, repos) {
     strsplit(as.character(description$Dependencies), "\\s*,\\s*")[[1]]
   
   # Every package implicitly depends on packrat itself 
-  packageDependencies <- c(packageDependencies, "packrat")
+  if (!("packrat" %in% packageDependencies))
+    packageDependencies <- c(packageDependencies, "packrat")
   
   writeLockFile(file.path(appDir, "packrat.lock"),
                 getPackageRecords(packageDependencies, 
-                                  available.packages(contrib.url(repos))))
+                                  available.packages(contrib.url(repos)), 
+                                  sourcePackages))
 }
