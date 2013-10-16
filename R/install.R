@@ -163,24 +163,42 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
   # Get the list of available packages and the latest version of those packages
   # from the repositories
   availablePkgs <- available.packages(contrib.url(repos))
-  installedPkgs <- installed.packages(priority = "NA")
+  
+  # Does the set of installed packages represent those already in packrat, or 
+  # all packages present on the machine?
+  if (identical(lib, .libPaths()[1])) {
+    inPackrat <- TRUE
+    installedPkgs <- installed.packages(priority = "NA", lib.loc = lib)
+  } else {
+    inPackrat <- FALSE
+    installedPkgs <- installed.packages(priority = "NA")
+  }
   
   # Process and install each package
   for (pkgRecord in pkgRecords) {
-    pkgSrc <- NULL
-    type <- "built source"
     
-    message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
-            appendLF = FALSE)
-    
-    # If the version of the package requested is already installed, just copy
-    # the built binary to the requested library. 
+    # If the version of the package requested is already installed ...
     if (pkgRecord$name %in% rownames(installedPkgs) &&
         identical(pkgRecord$version, 
                   installedPkgs[pkgRecord$name,"Version"])) {
-      file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
-      type <- "copied local binary"
+      if (inPackrat) {
+        # If it's installed in Packrat, take no action.
+        next
+      } else {
+        # Not installed in Packrat, but installed in another library on the
+        # path. Copy directly into the Packrat library. 
+        message("Installing ", pkgRecord$name, " (", pkgRecord$version, 
+                ") ... ", appendLF = FALSE)
+        file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
+        message("OK (copied local binary)")
+      }      
     } else {
+      pkgSrc <- NULL
+      type <- "built source"
+
+      message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
+              appendLF = FALSE)
+      
       # Generally we want to install from sources, but we will download a pre-
       # built binary if (a) the package exists on CRAN, (b) the version on CRAN
       # is the version desired, and (c) R is set to download binaries.
@@ -224,15 +242,14 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
       devtools::install_local(path = pkgSrc, reload = FALSE, 
                               args = paste("-l", lib), dependencies = FALSE,
                               quick = TRUE, quiet = TRUE)
+      message("OK (", type, ")")
     }
-    
+
     # Annotate DESCRIPTION file so we know we installed it
     descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
     appendToDcf(descFile, data.frame(
       InstallAgent=paste('packrat', packageVersion('packrat'))
     ))
-    
-    message("OK (", type, ")")
   }
 }
 
