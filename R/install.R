@@ -176,28 +176,48 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
   
   # Process and install each package
   for (pkgRecord in pkgRecords) {
-    
+    needsInstall <- TRUE
+    needsReplace <- FALSE
     # If the version of the package requested is already installed ...
-    if (pkgRecord$name %in% rownames(installedPkgs) &&
-        identical(pkgRecord$version, 
-                  installedPkgs[pkgRecord$name,"Version"])) {
+    if (pkgRecord$name %in% rownames(installedPkgs)) {
       if (inPackrat) {
-        # If it's installed in Packrat, take no action.
-        next
+        if (identical(pkgRecord$version, 
+                      installedPkgs[pkgRecord$name,"Version"])) {
+          # Already installed and at the correct version; take no action
+          next
+        } else {
+          # Installed but not at the correct version; replace.
+          message("Replacing ", pkgRecord$name, " (", 
+                  installedPkgs[pkgRecord$name,"Version"], " to ",
+                  pkgRecord$version, ") ... ", appendLF = FALSE)
+          
+          # TODO: Needs to be more robust (i.e. deal with the case where the 
+          # package is currently loaded) 
+          remove.packages(pkgRecord$name, lib)
+          needsReplace <- TRUE
+        }
       } else {
         # Not installed in Packrat, but installed in another library on the
-        # path. Copy directly into the Packrat library. 
-        message("Installing ", pkgRecord$name, " (", pkgRecord$version, 
-                ") ... ", appendLF = FALSE)
-        file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
-        message("OK (copied local binary)")
+        # path. If the versions match, copy directly to Packrat.
+        if (identical(pkgRecord$version, 
+                      installedPkgs[pkgRecord$name,"Version"])) {
+          message("Installing ", pkgRecord$name, " (", pkgRecord$version, 
+                  ") ... ", appendLF = FALSE)
+          file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
+          message("OK (copied local binary)")
+          needsInstall <- FALSE
+        }
       }      
-    } else {
+    } 
+    
+    if (needsInstall) {
       pkgSrc <- NULL
       type <- "built source"
-
-      message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
-              appendLF = FALSE)
+  
+      if (!needsReplace) {
+        message("Installing ", pkgRecord$name, " (", pkgRecord$version, 
+                ") ... ", appendLF = FALSE)
+      }
       
       # Generally we want to install from sources, but we will download a pre-
       # built binary if (a) the package exists on CRAN, (b) the version on CRAN

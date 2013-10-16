@@ -1,4 +1,4 @@
 importFrom(RJSONIO, fromJSON, toJSON)
 export(bootstrap)
-export(install)
+export(restore)
 export(status)
