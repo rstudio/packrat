@@ -47,13 +47,15 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   snapshot(appDir, getOption("repos"), sourcePackages)
   
   # Use the lockfile to copy sources and install packages to the library
-  install(appDir)
+  restore(appDir)
   
   # Write the .Rprofile and .Renviron files
   packify(appDir)
 }
 
-install <- function(appDir = getwd()) {
+#' @export
+restore <- function(appDir = '.') {
+  appDir <- normalizePath(appDir)
   packages <- lockInfo(appDir)
   
   # Generate the list of packages to install
