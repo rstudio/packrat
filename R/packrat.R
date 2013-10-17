@@ -76,14 +76,14 @@ restore <- function(appDir = '.') {
 }
 
 #' @export
-status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
+status <- function(appDir = '.', lib.loc = libdir(appDir), quiet = FALSE) {
   packages <- lockInfo(appDir)
   recsLock <- flattenPackageRecords(packages)
-  namesLock <- sapply(recsLock, pickName)
+  namesLock <- pkgNames(recsLock)
   
   installedList <- as.vector(installed.packages(libdir(appDir))[,'Package'])
   recsLib <- flattenPackageRecords(getPackageRecords(installedList, NULL, lib.loc=lib.loc))
-  namesLib <- sapply(recsLib, pickName)
+  namesLib <- pkgNames(recsLib)
   
   onlyLock <- recsLock[!recsLock %in% recsLib]
   onlyLib <- recsLib[!recsLib %in% recsLock]
@@ -98,10 +98,10 @@ status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
   
   dirDeps <- dirDependencies(appDir)
   recsDir <- flattenPackageRecords(getPackageRecords(dirDeps, NULL, lib.loc=lib.loc, fatal=FALSE))
-  namesDir <- sapply(recsDir, pickName)
+  namesDir <- pkgNames(recsDir)
   
   # What packages are missing from packrat, but present in the source?
-  libsInSourceIndex <- sapply(onlyLib, pickName) %in% sapply(recsDir, pickName)
+  libsInSourceIndex <- pkgNames(onlyLib) %in% pkgNames(recsDir)
   probablyInstall <- onlyLib[libsInSourceIndex]
   # What packages are missing from packrat and not present in the source?
   probablyRemove <- onlyLib[!libsInSourceIndex]
@@ -142,10 +142,6 @@ status <- function(appDir = '.', lib.loc = NULL, quiet = FALSE) {
   }
 }
 
-pickName <- function(packageRecord) {
-  packageRecord$name
-}
-
 #' @keywords internal
 prettyPrint <- function(packages, header, footer = NULL) {
   if (length(packages) > 0) {
@@ -166,22 +162,6 @@ prettyPrint <- function(packages, header, footer = NULL) {
   }
 }
 
-#' @keyword internal
-flattenPackageRecords <- function(packageRecords) {
-  visited <- new.env(parent=emptyenv())
-  visit <- function(pkgRecs) {
-    for (rec in pkgRecs) {
-      visit(rec$depends)
-      rec['depends'] <- NULL
-      visited[[rec$name]] <- rec
-    }
-  }
-  visit(packageRecords)
-  lapply(sort(ls(visited)), function(name) {
-    visited[[name]]
-  })
-}
-
 #' @export
 add <- function(packages = NULL, appDir = '.', lib.loc = NULL,
                 repos = getOption("repos"), allow.downgrade = FALSE,
@@ -200,24 +180,12 @@ add <- function(packages = NULL, appDir = '.', lib.loc = NULL,
   return(invisible(needsSnapshot))
 }
 
-# Searches package records recursively looking for a package
-searchPackages <- function(packages, package) {
-  for (pkg in packages) {
-    if (pkg$name == package)
-      return(pkg)
-    found <- searchPackages(pkg$depends, package)
-    if (!is.null(found))
-      return(found)
-  }  
-  return(NULL)
-}
-
 #' @keywords internal
 addPackage <- function(package, appDir, lib.loc, allow.downgrade) {
   # TODO: Check if package is a base package and stop?
   
   packages <- lockInfo(appDir)
-  pkgInfo <- searchPackages(packages, package)
+  pkgInfo <- searchPackages(packages, package)[[1]]
   
   # In library?
   if (isTRUE(nchar(find.package(package, lib.loc=lib.loc, quiet=TRUE)) > 0)) {
@@ -349,6 +317,7 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
   invisible()
 }
 
+#' @export
 libdir <- function(appDir) {
   file.path(normalizePath(appDir), 'library', R.version$platform, 
             getRversion()[1,1:2])
