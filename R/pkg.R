@@ -114,7 +114,14 @@ inferPackageRecord <- function(df) {
       name = name,
       source = 'Bioconductor',
       version = ver
-      ), class=c('packageRecord', 'Bioconductor')))
+    ), class=c('packageRecord', 'Bioconductor')))
+  } else if (identical(as.character(df$InstallSource), "source")) {
+    # It's a local source package!
+    return(structure(list(
+      name = name,
+      source = 'source',
+      version = ver 
+    ), class=c('packageRecord', 'source')))
   } else {
     warning("Couldn't figure out the origin of package ", name)
     return(structure(list(
@@ -253,14 +260,15 @@ diff <- function(packageRecordsA, packageRecordsB) {
       pkgA <- searchPackages(packageRecordsA, pkgName)[[1]]
       pkgB <- searchPackages(packageRecordsB, pkgName)[[1]]
       
-      if (identical(strip('depends', pkgA), strip('depends', pkgB)))
+      if (identical(strip(c('depends', 'source_path'), pkgA), 
+                    strip(c('depends', 'source_path'), pkgB)))
         return(NA)
       verComp <- compareVersion(pkgA$version, pkgB$version)
       if (verComp < 0)
         return('upgrade')
       else if (verComp > 0)
         return('downgrade')
-      else
+      else 
         return('crossgrade')
     }),
     names = both
