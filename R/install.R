@@ -13,6 +13,23 @@ isFromCranlikeRepo <- function(pkgRecord) {
   identical(pkgRecord$source, "Bioconductor")
 }
 
+# Given a package record and a database of packages, check to see if
+# the package version is current. NB: Assumes package is present in db. 
+versionMatchesDb <- function(pkgRecord, db) {
+  versionMatch <- 
+    identical(pkgRecord$version, db[pkgRecord$name,"Version"])
+  if (versionMatch && identical(pkgRecord$source, "github")) {
+    # For Github, we also need to check that the SHA1 is identical (the source
+    # may be updated even if the version hasn't been bumped)
+    pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
+    installedPkgRecord <- 
+      inferPackageRecord(as.data.frame(read.dcf(pkgDescFile)))
+    versionMatch <- identical(pkgRecord$gh_sha1, 
+                              installedPkgRecord$gh_sha1)
+  }
+  versionMatch
+}
+
 # Given a package record, fetch the sources for the package and place them in 
 # the source directory root given by sourceDir.
 getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos, 
@@ -176,8 +193,7 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, lib = libdir(appDir)) {
   # is the version desired, and (c) R is set to download binaries.
   if (isFromCranlikeRepo(pkgRecord) && 
       pkgRecord$name %in% rownames(availablePkgs) &&
-      identical(pkgRecord$version, 
-                availablePkgs[pkgRecord$name,"Version"]) &&
+      versionMatchesDb(pkgRecord, availablePkgs) &&
       !identical(getOption("pkgType"), "source")) {
     tempdir <- tempdir()
     tryCatch ({
@@ -244,8 +260,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
           # short-circuit and do a copy here. 
           if (identical(action$action, "install") &&
               pkgName %in% rownames(installedPkgs) &&
-              identical(pkgRecord$version,
-                        installedPkgs[pkgName,"Version"])) {
+              versionMatchesDb(pkgRecord, installedPkgs)) {
             message("Installing ", pkgRecord$name, " (", pkgRecord$version,
                     ") ...", appendLF = FALSE)
             file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
@@ -283,8 +298,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
   
   for (pkgRecord in pkgRecords) {
     if (pkgRecord$name %in% rownames(installedPkgs)) {
-      if (!identical(pkgRecord$version, 
-                     installedPkgs[pkgRecord$name,"Version"])) { 
+      if (!versionMatchesDb(pkgRecord, installedPkgs)) { 
         actions <- rbind(actions, data.frame(row.names = pkgRecord$name,
                                              action = "replace", 
                                              stringsAsFactors = FALSE))
