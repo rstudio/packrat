@@ -28,11 +28,16 @@ local({
       message('OK')
     } else {
       message('FAILED')
-      file.remove(file.path(appRoot, 'library.new'), recursive = TRUE)
       message("Packrat was not able to make changes to its local library at ", 
               localLib, ". Check this directory's permissions and run ",
               "packrat::restore() to try again.")
     }
+  }
+  
+  # If the new library temporary folder exists, remove it now so we don't
+  # attempt to reapply the same failed changes 
+  if (file.exists(file.path(appRoot, 'library.new'))) {
+    file.remove(file.path(appRoot, 'library.new'), recursive = TRUE)
   }
   
   .libPaths(localLib)

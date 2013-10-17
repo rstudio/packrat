@@ -184,7 +184,8 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
 
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
-installPkg <- function(pkgRecord, appDir, availablePkgs, lib = libdir(appDir)) {
+installPkg <- function(pkgRecord, appDir, availablePkgs, repos, 
+                       lib = libdir(appDir)) {
   pkgSrc <- NULL
   type <- "built source"
   
@@ -278,7 +279,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
           message("Installing ", pkgRecord$name, " (", pkgRecord$version,
                   ") ... ", appendLF = FALSE)
         }
-        type <- installPkg(pkgRecord, appDir, availablePkgs, lib) 
+        type <- installPkg(pkgRecord, appDir, availablePkgs, repos, lib) 
         message("OK (", type, ")")
         foundPkg <- TRUE
         break
