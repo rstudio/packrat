@@ -6,6 +6,13 @@ pkgSrcFilename <- function(pkgRecord) {
     paste(pkgRecord$name, "_", pkgRecord$version, ".tar.gz", sep = "")
 }
 
+# Given a package record, indicate whether the package exists on a CRAN-like
+# repository. 
+isFromCranlikeRepo <- function(pkgRecord) {
+  identical(pkgRecord$source, "CRAN") || 
+  identical(pkgRecord$source, "Bioconductor")
+}
+
 # Given a package record, fetch the sources for the package and place them in 
 # the source directory root given by sourceDir.
 getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos, 
@@ -50,8 +57,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
           compression = "gzip", tar = "internal")
     })()
     type <- "local"
-  } else if ((identical(pkgRecord$source, "CRAN") ||
-              identical(pkgRecord$source, "Bioconductor")) &&
+  } else if (isFromCranlikeRepo(pkgRecord) &&
              pkgRecord$name %in% rownames(availablePkgs)) {
     currentVersion <- availablePkgs[pkgRecord$name,"Version"]
     # Is the source for this version of the package on CRAN and/or a 
@@ -159,117 +165,146 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
   })
 }
 
-installPkgs <- function(appDir, repos, pkgRecords, lib) {
-  # Get the list of available packages and the latest version of those packages
-  # from the repositories
-  availablePkgs <- available.packages(contrib.url(repos))
+# Installs a single package from its record. Returns the method used to install
+# the package (built source, downloaded binary, etc.)
+installPkg <- function(pkgRecord, appDir, availablePkgs, lib = libdir(appDir)) {
+  pkgSrc <- NULL
+  type <- "built source"
   
-  # Does the set of installed packages represent those already in packrat, or 
-  # all packages present on the machine?
-  if (identical(lib, .libPaths()[1])) {
-    inPackrat <- TRUE
-    installedPkgs <- installed.packages(priority = "NA", lib.loc = lib)
-  } else {
-    inPackrat <- FALSE
-    installedPkgs <- installed.packages(priority = "NA")
-  }
-  
-  # Process and install each package
-  for (pkgRecord in pkgRecords) {
-    needsInstall <- TRUE
-    needsReplace <- FALSE
-    # If the version of the package requested is already installed ...
-    if (pkgRecord$name %in% rownames(installedPkgs)) {
-      if (inPackrat) {
-        if (identical(pkgRecord$version, 
-                      installedPkgs[pkgRecord$name,"Version"])) {
-          # Already installed and at the correct version; take no action
-          next
-        } else {
-          # Installed but not at the correct version; replace.
-          message("Replacing ", pkgRecord$name, " (", 
-                  installedPkgs[pkgRecord$name,"Version"], " to ",
-                  pkgRecord$version, ") ... ", appendLF = FALSE)
-          
-          # TODO: Needs to be more robust (i.e. deal with the case where the 
-          # package is currently loaded) 
-          remove.packages(pkgRecord$name, lib)
-          needsReplace <- TRUE
-        }
-      } else {
-        # Not installed in Packrat, but installed in another library on the
-        # path. If the versions match, copy directly to Packrat.
-        if (identical(pkgRecord$version, 
-                      installedPkgs[pkgRecord$name,"Version"])) {
-          message("Installing ", pkgRecord$name, " (", pkgRecord$version, 
-                  ") ... ", appendLF = FALSE)
-          file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
-          message("OK (copied local binary)")
-          needsInstall <- FALSE
-        }
-      }      
-    } 
-    
-    if (needsInstall) {
-      pkgSrc <- NULL
-      type <- "built source"
-  
-      if (!needsReplace) {
-        message("Installing ", pkgRecord$name, " (", pkgRecord$version, 
-                ") ... ", appendLF = FALSE)
+  # Generally we want to install from sources, but we will download a pre-
+  # built binary if (a) the package exists on CRAN, (b) the version on CRAN
+  # is the version desired, and (c) R is set to download binaries.
+  if (isFromCranlikeRepo(pkgRecord) && 
+      pkgRecord$name %in% rownames(availablePkgs) &&
+      identical(pkgRecord$version, 
+                availablePkgs[pkgRecord$name,"Version"]) &&
+      !identical(getOption("pkgType"), "source")) {
+    tempdir <- tempdir()
+    tryCatch ({
+      downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
+                                      repos = repos, 
+                                      available = availablePkgs, quiet = TRUE)
+      if (length(downloaded) > 1) {
+        pkgSrc <- downloaded[2]
+        type <- "downloaded binary"
       }
-      
-      # Generally we want to install from sources, but we will download a pre-
-      # built binary if (a) the package exists on CRAN, (b) the version on CRAN
-      # is the version desired, and (c) R is set to download binaries.
-      if ((identical(pkgRecord$source, "CRAN") ||
-           identical(pkgRecord$source, "Bioconductor")) && 
-          pkgRecord$name %in% rownames(availablePkgs) &&
-          identical(pkgRecord$version, 
-                    availablePkgs[pkgRecord$name,"Version"]) &&
-          !identical(getOption("pkgType"), "source")) {
-        tempdir <- tempdir()
-        tryCatch ({
-          downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
-                                          repos = repos, 
-                                          available = availablePkgs, quiet = TRUE)
-          if (length(downloaded) > 1) {
-            pkgSrc <- downloaded[2]
-            type <- "downloaded binary"
-          }
-        }, error = function(e) {
-          # Do nothing here, we'll try local sources if we fail to download from
-          # the repo
-        })  
-      } 
-      if (is.null(pkgSrc)) {
-        # When installing from github or an older version, use the cached source
-        # tarball or zip created in snapshotSources
-        pkgSrc <- file.path(appDir, "packrat.sources", pkgRecord$name, 
-                            pkgSrcFilename(pkgRecord))      
-      } 
-      if (!file.exists(pkgSrc)) {
-        # If the source file is missing, try to download it. (Could happen in the
-        # case where the packrat lockfile is present but cached sources are 
-        # missing.)
-        getSourceForPkgRecord(pkgRecord, file.path(appDir, "packrat.sources"),
-                              availblePkgs, repos, quiet = TRUE)
-        if (!file.exists(pkgSrc)) {
-          stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
-               ": sources missing at ", pkgSrc)
-        }
-      }
-      devtools::install_local(path = pkgSrc, reload = FALSE, 
-                              args = paste("-l", lib), dependencies = FALSE,
-                              quick = TRUE, quiet = TRUE)
-      message("OK (", type, ")")
+    }, error = function(e) {
+      # Do nothing here, we'll try local sources if we fail to download from
+      # the repo
+    })  
+  } 
+  if (is.null(pkgSrc)) {
+    # When installing from github or an older version, use the cached source
+    # tarball or zip created in snapshotSources
+    pkgSrc <- file.path(appDir, "packrat.sources", pkgRecord$name, 
+                        pkgSrcFilename(pkgRecord))      
+  } 
+  if (!file.exists(pkgSrc)) {
+    # If the source file is missing, try to download it. (Could happen in the
+    # case where the packrat lockfile is present but cached sources are 
+    # missing.)
+    getSourceForPkgRecord(pkgRecord, file.path(appDir, "packrat.sources"),
+                          availblePkgs, repos, quiet = TRUE)
+    if (!file.exists(pkgSrc)) {
+      stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
+           ": sources missing at ", pkgSrc)
     }
-
-    # Annotate DESCRIPTION file so we know we installed it
-    descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
-    appendToDcf(descFile, data.frame(
-      InstallAgent=paste('packrat', packageVersion('packrat'))
-    ))
   }
+  devtools::install_local(path = pkgSrc, reload = FALSE, 
+                          args = paste("-l", lib), dependencies = FALSE,
+                          quick = TRUE, quiet = TRUE)
+  
+  # Annotate DESCRIPTION file so we know we installed it
+  descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
+  appendToDcf(descFile, data.frame(
+    InstallAgent=paste('packrat', packageVersion('packrat'))
+  ))
+  
+  return(type)  
+}
+
+playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
+  # Get the list of available packages and the latest version of those packages
+  # from the repositories, and the local install list for comparison 
+  availablePkgs <- available.packages(contrib.url(repos))
+
+  # If this is the initial snapshot, we can optimize the installation of
+  # packages from the global library to the private Packrat library
+  initialSnapshot <- !identical(.libPaths()[1], lib)
+  installedPkgs <- installed.packages(priority = "NA")
+  
+  by(actions, 1:nrow(actions), function(action) {
+    foundPkg <- FALSE
+    pkgName <- row.names(action)
+    for (pkgRecord in pkgRecords) {
+      if (identical(pkgRecord$name, pkgName)) {
+        if (initialSnapshot) {
+          # If taking the initial snapshot and installing a version to the 
+          # private library that matches the version in the global library,
+          # short-circuit and do a copy here. 
+          if (identical(action$action, "install") &&
+              pkgName %in% rownames(installedPkgs) &&
+              identical(pkgRecord$version,
+                        installedPkgs[pkgName,"Version"])) {
+            message("Installing ", pkgRecord$name, " (", pkgRecord$version,
+                    ") ...", appendLF = FALSE)
+            file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
+            message("OK (copied local binary)")
+            foundPkg <- TRUE
+            break
+          }
+        }
+        if (identical(action$action, "replace")) {
+          message("Replacing ", pkgRecord$name, " (", 
+                  installedPkgs[pkgName,"Version"], " to ", pkgRecord$version, 
+                  ") ...", appendLF = FALSE)
+          remove.packages(action$package, lib = lib)
+        } else if (identical(action$action, "install")) {
+          message("Installing ", pkgRecord$name, " (", pkgRecord$version,
+                  ") ...", appendLF = FALSE)
+        }
+        type <- installPkg(pkgRecord, appDir, availablePkgs) 
+        message("OK (", type, ")")
+        foundPkg <- TRUE
+        break
+      }
+    }
+    if (!foundPkg) {
+      warning("Could not ", actions$action, " package ", as.character(action), 
+              " because it is missing from the lockfile.")
+    }
+  })
+  invisible()
+}
+
+installPkgs <- function(appDir, repos, pkgRecords, lib) {
+  installedPkgs <- installed.packages(priority = "NA", lib.loc = lib)
+  actions <- data.frame()
+  
+  for (pkgRecord in pkgRecords) {
+    if (pkgRecord$name %in% rownames(installedPkgs)) {
+      if (!identical(pkgRecord$version, 
+                     installedPkgs[pkgRecord$name,"Version"])) { 
+        actions <- rbind(actions, data.frame(row.names = pkgRecord$name,
+                                             action = "replace", 
+                                             stringsAsFactors = FALSE))
+      }
+    } else {
+      actions <- rbind(actions, data.frame(row.names = pkgRecord$name, 
+                                           action = "install", 
+                                           stringsAsFactors = FALSE))
+    }
+  }
+  
+  # If any of the packages to be mutated are loaded, we have more work to do.
+  if (any(rownames(actions) %in% loadedNamespaces())) {
+    # TODO Write this to a file and replay it on startup. 
+  }
+  
+  # Play the list
+  if (nrow(actions) > 0)
+    playInstallActions(pkgRecords, actions, repos, appDir, lib)
+  else
+    message("All packages are up to date.")
 }
 

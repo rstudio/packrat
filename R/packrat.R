@@ -245,7 +245,7 @@ addPackage <- function(package, appDir, lib.loc, allow.downgrade) {
         if (!isTRUE(allow.downgrade)) {
           warning(
             'The installed version of package "', package, '" is earlier\n',
-            'than the one in the lockfile. Run install() to upgrade the\n',
+            'than the one in the lockfile. Run restore() to upgrade the\n',
             'library, or, if you really want to downgrade, re-run the ',
             'add() function with allow.downgrade = TRUE.')
           return(invisible(FALSE))
