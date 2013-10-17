@@ -25,7 +25,7 @@
 #' appDependencies("~/projects/shiny/app1")
 #' }
 appDependencies <- function(appDir = getwd()) {
-  dirDependencies(appDir)
+  unique(c(dirDependencies(appDir), 'packrat'))
 }
 
 # does str1 start with str2?
