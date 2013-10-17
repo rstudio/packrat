@@ -3,12 +3,14 @@ local({
   # Create the private package library if it doesn't already exist
   appRoot <- normalizePath('.')
   libRoot <- file.path(appRoot, 'library')
-  localLib <- file.path(libRoot, R.version$platform, getRversion()[1,1:2])
+  localLib <- file.path(libRoot, R.version$platform, getRversion())
+  newLocalLib <- FALSE
   if (!file.exists(localLib)) {
     message('Creating private package library at ', localLib)
     dir.create(localLib, recursive=TRUE)
+    newLocalLib <- TRUE
   }
-  
+
   # If there's a new library (created to make changes to packages loaded in the
   # last R session), remove the old library and replace it with the new one. 
   newLibRoot <- file.path(appRoot, 'library.new', 'library')
@@ -41,4 +43,12 @@ local({
   }
   
   .libPaths(localLib)
+
+  # Bootstrap the installation of devtools and packrat
+  if (newLocalLib) {
+    if (length(find.package('packrat', lib.loc = localLib, quiet = TRUE)) == 0) {
+      # TODO: Uncomment when we get onto CRAN
+      # utils::install.packages('packrat', repos=c(CRAN='http://cran.rstudio.com/'))
+    }
+  }
 })
