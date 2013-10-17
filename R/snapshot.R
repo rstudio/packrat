@@ -15,7 +15,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   lockPackages <- lockInfo(appDir, fatal=FALSE)
   
   appPackages <- getPackageRecords(sort(appDependencies(appDir)), available,
-                                   lib.loc = lib.loc)
+                                   sourcePackages, lib.loc = lib.loc)
   
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, priority = 'NA',
                                              noCache = TRUE))
