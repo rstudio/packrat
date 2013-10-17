@@ -21,12 +21,6 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   # Since source packages are manually specified, assume that they are 
   # dependencies even if we didn't detect R code that uses them
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-  for (sourcePackage in rownames(sourcePackages)) {
-    if (!(as.character(sourcePackage) %in% inferredDependencies)) {
-      inferredDependencies <- c(inferredDependencies, 
-                                as.character(sourcePackage))
-    }
-  }
 
   repos <- as.vector(getOption("repos"))
   
@@ -44,7 +38,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
                                              collapse=", "),
                              Type = "Packrat Application")
   setDescription(appDir, dependencies)
-  snapshot(appDir, getOption("repos"), sourcePackages)
+  snapshotImpl(appDir, available.packages(contrib.url(repos)),
+               sourcePackages=sourcePackages, lib.loc = NULL)
   
   # Use the lockfile to copy sources and install packages to the library
   restore(appDir)
@@ -152,9 +147,34 @@ prettyPrint <- function(packages, header, footer = NULL) {
     }
     print.simple.list(lapply(packages, function(pkg) {
       result <- ifelse(is.na(pkg$version), '', pkg$version)
+      result <- paste(" ", result)
       names(result) <- paste("   ", pkg$name)
       result
     }))
+    if (!is.null(footer)) {
+      cat(paste(footer, collapse=''))
+    }
+    cat('\n')
+  }
+}
+
+#' @keywords internal
+prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
+  if (length(packagesFrom) > 0) {
+    if (any(pkgNames(packagesFrom) != pkgNames(packagesTo)))
+      stop('Invalid arguments--package records list mistmatch')
+    
+    cat('\n')
+    if (!is.null(header)) {
+      cat(paste(header, collapse=''))
+      cat('\n')
+    }
+    
+    df <- data.frame(from = paste(" ", sapply(packagesFrom, pick("version"))),
+                     to = paste(" ", sapply(packagesTo, pick("version"))))
+    row.names(df) <- paste("   ", pkgNames(packagesFrom))
+    print(df)
+
     if (!is.null(footer)) {
       cat(paste(footer, collapse=''))
     }
@@ -323,12 +343,16 @@ libdir <- function(appDir) {
             getRversion()[1,1:2])
 }
 
-lockInfo <- function(appDir) {
+lockInfo <- function(appDir, fatal=TRUE) {
   # Get and parse the lockfile
   lockFilePath <- file.path(appDir, "packrat.lock")
   if (!file.exists(lockFilePath)) {
-    stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
-               appDir, "') to generate it.", sep = ""))
+    if (fatal) {
+      stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
+                 appDir, "') to generate it.", sep = ""))
+    } else {
+      return(list())
+    }
   }
   return(readLockFile(lockFilePath))
 }
