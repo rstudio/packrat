@@ -145,3 +145,37 @@ getSourcePackageInfo <- function(sourcePackagePaths) {
   results
 }
 
+pick <- function(property) {
+  function(packageRecord) {
+    packageRecord[[property]]
+  }
+}
+
+#' Returns a character vector of package names. Depends are ignored.
+#' 
+#' @keyword internal
+pkgNames <- function(packageRecords) {
+  sapply(packageRecords, pick("name"))
+}
+
+#' Filters out all record properties except name and version. Dependencies
+#' are dropped.
+#' 
+#' @keyword internal
+pkgNamesAndVersions <- function(packageRecords) {
+  lapply(packageRecords, function(pkg) {
+    pkg[names(pkg) %in% c('name', 'version')]
+  })
+}
+
+#' Recursively filters out all record properties except name, version, and
+#' depends.
+#' 
+#' @keyword internal
+pkgNamesVersDeps <- function(packageRecords) {
+  lapply(packageRecords, function(pkg) {
+    pkg <- pkg[names(pkg) %in% c('name', 'version', 'depends')]
+    pkg$depends <- pkgNamesVersDeps(pkg$depends)
+    return(pkg)
+  })
+}
