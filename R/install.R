@@ -272,13 +272,13 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
         if (identical(action$action, "replace")) {
           message("Replacing ", pkgRecord$name, " (", 
                   installedPkgs[pkgName,"Version"], " to ", pkgRecord$version, 
-                  ") ...", appendLF = FALSE)
+                  ") ... ", appendLF = FALSE)
           remove.packages(action$package, lib = lib)
         } else if (identical(action$action, "install")) {
           message("Installing ", pkgRecord$name, " (", pkgRecord$version,
-                  ") ...", appendLF = FALSE)
+                  ") ... ", appendLF = FALSE)
         }
-        type <- installPkg(pkgRecord, appDir, availablePkgs) 
+        type <- installPkg(pkgRecord, appDir, availablePkgs, lib) 
         message("OK (", type, ")")
         foundPkg <- TRUE
         break
@@ -295,6 +295,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
 installPkgs <- function(appDir, repos, pkgRecords, lib) {
   installedPkgs <- installed.packages(priority = "NA", lib.loc = lib)
   actions <- data.frame()
+  restartNeeded <- FALSE
   
   for (pkgRecord in pkgRecords) {
     if (pkgRecord$name %in% rownames(installedPkgs)) {
@@ -310,15 +311,28 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
     }
   }
   
-  # If any of the packages to be mutated are loaded, we have more work to do.
-  if (any(rownames(actions) %in% loadedNamespaces())) {
-    # TODO Write this to a file and replay it on startup. 
+  # If any of the packages to be mutated are loaded, and the library we're 
+  # installing to is the default library, make a copy of the library and 
+  # perform the changes on the copy. 
+  targetLib <- if (any(rownames(actions) %in% loadedNamespaces()) &&
+                   identical(lib, .libPaths()[1])) {
+    newlib <- file.path(appDir, 'library.new')
+    dir.create(newlib)
+    file.copy(file.path(appDir, 'library'), newlib, recursive = TRUE)
+    restartNeeded <- TRUE
+    libdir(newlib)
+  } else {
+    lib
   }
   
   # Play the list
-  if (nrow(actions) > 0)
-    playInstallActions(pkgRecords, actions, repos, appDir, lib)
-  else
+  if (nrow(actions) > 0) {
+    playInstallActions(pkgRecords, actions, repos, appDir, targetLib)
+    if (restartNeeded) {
+      message("You must restart R to finish applying these changes.")
+    }
+  } else {
     message("All packages are up to date.")
+  }
 }
 

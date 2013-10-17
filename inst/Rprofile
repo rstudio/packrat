@@ -1,9 +1,39 @@
 # Use private package library
 local({
-  localLib <- file.path(normalizePath('.'), 'library', R.version$platform, getRversion()[1,1:2])
+  # Create the private package library if it doesn't already exist
+  appRoot <- normalizePath('.')
+  libRoot <- file.path(appRoot, 'library')
+  localLib <- file.path(libRoot, R.version$platform, getRversion()[1,1:2])
   if (!file.exists(localLib)) {
     message('Creating private package library at ', localLib)
     dir.create(localLib, recursive=TRUE)
   }
+  
+  # If there's a new library (created to make changes to packages loaded in the
+  # last R session), remove the old library and replace it with the new one. 
+  newLibRoot <- file.path(appRoot, 'library.new', 'library')
+  if (file.exists(newLibRoot)) {
+    message('Applying Packrat library updates ... ', appendLF = FALSE)
+    suceeded <- FALSE
+    if (file.rename(libRoot, file.path(appRoot, 'library.old'))) {
+      if (file.rename(newLibRoot, libRoot)) {
+        succeeded <- TRUE
+      } else {
+        # Moved the old library out of the way but couldn't move the new 
+        # in its place; move the old library back 
+        file.rename(file.path(appRoot, 'library.old'), libRoot)
+      }
+    }
+    if (succeeded) {
+      message('OK')
+    } else {
+      message('FAILED')
+      file.remove(file.path(appRoot, 'library.new'), recursive = TRUE)
+      message("Packrat was not able to make changes to its local library at ", 
+              localLib, ". Check this directory's permissions and run ",
+              "packrat::restore() to try again.")
+    }
+  }
+  
   .libPaths(localLib)
 })

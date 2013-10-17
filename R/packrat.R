@@ -281,7 +281,9 @@ clean <- function(appDir = getwd()) {
   unlink(file.path(appDir, "packrat.lock"))
   
   # Clean up downloaded sources and library directories
-  unlink(libdir(appDir), recursive = TRUE)
+  unlink(file.path(appDir, "library"), recursive = TRUE)
+  unlink(file.path(appDir, "library.old"), recursive = TRUE)
+  unlink(file.path(appDir, "library.new"), recursive = TRUE)
   unlink(file.path(appDir, "packrat.sources"), recursive = TRUE)
 }
 
