@@ -145,9 +145,28 @@ getSourcePackageInfo <- function(sourcePackagePaths) {
   results
 }
 
-pick <- function(property) {
-  function(packageRecord) {
+pick <- function(property, package) {
+  func <- function(packageRecord) {
     packageRecord[[property]]
+  }
+  if (!missing(package)) {
+    return(func(package))
+  } else {
+    return(func)
+  }
+}
+
+# If called without a second argument, returns a curried function. If called
+# with a second argument then it returns the package without the indicated
+# properties.
+strip <- function(properties, package) {
+  func <- function(packageRecord) {
+    packageRecord[!names(packageRecord) %in% properties]
+  }
+  if (!missing(package)) {
+    return(func(package))
+  } else {
+    return(func)
   }
 }
 
@@ -178,4 +197,86 @@ pkgNamesVersDeps <- function(packageRecords) {
     pkg$depends <- pkgNamesVersDeps(pkg$depends)
     return(pkg)
   })
+}
+
+# Searches package records recursively looking for packages
+searchPackages <- function(packages, packageNames) {
+  lapply(packageNames, function(pkgName) {
+    for (pkg in packages) {
+      if (pkg$name == pkgName)
+        return(pkg)
+      if (!is.null(pkg$depends)) {
+        found <- searchPackages(pkg$depends, pkgName)[[1]]
+        if (!is.null(found))
+          return(found)
+      }
+    }  
+    return(NULL)
+  })
+}
+
+#' Returns a linear list of package records, sorted by name, with all
+#' dependency information removed
+#' 
+#' @keyword internal
+flattenPackageRecords <- function(packageRecords) {
+  visited <- new.env(parent=emptyenv())
+  visit <- function(pkgRecs) {
+    for (rec in pkgRecs) {
+      visit(rec$depends)
+      rec['depends'] <- NULL
+      visited[[rec$name]] <- rec
+    }
+  }
+  visit(packageRecords)
+  lapply(sort(ls(visited)), function(name) {
+    visited[[name]]
+  })
+}
+
+# States: NA (unchanged), remove, add, upgrade, downgrade, crossgrade
+# (crossgrade means name and version was the same but something else was
+# different, i.e. different source or GitHub SHA1 hash or something)
+
+diff <- function(packageRecordsA, packageRecordsB) {
+  removed <- pkgNameDiff(packageRecordsA, packageRecordsB)
+  removed <- structure(rep.int('remove', length(removed)),
+                       names = removed)
+  
+  added <- pkgNameDiff(packageRecordsB, packageRecordsA)
+  added <- structure(rep.int('add', length(added)),
+                     names = added)
+  
+  both <- pkgNameIntersect(packageRecordsA, packageRecordsB)
+  both <- structure(
+    sapply(both, function(pkgName) {
+      pkgA <- searchPackages(packageRecordsA, pkgName)[[1]]
+      pkgB <- searchPackages(packageRecordsB, pkgName)[[1]]
+      
+      if (identical(strip('depends', pkgA), strip('depends', pkgB)))
+        return(NA)
+      verComp <- compareVersion(pkgA$version, pkgB$version)
+      if (verComp < 0)
+        return('upgrade')
+      else if (verComp > 0)
+        return('downgrade')
+      else
+        return('crossgrade')
+    }),
+    names = both
+  )
+  
+  return(c(removed, added, both))
+}
+
+pkgNameIntersect <- function(packageRecordsA, packageRecordsB) {
+  a <- pkgNames(flattenPackageRecords(packageRecordsA))
+  b <- pkgNames(flattenPackageRecords(packageRecordsB))
+  intersect(a, b)
+}
+
+pkgNameDiff <- function(packageRecordsA, packageRecordsB) {
+  a <- pkgNames(flattenPackageRecords(packageRecordsA))
+  b <- pkgNames(flattenPackageRecords(packageRecordsB))
+  setdiff(a, b)
 }
