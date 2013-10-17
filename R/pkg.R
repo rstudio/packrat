@@ -30,7 +30,7 @@ getPackageRecords <- function(pkgNames, available, sourcePackages=NULL,
         version = as.character(sourcePackages[pkgName,"version"]),
         source_path = as.character(sourcePackages[pkgName,"path"])
       ), class=c('packageRecord', 'source'))
-      db <- installed.packages(priority='NA')
+      db <- installed.packages(priority='NA', lib.loc = lib.loc)
     } else {
       # This package is from an external source (CRAN-like repo or github); 
       # attempt to get its description from the installed package database.
@@ -61,7 +61,7 @@ getPackageRecords <- function(pkgNames, available, sourcePackages=NULL,
         # This package's DESCRIPTION exists locally--read it, and use the database
         # of installed packages to compute its dependencies.
         df <- as.data.frame(read.dcf(pkgDescFile))
-        db <- installed.packages(priority='NA')
+        db <- installed.packages(priority='NA', lib.loc = lib.loc)
       }
       record <- inferPackageRecord(df)
     }
