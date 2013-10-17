@@ -182,6 +182,15 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
   })
 }
 
+annotatePkgDesc <- function(pkgRecord, appDir, lib = libdir(appDir)) {
+  descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
+  pkgSrcFile <- file.path(appDir, "packrat.sources", pkgRecord$name, 
+                          pkgSrcFilename(pkgRecord))
+  appendToDcf(descFile, data.frame(
+    InstallAgent=paste('packrat', packageVersion('packrat')), 
+    InstallSource=pkgRecord$source))
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, appDir, availablePkgs, repos, 
@@ -232,10 +241,7 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
                           quick = TRUE, quiet = TRUE)
   
   # Annotate DESCRIPTION file so we know we installed it
-  descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
-  appendToDcf(descFile, data.frame(
-    InstallAgent=paste('packrat', packageVersion('packrat'))
-  ))
+  annotatePkgDesc(pkgRecord, appDir, lib)
   
   return(type)  
 }
@@ -249,73 +255,70 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
   # packages from the global library to the private Packrat library
   initialSnapshot <- !identical(.libPaths()[1], lib)
   installedPkgs <- installed.packages(priority = "NA")
+  targetPkgs <- searchPackages(pkgRecords, names(actions))  
   
-  by(actions, 1:nrow(actions), function(action) {
-    foundPkg <- FALSE
-    pkgName <- row.names(action)
-    for (pkgRecord in pkgRecords) {
-      if (identical(pkgRecord$name, pkgName)) {
-        if (initialSnapshot) {
-          # If taking the initial snapshot and installing a version to the 
-          # private library that matches the version in the global library,
-          # short-circuit and do a copy here. 
-          if (identical(action$action, "install") &&
-              pkgName %in% rownames(installedPkgs) &&
-              versionMatchesDb(pkgRecord, installedPkgs)) {
-            message("Installing ", pkgRecord$name, " (", pkgRecord$version,
-                    ") ...", appendLF = FALSE)
-            file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
-            message("OK (copied local binary)")
-            foundPkg <- TRUE
-            break
-          }
-        }
-        if (identical(action$action, "replace")) {
-          message("Replacing ", pkgRecord$name, " (", 
-                  installedPkgs[pkgName,"Version"], " to ", pkgRecord$version, 
-                  ") ... ", appendLF = FALSE)
-          remove.packages(action$package, lib = lib)
-        } else if (identical(action$action, "install")) {
-          message("Installing ", pkgRecord$name, " (", pkgRecord$version,
-                  ") ... ", appendLF = FALSE)
-        }
-        type <- installPkg(pkgRecord, appDir, availablePkgs, repos, lib) 
-        message("OK (", type, ")")
-        foundPkg <- TRUE
-        break
+  for (i in seq_along(actions)) {
+    action <- as.character(actions[i])
+    pkgRecord <- targetPkgs[i][[1]]
+    if (is.null(pkgRecord)) {
+      warning("Can't ", action, " ", names(actions[i]), 
+              ": missing from lockfile")
+      next
+    }
+    if (initialSnapshot) {
+      # If taking the initial snapshot and installing a version to the 
+      # private library that matches the version in the global library,
+      # short-circuit and do a copy here. 
+      if (identical(action, "add") &&
+          pkgRecord$name %in% rownames(installedPkgs) &&
+          versionMatchesDb(pkgRecord, installedPkgs)) {
+        message("Installing ", pkgRecord$name, " (", pkgRecord$version,
+                ") ...", appendLF = FALSE)
+        file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
+        annotatePkgDesc(pkgRecord, appDir, lib)
+        message("OK (copied local binary)")
+        next
       }
     }
-    if (!foundPkg) {
-      warning("Could not ", actions$action, " package ", as.character(action), 
-              " because it is missing from the lockfile.")
+    if (identical(action, "upgrade") ||
+        identical(action, "downgrade") ||
+        identical(action, "crossgrade")) {
+      # Changing package type or version: Remove the old one now (we'll write 
+      # a new one in a moment)
+      message("Replacing ", pkgRecord$name, " (", action, " ", 
+              installedPkgs[pkgRecord$name,"Version"], " to ", 
+              pkgRecord$version, ") ... ", appendLF = FALSE)
+      remove.packages(pkgRecord$name, lib = lib)
+    } else if (identical(action, "add")) {
+      message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
+              appendLF = FALSE)
+    } else if (identical(action, "remove")) {
+      message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ...",
+              appendLF = FALSE)
+      remove.packages(pkgRecord$name, lib = lib)
+      message("OK")
+      next
     }
-  })
+    type <- installPkg(pkgRecord, appDir, availablePkgs, repos, lib) 
+    message("OK (", type, ")")
+  }
   invisible()
 }
 
 installPkgs <- function(appDir, repos, pkgRecords, lib) {
-  installedPkgs <- installed.packages(priority = "NA", lib.loc = lib)
-  actions <- data.frame()
+  availablePkgs <- available.packages(contrib.url(repos))
+  installedPkgs <- 
+    getPackageRecords(
+      rownames(installed.packages(lib.loc = lib, priority = "NA")), 
+      availablePkgs, recursive = FALSE, fatal = FALSE)
+  actions <- diff(installedPkgs, pkgRecords)
+  actions <- actions[!is.na(actions)]
   restartNeeded <- FALSE
   
-  for (pkgRecord in pkgRecords) {
-    if (pkgRecord$name %in% rownames(installedPkgs)) {
-      if (!versionMatchesDb(pkgRecord, installedPkgs)) { 
-        actions <- rbind(actions, data.frame(row.names = pkgRecord$name,
-                                             action = "replace", 
-                                             stringsAsFactors = FALSE))
-      }
-    } else {
-      actions <- rbind(actions, data.frame(row.names = pkgRecord$name, 
-                                           action = "install", 
-                                           stringsAsFactors = FALSE))
-    }
-  }
-  
-  # If any of the packages to be mutated are loaded, and the library we're 
-  # installing to is the default library, make a copy of the library and 
-  # perform the changes on the copy. 
-  targetLib <- if (any(rownames(actions) %in% loadedNamespaces()) &&
+  # If any of the packages to be mutated are loaded, and the library we're
+  # installing to is the default library, make a copy of the library and perform
+  # the changes on the copy. 
+  targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
                    identical(lib, .libPaths()[1])) {
     newlib <- file.path(appDir, 'library.new')
     dir.create(newlib)
@@ -326,9 +329,10 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
     lib
   }
   
-  # Play the list
-  if (nrow(actions) > 0) {
-    playInstallActions(pkgRecords, actions, repos, appDir, targetLib)
+  # Play the list, if there's anything to play
+  if (length(actions) > 0) {
+    playInstallActions(pkgRecords, actions, repos, appDir, 
+                       targetLib)
     if (restartNeeded) {
       message("You must restart R to finish applying these changes.")
     }
