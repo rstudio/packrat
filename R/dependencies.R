@@ -91,24 +91,28 @@ expressionDependencies <- function(e) {
   fname <- as.character(e[[1L]])
   # a refclass method call, so return
   if (length(fname) > 1) return()
-  
-  # base case: call to library/require
-  if (fname %in% c("library", "require")) {
-    mc <- match.call(get(fname, baseenv()), e)
-    if (is.null(mc$package)) return(NULL)
-    if (isTRUE(mc$character.only)) return(NULL)
+
+  if (length(fname) == 1) {
     
-    return(as.character(mc$package))
-  } 
-  
-  # base case: call to :: or :::
-  if (fname %in% c("::", ":::")) (
-    return(as.character(e[[2L]]))
-  )
-  
-  # base case: methods functions
-  if (fname %in% c("setClass", "setRefClass", "setMethod", "setGeneric")) {
-    return("methods")
+    # base case: call to library/require
+    if (fname %in% c("library", "require")) {
+      mc <- match.call(get(fname, baseenv()), e)
+      if (is.null(mc$package)) return(NULL)
+      if (isTRUE(mc$character.only)) return(NULL)
+      
+      return(as.character(mc$package))
+    } 
+    
+    # base case: call to :: or :::
+    if (fname %in% c("::", ":::")) (
+      return(as.character(e[[2L]]))
+    )
+    
+    # base case: methods functions
+    if (fname %in% c("setClass", "setRefClass", "setMethod", "setGeneric")) {
+      return("methods")
+    }
+    
   }
 
   # recursive case: all other calls
