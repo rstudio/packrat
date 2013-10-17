@@ -51,7 +51,13 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 #' @export
 restore <- function(appDir = '.') {
   appDir <- normalizePath(appDir)
+  
   packages <- lockInfo(appDir)
+  r_version <- lockInfo(appDir, 'r_version')
+  if (!identical(as.character(getRversion()), r_version)) {
+    warning('The most recent snapshot was generated using R version ',
+            r_version)
+  }
   
   # Generate the list of packages to install
   installList <- makeInstallList(packages)
@@ -340,10 +346,10 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
 #' @export
 libdir <- function(appDir) {
   file.path(normalizePath(appDir), 'library', R.version$platform, 
-            getRversion()[1,1:2])
+            getRversion())
 }
 
-lockInfo <- function(appDir, fatal=TRUE) {
+lockInfo <- function(appDir, property='packages', fatal=TRUE) {
   # Get and parse the lockfile
   lockFilePath <- file.path(appDir, "packrat.lock")
   if (!file.exists(lockFilePath)) {
@@ -354,5 +360,5 @@ lockInfo <- function(appDir, fatal=TRUE) {
       return(list())
     }
   }
-  return(readLockFile(lockFilePath))
+  return(readLockFile(lockFilePath)[[property]])
 }

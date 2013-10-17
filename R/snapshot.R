@@ -61,14 +61,14 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   
   if (all(is.na(diffs))) {
     message("Already up to date")
-    return()
+    return(invisible())
   }
   
   if (interactive() && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n] ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
     if (nzchar(answer) && tolower(answer) != 'y') {
-      return()
+      return(invisible())
     }
   }
   
