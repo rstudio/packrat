@@ -1,6 +1,19 @@
-#' Given an application directory, computes the application's dependencies, 
-#' and places the application's dependencies under packrat control. 
+#' @importFrom RJSONIO fromJSON toJSON
+NULL
+
+#' Initialize Packrat on a new or existing R project
 #' 
+#' Given an application directory, computes the application's 
+#' dependencies, and places the application's dependencies under packrat
+#' control.
+#' 
+#' You must restart your R session after running bootstrap in order for
+#' the changes to take effect.
+#' 
+#' @param appDir The directory that contains the R project.
+#' @param sourcePackagePaths Optional list of paths to unpacked R
+#'   package source directories.
+#'   
 #' @export
 bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
@@ -18,8 +31,6 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   # Get the inferred set of dependencies
   inferredDependencies <- appDependencies(appDir)
   
-  # Since source packages are manually specified, assume that they are 
-  # dependencies even if we didn't detect R code that uses them
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
 
   repos <- as.vector(getOption("repos"))
@@ -46,6 +57,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
   # Write the .Rprofile and .Renviron files
   packify(appDir)
+  
+  invisible()
 }
 
 #' @export
@@ -185,87 +198,6 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
       cat(paste(footer, collapse=''))
     }
     cat('\n')
-  }
-}
-
-#' @export
-add <- function(packages = NULL, appDir = '.', lib.loc = NULL,
-                repos = getOption("repos"), allow.downgrade = FALSE,
-                sourcePackagePaths = character(0)) {
-  needsSnapshot <- any(sapply(packages, function(pkg) {
-    addPackage(pkg, appDir, lib.loc)
-  }))
-  
-  if (!needsSnapshot) {
-    message('No changes were made.')
-  } else {
-    cat('Rebuilding snapshot\n')
-    sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-    snapshot(appDir=appDir, repos=repos, sourcePackages=sourcePackages)
-  }
-  return(invisible(needsSnapshot))
-}
-
-#' @keywords internal
-addPackage <- function(package, appDir, lib.loc, allow.downgrade) {
-  # TODO: Check if package is a base package and stop?
-  
-  packages <- lockInfo(appDir)
-  pkgInfo <- searchPackages(packages, package)[[1]]
-  
-  # In library?
-  if (isTRUE(nchar(find.package(package, lib.loc=lib.loc, quiet=TRUE)) > 0)) {
-    # Check if installed copy of package has all its dependencies
-    recLib <- getPackageRecords(package, NULL, recursive=TRUE, lib.loc=lib.loc,
-                                fatal=TRUE)
-
-    # In packrat?
-    if (is.null(pkgInfo)) {
-      # In library, not in packrat
-      addDependencies(appDir, package)
-      return(invisible(TRUE))
-    } else {
-      # In library, and also in packrat.
-      # Compare versions to see what to do next.
-      installedVer <- as.character(packageVersion(package, lib.loc=lib.loc))
-      comp <- compareVersion(installedVer, pkgInfo$version)
-      if (comp == 0) {
-        # Already consistent. No work was required.
-        return(invisible(FALSE))
-      } else if (comp > 0) {
-        # It's an upgrade; don't change the description, but update the lockfile
-        return(invisible(TRUE))
-      } else { # comp < 0
-        if (!isTRUE(allow.downgrade)) {
-          warning(
-            'The installed version of package "', package, '" is earlier\n',
-            'than the one in the lockfile. Run restore() to upgrade the\n',
-            'library, or, if you really want to downgrade, re-run the ',
-            'add() function with allow.downgrade = TRUE.')
-          return(invisible(FALSE))
-        } else {
-          # It's a downgrade; update the lockfile
-          return(invisible(TRUE))
-        }
-      }
-    }
-  } else {
-    # Not in library
-    if (is.null(pkgInfo)) {
-      # In neither packrat nor library
-      warning(
-        'The package "', package, '" is not installed. Please install it\n',
-        'and then run add() again.')
-      return(invisible(FALSE))
-    } else {
-      # In packrat, but not library
-      warning(
-        'The package "', package, '" is not installed in your library,\n',
-        'but it is present in packrat. If you meant to install it into\n',
-        'your library using the information in packrat, then use the\n',
-        'install() command instead.')
-      return(invisible(FALSE))
-    }
   }
 }
 
