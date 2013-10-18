@@ -273,7 +273,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
           pkgRecord$name %in% rownames(installedPkgs) &&
           versionMatchesDb(pkgRecord, installedPkgs)) {
         message("Installing ", pkgRecord$name, " (", pkgRecord$version,
-                ") ...", appendLF = FALSE)
+                ") ... ", appendLF = FALSE)
         file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
         annotatePkgDesc(pkgRecord, appDir, lib)
         message("OK (copied local binary)")
@@ -293,7 +293,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
       message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
               appendLF = FALSE)
     } else if (identical(action, "remove")) {
-      message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ...",
+      message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
               appendLF = FALSE)
       remove.packages(pkgRecord$name, lib = lib)
       message("OK")
@@ -306,11 +306,10 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
 }
 
 installPkgs <- function(appDir, repos, pkgRecords, lib) {
-  availablePkgs <- available.packages(contrib.url(repos))
   installedPkgs <- 
     getPackageRecords(
       rownames(installed.packages(lib.loc = lib, priority = "NA")), 
-      availablePkgs, recursive = FALSE, fatal = FALSE)
+      recursive = FALSE, fatal = FALSE)
   actions <- diff(installedPkgs, pkgRecords)
   actions <- actions[!is.na(actions)]
   restartNeeded <- FALSE
