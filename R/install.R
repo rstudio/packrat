@@ -44,6 +44,15 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     return(NULL)
   }
   
+  # If we don't know where this package's source resides, give up
+  if (identical(pkgRecord$source, "unknown") && !quiet) {
+    stop("No sources available for package ", pkgRecord$name, ". Packrat can ", 
+         "find sources for packages on CRAN-like repositories and packages ", 
+         "installed using devtools::install_github. For other package types, ",
+         "supply the path to the package's source using the argument ", 
+         "sourcePackagePaths = c('~/path/to/package1', 'path/to/package2', ...)")
+  }
+  
   # Create the directory in which to place this package's sources
   pkgSrcDir <- file.path(sourceDir, pkgRecord$name)
   if (!file.exists(pkgSrcDir))    
