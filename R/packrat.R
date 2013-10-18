@@ -257,7 +257,7 @@ wipe <- function(appDir = getwd()) {
 #' 
 #' @export
 packify <- function(dir = '.') {
-  dir <- normalizePath(dir, TRUE)
+  dir <- normalizePath(dir, mustWork = TRUE)
   rprofile <- file.path(dir, '.Rprofile')
   renviron <- file.path(dir, '.Renviron')
   
