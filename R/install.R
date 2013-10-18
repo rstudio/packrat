@@ -206,6 +206,7 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
                        lib = libdir(appDir)) {
   pkgSrc <- NULL
   type <- "built source"
+  needsInstall <- TRUE
   
   # Generally we want to install from sources, but we will download a pre-
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
@@ -216,13 +217,15 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
       !identical(getOption("pkgType"), "source")) {
     tempdir <- tempdir()
     tryCatch ({
-      downloaded <- download.packages(pkgRecord$name, destdir = tempdir, 
-                                      repos = repos, 
-                                      available = availablePkgs, quiet = TRUE)
-      if (length(downloaded) > 1) {
-        pkgSrc <- downloaded[2]
-        type <- "downloaded binary"
-      }
+      # install.packages emits both messages and standard output; redirect these
+      # streams to keep our own output clean. 
+      suppressMessages(
+        capture.output(
+          install.packages(pkgRecord$name, lib = lib, repos = repos, 
+                         available = availablePkgs, quiet = TRUE, 
+                         dependencies = FALSE, verbose = FALSE)))
+      type <- "downloaded binary"
+      needsInstall <- FALSE
     }, error = function(e) {
       # Do nothing here, we'll try local sources if we fail to download from
       # the repo
@@ -246,17 +249,19 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
     }
   }
   
-  # Specify library parameter when not installing to the first library on
-  # the path
-  installArgs <- 
-    if (identical(.libPaths()[1], lib)) 
-      getOption("devtools.install.args")
+  if (needsInstall) {
+    # Specify library parameter when not installing to the first library on
+    # the path
+    installArgs <- 
+      if (identical(.libPaths()[1], lib)) 
+        getOption("devtools.install.args")
     else
       paste("-l", lib)
-  
-  devtools::install_local(path = pkgSrc, reload = FALSE, 
-                          args = installArgs, dependencies = FALSE,
-                          quick = TRUE, quiet = TRUE)
+    
+    devtools::install_local(path = pkgSrc, reload = FALSE, 
+                            args = installArgs, dependencies = FALSE,
+                            quick = TRUE, quiet = TRUE)
+  }
   
   # Annotate DESCRIPTION file so we know we installed it
   annotatePkgDesc(pkgRecord, appDir, lib)
