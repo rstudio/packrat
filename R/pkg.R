@@ -126,6 +126,7 @@ inferPackageRecord <- function(df) {
     warning("Couldn't figure out the origin of package ", name)
     return(structure(list(
       name = name,
+      source = 'unknown',
       version = ver
     ), class='packageRecord'))
   }
