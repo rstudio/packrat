@@ -36,7 +36,7 @@ startswith <- function(str1, str2) {
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
   libdir <- libdir(dir)
-  dir <- normalizePath(dir)
+  dir <- normalizePath(dir, winslash='/')
 
   # first get the packages referred to in source code
   pkgs <- character()
