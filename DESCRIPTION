@@ -5,8 +5,8 @@ Version: 0.0.0
 Date: 2013-10-08
 Author: RStudio, Inc.
 Maintainer: Jonathan McPherson <jonathan@rstudio.com>
-Description: Packrat is a tool for managing the R packages your project depends on
-    in an isolated, portable, and reproducible way.
+Description: Packrat is a tool for managing the R packages your project depends
+    on in an isolated, portable, and reproducible way.
 License: GPL-2
 Depends:
     R (>= 2.14.1)
