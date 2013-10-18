@@ -17,6 +17,10 @@ NULL
 #' @export
 bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
+  if (nzchar(Sys.getenv("R_PACKRAT"))) {
+    stop("This project is already running under packrat!")
+  }
+  
   descriptionFile <- file.path(appDir, 'DESCRIPTION')
   
   if (file.exists(descriptionFile)) {
