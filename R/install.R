@@ -159,7 +159,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       appendToDcf(file.path(basedir, 'DESCRIPTION'), ghinfo)
       
       file.create(file.path(pkgSrcDir, pkgSrcFile))
-      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile))
+      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash='/')
 
       oldDir <- getwd()
       on.exit(setwd(oldDir))
@@ -245,8 +245,17 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
            ": sources missing at ", pkgSrc)
     }
   }
+  
+  # Specify library parameter when not installing to the first library on
+  # the path
+  installArgs <- 
+    if (identical(.libPaths()[1], lib)) 
+      getOption("devtools.install.args")
+    else
+      paste("-l", lib)
+  
   devtools::install_local(path = pkgSrc, reload = FALSE, 
-                          args = paste("-l", lib), dependencies = FALSE,
+                          args = installArgs, dependencies = FALSE,
                           quick = TRUE, quiet = TRUE)
   
   # Annotate DESCRIPTION file so we know we installed it

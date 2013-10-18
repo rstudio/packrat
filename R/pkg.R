@@ -146,7 +146,7 @@ getSourcePackageInfo <- function(sourcePackagePaths) {
     results <<- rbind(results, data.frame(
       name = as.character(desc$Package), 
       version = as.character(desc$Version), 
-      path = normalizePath(path)))
+      path = normalizePath(path, winslash='/')))
     as.character(desc$Package)
   })
   row.names(results) <- names

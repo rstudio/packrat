@@ -37,7 +37,10 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
 
+  # Get the active repos. Use the RStudio CRAN mirror if no CRAN mirror is
+  # currently configured. 
   repos <- as.vector(getOption("repos"))
+  repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
   
   # Check to see whether Bioconductor is installed. Bioconductor maintains a 
   # private set of repos, which we need to expose here so we can download 
@@ -67,7 +70,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 
 #' @export
 restore <- function(appDir = '.') {
-  appDir <- normalizePath(appDir)
+  appDir <- normalizePath(appDir, winslash='/')
   
   packages <- lockInfo(appDir)
   r_version <- lockInfo(appDir, 'r_version')
@@ -257,7 +260,7 @@ wipe <- function(appDir = getwd()) {
 #' Install .Rprofile and .Renviron files in the given directory to make it
 #' use a private package library.
 packify <- function(dir = '.') {
-  dir <- normalizePath(dir, mustWork = TRUE)
+  dir <- normalizePath(dir, winslash='/', mustWork = TRUE)
   rprofile <- file.path(dir, '.Rprofile')
   renviron <- file.path(dir, '.Renviron')
   
@@ -314,8 +317,8 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
 
 #' @export
 libdir <- function(appDir) {
-  file.path(normalizePath(appDir), 'library', R.version$platform, 
-            getRversion())
+  file.path(normalizePath(appDir, winslash='/'), 'library', 
+            R.version$platform, getRversion())
 }
 
 lockInfo <- function(appDir, property='packages', fatal=TRUE) {
