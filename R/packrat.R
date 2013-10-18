@@ -269,7 +269,46 @@ addPackage <- function(package, appDir, lib.loc, allow.downgrade) {
   }
 }
 
-clean <- function(appDir = getwd()) {
+#' Remove unused packages
+#' @export
+clean <- function(appDir = getwd(), lib.loc = libdir(appDir),
+                  prompt = interactive()) {
+
+  rootDeps <- appDependencies(appDir)
+  packagesInUse <- getPackageRecords(rootDeps, available=NULL,
+                                     sourcePackages=NULL,
+                                     recursive=TRUE,
+                                     lib.loc=lib.loc)
+  
+  installedPkgNames <- row.names(installed.packages(
+    lib.loc=lib.loc, priority='NA', noCache=TRUE))
+  
+  orphans <- setdiff(installedPkgNames, 
+                     pkgNames(flattenPackageRecords(packagesInUse)))
+
+  if (length(orphans) > 0) {
+    orphanRecs <- getPackageRecords(orphans, available=NULL,
+                                    sourcePackages=NULL,
+                                    recursive=FALSE,
+                                    lib.loc=lib.loc)
+    
+    prettyPrint(orphanRecs,
+                'The following packages will be removed:')
+    
+    if (prompt) {
+      answer <- readline('Do you want to continue? [Y/n] ')
+      answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
+      if (nzchar(answer) && tolower(answer) != 'y') {
+        return(invisible())
+      }
+    }
+    
+    remove.packages(orphans, lib=lib.loc)
+    return(invisible(orphans))
+  }
+}
+
+wipe <- function(appDir = getwd()) {
   # Clean up dependency information
   unlink(file.path(appDir, "DESCRIPTION"))
   unlink(file.path(appDir, "packrat.lock"))
