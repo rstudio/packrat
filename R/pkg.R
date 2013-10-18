@@ -178,27 +178,21 @@ strip <- function(properties, package) {
   }
 }
 
-#' Returns a character vector of package names. Depends are ignored.
-#' 
-#' @keyword internal
+# Returns a character vector of package names. Depends are ignored.
 pkgNames <- function(packageRecords) {
   sapply(packageRecords, pick("name"))
 }
 
-#' Filters out all record properties except name and version. Dependencies
-#' are dropped.
-#' 
-#' @keyword internal
+# Filters out all record properties except name and version. Dependencies are
+# dropped.
 pkgNamesAndVersions <- function(packageRecords) {
   lapply(packageRecords, function(pkg) {
     pkg[names(pkg) %in% c('name', 'version')]
   })
 }
 
-#' Recursively filters out all record properties except name, version, and
-#' depends.
-#' 
-#' @keyword internal
+# Recursively filters out all record properties except name, version, and 
+# depends.
 pkgNamesVersDeps <- function(packageRecords) {
   lapply(packageRecords, function(pkg) {
     pkg <- pkg[names(pkg) %in% c('name', 'version', 'depends')]
@@ -223,10 +217,8 @@ searchPackages <- function(packages, packageNames) {
   })
 }
 
-#' Returns a linear list of package records, sorted by name, with all
-#' dependency information removed
-#' 
-#' @keyword internal
+# Returns a linear list of package records, sorted by name, with all dependency
+# information removed
 flattenPackageRecords <- function(packageRecords) {
   visited <- new.env(parent=emptyenv())
   visit <- function(pkgRecs) {

@@ -160,7 +160,6 @@ status <- function(appDir = '.', lib.loc = libdir(appDir), quiet = FALSE) {
   }
 }
 
-#' @keywords internal
 prettyPrint <- function(packages, header, footer = NULL) {
   if (length(packages) > 0) {
     cat('\n')
@@ -181,7 +180,6 @@ prettyPrint <- function(packages, header, footer = NULL) {
   }
 }
 
-#' @keywords internal
 prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
   if (length(packagesFrom) > 0) {
     if (any(pkgNames(packagesFrom) != pkgNames(packagesTo)))
@@ -258,8 +256,6 @@ wipe <- function(appDir = getwd()) {
 
 #' Install .Rprofile and .Renviron files in the given directory to make it
 #' use a private package library.
-#' 
-#' @export
 packify <- function(dir = '.') {
   dir <- normalizePath(dir, mustWork = TRUE)
   rprofile <- file.path(dir, '.Rprofile')
@@ -273,11 +269,9 @@ packify <- function(dir = '.') {
   invisible()
 }
 
-#' Add the contents of srcFile into targetFile, with "magic" comments bracketing
-#' the contents. Should be safe to run multiple times--each subsequent call will
-#' replace the contents between magic comments.
-#' 
-#' @keywords internal
+# Add the contents of srcFile into targetFile, with "magic" comments bracketing
+# the contents. Should be safe to run multiple times--each subsequent call will
+# replace the contents between magic comments.
 augmentFile <- function(srcFile, targetFile, preferTop) {
   header <- '# -- BEGIN PACKRAT --\n'
   footer <- '# -- END PACKRAT --'
