@@ -14,8 +14,12 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   
   lockPackages <- lockInfo(appDir, fatal=FALSE)
   
+  # Get the package records for dependencies of the app. It's necessary to 
+  # include .Library in the list of library locations because it's possible that
+  # the user installed a package that relies on a recommended package, which
+  # would be used by the app but not present in the private library.
   appPackages <- getPackageRecords(sort(appDependencies(appDir)), available,
-                                   sourcePackages, lib.loc = lib.loc)
+                                   sourcePackages, lib.loc = c(lib.loc, .Library))
   
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
   
