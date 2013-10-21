@@ -37,20 +37,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
 
-  # Get the active repos. Use the RStudio CRAN mirror if no CRAN mirror is
-  # currently configured. 
-  repos <- as.vector(getOption("repos"))
-  repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
-  
-  # Check to see whether Bioconductor is installed. Bioconductor maintains a 
-  # private set of repos, which we need to expose here so we can download 
-  # sources to Bioconducter packages.
-  if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
-    # Bioconductor repos may include repos already accounted for above 
-    repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))                   
-  } 
-  
   # Get the inferred set of dependencies and write the lockfile
+  repos <- activeRepos()
   dependencies <- data.frame(Source = paste(repos, collapse=", "),
                              Depends = paste(inferredDependencies,
                                              collapse=", "),
@@ -343,3 +331,4 @@ lockInfo <- function(appDir, property='packages', fatal=TRUE) {
   }
   return(readLockFile(lockFilePath)[[property]])
 }
+
