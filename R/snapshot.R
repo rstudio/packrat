@@ -78,7 +78,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   # Compute the package dependency information from the DESCRIPTION and write 
   # the lock file
   if (!dry.run) {
-    snapshotSources(appDir, getOption("repos"), makeInstallList(appPackages))
+    snapshotSources(appDir, activeRepos(), makeInstallList(appPackages))
     writeLockFile(file.path(appDir, "packrat.lock"),
                   appPackages)
     cat('Snapshot written to', 
@@ -86,4 +86,20 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   }
   
   return(invisible())
+}
+
+# Returns a vector of all active repos, including CRAN (with a fallback to the
+# RStudio CRAN mirror if none is specified) and Bioconductor if installed.
+activeRepos <- function() {
+  repos <- as.vector(getOption("repos"))
+  repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
+  
+  # Check to see whether Bioconductor is installed. Bioconductor maintains a 
+  # private set of repos, which we need to expose here so we can download 
+  # sources to Bioconducter packages.
+  if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
+    # Bioconductor repos may include repos already accounted for above 
+    repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))                   
+  } 
+  return(repos)
 }
