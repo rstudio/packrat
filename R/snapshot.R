@@ -2,6 +2,7 @@
 snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
                      dry.run = FALSE) {
+  appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   snapshotImpl(appDir, available, lib.loc, sourcePackages, dry.run,
