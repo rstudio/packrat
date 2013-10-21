@@ -16,6 +16,7 @@ NULL
 #'   
 #' @export
 bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
+  appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
   
   if (nzchar(Sys.getenv("R_PACKRAT"))) {
     stop("This project is already running under packrat!")
@@ -58,7 +59,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 
 #' @export
 restore <- function(appDir = '.') {
-  appDir <- normalizePath(appDir, winslash='/')
+  appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
   
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar. 
@@ -95,6 +96,8 @@ restore <- function(appDir = '.') {
 
 #' @export
 status <- function(appDir = '.', lib.loc = libdir(appDir), quiet = FALSE) {
+  appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
+
   packages <- lockInfo(appDir)
   recsLock <- flattenPackageRecords(packages)
   namesLock <- pkgNames(recsLock)
@@ -205,8 +208,10 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
 
 #' Remove unused packages
 #' @export
-clean <- function(appDir = getwd(), lib.loc = libdir(appDir),
+clean <- function(appDir = ".", lib.loc = libdir(appDir),
                   prompt = interactive()) {
+
+  appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
   rootDeps <- appDependencies(appDir)
   packagesInUse <- getPackageRecords(rootDeps, available=NULL,
@@ -314,7 +319,7 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
 
 #' @export
 libdir <- function(appDir) {
-  file.path(normalizePath(appDir, winslash='/'), 'library', 
+  file.path(normalizePath(appDir, winslash='/', mustWork=TRUE), 'library', 
             R.version$platform, getRversion())
 }
 
