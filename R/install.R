@@ -283,7 +283,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
   for (i in seq_along(actions)) {
     action <- as.character(actions[i])
     pkgRecord <- targetPkgs[i][[1]]
-    if (is.null(pkgRecord)) {
+    if (is.null(pkgRecord) && !identical(action, "remove")) {
       warning("Can't ", action, " ", names(actions[i]), 
               ": missing from lockfile")
       next
@@ -316,9 +316,14 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
       message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
               appendLF = FALSE)
     } else if (identical(action, "remove")) {
-      message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
-              appendLF = FALSE)
-      remove.packages(pkgRecord$name, lib = lib)
+      if (is.null(pkgRecord)) {
+        message("Removing ", names(actions[i]), " ... ", appendLF = FALSE)
+        remove.packages(names(actions[i]), lib = lib)
+      } else {
+        message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
+          appendLF = FALSE)
+        remove.packages(pkgRecord$name, lib = lib)
+      }
       message("OK")
       next
     }

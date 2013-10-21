@@ -72,6 +72,16 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 restore <- function(appDir = '.') {
   appDir <- normalizePath(appDir, winslash='/')
   
+  # RTools cp.exe (invoked during installation) can warn on Windows since we
+  # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar. 
+  # Unfortunately, R's implementation of tar treats this warning output as
+  # though it were part of the list of files in the archive. 
+  cygwin <- Sys.getenv("CYGWIN")
+  if (length(grep("nodosfilewarning", cygwin)) == 0) {
+    Sys.setenv("CYGWIN" = paste(cygwin, "nodosfilewarning"))
+    on.exit(Sys.setenv("CYGWIN" = cygwin), add = TRUE)
+  }
+  
   packages <- lockInfo(appDir)
   r_version <- lockInfo(appDir, 'r_version')
   if (!identical(as.character(getRversion()), r_version)) {
