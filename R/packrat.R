@@ -248,15 +248,19 @@ clean <- function(appDir = ".", lib.loc = libdir(appDir),
 }
 
 wipe <- function(appDir = getwd()) {
-  # Clean up dependency information
-  unlink(file.path(appDir, "DESCRIPTION"))
-  unlink(file.path(appDir, "packrat.lock"))
+
+  deaugmentFile(file.path(appDir, ".Rprofile"))
+  deaugmentFile(file.path(appDir, ".Renviron"))
   
+  files <- c("DESCRIPTION", "packrat.lock")
+  dirs <- c("library", "library.old", "library.new", "packrat.sources")
+  
+  # Clean up dependency information
+  unlink(file.path(appDir, files))
   # Clean up downloaded sources and library directories
-  unlink(file.path(appDir, "library"), recursive = TRUE)
-  unlink(file.path(appDir, "library.old"), recursive = TRUE)
-  unlink(file.path(appDir, "library.new"), recursive = TRUE)
-  unlink(file.path(appDir, "packrat.sources"), recursive = TRUE)
+  unlink(file.path(appDir, dirs), recursive = TRUE)
+  
+  return(invisible())
 }
 
 #' Install .Rprofile and .Renviron files in the given directory to make it
@@ -315,6 +319,20 @@ augmentFile <- function(srcFile, targetFile, preferTop) {
   writeLines(target[[1]], targetFile)
   
   invisible()
+}
+
+deaugmentFile <- function(file, delete.if.empty=TRUE) {
+  if (!file.exists(file))
+    return()
+  headerFooterRegex <- '# -- BEGIN PACKRAT --\\s*\n.*?# -- END PACKRAT --\\s*?(\n|$)'
+  contents <- paste(readLines(file, warn=FALSE), collapse='\n')
+  contents <- gsub(headerFooterRegex, '', contents)
+  if (delete.if.empty && isTRUE(grepl('^[\r\n]*$', contents))) {
+    unlink(file)
+  } else {
+    writeLines(contents, file)
+  }
+  return(invisible())
 }
 
 #' @export
