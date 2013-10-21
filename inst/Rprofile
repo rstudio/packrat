@@ -51,4 +51,6 @@ local({
       # utils::install.packages('packrat', repos=c(CRAN='http://cran.rstudio.com/'))
     }
   }
+
+  invisible()
 })
