@@ -98,11 +98,10 @@ restore <- function(appDir = '.') {
     dir.create(libDir, recursive=TRUE)
   }
   
-  # Snapshot the sources for each package, then install them in turn from CRAN
-  # or github, from binaries when available and then from sources.
+  # Install each package from CRAN or github, from binaries when available and 
+  # then from sources.
   description <- getDescription(appDir)
   repos <- strsplit(as.character(description$Source), '\\s*,\\s*')[[1]]
-  snapshotSources(appDir, repos, installList)
   installPkgs(appDir, repos, installList, libDir)    
 }
 
