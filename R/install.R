@@ -364,7 +364,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
       message("You must restart R to finish applying these changes.")
     }
   } else {
-    message("All packages are up to date.")
+    message("Already up to date")
   }
 }
 

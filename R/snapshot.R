@@ -78,6 +78,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   # Compute the package dependency information from the DESCRIPTION and write 
   # the lock file
   if (!dry.run) {
+    snapshotSources(appDir, getOption("repos"), makeInstallList(appPackages))
     writeLockFile(file.path(appDir, "packrat.lock"),
                   appPackages)
     cat('Snapshot written to', 
