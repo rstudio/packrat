@@ -228,7 +228,7 @@ clean <- function(appDir = getwd(), lib.loc = libdir(appDir),
                                      lib.loc=lib.loc)
   
   installedPkgNames <- row.names(installed.packages(
-    lib.loc=lib.loc, priority='NA', noCache=TRUE))
+    lib.loc=lib.loc, priority=c('NA', 'recommended'), noCache=TRUE))
   
   orphans <- setdiff(installedPkgNames, 
                      pkgNames(flattenPackageRecords(packagesInUse)))
