@@ -277,7 +277,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
   # If this is the initial snapshot, we can optimize the installation of
   # packages from the global library to the private Packrat library
   initialSnapshot <- !identical(.libPaths()[1], lib)
-  installedPkgs <- installed.packages(priority = "NA")
+  installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))  
   
   for (i in seq_along(actions)) {
@@ -336,7 +336,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
 installPkgs <- function(appDir, repos, pkgRecords, lib) {
   installedPkgs <- 
     getPackageRecords(
-      rownames(installed.packages(lib.loc = lib, priority = "NA")), 
+      rownames(installed.packages(lib.loc = lib)), 
       recursive = FALSE, fatal = FALSE)
   actions <- diff(installedPkgs, pkgRecords)
   actions <- actions[!is.na(actions)]

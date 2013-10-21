@@ -17,8 +17,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   appPackages <- getPackageRecords(sort(appDependencies(appDir)), available,
                                    sourcePackages, lib.loc = lib.loc)
   
-  allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, priority = 'NA',
-                                             noCache = TRUE))
+  allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
   
   orphans <- setdiff(allLibPkgs, pkgNames(flattenPackageRecords(appPackages)))
   
