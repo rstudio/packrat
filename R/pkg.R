@@ -225,6 +225,7 @@ flattenPackageRecords <- function(packageRecords) {
     for (rec in pkgRecs) {
       visit(rec$depends)
       rec['depends'] <- NULL
+      rec['source_path'] <- NULL
       visited[[rec$name]] <- rec
     }
   }
