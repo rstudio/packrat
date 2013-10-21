@@ -17,7 +17,7 @@
 # )
 
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames, available, sourcePackages=NULL, 
+getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL, 
                               recursive=TRUE, lib.loc=NULL, fatal=TRUE) {
   records <- lapply(pkgNames, function(pkgName) {
     if (!is.null(sourcePackages) &&
