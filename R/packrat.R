@@ -183,6 +183,35 @@ prettyPrint <- function(packages, header, footer = NULL) {
   }
 }
 
+summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage, 
+                           removeMessage, upgradeMessage, downgradeMessage, 
+                           crossgradeMessage)
+{
+  prettyPrint(
+    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'add']),
+    addMessage
+  )
+  prettyPrint(
+    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'remove']),
+    removeMessage
+  )
+  prettyPrintPair(
+    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'upgrade']),
+    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'upgrade']),
+    upgradeMessage
+  )
+  prettyPrintPair(
+    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'downgrade']),
+    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'downgrade']),
+    downgradeMessage
+  )
+  prettyPrintPair(
+    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'crossgrade']),
+    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'crossgrade']),
+    crossgradeMessage
+  )
+}
+
 prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
   if (length(packagesFrom) > 0) {
     if (any(pkgNames(packagesFrom) != pkgNames(packagesTo)))

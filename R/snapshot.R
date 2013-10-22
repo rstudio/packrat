@@ -53,30 +53,12 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   
   diffs <- diff(lockPackages, appPackages)
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% diffs)
-  
-  prettyPrint(
-    searchPackages(appPackages, names(diffs)[!is.na(diffs) & diffs == 'add']),
-    'Adding these packages to packrat:'
-  )
-  prettyPrint(
-    searchPackages(lockPackages, names(diffs)[!is.na(diffs) & diffs == 'remove']),
-    'Removing these packages from packrat:'
-  )
-  prettyPrintPair(
-    searchPackages(lockPackages, names(diffs)[!is.na(diffs) & diffs == 'upgrade']),
-    searchPackages(appPackages, names(diffs)[!is.na(diffs) & diffs == 'upgrade']),
-    'Upgrading these packages already present in packrat:'
-  )
-  prettyPrintPair(
-    searchPackages(lockPackages, names(diffs)[!is.na(diffs) & diffs == 'downgrade']),
-    searchPackages(appPackages, names(diffs)[!is.na(diffs) & diffs == 'downgrade']),
-    'Downgrading these packages already present in packrat:'
-  )
-  prettyPrintPair(
-    searchPackages(lockPackages, names(diffs)[!is.na(diffs) & diffs == 'crossgrade']),
-    searchPackages(appPackages, names(diffs)[!is.na(diffs) & diffs == 'crossgrade']),
-    'Modifying these packages already present in packrat:'
-  )
+  summarizeDiffs(diffs, lockPackages, appPackages, 
+                 'Adding these packages to packrat:', 
+                 'Removing these packages from packrat:', 
+                 'Upgrading these packages already present in packrat:',
+                 'Downgrading these packages already present in packrat:',
+                 'Modifying these packages already present in packrat:')
   
   if (all(is.na(diffs))) {
     message("Already up to date")
