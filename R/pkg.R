@@ -122,6 +122,11 @@ inferPackageRecord <- function(df) {
       source = 'source',
       version = ver 
     ), class=c('packageRecord', 'source')))
+  } else if ((identical(name, "manipulate") || identical(name, "rstudio")) &&
+             identical(as.character(df$Author), "RStudio")) {
+    # The 'manipulate' and 'rstudio' packages are auto-installed by RStudio
+    # into the package library; ignore them so they won't appear orphaned. 
+    return(NULL)
   } else {
     warning("Couldn't figure out the origin of package ", name)
     return(structure(list(
