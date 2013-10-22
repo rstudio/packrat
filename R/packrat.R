@@ -33,19 +33,10 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
     }
   }
   
-  # Get the inferred set of dependencies
+  # Get the inferred set of dependencies and take a snapshot
   inferredDependencies <- appDependencies(appDir)
-  
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-
-  # Get the inferred set of dependencies and write the lockfile
-  repos <- activeRepos()
-  dependencies <- data.frame(Source = paste(repos, collapse=", "),
-                             Depends = paste(inferredDependencies,
-                                             collapse=", "),
-                             Type = "Packrat Application")
-  setDescription(appDir, dependencies)
-  snapshotImpl(appDir, available.packages(contrib.url(repos)),
+  snapshotImpl(appDir, available.packages(contrib.url(activeRepos())),
                sourcePackages=sourcePackages, lib.loc = NULL)
   
   # Use the lockfile to copy sources and install packages to the library
@@ -89,8 +80,7 @@ restore <- function(appDir = '.') {
   
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
-  description <- getDescription(appDir)
-  repos <- strsplit(as.character(description$Source), '\\s*,\\s*')[[1]]
+  repos <- lockInfo(appDir, 'repos')
   installPkgs(appDir, repos, installList, libDir)    
 }
 
@@ -281,7 +271,7 @@ wipe <- function(appDir = getwd()) {
   deaugmentFile(file.path(appDir, ".Rprofile"))
   deaugmentFile(file.path(appDir, ".Renviron"))
   
-  files <- c("DESCRIPTION", "packrat.lock")
+  files <- "packrat.lock"
   dirs <- c("library", "library.old", "library.new", "packrat.sources")
   
   # Clean up dependency information

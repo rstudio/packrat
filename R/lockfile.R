@@ -6,6 +6,7 @@ writeLockFile <- function(file, lockinfo) {
     packrat_format = '1.0',
     packrat_version = packageVersion('packrat'),
     r_version = rver,
+    repos = activeRepos(),
     packages = lockinfo
   ), pretty=TRUE)
   writeLines(json, con = file)
@@ -21,6 +22,7 @@ readLockFile <- function(file) {
       packrat_format = '1.0',
       packrat_version = '0.0.0',
       r_version = NULL,
+      repos = activeRepos(),
       packages = obj
     ))
   } else if (compareVersion('1.0', obj$packrat_format) < 0) {
