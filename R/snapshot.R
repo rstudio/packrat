@@ -5,8 +5,22 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-  snapshotImpl(appDir, available, lib.loc, sourcePackages, dry.run,
-               orphan.check = orphan.check)
+  appPackages <- snapshotImpl(appDir, available, lib.loc, sourcePackages, dry.run,
+                              orphan.check = orphan.check)
+  
+  if (!dry.run) {
+    # Check to see if any of the packages we just snapshotted are not, in fact,
+    # located in the private library, and install them if necessary
+    appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
+    privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
+    pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
+    if (length(pkgsToInstall) > 0) {
+      installPkgs(appDir,
+                  activeRepos(),
+                  searchPackages(appPackages, appPackageNames),
+                  lib.loc)
+    }
+  }
 }
 
 snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir),
@@ -87,7 +101,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
         normalizePath(file.path(appDir, "packrat.lock"), winslash = '/'), '\n')
   }
   
-  return(invisible())
+  return(invisible(appPackages))
 }
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the
