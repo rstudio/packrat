@@ -248,7 +248,7 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
     # case where the packrat lockfile is present but cached sources are 
     # missing.)
     getSourceForPkgRecord(pkgRecord, file.path(appDir, "packrat.sources"),
-                          availblePkgs, repos, quiet = TRUE)
+                          availablePkgs, repos, quiet = TRUE)
     if (!file.exists(pkgSrc)) {
       stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
            ": sources missing at ", pkgSrc)
