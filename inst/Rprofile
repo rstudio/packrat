@@ -16,7 +16,7 @@ local({
   newLibRoot <- file.path(appRoot, 'library.new', 'library')
   if (file.exists(newLibRoot)) {
     message('Applying Packrat library updates ... ', appendLF = FALSE)
-    suceeded <- FALSE
+    succeeded <- FALSE
     if (file.rename(libRoot, file.path(appRoot, 'library.old'))) {
       if (file.rename(newLibRoot, libRoot)) {
         succeeded <- TRUE

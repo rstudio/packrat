@@ -345,12 +345,36 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
       rownames(installed.packages(lib.loc = lib)), 
       recursive = FALSE, fatal = FALSE)
   actions <- diff(installedPkgs, pkgRecords)
-  actions <- actions[!is.na(actions)]
   restartNeeded <- FALSE
+  
+  mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% actions)
+  
+  if (all(is.na(actions))) {
+    message("Already up to date")
+    return(invisible())
+  }
+
+  # Since we print actions as we do them, there's no need to do a summary
+  # print first unless we need the user to confirm. 
+  if (interactive() && mustConfirm) {
+    summarizeDiffs(actions, installedPkgs, pkgRecords, 
+                   'Adding these packages to your library:', 
+                   'Removing these packages from your library:', 
+                   'Upgrading these packages in your library:',
+                   'Downgrading these packages in your library:',
+                   'Modifying these packages in your library:')
+    
+    answer <- readline('Do you want to continue? [Y/n] ')
+    answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
+    if (nzchar(answer) && tolower(answer) != 'y') {
+      return(invisible())
+    }
+  }
   
   # If any of the packages to be mutated are loaded, and the library we're
   # installing to is the default library, make a copy of the library and perform
   # the changes on the copy. 
+  actions <- actions[!is.na(actions)]
   targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
                    identical(lib, .libPaths()[1])) {
     newlib <- file.path(appDir, 'library.new')
@@ -363,14 +387,10 @@ installPkgs <- function(appDir, repos, pkgRecords, lib) {
   }
   
   # Play the list, if there's anything to play
-  if (length(actions) > 0) {
-    playInstallActions(pkgRecords, actions, repos, appDir, 
-                       targetLib)
-    if (restartNeeded) {
-      message("You must restart R to finish applying these changes.")
-    }
-  } else {
-    message("Already up to date")
+  playInstallActions(pkgRecords, actions, repos, appDir, 
+                     targetLib)
+  if (restartNeeded) {
+    message("You must restart R to finish applying these changes.")
   }
 }
 
