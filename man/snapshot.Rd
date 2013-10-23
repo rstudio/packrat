@@ -46,6 +46,9 @@ to these files and then use \code{\link{restore}} to apply your snapshot.
 }
 \seealso{
 \code{\link{restore}} to apply a snapshot. 
+
+\code{\link{status}} to view the differences between the most recent snapshot
+and the library.
 }
 \examples{
 \dontrun{
