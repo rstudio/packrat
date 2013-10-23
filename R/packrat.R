@@ -355,7 +355,7 @@ deaugmentFile <- function(file, delete.if.empty=TRUE) {
 }
 
 #' @export
-libdir <- function(appDir) {
+libdir <- function(appDir = ".") {
   file.path(normalizePath(appDir, winslash='/', mustWork=TRUE), 'library', 
             R.version$platform, getRversion())
 }

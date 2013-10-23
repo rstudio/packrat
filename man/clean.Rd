@@ -2,7 +2,7 @@
 \alias{clean}
 \title{Remove unused packages}
 \usage{
-  clean(appDir = getwd(), lib.loc = libdir(appDir),
+  clean(appDir = ".", lib.loc = libdir(appDir),
     prompt = interactive())
 }
 \description{
