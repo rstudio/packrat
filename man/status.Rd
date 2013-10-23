@@ -2,7 +2,7 @@
 \alias{status}
 \title{Show differences between the last snapshot and the library}
 \usage{
-  status(appDir = ".", lib.loc = lib.loc(appDir), quiet = FALSE)
+  status(appDir = ".", lib.loc = libdir(appDir), quiet = FALSE)
 }
 \arguments{
   \item{appDir}{The directory that contains the R project.}

@@ -52,5 +52,21 @@ local({
     }
   }
 
+  # Remind the user to snapshot after making changes to the package library.
+  addTaskCallback(function(expr, result, ok, printed) {
+    if (length(expr) > 0 && 
+        is(expr[[1]], "language")) {
+      name <- deparse(expr[[1]])
+      if (identical(name, "install.packages") || 
+          identical(name, "remove.packages") ||
+          identical(name, "update.packages")) {
+        message("Changes made to this project's private library may need to ",
+                "be snapshotted. Run packrat::status() to see ",
+                "differences since the last snapshot.")
+      }
+    }
+    return(TRUE)
+  }) 
+  
   invisible()
 })
