@@ -19,7 +19,7 @@ Use packrat to make your R projects more:
 
 Use \code{bootstrap} to create a new packrat project, \code{snapshot} to record
 changes to your project's library, and \code{restore} to recreate your library
-the way it was the last time you took a snapshot. 
+the way it was the last time you (or anyone!) took a snapshot. 
 
 Using these simple functions and sharing packrat's files lets you collaborate in a shared, consistent environment with others as your project grows and changes, and provides an easy way to share your results when you're done. 
 }
