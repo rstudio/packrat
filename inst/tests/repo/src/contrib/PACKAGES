@@ -1,0 +1,7 @@
+Package: breakfast
+Version: 1.0.0
+Depends: oatmeal toast
+MD5sum: 7e4c67242ba3e1bfd9c70ec469f897ab
+NeedsCompilation: no
+Path: ./breakfast
+
