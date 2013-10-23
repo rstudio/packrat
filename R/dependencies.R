@@ -24,7 +24,7 @@
 #' # dependencies for an app in another directory
 #' appDependencies("~/projects/shiny/app1")
 #' }
-appDependencies <- function(appDir = getwd()) {
+appDependencies <- function(appDir = ".") {
   unique(c(dirDependencies(appDir), 'packrat'))
 }
 

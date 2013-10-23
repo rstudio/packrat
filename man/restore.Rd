@@ -17,13 +17,15 @@ of installed packages and their versions matches the snapshot exactly.
 
 There are three common use cases for \code{restore}: 
 \itemize{
-  \item \emph{Hydrate}: Use \code{restore} after copying a project to a new
-  machine to populate the library on that machine. 
-  \item \emph{Sync}: Use \code{restore} to apply library changes made by a
-  collaborator to your own library. (In general, you want to run \code{restore}
-  whenever you pick up a change to \code{packrat.lock}) 
-  \item \emph{Rollback}: Use \code{restore} to undo accidental changes made to
-  the library since the last snapshot.
+  \item \strong{Hydrate}: Use \code{restore} after copying a project to a new
+machine to populate the library on that machine. 
+
+  \item \strong{Sync}: Use \code{restore} to apply library changes made by a
+collaborator to your own library. (In general, you want to run \code{restore}
+whenever you pick up a change to \code{packrat.lock}) 
+
+  \item \strong{Rollback}: Use \code{restore} to undo accidental changes made
+to the library since the last snapshot.
 }
 
 \code{restore} cannot make changes to packages that are currently loaded. If
@@ -42,4 +44,7 @@ without prompting.
 \code{restore} works only on the private package library created by packrat; if
 you have other libraries on your path, they will be unaffected.
 }
-
+\seealso{
+\code{\link{snapshot}}, the command that creates the snapshots applied with
+\code{restore}
+}

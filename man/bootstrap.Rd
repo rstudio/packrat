@@ -41,4 +41,7 @@ by default whenever you make library changes (using
 \code{\link{install.packages}}, etc.). You can sync this private library
 with packrat using \code{\link{snapshot}} and \code{\link{restore}}.
 }
+\seealso{
+\link{packrat} for a description of the files created by \code{bootstrap}.
+}
 

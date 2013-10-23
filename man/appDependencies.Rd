@@ -2,7 +2,7 @@
 \alias{appDependencies}
 \title{Detect Application Dependencies}
 \usage{
-  appDependencies(appDir = getwd())
+  appDependencies(appDir = ".")
 }
 \arguments{
   \item{appDir}{Directory containing application. Defaults
