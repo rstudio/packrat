@@ -1,7 +1,7 @@
 \name{snapshot}
 \alias{snapshot}
 \title{
-Capture and store the packages and versions in use. 
+Capture and store the packages and versions in use
 }
 \description{
 Finds the packages in use by the R code in the application, and stores a list of
@@ -45,6 +45,7 @@ working with a version control system, your collaborators can sync the changes
 to these files and then use \code{\link{restore}} to apply your snapshot.
 }
 \examples{
+\dontrun{
 # Take a snapshot of the current project
 snapshot()
 
@@ -53,4 +54,5 @@ snapshot(dry.run = TRUE)
 
 # Take a snapshot of a project that includes a custom package
 snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
+}
 }
