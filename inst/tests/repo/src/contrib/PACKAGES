@@ -1,7 +1,26 @@
+Package: bread
+Version: 1.0.0
+MD5sum: 47d8a50bd45ac56b5dd164c7009ed82c
+NeedsCompilation: no
+Path: ./bread
+
 Package: breakfast
 Version: 1.0.0
 Depends: oatmeal toast
 MD5sum: 7e4c67242ba3e1bfd9c70ec469f897ab
 NeedsCompilation: no
 Path: ./breakfast
+
+Package: oatmeal
+Version: 1.0.0
+MD5sum: f27104eb8793ad023737b406d94d7ee2
+NeedsCompilation: no
+Path: ./oatmeal
+
+Package: toast
+Version: 1.0.0
+Depends: bread
+MD5sum: cacfa7e5b4774677f3ebdc507f93e94f
+NeedsCompilation: no
+Path: ./toast
 
