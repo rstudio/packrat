@@ -46,5 +46,8 @@ you have other libraries on your path, they will be unaffected.
 }
 \seealso{
 \code{\link{snapshot}}, the command that creates the snapshots applied with
-\code{restore}
+\code{restore}.
+
+\code{\link{status}} to view the differences between the most recent snapshot
+and the library.
 }
