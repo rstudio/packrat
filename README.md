@@ -22,13 +22,13 @@ Use packrat to make your R projects more:
 
 > Differences can also arise if one of your collaborators adds or removes packages from the packrat dependencies. In this case, you simply need to tell packrat to update your private package library using `restore()`.
 
-#### `snapshot(appDir = ".")
+#### `snapshot(appDir = ".")`
 
 > Stores the state of the private library (each package and its exact version) in packrat. 
 
 > You'll need to call this after making changes to the private library as described above. Snapshotting your library makes it possible to restore to the snapshot later, and if you're sharing a project with someone else using a version control system, packrat can use the snapshot to mirror your library changes on your collaborator's library. 
 
-#### `restore(appDir = ".")
+#### `restore(appDir = ".")`
 
 > Adds, removes, and changes packages installed in the private library so that they match the state of the most recent snapshot.
 
