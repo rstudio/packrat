@@ -31,8 +31,8 @@ package for which sources exist on neither CRAN or Github.
 to skip the check. Packrat only considers packages used by your code and
 packages which are dependencies of packages used by your code. Any other
 package in the private library is considered an orphan.  If the packages are
-truly orphans, they can be removed with \code{\link{remove.packages}}; if they
-are not, you can make packrat aware that your project needs them by adding a
+truly orphans, they can be removed with \code{\link{clean}}; if they are not,
+you can make packrat aware that your project needs them by adding a
 \code{require} statement to any R file (see \code{\link{appDependencies}}).
 }
   \item{dry.run}{Computes the changes to your packrat state that would be made
@@ -43,6 +43,9 @@ if a snapshot were performed, and prints them to the console.}
 sources stored in the project's \code{packrat.sources} directory. If you are
 working with a version control system, your collaborators can sync the changes
 to these files and then use \code{\link{restore}} to apply your snapshot.
+}
+\seealso{
+\code{\link{restore}} to apply a snapshot. 
 }
 \examples{
 \dontrun{
