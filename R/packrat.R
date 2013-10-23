@@ -284,6 +284,8 @@ wipe <- function(appDir = getwd()) {
 
 #' Install .Rprofile and .Renviron files in the given directory to make it
 #' use a private package library.
+#' 
+#' @export
 packify <- function(dir = '.') {
   dir <- normalizePath(dir, winslash='/', mustWork = TRUE)
   rprofile <- file.path(dir, '.Rprofile')
