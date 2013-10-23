@@ -18,7 +18,8 @@
   \code{bootstrap} works as follows:
   \enumerate{
   \item Application dependencies are computed by examining the R code as described in \code{\link{appDependencies}}.
-  \item A snapshot is taken of the version of each package currently used by the application as described in \code{\link{snapshot}}. 
+  \item A snapshot is taken of the version of each package currently used by the application as described in \code{\link{snapshot}}, and each package's sources 
+are downloaded.
   \item A private library is created in the directory. 
   \item The snapshot is applied to the directory as described in \code{\link{restore}}. 
   }
