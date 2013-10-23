@@ -4,7 +4,7 @@ writeLockFile <- function(file, lockinfo) {
   
   json <- toJSON(list(
     packrat_format = '1.0',
-    packrat_version = packageVersion('packrat'),
+    packrat_version = as.character(packageVersion('packrat')), 
     r_version = rver,
     repos = activeRepos(),
     packages = lockinfo
@@ -29,7 +29,7 @@ readLockFile <- function(file) {
     # Future format. Abort.
     stop("The lockfile was written by an incompatible version of packrat (",
          obj$packrat_version,
-         ").\nPlease upgrade and try again.")
+         ").\nPlease upgrade packrat and try again.")
   } else {
     return(obj)
   }
