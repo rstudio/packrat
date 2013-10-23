@@ -6,6 +6,29 @@
     prompt = interactive())
 }
 \description{
-  Remove unused packages
+Remove unused packages from the given library.
+}
+\arguments{
+  \item{appDir}{Directory containing application. Defaults to current working
+directory.}
+  \item{lib.loc}{The library to clean. Defaults to the private package library
+associated with the application directory.}
+  \item{prompt}{\code{TRUE} to prompt before removing packages, \code{FALSE} to
+remove packages immediately.}
+}
+\details{
+Detects and removes orphaned packages. Orphaned packages are those that meet
+the following criteria: 
+\itemize{
+  \item Installed in the library
+  \item Not directly used by any R code in the application
+  \item Not a dependency of any non-orphaned package
+}
+If \code{clean} wants to remove a package but your project actually needs the
+package, add a statement such as \code{\link{require}}(package-name) to any .R
+file in your project's directory. 
+}
+\seealso{
+\code{\link{appDependencies}} for an explanation of how dependencies are detected.
 }
 
