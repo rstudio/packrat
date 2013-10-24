@@ -11,6 +11,28 @@ cloneTestProject <- function(projectName) {
   return(file.path(target, projectName))
 }
 
+# "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
+# Not run from tests.
+rebuildTestRepo <- function(testroot) {
+  wd <- getwd()
+  on.exit(setwd(wd))
+  src <- file.path(testroot, "packages")
+  setwd(src)
+  target <- file.path(testroot, "repo", "src", "contrib")
+  unlink(target, recursive = TRUE)
+  dir.create(target, recursive = TRUE)
+  pkgs <- list.files(src)
+  for (pkg in pkgs) {
+    descfile <- as.data.frame(read.dcf(file.path(src, pkg, "DESCRIPTION")))
+    tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz", 
+                     sep = "")
+    tar(tarball, pkg, compression = "gzip", tar = "internal")
+    dir.create(file.path(target, pkg))
+    file.rename(file.path(src, tarball), file.path(target, pkg, tarball))
+  }
+  tools::write_PACKAGES(target, subdirs = TRUE)
+}
+
 # Sets up the fake repo used for testing
 setupTestRepo <- function() {
   repo <- paste("file://", 
@@ -20,4 +42,3 @@ setupTestRepo <- function() {
   options("repos" = repo) 
   options("pkgType" = "source")
 }
-
