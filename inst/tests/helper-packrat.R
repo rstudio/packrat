@@ -20,3 +20,4 @@ setupTestRepo <- function() {
   options("repos" = repo) 
   options("pkgType" = "source")
 }
+

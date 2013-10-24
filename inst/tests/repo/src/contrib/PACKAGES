@@ -17,6 +17,12 @@ MD5sum: f27104eb8793ad023737b406d94d7ee2
 NeedsCompilation: no
 Path: ./oatmeal
 
+Package: packrat
+Version: 0.0.0
+MD5sum: bf84e69ee81c4db2ef212898540783dc
+NeedsCompilation: no
+Path: ./packrat
+
 Package: toast
 Version: 1.0.0
 Depends: bread
