@@ -13,3 +13,13 @@ appendToDcf <- function(path, records) {
     cat('\n', sep='', file=path, append=TRUE)
   write.dcf(records, path, append = TRUE)
 }
+
+# Combines one or more comma-delimited fields from a data frame read from a 
+# DCF. 
+combineDcfFields <- function(dcfFrame, fields) {
+  unique(unlist(lapply(fields, function(field) {
+    gsub("\\s.*", "", unlist(
+      strsplit(
+        gsub("^\\s*", "", as.character(dcfFrame[[field]])), "\\s*,\\s*")))
+  })))
+}
