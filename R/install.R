@@ -396,6 +396,10 @@ installPkgs <- function(appDir, repos, pkgRecords, lib,
     }
   }
   
+  # The actions are sorted alphabetically; resort them in the order given by
+  # pkgRecords (previously sorted topologically by makeInstallList)
+  actions <- unlist(lapply(pkgRecords, function(p) { actions[p$name] }))
+
   # If any of the packages to be mutated are loaded, and the library we're
   # installing to is the default library, make a copy of the library and perform
   # the changes on the copy. 
