@@ -90,9 +90,15 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     # Bioconductor repo? 
     if (identical(pkgRecord$version, currentVersion)) {
       # Get the source package
-      download.packages(pkgRecord$name, destdir = pkgSrcDir, 
-                        available = availablePkgs, repos = repos, 
-                        type = "source", quiet = TRUE)
+      fileLoc <- download.packages(pkgRecord$name, destdir = pkgSrcDir, 
+                                   available = availablePkgs, repos = repos, 
+                                   type = "source", quiet = TRUE)
+      # If the file wasn't saved to the destination directory (which can happen
+      # if the repo is local--see documentation in download.packages), copy it
+      # there now
+      if (!identical(fileLoc[1,2], file.path(pkgSrcDir, pkgSrcFile))) {
+        file.copy(fileLoc[1,2], pkgSrcDir)
+      }
       type <- paste(type, "current")
     } else {
       # The version requested is not the version on CRAN; it may be an 
