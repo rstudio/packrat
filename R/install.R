@@ -206,6 +206,23 @@ annotatePkgDesc <- function(pkgRecord, appDir, lib = libdir(appDir)) {
     InstallSource=pkgRecord$source))
 }
 
+# Takes a vector of package names, and returns a logical vector that indicates
+# whether the package was not installed by packrat.
+installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
+  # Can't use installed.packages(fields='InstallAgent') here because it uses
+  # Meta/package.rds, not the DESCRIPTION file, and we only record this info in
+  # the DESCRIPTION file.
+  return(as.logical(sapply(pkgNames, function(pkg) {
+    descFile <- file.path(lib.loc, pkg, 'DESCRIPTION')
+    if (!file.exists(descFile))
+      return(default)
+    ia <- as.character(as.data.frame(read.dcf(descFile))$InstallAgent)
+    if (length(ia) == 0)
+      return(FALSE)
+    return(grepl('^packrat\\b', ia)[1])
+  })))
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, appDir, availablePkgs, repos, 
@@ -339,10 +356,12 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
   invisible()
 }
 
-installPkgs <- function(appDir, repos, pkgRecords, lib) {
+installPkgs <- function(appDir, repos, pkgRecords, lib,
+                        pkgsToKeep=character(0)) {
+  installed <- installed.packages(lib.loc = lib, priority = "NA")
   installedPkgs <- 
     getPackageRecords(
-      rownames(installed.packages(lib.loc = lib)), 
+      setdiff(rownames(installed.packages(lib.loc = lib)), pkgsToKeep), 
       recursive = FALSE, fatal = FALSE)
   actions <- diff(installedPkgs, pkgRecords)
   restartNeeded <- FALSE
