@@ -30,7 +30,13 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
         version = as.character(sourcePackages[pkgName,"version"]),
         source_path = as.character(sourcePackages[pkgName,"path"])
       ), class=c('packageRecord', 'source'))
-      db <- installed.packages(lib.loc = lib.loc)
+      
+      # Read the dependency information directly from the DESCRIPTION file
+      sourceDesc <- as.data.frame(
+          read.dcf(file.path(sourcePackages[pkgName,"path"], "DESCRIPTION")))
+      deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
+      deps <- deps[deps != "R"]
+      db <- NULL
     } else {
       # This package is from an external source (CRAN-like repo or github); 
       # attempt to get its description from the installed package database.
@@ -66,11 +72,13 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
       record <- inferPackageRecord(df)
     }
     if (isTRUE(recursive && !is.null(record))) {
-      deps <- tools::package_dependencies(
-        record$name, db,
-        c("Depends", "Imports", "LinkingTo"),
-        recursive=FALSE
-      )[[record$name]]
+      if (!is.null(db)) {
+        deps <- tools::package_dependencies(
+          record$name, db,
+          c("Depends", "Imports", "LinkingTo"),
+          recursive=FALSE
+        )[[record$name]]
+      }
       record$depends <- getPackageRecords(
         deps, available, sourcePackages, TRUE, lib.loc=lib.loc, fatal=fatal)
     }
