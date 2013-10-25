@@ -49,3 +49,10 @@ installTestPkg <- function(pkg, ver, lib) {
                           args = paste("-l", lib), dependencies = FALSE,
                           quick = TRUE, quiet = TRUE)
 }
+
+# Adds a dependency on a package to a test project
+addTestDependency <- function(projRoot, pkg) {
+  write(paste("library(", pkg, ")", sep = ""), 
+        file = file.path(projRoot, "deps.R"), 
+        append = TRUE)
+}

@@ -19,14 +19,20 @@ on.exit({
 }, add = TRUE)
 setupTestRepo()
 
-test_that("bootstrap creates project structure", {
+test_that("bootstrap creates project structure and installs dependencies", {
   projRoot <- cloneTestProject("sated")
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
+  lib <- libdir(projRoot)
   expect_true(file.exists(file.path(projRoot, "packrat.lock")))
   expect_true(file.exists(file.path(projRoot, "packrat.sources")))
   expect_true(file.exists(file.path(projRoot, "library")))
   expect_true(file.exists(file.path(projRoot, ".Rprofile")))
   expect_true(file.exists(file.path(projRoot, ".Renviron")))
+  expect_true(file.exists(file.path(lib, "breakfast")))
+  expect_true(file.exists(file.path(lib, "bread")))
+  expect_true(file.exists(file.path(lib, "oatmeal")))
+  expect_true(file.exists(file.path(lib, "packrat")))
+  expect_true(file.exists(file.path(lib, "toast")))
 })
 
 test_that("restore removes unused packages", {
@@ -55,3 +61,27 @@ test_that("restore installs missing packages", {
   expect_true(file.exists(file.path(lib, "bread")))
 })
 
+test_that("snapshot captures new dependencies", {
+  projRoot <- cloneTestProject("healthy")
+  lib <- libdir(projRoot)
+  bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
+  
+  # Simulate the addition of a dependency
+  expect_false(file.exists(file.path(lib, "bread")))
+  expect_false(file.exists(file.path(lib, "toast")))
+  installTestPkg("bread", "1.0.0", lib)
+  installTestPkg("toast", "1.0.0", lib)
+  addTestDependency(projRoot, "toast")  # toast depends on bread
+  expect_true(file.exists(file.path(lib, "toast")))  
+  expect_true(file.exists(file.path(lib, "bread")))
+  
+  # Snapshot the new state and make sure we picked up both toast and its 
+  # dependency, bread
+  pkgs <- pkgNames(makeInstallList(lockInfo(projRoot)))
+  expect_false("bread" %in% pkgs)
+  expect_false("toast" %in% pkgs)
+  snapshot(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
+  pkgs <- pkgNames(makeInstallList(lockInfo(projRoot)))
+  expect_true("bread" %in% pkgs)  
+  expect_true("toast" %in% pkgs)  
+})
