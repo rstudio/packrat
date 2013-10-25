@@ -9,8 +9,8 @@ those packages, their sources, and their current versions in packrat.
 }
 \usage{
 snapshot(appDir = ".", available = NULL, lib.loc = libdir(appDir),
-sourcePackagePaths = NULL, orphan.check = TRUE, dry.run = FALSE,
-prompt = interactive())
+sourcePackagePaths = NULL, orphan.check = TRUE, ignore.stale = FALSE,
+dry.run = FALSE, prompt = interactive())
 }
 \arguments{
   \item{appDir}{Directory containing application. Defaults
@@ -36,9 +36,17 @@ truly orphans, they can be removed with \code{\link{clean}}; if they are not,
 you can make packrat aware that your project needs them by adding a
 \code{require} statement to any R file (see \code{\link{appDependencies}}).
 }
+  \item{ignore.stale}{Stale packages are packages that are different from the
+last snapshot, but were installed by packrat. Typically, packages become stale
+when a new snapshot is available, but you haven't applied it yet with
+\code{\link{restore}}. By default, packrat will prevent you from taking a
+snapshot when you have stale packages to prevent you from losing changes from
+the unapplied snapshot. If your intent is to overwrite the last snapshot
+without applying it, use \code{ignore.stale = TRUE} to skip this check.
+}
   \item{dry.run}{Computes the changes to your packrat state that would be made
-if a snapshot were performed, and prints them to the console.}
-
+if a snapshot were performed, and prints them to the console.
+}
   \item{prompt}{\code{TRUE} to prompt before performing snapshotting package
 changes that might be unintended; \code{FALSE} to perform these operations
 without confirmation. Potentially unintended changes include snapshotting

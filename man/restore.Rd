@@ -2,10 +2,15 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-  restore(appDir = ".", prompt = interactive())
+  restore(appDir = ".", overwriteDirty = FALSE, prompt = interactive())
 }
 \arguments{
   \item{appDir}{The directory that contains the packrat project.}
+
+  \item{overwriteDirty}{A dirty package is one that has been changed since the
+last snapshot or restore. Packrat will leave these alone by default. If you
+want to guarantee that \code{restore} will put you in the exact state
+represented by the snapshot being applied, use \code{overwriteDirty = TRUE}.} 
 
   \item{prompt}{\code{TRUE} to prompt before performing potentially destructive
 changes (package removals or downgrades); \code{FALSE} to perform these
