@@ -350,7 +350,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib,
   installedPkgs <- 
     getPackageRecords(
       rownames(installed.packages(lib.loc = lib)), 
-      recursive = FALSE, fatal = FALSE)
+      recursive = FALSE, fatal = FALSE, lib.loc = lib)
   actions <- diff(installedPkgs, pkgRecords)
   restartNeeded <- FALSE
   
