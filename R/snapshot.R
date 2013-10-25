@@ -1,13 +1,15 @@
 #' @export
 snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
-                     ignore.stale = FALSE, dry.run = FALSE) {
+                     ignore.stale = FALSE, dry.run = FALSE, 
+                     prompt = interactive()) {
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   appPackages <- snapshotImpl(appDir, available, lib.loc, sourcePackages, dry.run,
                               orphan.check = orphan.check,
-                              ignore.stale = ignore.stale)
+                              ignore.stale = ignore.stale, 
+                              prompt = prompt && !dry.run)
   
   if (!dry.run) {
     # Check to see if any of the packages we just snapshotted are not, in fact,
@@ -19,15 +21,15 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
       installPkgs(appDir,
                   activeRepos(),
                   searchPackages(appPackages, appPackageNames),
-                  lib.loc)
+                  lib.loc, prompt)
     }
   }
 }
 
 snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir),
                          sourcePackages = NULL, dry.run = FALSE,
-                         orphan.check = FALSE, ignore.stale = FALSE) {
-  
+                         orphan.check = FALSE, ignore.stale = FALSE,
+                         prompt = interactive()) {
   lockPackages <- lockInfo(appDir, fatal=FALSE)
   
   # Get the package records for dependencies of the app. It's necessary to 
@@ -96,7 +98,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
     }
   }
   
-  if (interactive() && mustConfirm) {
+  if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n] ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
     if (nzchar(answer) && tolower(answer) != 'y') {
