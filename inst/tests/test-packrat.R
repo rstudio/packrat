@@ -39,3 +39,20 @@ test_that("restore removes unused packages", {
   restore(projRoot, prompt = FALSE)
   expect_false(file.exists(file.path(lib, "oatmeal")))
 })
+
+test_that("restore installs missing packages", {
+  projRoot <- cloneTestProject("carbs")
+  lib <- libdir(projRoot)
+  bootstrap(projRoot, 
+            sourcePackagePaths = 
+              file.path(system.file("tests", package = "packrat"), 
+                        "packages", "packrat"))
+  expect_true(file.exists(file.path(lib, "bread")))  
+  
+  # Remove a used package and restore
+  remove.packages("bread", lib = lib)
+  expect_false(file.exists(file.path(lib, "bread")))
+  restore(projRoot, prompt = FALSE)
+  expect_true(file.exists(file.path(lib, "bread")))
+})
+

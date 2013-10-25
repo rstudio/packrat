@@ -5,7 +5,7 @@ cloneTestProject <- function(projectName) {
                     "projects", projectName)
   target <- tempdir()
   if (file.exists(file.path(target, projectName))) {
-    file.remove(file.path(target, projectName, recursive = TRUE))
+    unlink(file.path(target, projectName), recursive = TRUE)
   }
   file.copy(root, target, recursive = TRUE)
   return(file.path(target, projectName))
