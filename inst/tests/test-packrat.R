@@ -2,8 +2,7 @@ library(testthat)
 
 context("Packrat tests")
 
-# For the context of these tests, we need to use a private repo and library. 
-# Set the repo and library and restore the original settings when we're done.
+# For the context of these tests, we need to use a private repo.
 repos <- getOption("repos")
 pkgType <- getOption("pkgType")
 on.exit({ 
@@ -13,12 +12,30 @@ on.exit({
 setupTestRepo()
 
 test_that("bootstrap creates project structure", {
-  # Use the test repo for this test, and restore the existing repos when the
-  # test is finished
   projRoot <- cloneTestProject("sated")
   bootstrap(projRoot, 
             sourcePackagePaths = 
               file.path(system.file("tests", package = "packrat"), 
                         "packages", "packrat"))
   expect_true(file.exists(file.path(projRoot, "packrat.lock")))
+  expect_true(file.exists(file.path(projRoot, "packrat.sources")))
+  expect_true(file.exists(file.path(projRoot, "library")))
+  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
+  expect_true(file.exists(file.path(projRoot, ".Renviron")))
+})
+
+test_that("restore removes unused packages", {
+  projRoot <- cloneTestProject("carbs")
+  lib <- libdir(projRoot)
+  bootstrap(projRoot, 
+            sourcePackagePaths = 
+              file.path(system.file("tests", package = "packrat"), 
+                        "packages", "packrat"))
+  expect_true(file.exists(file.path(lib, "bread")))  
+  
+  # Install an unused package and restore
+  install.packages("oatmeal", lib = lib)
+  expect_true(file.exists(file.path(lib, "oatmeal")))
+  restore(projRoot, prompt = FALSE)
+  expect_false(file.exists(file.path(lib, "oatmeal")))
 })
