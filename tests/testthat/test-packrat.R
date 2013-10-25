@@ -16,7 +16,7 @@ test_that("bootstrap creates project structure", {
   bootstrap(projRoot, 
             sourcePackagePaths = 
               file.path(system.file("tests", package = "packrat"), 
-                        "packages", "packrat"))
+                        "testthat", "packages", "packrat"))
   expect_true(file.exists(file.path(projRoot, "packrat.lock")))
   expect_true(file.exists(file.path(projRoot, "packrat.sources")))
   expect_true(file.exists(file.path(projRoot, "library")))
@@ -30,7 +30,7 @@ test_that("restore removes unused packages", {
   bootstrap(projRoot, 
             sourcePackagePaths = 
               file.path(system.file("tests", package = "packrat"), 
-                        "packages", "packrat"))
+                        "testthat", "packages", "packrat"))
   expect_true(file.exists(file.path(lib, "bread")))  
   
   # Install an unused package and restore
@@ -46,7 +46,7 @@ test_that("restore installs missing packages", {
   bootstrap(projRoot, 
             sourcePackagePaths = 
               file.path(system.file("tests", package = "packrat"), 
-                        "packages", "packrat"))
+                        "testthat", "packages", "packrat"))
   expect_true(file.exists(file.path(lib, "bread")))  
   
   # Remove a used package and restore

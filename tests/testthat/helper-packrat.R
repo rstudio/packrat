@@ -2,7 +2,7 @@
 # path to the test project
 cloneTestProject <- function(projectName) {
   root <- file.path(system.file("tests", package = "packrat"), 
-                    "projects", projectName)
+                    "testthat", "projects", projectName)
   target <- tempdir()
   if (file.exists(file.path(target, projectName))) {
     unlink(file.path(target, projectName), recursive = TRUE)
@@ -36,7 +36,8 @@ rebuildTestRepo <- function(testroot) {
 # Sets up the fake repo used for testing
 setupTestRepo <- function() {
   repo <- paste("file://", 
-                file.path(system.file("tests", package = "packrat"), "repo"),
+                file.path(system.file("tests", package = "packrat"), 
+                          "testthat", "repo"), 
                 sep = "")
   names(repo) <- "CRAN"
   options("repos" = repo) 
