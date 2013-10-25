@@ -9,7 +9,8 @@ those packages, their sources, and their current versions in packrat.
 }
 \usage{
 snapshot(appDir = ".", available = NULL, lib.loc = libdir(appDir),
-sourcePackagePaths = NULL, orphan.check = TRUE, dry.run = FALSE)
+sourcePackagePaths = NULL, orphan.check = TRUE, dry.run = FALSE,
+prompt = interactive())
 }
 \arguments{
   \item{appDir}{Directory containing application. Defaults
@@ -37,6 +38,12 @@ you can make packrat aware that your project needs them by adding a
 }
   \item{dry.run}{Computes the changes to your packrat state that would be made
 if a snapshot were performed, and prints them to the console.}
+
+  \item{prompt}{\code{TRUE} to prompt before performing snapshotting package
+changes that might be unintended; \code{FALSE} to perform these operations
+without confirmation. Potentially unintended changes include snapshotting
+packages at an older version than the last snapshot, or missing despite being
+present in the last snapshot.}
 }
 \note{
 \code{snapshot} modifies the project's \code{packrat.lock} file, and the
