@@ -1,8 +1,7 @@
 # Clone a test project into a temporary directory for manipulation; returns the
 # path to the test project
 cloneTestProject <- function(projectName) {
-  root <- file.path(system.file("tests", package = "packrat"), 
-                    "testthat", "projects", projectName)
+  root <- file.path("projects", projectName)
   target <- tempdir()
   if (file.exists(file.path(target, projectName))) {
     unlink(file.path(target, projectName), recursive = TRUE)
@@ -35,11 +34,18 @@ rebuildTestRepo <- function(testroot) {
 
 # Sets up the fake repo used for testing
 setupTestRepo <- function() {
-  repo <- paste("file://", 
-                file.path(system.file("tests", package = "packrat"), 
-                          "testthat", "repo"), 
-                sep = "")
+  repo <- paste("file://", normalizePath("repo"), sep = "")
   names(repo) <- "CRAN"
   options("repos" = repo) 
   options("pkgType" = "source")
+}
+
+# Installs a test package from source. Necessary because install.packages 
+# fails under R CMD CHECK.  
+installTestPkg <- function(pkg, ver, lib) {
+  pkgSrc <- file.path("repo", "src", "contrib", pkg, 
+                      paste(pkg, "_", ver, ".tar.gz", sep = ""))
+  devtools::install_local(path = pkgSrc, reload = FALSE, 
+                          args = paste("-l", lib), dependencies = FALSE,
+                          quick = TRUE, quiet = TRUE)
 }

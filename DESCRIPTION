@@ -17,6 +17,8 @@ Imports:
     RJSONIO,
     devtools (>= 1.3.99),
     httr
+Suggests:
+    testthat (>= 0.7)
 Enhances: BiocInstaller
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
