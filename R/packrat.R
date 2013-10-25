@@ -37,10 +37,10 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
   inferredDependencies <- appDependencies(appDir)
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   snapshotImpl(appDir, available.packages(contrib.url(activeRepos())),
-               sourcePackages=sourcePackages, lib.loc = NULL)
+               sourcePackages=sourcePackages, lib.loc = NULL, ignore.stale=TRUE)
   
   # Use the lockfile to copy sources and install packages to the library
-  restore(appDir)
+  restore(appDir, overwriteDirty=TRUE)
   
   # Write the .Rprofile and .Renviron files
   packify(appDir)
@@ -49,7 +49,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 }
 
 #' @export
-restore <- function(appDir = '.', prompt = interactive()) {
+restore <- function(appDir = '.', overwriteDirty = FALSE, 
+                    prompt = interactive()) {
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
   
   # RTools cp.exe (invoked during installation) can warn on Windows since we
@@ -78,10 +79,28 @@ restore <- function(appDir = '.', prompt = interactive()) {
     dir.create(libDir, recursive=TRUE)
   }
   
+  if (!isTRUE(overwriteDirty)) {
+    installListNames <- pkgNames(installList)
+    dirty <- !installedByPackrat(installListNames, libDir, NA)
+    dirty[is.na(dirty)] <- FALSE  # Anything that is not installed is not dirty
+    dirtyPackages <- getPackageRecords(installListNames[dirty], recursive=FALSE,
+                                       lib.loc=libDir)
+    installList <- installList[!dirty]
+    prettyPrint(
+      dirtyPackages,
+      'The following packages are dirty and will not be overwritten:',
+      'If you would like to overwrite them, call restore again with\noverwriteDirty = TRUE.'
+    )
+    dirtyPackageNames <- installListNames[dirty]
+  } else {
+    dirtyPackageNames <- character(0)
+  }
+
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
   repos <- lockInfo(appDir, 'repos')
-  installPkgs(appDir, repos, installList, libDir, prompt)    
+  installPkgs(appDir, repos, installList, libDir,
+              pkgsToKeep = dirtyPackageNames, prompt = prompt)
 }
 
 #' @export

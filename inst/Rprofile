@@ -41,6 +41,9 @@ local({
   if (file.exists(file.path(appRoot, 'library.new'))) {
     file.remove(file.path(appRoot, 'library.new'), recursive = TRUE)
   }
+  if (file.exists(file.path(appRoot, 'library.old'))) {
+    file.remove(file.path(appRoot, 'library.old'), recursive = TRUE)
+  }
   
   .libPaths(localLib)
 

@@ -1,12 +1,15 @@
 #' @export
 snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
-                     dry.run = FALSE, prompt = interactive()) {
+                     ignore.stale = FALSE, dry.run = FALSE, 
+                     prompt = interactive()) {
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   appPackages <- snapshotImpl(appDir, available, lib.loc, sourcePackages, dry.run,
-                              orphan.check = orphan.check)
+                              orphan.check = orphan.check,
+                              ignore.stale = ignore.stale, 
+                              prompt = prompt && !dry.run)
   
   if (!dry.run) {
     # Check to see if any of the packages we just snapshotted are not, in fact,
@@ -25,8 +28,8 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
 
 snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir),
                          sourcePackages = NULL, dry.run = FALSE,
-                         orphan.check = FALSE, prompt = interactive()) {
-  
+                         orphan.check = FALSE, ignore.stale = FALSE,
+                         prompt = interactive()) {
   lockPackages <- lockInfo(appDir, fatal=FALSE)
   
   # Get the package records for dependencies of the app. It's necessary to 
@@ -53,6 +56,26 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   
   diffs <- diff(lockPackages, appPackages)
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% diffs)
+  
+  if (!ignore.stale) {
+    # If any packages are installed, different from what's in the lockfile, and
+    # were installed by packrat, that means they are stale.
+    stale <- names(diffs)[!is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)]
+    if (length(stale) > 0) {
+      prettyPrint(
+        getPackageRecords(stale, NULL, sourcePackages = sourcePackages,
+                          recursive = FALSE, lib.loc = lib.loc),
+        'The following packages are stale:',
+        c('These packages must be updated by calling packrat::restore() before\n',
+          'snapshotting. If you are sure you want the installed versions of these\n',
+          'packages to be snapshotted, call packrat::snapshot() again with\n',
+          'ignore.stale=TRUE.')
+      )
+      message('--\nSnapshot operation was cancelled, no changes were made.')
+      return(invisible())
+    }
+  }
+  
   summarizeDiffs(diffs, lockPackages, appPackages, 
                  'Adding these packages to packrat:', 
                  'Removing these packages from packrat:', 
@@ -62,7 +85,17 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   
   if (all(is.na(diffs))) {
     message("Already up to date")
-    return(invisible())
+    if (is.null(lib.loc) || 
+          all(installedByPackrat(pkgNames(flattenPackageRecords(appPackages)),
+                                 lib.loc, FALSE))) {
+      # If none of the packages/versions differ, and all of the packages in the
+      # private library were installed by packrat, then we can short-circuit.
+      # If the package/versions differ, we obviously need to continue, so we can
+      # write the new lockfile. If packages were installed NOT by packrat, we
+      # need to mark them as installed by packrat so they no longer are
+      # considered "dirty" changes in need of snapshotting.
+      return()
+    }
   }
   
   if (prompt && mustConfirm) {
@@ -79,6 +112,12 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
                   appPackages)
     cat('Snapshot written to', 
         normalizePath(file.path(appDir, "packrat.lock"), winslash = '/'), '\n')
+
+    if (!is.null(lib.loc)) {
+      for (pkgRecord in flattenPackageRecords(appPackages)) {
+        annotatePkgDesc(pkgRecord, appDir=appDir, lib=lib.loc)
+      }
+    }
   }
   
   return(invisible(appPackages))
