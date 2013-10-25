@@ -1,7 +1,7 @@
 #' @export
 snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
-                     dry.run = FALSE) {
+                     dry.run = FALSE, prompt = interactive()) {
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
@@ -18,14 +18,14 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
       installPkgs(appDir,
                   activeRepos(),
                   searchPackages(appPackages, appPackageNames),
-                  lib.loc)
+                  lib.loc, prompt)
     }
   }
 }
 
 snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir),
                          sourcePackages = NULL, dry.run = FALSE,
-                         orphan.check = FALSE) {
+                         orphan.check = FALSE, prompt = interactive()) {
   
   lockPackages <- lockInfo(appDir, fatal=FALSE)
   
@@ -65,7 +65,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
     return(invisible())
   }
   
-  if (interactive() && mustConfirm) {
+  if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n] ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
     if (nzchar(answer) && tolower(answer) != 'y') {

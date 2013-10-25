@@ -49,7 +49,7 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 }
 
 #' @export
-restore <- function(appDir = '.') {
+restore <- function(appDir = '.', prompt = interactive()) {
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
   
   # RTools cp.exe (invoked during installation) can warn on Windows since we
@@ -81,7 +81,7 @@ restore <- function(appDir = '.') {
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
   repos <- lockInfo(appDir, 'repos')
-  installPkgs(appDir, repos, installList, libDir)    
+  installPkgs(appDir, repos, installList, libDir, prompt)    
 }
 
 #' @export
