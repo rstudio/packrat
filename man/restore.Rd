@@ -2,11 +2,14 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-  restore(appDir = ".")
+  restore(appDir = ".", prompt = interactive())
 }
 \arguments{
   \item{appDir}{The directory that contains the packrat project.}
 
+  \item{prompt}{\code{TRUE} to prompt before performing potentially destructive
+changes (package removals or downgrades); \code{FALSE} to perform these
+operations without confirmation.}
 }
 \description{
 Applies the most recent snapshot to the project's private library. 
@@ -38,8 +41,8 @@ changes made between running \code{restore} and restarting R will be lost.
 \code{restore} can be destructive; it will remove packages that were not in the
 snapshot, and it will replace newer packages with older versions if that's what
 the snapshot indicates. \code{restore} will warn you before attempting to
-remove or downgrade a package, but will perform upgrades and new installations
-without prompting. 
+remove or downgrade a package (if \code{prompt} is \code{TRUE}), but will
+always perform upgrades and new installations without prompting. 
 
 \code{restore} works only on the private package library created by packrat; if
 you have other libraries on your path, they will be unaffected.

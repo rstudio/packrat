@@ -363,8 +363,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
 }
 
 installPkgs <- function(appDir, repos, pkgRecords, lib,
-                        pkgsToKeep=character(0)) {
-  installed <- installed.packages(lib.loc = lib, priority = "NA")
+                        pkgsToKeep=character(0), prompt=interactive()) {
   installedPkgs <- 
     getPackageRecords(
       setdiff(rownames(installed.packages(lib.loc = lib)), pkgsToKeep), 
@@ -381,7 +380,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib,
 
   # Since we print actions as we do them, there's no need to do a summary
   # print first unless we need the user to confirm. 
-  if (interactive() && mustConfirm) {
+  if (prompt && mustConfirm) {
     summarizeDiffs(actions, installedPkgs, pkgRecords, 
                    'Adding these packages to your library:', 
                    'Removing these packages from your library:', 
@@ -397,8 +396,12 @@ installPkgs <- function(appDir, repos, pkgRecords, lib,
   }
   
   # The actions are sorted alphabetically; resort them in the order given by
-  # pkgRecords (previously sorted topologically by makeInstallList)
-  actions <- unlist(lapply(pkgRecords, function(p) { actions[p$name] }))
+  # pkgRecords (previously sorted topologically by makeInstallList). Remove
+  # actions are special, since they don't exist in the lockfile-generated list;
+  # extract them and combine afterwards. 
+  removeActions <- actions[actions == "remove"] 
+  actions <- c(removeActions, 
+               unlist(lapply(pkgRecords, function(p) { actions[p$name] })))
 
   # If any of the packages to be mutated are loaded, and the library we're
   # installing to is the default library, make a copy of the library and perform

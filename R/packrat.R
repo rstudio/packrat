@@ -49,7 +49,8 @@ bootstrap <- function(appDir = '.', sourcePackagePaths = character()) {
 }
 
 #' @export
-restore <- function(appDir = '.', overwriteDirty = FALSE) {
+restore <- function(appDir = '.', overwriteDirty = FALSE, 
+                    prompt = interactive()) {
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
   
   # RTools cp.exe (invoked during installation) can warn on Windows since we
@@ -99,7 +100,7 @@ restore <- function(appDir = '.', overwriteDirty = FALSE) {
   # then from sources.
   repos <- lockInfo(appDir, 'repos')
   installPkgs(appDir, repos, installList, libDir,
-              pkgsToKeep = dirtyPackageNames)
+              pkgsToKeep = dirtyPackageNames, prompt = prompt)
 }
 
 #' @export
