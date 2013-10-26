@@ -151,10 +151,9 @@ makePkgInstallList <- function(packageDepSubtree, installed) {
   return(installList)
 }
 
-# Given a package dependency tree, return a list of the packages to be installed
-# to fulfill the tree, in the order of installation (i.e. each package's 
-# dependencies must be installed before the package itself). 
-makeInstallList <- function(packageDepTree) {
+# Given a package dependency tree, return a flattened list of the packages, 
+# ordered by depth-first traversal 
+pkgListFromTree <- function(packageDepTree) {
   installed <- new.env(hash = TRUE, parent = emptyenv())
   makePkgInstallList(packageDepTree, installed)
 }

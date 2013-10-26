@@ -298,7 +298,7 @@ installPkg <- function(pkgRecord, appDir, availablePkgs, repos,
   return(type)  
 }
 
-playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
+playActions <- function(pkgRecords, actions, repos, appDir, lib) {
   # Get the list of available packages and the latest version of those packages
   # from the repositories, and the local install list for comparison 
   availablePkgs <- available.packages(contrib.url(repos))
@@ -362,7 +362,7 @@ playInstallActions <- function(pkgRecords, actions, repos, appDir, lib) {
   invisible()
 }
 
-installPkgs <- function(appDir, repos, pkgRecords, lib,
+restoreImpl <- function(appDir, repos, pkgRecords, lib,
                         pkgsToKeep=character(0), prompt=interactive()) {
   installedPkgs <- 
     getPackageRecords(
@@ -396,7 +396,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib,
   }
   
   # The actions are sorted alphabetically; resort them in the order given by
-  # pkgRecords (previously sorted topologically by makeInstallList). Remove
+  # pkgRecords (previously sorted topologically by pkgListFromTree). Remove
   # actions are special, since they don't exist in the lockfile-generated list;
   # extract them and combine afterwards. 
   removeActions <- actions[actions == "remove"] 
@@ -419,8 +419,7 @@ installPkgs <- function(appDir, repos, pkgRecords, lib,
   }
   
   # Play the list, if there's anything to play
-  playInstallActions(pkgRecords, actions, repos, appDir, 
-                     targetLib)
+  playActions(pkgRecords, actions, repos, appDir, targetLib)
   if (restartNeeded) {
     message("You must restart R to finish applying these changes.")
   }

@@ -77,7 +77,7 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
     privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
     pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
     if (length(pkgsToInstall) > 0) {
-      installPkgs(appDir,
+      restoreImpl(appDir,
                   activeRepos(),
                   searchPackages(appPackages, appPackageNames),
                   lib.loc, prompt)
@@ -166,7 +166,7 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   }
   
   if (!dry.run) {
-    snapshotSources(appDir, activeRepos(), makeInstallList(appPackages))
+    snapshotSources(appDir, activeRepos(), pkgListFromTree(appPackages))
     writeLockFile(file.path(appDir, "packrat.lock"),
                   appPackages)
     cat('Snapshot written to', 
