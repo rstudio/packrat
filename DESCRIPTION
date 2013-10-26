@@ -25,8 +25,8 @@ BugReports: https://github.com/rstudio/packrat/issues
 Collate:
     'dependencies.R'
     'descfile.R'
-    'install.R'
     'lockfile.R'
     'packrat.R'
     'pkg.R'
+    'restore.R'
     'snapshot.R'
