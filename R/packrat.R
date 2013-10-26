@@ -105,71 +105,122 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
 
 #' @export
 status <- function(appDir = '.', lib.loc = libdir(appDir), quiet = FALSE) {
+  appDirDefault <- identical(appDir, '.')
   appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
 
-  packages <- lockInfo(appDir)
-  recsLock <- flattenPackageRecords(packages)
-  namesLock <- pkgNames(recsLock)
+  ### Step 1: Collect packages from three sources: packrat.lock, code inspection
+  ### (using lib.loc and .libPaths() to find packages/dependencies), and by
+  ### enumerating the packages in lib.loc.
   
-  installedList <- as.vector(installed.packages(libdir(appDir))[,'Package'])
-  recsLib <- flattenPackageRecords(getPackageRecords(installedList, NULL, lib.loc=lib.loc))
-  namesLib <- pkgNames(recsLib)
-  
-  onlyLock <- recsLock[!recsLock %in% recsLib]
-  onlyLib <- recsLib[!recsLib %in% recsLock]
-  
-  list(onlyLock = onlyLock, onlyLib = onlyLib)
-  
-  if (!isTRUE(quiet)) {
-    prettyPrint(onlyLock,
-                'Packrat thinks these packages are missing from your library:',
-                'You can install them using "packrat::install()".')
-  }
-  
-  dirDeps <- dirDependencies(appDir)
-  recsDir <- flattenPackageRecords(getPackageRecords(dirDeps, NULL, lib.loc=lib.loc, fatal=FALSE))
-  namesDir <- pkgNames(recsDir)
-  
-  # What packages are missing from packrat, but present in the source?
-  libsInSourceIndex <- pkgNames(onlyLib) %in% pkgNames(recsDir)
-  probablyInstall <- onlyLib[libsInSourceIndex]
-  # What packages are missing from packrat and not present in the source?
-  probablyRemove <- onlyLib[!libsInSourceIndex]
-  
-  if (!isTRUE(quiet)) {
-    prettyPrint(
-      probablyInstall,
-      'These packages are installed and used in your R scripts, but\nmissing from packrat:',
-      'You can add them with "packrat::add()".')
-    
-    prettyPrint(
-      probablyRemove,
-      'These packages are installed, but not used in your R scripts,\nand not present in packrat:',
-      'You can remove them with "packrat::remove()".')
-  }
-  
-  onlyInSource <- recsDir[!(namesDir %in% namesLib | namesDir %in% namesLock)]
-  if (!isTRUE(quiet)) {
-    prettyPrint(
-      onlyInSource,
-      'These packages are in neither packrat nor your library, but\nthey appear to be used in your R scripts.',
-      'You can try to install the latest versions from CRAN using\n"packrat::bootstrap()". Or, install them manually, and then\nrun "packrat::add()".')
-  }
-  
-  result <- list(
-    PackratOnly = onlyLock,
-    LibraryOnly = onlyLib,
-    SourceOnly = onlyInSource,
-    ProbablyInstall = probablyInstall,
-    ProbablyRemove = probablyRemove
-  )
-  
-  # If any of the lists have length > 0, return result; otherwise NULL
-  if (any(sapply(result, length) > 0)) {
-    return(invisible(result))
-  } else {
+  # Packages from the lockfile
+  packratPackages <- lockInfo(appDir, fatal=FALSE)
+  if (length(packratPackages) == 0) {
+    bootstrapArg <- if (appDirDefault) '' else deparse(appDir)
+    message('This directory does not appear to be using packrat.\n',
+            'Call packrat::bootstrap(', bootstrapArg, ') to initialize ',
+            'packrat.')
     return(invisible())
   }
+  packratNames <- pkgNames(flattenPackageRecords(packratPackages))
+  
+  # Packages that are inferred from the code
+  allAppPackageNames <- pkgNames(flattenPackageRecords(getPackageRecords(
+    appDependencies(appDir), NULL, lib.loc = c(lib.loc, .libPaths()))))
+  
+  # (Non-recursive) packages from the library--i.e., installed packages
+  libPackages <- getPackageRecords(
+    as.vector(installed.packages(lib.loc, noCache=TRUE)[,'Package']), NULL,
+    lib.loc=lib.loc, recursive=FALSE)
+  libPackageNames <- pkgNames(libPackages)
+  
+  ### Step 2: Now that we have all the packages, we'll figure out which of them
+  ### are dirty, are orphans, and/or don't have consistent versions between the
+  ### lockfile and the library.
+
+  # Orphan: Exists in the library, not in the code.
+  orphanNames <- setdiff(pkgNames(libPackages), allAppPackageNames)
+  # Dirty: Not installed by packrat.
+  # TODO: Should non-lib.loc (e.g. non-installed recommended) be included in dirtyNames?
+  dirtyNames <- libPackageNames[!installedByPackrat(libPackageNames, lib.loc, FALSE)]
+  # Changed: Different versions represented in lockfile vs. library (including
+  # added/removed packages)
+  diffs <- diff(packratPackages, libPackages)
+  changedNames <- names(diffs[!is.na(diffs)])
+  
+  ### Step 3: Create logical vectors indicating set membership, then use those
+  ### vectors to classify each package.
+  
+  allNames <- sort(unique(c(packratNames, allAppPackageNames, libPackageNames)))
+  isChanged <- allNames %in% changedNames
+  #isInstalled <- allNames %in% libPackageNames
+  isDirty <- allNames %in% dirtyNames
+  isOrphan <- allNames %in% orphanNames
+  
+  # classify will have NA, restore, snapshot, and clean as possible values; the
+  # rownames will be package names
+  classify <- as.character(rep.int(NA, length(allNames)))
+  names(classify) <- allNames
+  
+  # It's intentional that each assignment may overwrite previously written
+  # values (e.g. in the case that something is both dirty and an orphan, it will
+  # be classified as "clean").
+  classify[isChanged] <- 'restore'
+  classify[isDirty] <- 'snapshot'
+  classify[isOrphan] <- 'clean'
+  
+  ### Step 4: Print the results
+  
+  if (!quiet) {
+    fetch <- function(classification) {
+      names(subset(classify, classify == classification))
+    }
+    
+    prettyPrint(
+      searchPackages(libPackages, fetch('clean')),
+      "The following packages are installed but not needed:",
+      c("Use packrat::clean() to remove them. Or, if they are actually needed\n",
+        "by your project, add `library(packagename)` calls to a .R file\n",
+        "somewhere in your project.")
+    )
+    
+    prettyPrintPair(
+      searchPackages(packratPackages, fetch('restore')),
+      searchPackages(libPackages, fetch('restore')),
+      "The following packages are missing from your library, or are out of date:",
+      "Use packrat::restore() to install/remove the appropriate packages.",
+      "packrat",
+      "installed"
+    )
+    
+    prettyPrintPair(
+      searchPackages(libPackages, fetch('snapshot')),
+      searchPackages(packratPackages, fetch('snapshot')),
+      c("The following packages have been updated in your library, but have not\n",
+        "been recorded in packrat:"),
+      c("Use packrat::snapshot() to record these packages in packrat."),
+      "installed",
+      "packrat"
+    )
+  }
+  
+  if (!any(isChanged) && !any(isDirty) && !any(isOrphan)) {
+    message('Up to date.')
+    return(invisible(TRUE))
+  }
+
+  return(invisible(FALSE))
+}
+
+extractVersions <- function(packages, packageNames) {
+  as.character(lapply(
+    searchPackages(packages, packageNames),
+    function(pkg) {
+      if (is.null(pkg))
+        return(NA)
+      else
+        return(pkg$version)
+    }
+  ))
 }
 
 prettyPrint <- function(packages, header, footer = NULL) {
@@ -221,7 +272,8 @@ summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage,
   )
 }
 
-prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
+prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
+                            fromLabel = 'from', toLabel = 'to') {
   if (length(packagesFrom) > 0) {
     if (any(pkgNames(packagesFrom) != pkgNames(packagesTo)))
       stop('Invalid arguments--package records list mistmatch')
@@ -232,8 +284,9 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL) {
       cat('\n')
     }
     
-    df <- data.frame(from = paste(" ", sapply(packagesFrom, pick("version"))),
-                     to = paste(" ", sapply(packagesTo, pick("version"))))
+    df <- data.frame(paste(" ", sapply(packagesFrom, pick("version"))),
+                     paste(" ", sapply(packagesTo, pick("version"))))
+    names(df) <- c(fromLabel, toLabel)
     row.names(df) <- paste("   ", pkgNames(packagesFrom))
     print(df)
 
@@ -255,7 +308,7 @@ clean <- function(appDir = ".", lib.loc = libdir(appDir),
   packagesInUse <- getPackageRecords(rootDeps, available=NULL,
                                      sourcePackages=NULL,
                                      recursive=TRUE,
-                                     lib.loc=lib.loc)
+                                     lib.loc=c(lib.loc, .libPaths()))
   
   installedPkgNames <- row.names(installed.packages(
     lib.loc=lib.loc, priority=c('NA', 'recommended'), noCache=TRUE))
