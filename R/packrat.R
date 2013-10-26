@@ -220,7 +220,7 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
   }
   
   # Generate the list of packages to install
-  installList <- makeInstallList(packages)
+  installList <- pkgListFromTree(packages)
   
   # Make sure the library directory exists 
   libDir <- libdir(appDir)
@@ -248,7 +248,7 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
   repos <- lockInfo(appDir, 'repos')
-  installPkgs(appDir, repos, installList, libDir,
+  restoreImpl(appDir, repos, installList, libDir,
               pkgsToKeep = dirtyPackageNames, prompt = prompt)
 }
 
