@@ -39,10 +39,10 @@ local({
   # If the new library temporary folder exists, remove it now so we don't
   # attempt to reapply the same failed changes 
   if (file.exists(file.path(appRoot, 'library.new'))) {
-    file.remove(file.path(appRoot, 'library.new'), recursive = TRUE)
+    unlink(file.path(appRoot, 'library.new'), recursive = TRUE)
   }
   if (file.exists(file.path(appRoot, 'library.old'))) {
-    file.remove(file.path(appRoot, 'library.old'), recursive = TRUE)
+    unlink(file.path(appRoot, 'library.old'), recursive = TRUE)
   }
   
   .libPaths(localLib)
