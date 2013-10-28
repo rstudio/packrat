@@ -1,69 +1,76 @@
 \name{snapshot}
 \alias{snapshot}
-\title{
-Capture and store the packages and versions in use
-}
-\description{
-Finds the packages in use by the R code in the application, and stores a list of
-those packages, their sources, and their current versions in packrat. 
-}
+\title{Capture and store the packages and versions in use}
 \usage{
-snapshot(appDir = ".", available = NULL, lib.loc = libdir(appDir),
-sourcePackagePaths = NULL, orphan.check = TRUE, ignore.stale = FALSE,
-dry.run = FALSE, prompt = interactive())
+  snapshot(appDir = ".", available = NULL,
+    lib.loc = libdir(appDir), sourcePackagePaths = NULL,
+    orphan.check = TRUE, ignore.stale = FALSE,
+    dry.run = FALSE, prompt = interactive())
 }
 \arguments{
   \item{appDir}{Directory containing application. Defaults
-  to current working directory.
+  to current working directory.}
+
+  \item{available}{A database of available packages, as
+  returned by \code{\link{available.packages}}. It is only
+  necessary to supply this parameter if the state being
+  snapshotted includes packages not installed locally,
+  which is rare.}
+
+  \item{lib.loc}{The library to snapshot. Defaults to the
+  private library associated with the given directory.}
+
+  \item{sourcePackagePaths}{A character vector of
+  directories containing R package sources. It is only
+  necessary to supply this parameter when using a package
+  for which sources exist on neither CRAN or Github.}
+
+  \item{orphan.check}{\code{TRUE} to check for orphaned
+  packages; \code{FALSE} to skip the check. Packrat only
+  considers packages used by your code and packages which
+  are dependencies of packages used by your code. Any other
+  package in the private library is considered an orphan.
+  If the packages are truly orphans, they can be removed
+  with \code{\link{clean}}; if they are not, you can make
+  packrat aware that your project needs them by adding a
+  \code{require} statement to any R file (see
+  \code{\link{appDependencies}}).}
+
+  \item{ignore.stale}{Stale packages are packages that are
+  different from the last snapshot, but were installed by
+  packrat. Typically, packages become stale when a new
+  snapshot is available, but you haven't applied it yet
+  with \code{\link{restore}}. By default, packrat will
+  prevent you from taking a snapshot when you have stale
+  packages to prevent you from losing changes from the
+  unapplied snapshot. If your intent is to overwrite the
+  last snapshot without applying it, use \code{ignore.stale
+  = TRUE} to skip this check.}
+
+  \item{dry.run}{Computes the changes to your packrat state
+  that would be made if a snapshot were performed, and
+  prints them to the console.}
+
+  \item{prompt}{\code{TRUE} to prompt before performing
+  snapshotting package changes that might be unintended;
+  \code{FALSE} to perform these operations without
+  confirmation. Potentially unintended changes include
+  snapshotting packages at an older version than the last
+  snapshot, or missing despite being present in the last
+  snapshot.}
 }
-  \item{available}{A database of available packages, as returned by
-\code{\link{available.packages}}. It is only necessary to supply this parameter
-if the state being snapshotted includes packages not installed locally, which
-is rare.  
-}
-  \item{lib.loc}{The library to snapshot. Defaults to the private library
-associated with the given directory.
-}
-  \item{sourcePackagePaths}{A character vector of directories containing R
-package sources. It is only necessary to supply this parameter when using a
-package for which sources exist on neither CRAN or Github. 
-}
-  \item{orphan.check}{\code{TRUE} to check for orphaned packages; \code{FALSE}
-to skip the check. Packrat only considers packages used by your code and
-packages which are dependencies of packages used by your code. Any other
-package in the private library is considered an orphan.  If the packages are
-truly orphans, they can be removed with \code{\link{clean}}; if they are not,
-you can make packrat aware that your project needs them by adding a
-\code{require} statement to any R file (see \code{\link{appDependencies}}).
-}
-  \item{ignore.stale}{Stale packages are packages that are different from the
-last snapshot, but were installed by packrat. Typically, packages become stale
-when a new snapshot is available, but you haven't applied it yet with
-\code{\link{restore}}. By default, packrat will prevent you from taking a
-snapshot when you have stale packages to prevent you from losing changes from
-the unapplied snapshot. If your intent is to overwrite the last snapshot
-without applying it, use \code{ignore.stale = TRUE} to skip this check.
-}
-  \item{dry.run}{Computes the changes to your packrat state that would be made
-if a snapshot were performed, and prints them to the console.
-}
-  \item{prompt}{\code{TRUE} to prompt before performing snapshotting package
-changes that might be unintended; \code{FALSE} to perform these operations
-without confirmation. Potentially unintended changes include snapshotting
-packages at an older version than the last snapshot, or missing despite being
-present in the last snapshot.}
+\description{
+  Finds the packages in use by the R code in the
+  application, and stores a list of those packages, their
+  sources, and their current versions in packrat.
 }
 \note{
-\code{snapshot} modifies the project's \code{packrat.lock} file, and the
-sources stored in the project's \code{packrat.sources} directory. If you are
-working with a version control system, your collaborators can sync the changes
-to these files and then use \code{\link{restore}} to apply your snapshot.
-}
-\seealso{
-\code{\link{restore}} to apply a snapshot. 
-
-\code{\link{status}} to view the differences between the most recent snapshot
-and the library.
+  \code{snapshot} modifies the project's
+  \code{packrat.lock} file, and the sources stored in the
+  project's \code{packrat.sources} directory. If you are
+  working with a version control system, your collaborators
+  can sync the changes to these files and then use
+  \code{\link{restore}} to apply your snapshot.
 }
 \examples{
 \dontrun{
@@ -77,3 +84,9 @@ snapshot(dry.run = TRUE)
 snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
 }
 }
+\seealso{
+  \code{\link{restore}} to apply a snapshot.
+  \code{\link{status}} to view the differences between the
+  most recent snapshot and the library.
+}
+
