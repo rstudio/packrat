@@ -76,11 +76,14 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
     appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
     privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
     pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
-    if (length(pkgsToInstall) > 0) {
-      restoreImpl(appDir,
-                  activeRepos(),
-                  searchPackages(appPackages, appPackageNames),
-                  lib.loc, prompt)
+    for (pkgToInstall in pkgsToInstall) {
+      message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
+      type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
+                         appDir, NULL, activeRepos(), lib.loc)
+      message("OK (", type, ")")
+    }
+    for (pkgRecord in flattenPackageRecords(appPackages)) {
+      annotatePkgDesc(pkgRecord, appDir=appDir, lib=lib.loc)
     }
   }
 }
@@ -171,12 +174,6 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
                   appPackages)
     cat('Snapshot written to', 
         normalizePath(file.path(appDir, "packrat.lock"), winslash = '/'), '\n')
-
-    if (!is.null(lib.loc)) {
-      for (pkgRecord in flattenPackageRecords(appPackages)) {
-        annotatePkgDesc(pkgRecord, appDir=appDir, lib=lib.loc)
-      }
-    }
   }
   
   return(invisible(appPackages))
