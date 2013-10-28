@@ -15,7 +15,7 @@ Imports:
     utils,
     methods,
     RJSONIO,
-    devtools (>= 1.3.99),
+    devtools (>= 1.4),
     httr
 Suggests:
     testthat (>= 0.7)
