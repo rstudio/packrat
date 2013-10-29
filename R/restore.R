@@ -169,9 +169,9 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
 
       oldDir <- getwd()
       on.exit(setwd(oldDir))
-      setwd(basedir)
+      setwd(dirname(basedir))
       
-      tar(tarfile=dest, files='.', compression='gzip', tar='internal')
+      tar(tarfile=dest, files=basename(basedir), compression='gzip', tar='internal')
     })
     
     type <- "Github"
