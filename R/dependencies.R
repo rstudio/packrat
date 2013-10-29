@@ -35,7 +35,6 @@ startswith <- function(str1, str2) {
   
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
-  libdir <- libdir(dir)
   dir <- normalizePath(dir, winslash='/')
 
   # first get the packages referred to in source code
@@ -43,8 +42,11 @@ dirDependencies <- function(dir) {
   sapply(list.files(dir, pattern=glob2rx("*.R"), 
                     ignore.case=TRUE, recursive=TRUE),
          function(file) {
-           # ignore files in the library directory 
-           if (!startswith(file.path(dir, file), libdir)) 
+           # ignore files in the library directories 
+           filePath <- file.path(dir, file)
+           if (!(startswith(filePath, file.path(dir, "library", "")) ||
+                 startswith(filePath, file.path(dir, "library.new", "")) ||
+                 startswith(filePath, file.path(dir, "library.old", ""))))
              pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
          })
   unique(pkgs)  
@@ -58,7 +60,10 @@ fileDependencies <- function(file) {
   
   # parse file and examine expressions
   tryCatch({
-    exprs <- parse(file, n = -1L) 
+    # parse() generates a warning when the file has an incomplete last line, but
+    # it still parses the file correctly; ignore this and other warnings.
+    # We'll still halt when parsing fails.
+    exprs <- suppressWarnings(parse(file, n = -1L))
     for (i in seq_along(exprs))
       pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
   }, error = function(e) {

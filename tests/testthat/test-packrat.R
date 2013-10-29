@@ -85,3 +85,17 @@ test_that("snapshot captures new dependencies", {
   expect_true("bread" %in% pkgs)  
   expect_true("toast" %in% pkgs)  
 })
+
+
+test_that("dependencies in library directories are ignored", {
+  projRoot <- cloneTestProject("libraries")
+  lib <- libdir(projRoot)
+  bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
+  
+  # This test project has a file called library.R that depends on bread, and 
+  # three .R files inside library/, library.old/, and library.new/ that 
+  # eepend on oatmeal. 
+  expect_true(file.exists(file.path(lib, "bread")))
+  expect_false(file.exists(file.path(lib, "oatmeal")))
+})
+
