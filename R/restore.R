@@ -229,6 +229,13 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
   })))
 }
 
+# Removes one or more packages from the app's private library and cached
+# sources. 
+removePkgs <- function(appDir, pkgNames, lib.loc = libdir(appDir)) {
+  unlink(file.path(appDir, "packrat.sources", pkgNames), recursive = TRUE)
+  remove.packages(pkgNames, lib.loc)
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, appDir, availablePkgs, repos, 
@@ -340,18 +347,18 @@ playActions <- function(pkgRecords, actions, repos, appDir, lib) {
       message("Replacing ", pkgRecord$name, " (", action, " ", 
               installedPkgs[pkgRecord$name,"Version"], " to ", 
               pkgRecord$version, ") ... ", appendLF = FALSE)
-      remove.packages(pkgRecord$name, lib = lib)
+      removePkgs(appDir, pkgRecord$name, lib)
     } else if (identical(action, "add")) {
       message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ", 
               appendLF = FALSE)
     } else if (identical(action, "remove")) {
       if (is.null(pkgRecord)) {
         message("Removing ", names(actions[i]), " ... ", appendLF = FALSE)
-        remove.packages(names(actions[i]), lib = lib)
+        removePkgs(appDir, names(actions[i]), lib)
       } else {
         message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
           appendLF = FALSE)
-        remove.packages(pkgRecord$name, lib = lib)
+        removePkgs(appDir, pkgRecord$name, lib)
       }
       message("OK")
       next

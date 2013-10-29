@@ -525,7 +525,7 @@ clean <- function(appDir = ".", lib.loc = libdir(appDir),
       }
     }
     
-    remove.packages(orphans, lib=lib.loc)
+    removePkgs(appDir, orphans, lib.loc)
     return(invisible(orphans))
   }
 }

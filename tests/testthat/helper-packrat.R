@@ -56,3 +56,8 @@ addTestDependency <- function(projRoot, pkg) {
         file = file.path(projRoot, "deps.R"), 
         append = TRUE)
 }
+
+# Removes a dependency from a test project (by deleting a file... fancy!)
+removeTestDependencyFile <- function(projRoot, file) {
+  unlink(file.path(projRoot, file))
+}
