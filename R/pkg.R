@@ -166,9 +166,12 @@ getSourcePackageInfo <- function(sourcePackagePaths) {
   results
 }
 
-pick <- function(property, package) {
+pick <- function(property, package, defaultValue = NA) {
   func <- function(packageRecord) {
-    packageRecord[[property]]
+    if (is.null(packageRecord))
+      return(defaultValue)
+    else
+      return(packageRecord[[property]])
   }
   if (!missing(package)) {
     return(func(package))
