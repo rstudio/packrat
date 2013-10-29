@@ -228,28 +228,36 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
     dir.create(libDir, recursive=TRUE)
   }
   
+  # See if any of the packages that are currently in the library are dirty. 
+  # Dirty packages that are represented in the snapshot will be either ignored 
+  # (with a message) or overwritten, depending on the value of the
+  # overwriteDirty flag. Dirty packages that are not represented in the snapshot
+  # (like git untracked) will be silently ignored in all cases.
+  
+  libPkgNames <- rownames(installed.packages(libDir, noCache=TRUE))
+  dirty <- !installedByPackrat(libPkgNames, libDir, TRUE)
+  dirtyPackageNames <- libPkgNames[dirty]
+
   if (!isTRUE(overwriteDirty)) {
-    installListNames <- pkgNames(installList)
-    dirty <- !installedByPackrat(installListNames, libDir, NA)
-    dirty[is.na(dirty)] <- FALSE  # Anything that is not installed is not dirty
-    dirtyPackages <- getPackageRecords(installListNames[dirty], recursive=FALSE,
-                                       lib.loc=libDir)
-    installList <- installList[!dirty]
     prettyPrint(
-      dirtyPackages,
-      'The following packages are dirty and will not be overwritten:',
+      installList[pkgNames(installList) %in% dirtyPackageNames],
+      'The following packages were not installed by packrat and will be ignored:',
       'If you would like to overwrite them, call restore again with\noverwriteDirty = TRUE.'
     )
-    dirtyPackageNames <- installListNames[dirty]
+    # Keep all dirty packages
+    pkgsToIgnore <- dirtyPackageNames
   } else {
-    dirtyPackageNames <- character(0)
+    # Even if overwriteDirty is TRUE, we still want to keep packages that are
+    # dirty and NOT represented in the installList (this is akin to "untracked"
+    # files in git).
+    pkgsToIgnore <- dirtyPackageNames[!dirtyPackageNames %in% pkgNames(installList)]
   }
 
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
   repos <- lockInfo(appDir, 'repos')
   restoreImpl(appDir, repos, installList, libDir,
-              pkgsToKeep = dirtyPackageNames, prompt = prompt)
+              pkgsToIgnore = pkgsToIgnore, prompt = prompt)
 }
 
 #' Show differences between the last snapshot and the library
