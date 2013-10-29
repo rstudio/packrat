@@ -94,8 +94,30 @@ test_that("dependencies in library directories are ignored", {
   
   # This test project has a file called library.R that depends on bread, and 
   # three .R files inside library/, library.old/, and library.new/ that 
-  # eepend on oatmeal. 
+  # depend on oatmeal. 
   expect_true(file.exists(file.path(lib, "bread")))
   expect_false(file.exists(file.path(lib, "oatmeal")))
+})
+
+test_that("clean removes libraries and sources", {
+  projRoot <- cloneTestProject("smallbreakfast")
+  lib <- libdir(projRoot)
+  bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
+  
+  expect_true(file.exists(file.path(lib, "bread")))
+  expect_true(file.exists(file.path(lib, "oatmeal")))
+  expect_true(file.exists(file.path(projRoot, "packrat.sources", "bread")))
+  expect_true(file.exists(file.path(projRoot, "packrat.sources", "oatmeal")))
+  
+  # Remove the dependency on oatmeal and clean 
+  removeTestDependencyFile(projRoot, "oatmeal.R")
+  clean(projRoot, prompt = FALSE)
+
+  # bread should still be present, but we should have removed the orphaned
+  # package oatmeal
+  expect_true(file.exists(file.path(lib, "bread")))
+  expect_false(file.exists(file.path(lib, "oatmeal")))  
+  expect_true(file.exists(file.path(projRoot, "packrat.sources", "bread")))
+  expect_false(file.exists(file.path(projRoot, "packrat.sources", "oatmeal")))
 })
 
