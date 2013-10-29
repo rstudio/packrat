@@ -370,12 +370,13 @@ playActions <- function(pkgRecords, actions, repos, appDir, lib) {
 }
 
 restoreImpl <- function(appDir, repos, pkgRecords, lib,
-                        pkgsToKeep=character(0), prompt=interactive()) {
+                        pkgsToIgnore=character(0), prompt=interactive()) {
   installedPkgs <- 
     getPackageRecords(
-      setdiff(rownames(installed.packages(lib.loc = lib)), pkgsToKeep), 
+      rownames(installed.packages(lib.loc = lib)), 
       recursive = FALSE, fatal = FALSE, lib.loc = lib)
   actions <- diff(installedPkgs, pkgRecords)
+  actions[names(actions) %in% pkgsToIgnore] <- NA
   restartNeeded <- FALSE
   
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% actions)
