@@ -358,7 +358,7 @@ status <- function(appDir = '.', lib.loc = libdir(appDir), quiet = FALSE) {
       "The following packages are missing from your library, or are out of date:",
       "Use packrat::restore() to install/remove the appropriate packages.",
       "packrat",
-      "installed"
+      "library"
     )
     
     prettyPrintPair(
@@ -367,7 +367,7 @@ status <- function(appDir = '.', lib.loc = libdir(appDir), quiet = FALSE) {
       c("The following packages have been updated in your library, but have not\n",
         "been recorded in packrat:"),
       c("Use packrat::snapshot() to record these packages in packrat."),
-      "installed",
+      "library",
       "packrat"
     )
   }
@@ -443,19 +443,33 @@ summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage,
 
 prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
                             fromLabel = 'from', toLabel = 'to') {
+  
+  if (length(packagesFrom) != length(packagesTo)) {
+    stop('Invalid arguments--package record lengths mismatch')
+  }
+  
   if (length(packagesFrom) > 0) {
-    if (any(pkgNames(packagesFrom) != pkgNames(packagesTo)))
-      stop('Invalid arguments--package records list mistmatch')
-    
+    if (any(sapply(packagesFrom, is.null) & sapply(packagesTo, is.null))) {
+      stop('Invalid arguments--NULL packages')
+    }
+    for (i in seq_along(packagesFrom)) {
+      if (!is.null(packagesFrom[[i]]) && !is.null(packagesTo[[i]])) {
+        if (!identical(packagesFrom[[i]]$name , packagesTo[[i]]$name)) {
+          stop('Invalid arguments--package names did not match')
+        }
+      }
+    }
+
     cat('\n')
     if (!is.null(header)) {
       cat(paste(header, collapse=''))
       cat('\n')
     }
     
-    df <- data.frame(paste(" ", sapply(packagesFrom, pick("version"))),
-                     paste(" ", sapply(packagesTo, pick("version"))))
-    names(df) <- c(fromLabel, toLabel)
+    pickVersion <- pick("version", defaultValue="NA")
+    df <- data.frame(paste(" ", sapply(packagesFrom, pickVersion)),
+                     paste(" ", sapply(packagesTo, pickVersion)))
+    names(df) <- c(paste(" ", fromLabel), paste(" ", toLabel))
     row.names(df) <- paste("   ", pkgNames(packagesFrom))
     print(df)
 
