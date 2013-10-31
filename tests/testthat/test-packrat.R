@@ -76,11 +76,11 @@ test_that("snapshot captures new dependencies", {
   
   # Snapshot the new state and make sure we picked up both toast and its 
   # dependency, bread
-  pkgs <- pkgNames(pkgListFromTree(lockInfo(projRoot)))
+  pkgs <- pkgNames(lockInfo(projRoot))
   expect_false("bread" %in% pkgs)
   expect_false("toast" %in% pkgs)
   snapshot(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
-  pkgs <- pkgNames(pkgListFromTree(lockInfo(projRoot)))
+  pkgs <- pkgNames(lockInfo(projRoot))
   expect_true("bread" %in% pkgs)  
   expect_true("toast" %in% pkgs)  
 })

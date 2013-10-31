@@ -415,9 +415,9 @@ restoreImpl <- function(appDir, repos, pkgRecords, lib,
   }
   
   # The actions are sorted alphabetically; resort them in the order given by
-  # pkgRecords (previously sorted topologically by pkgListFromTree). Remove
-  # actions are special, since they don't exist in the lockfile-generated list;
-  # extract them and combine afterwards. 
+  # pkgRecords (previously sorted topologically). Remove actions are special, 
+  # since they don't exist in the lockfile-generated list; extract them and 
+  # combine afterwards. 
   removeActions <- actions[actions == "remove"] 
   actions <- c(removeActions, 
                unlist(lapply(pkgRecords, function(p) { actions[p$name] })))

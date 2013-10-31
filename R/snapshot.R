@@ -169,9 +169,9 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   }
   
   if (!dry.run) {
-    snapshotSources(appDir, activeRepos(), pkgListFromTree(appPackages))
     writeLockFile(file.path(appDir, "packrat.lock"),
                   appPackages)
+    snapshotSources(appDir, activeRepos(), lockInfo(appDir))
     cat('Snapshot written to', 
         normalizePath(file.path(appDir, "packrat.lock"), winslash = '/'), '\n')
   }
