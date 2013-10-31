@@ -171,7 +171,12 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       on.exit(setwd(oldDir))
       setwd(dirname(basedir))
       
-      tar(tarfile=dest, files=basename(basedir), compression='gzip', tar='internal')
+      # R's internal tar (which we use here for cross-platform consistency) 
+      # emits warnings when there are > 100 characters in the path, due to the
+      # resulting incompatibility with older implementations of tar. This isn't
+      # relevant for our purposes, so suppress the warning. 
+      suppressWarnings(tar(tarfile=dest, files=basename(basedir), 
+                           compression='gzip', tar='internal'))
     })
     
     type <- "Github"
