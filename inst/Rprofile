@@ -50,8 +50,28 @@ local({
   # Bootstrap the installation of devtools and packrat
   if (newLocalLib) {
     if (length(find.package('packrat', lib.loc = localLib, quiet = TRUE)) == 0) {
-      # TODO: Uncomment when we get onto CRAN
-      # utils::install.packages('packrat', repos=c(CRAN='http://cran.rstudio.com/'))
+      packratBootstrap <- new.env(parent=emptyenv())
+      assign("initPackrat", function() {
+        message("Initializing packrat and installing dependencies: ", 
+                appendLF = FALSE)
+        pkgs <- c("bitops", "stringr", "digest", "RCurl", "httr", "devtools", 
+                  "RJSONIO", "memoise", "whisker", "evaluate", "packrat")
+        for (pkg in pkgs) {
+          pkgPath <- file.path(appRoot, "packrat.sources", pkg)
+          srcPkg <- file.path(pkgPath, list.files(pkgPath)[1])
+          utils::install.packages(srcPkg, type = "source", repos = NULL, 
+                                  verbose = FALSE, dependencies = FALSE, 
+                                  quiet = TRUE)
+          message(".", appendLF = FALSE)
+        }
+        message(".", appendLF = TRUE)
+        packrat:::annotatePkgs(pkgs, appRoot)
+        packrat::restore(appRoot)
+        detach("packratBootstrap")
+      }, envir = packratBootstrap)
+      attach(packratBootstrap)
+      message("Packrat needs to install the packages this project depends on. ", 
+              "Run initPackrat() to get started.")
     }
   }
 

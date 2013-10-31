@@ -145,7 +145,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         if (file.exists(scratchDir))
           unlink(scratchDir, recursive=TRUE)
       })
-      untar(srczip, exdir=scratchDir)
+      untar(srczip, exdir=scratchDir, tar="internal")
       # Find the base directory
       basedir <- if (length(dir(scratchDir)) == 1)
         file.path(scratchDir, dir(scratchDir))
@@ -205,11 +205,17 @@ snapshotSources <- function(appDir, repos, pkgRecords) {
 
 annotatePkgDesc <- function(pkgRecord, appDir, lib = libdir(appDir)) {
   descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
-  pkgSrcFile <- file.path(appDir, "packrat.sources", pkgRecord$name, 
-                          pkgSrcFilename(pkgRecord))
   appendToDcf(descFile, data.frame(
     InstallAgent=paste('packrat', packageVersion('packrat')), 
     InstallSource=pkgRecord$source))
+}
+
+# Annotate a set of packages by name.
+annotatePkgs <- function(pkgNames, appDir, lib = libdir(appDir)) {
+  records <- searchPackages(lockInfo(appDir), pkgNames)
+  lapply(records, function(record) {
+    annotatePkgDesc(record, appDir, lib)
+  })
 }
 
 # Takes a vector of package names, and returns a logical vector that indicates
