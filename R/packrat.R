@@ -71,7 +71,6 @@
 #' @docType package
 #' @name packrat
 #' @author RStudio, Inc.
-#' @importFrom RJSONIO fromJSON toJSON
 NULL
 
 #' Initialize Packrat on a new or existing R project

@@ -54,8 +54,8 @@ local({
       assign("initPackrat", function() {
         message("Initializing packrat and installing dependencies: ", 
                 appendLF = FALSE)
-        pkgs <- c("bitops", "stringr", "digest", "RCurl", "httr", "devtools", 
-                  "RJSONIO", "memoise", "whisker", "evaluate", "packrat")
+        pkgs <- c("bitops", "stringr", "digest", "RCurl", "httr", "memoise",
+                  "whisker", "evaluate", "devtools", "packrat")
         for (pkg in pkgs) {
           pkgPath <- file.path(appRoot, "packrat.sources", pkg)
           srcPkg <- file.path(pkgPath, list.files(pkgPath)[1])

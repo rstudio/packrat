@@ -196,12 +196,16 @@ strip <- function(properties, package) {
 
 # Returns a character vector of package names. Depends are ignored.
 pkgNames <- function(packageRecords) {
+  if (length(packageRecords) == 0)
+    return(character(0))
   sapply(packageRecords, pick("name"))
 }
 
 # Filters out all record properties except name and version. Dependencies are
 # dropped.
 pkgNamesAndVersions <- function(packageRecords) {
+  if (length(packageRecords) == 0)
+    return(character(0))
   lapply(packageRecords, function(pkg) {
     pkg[names(pkg) %in% c('name', 'version')]
   })
@@ -210,6 +214,8 @@ pkgNamesAndVersions <- function(packageRecords) {
 # Recursively filters out all record properties except name, version, and 
 # depends.
 pkgNamesVersDeps <- function(packageRecords) {
+  if (length(packageRecords) == 0)
+    return(character(0))
   lapply(packageRecords, function(pkg) {
     pkg <- pkg[names(pkg) %in% c('name', 'version', 'depends')]
     pkg$depends <- pkgNamesVersDeps(pkg$depends)
@@ -234,14 +240,22 @@ searchPackages <- function(packages, packageNames) {
 }
 
 # Returns a linear list of package records, sorted by name, with all dependency
-# information removed
-flattenPackageRecords <- function(packageRecords) {
+# information removed (or, optionally, reduced to names)
+flattenPackageRecords <- function(packageRecords, depInfo = FALSE, sourcePath = FALSE) {
   visited <- new.env(parent=emptyenv())
   visit <- function(pkgRecs) {
     for (rec in pkgRecs) {
+      if (isTRUE(depInfo)) {
+        rec$requires <- pkgNames(rec$depends)
+        if (length(rec$requires) == 0)
+          rec$requires <- NA_character_
+        else if (length(rec$requires) > 1)
+          rec$requires <- paste(rec$requires, collapse = ', ')
+      }
       visit(rec$depends)
-      rec['depends'] <- NULL
-      rec['source_path'] <- NULL
+      rec$depends <- NULL
+      if (!isTRUE(sourcePath))
+        rec$source_path <- NULL
       visited[[rec$name]] <- rec
     }
   }

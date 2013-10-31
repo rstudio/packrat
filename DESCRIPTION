@@ -14,7 +14,6 @@ Imports:
     tools,
     utils,
     methods,
-    RJSONIO,
     devtools (>= 1.4),
     httr
 Suggests:

@@ -61,3 +61,21 @@ addTestDependency <- function(projRoot, pkg) {
 removeTestDependencyFile <- function(projRoot, file) {
   unlink(file.path(projRoot, file))
 }
+
+verifyTopoSort <- function(graph, sorted) {
+  if (length(graph) != length(sorted))
+    return(FALSE)
+  if (length(sorted) < 2)
+    return(TRUE)
+  if (!identical(unique(sorted), sorted))
+    return(FALSE)
+  if (any(is.na(sorted)) || any(is.na(names(graph))))
+    return(FALSE)
+  for (i in seq_along(sorted)) {
+    deps <- graph[[sorted[[i]]]]
+    if (length(setdiff(deps, head(sorted, i-1))) > 0) {
+      return(FALSE)
+    }
+  }
+  return(TRUE)
+}
