@@ -218,9 +218,6 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
             r_version)
   }
   
-  # Generate the list of packages to install
-  installList <- pkgListFromTree(packages)
-  
   # Make sure the library directory exists 
   libDir <- libdir(appDir)
   if (!file.exists(libDir)) {
@@ -239,7 +236,7 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
 
   if (!isTRUE(overwriteDirty)) {
     prettyPrint(
-      installList[pkgNames(installList) %in% dirtyPackageNames],
+      packages[pkgNames(packages) %in% dirtyPackageNames],
       'The following packages were not installed by packrat and will be ignored:',
       'If you would like to overwrite them, call restore again with\noverwriteDirty = TRUE.'
     )
@@ -247,15 +244,15 @@ restore <- function(appDir = '.', overwriteDirty = FALSE,
     pkgsToIgnore <- dirtyPackageNames
   } else {
     # Even if overwriteDirty is TRUE, we still want to keep packages that are
-    # dirty and NOT represented in the installList (this is akin to "untracked"
-    # files in git).
-    pkgsToIgnore <- dirtyPackageNames[!dirtyPackageNames %in% pkgNames(installList)]
+    # dirty and NOT represented in the list of packages to install (this is akin 
+    # to "untracked" files in git).
+    pkgsToIgnore <- dirtyPackageNames[!dirtyPackageNames %in% pkgNames(packages)]
   }
 
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
   repos <- lockInfo(appDir, 'repos')
-  restoreImpl(appDir, repos, installList, libDir,
+  restoreImpl(appDir, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt)
 }
 
