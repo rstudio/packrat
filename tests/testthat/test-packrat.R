@@ -35,17 +35,16 @@ test_that("bootstrap creates project structure and installs dependencies", {
   expect_true(file.exists(file.path(lib, "toast")))
 })
 
-test_that("restore removes unused packages", {
+test_that("restore ignores dirty packages", {
   projRoot <- cloneTestProject("carbs")
   lib <- libdir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
   expect_true(file.exists(file.path(lib, "bread")))  
   
-  # Install an unused package and restore
   installTestPkg("oatmeal", "1.0.0", lib)
   expect_true(file.exists(file.path(lib, "oatmeal")))
   restore(projRoot, prompt = FALSE)
-  expect_false(file.exists(file.path(lib, "oatmeal")))
+  expect_true(file.exists(file.path(lib, "oatmeal")))
 })
 
 test_that("restore installs missing packages", {
