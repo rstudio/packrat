@@ -26,6 +26,10 @@ Unfortunately, private libraries don't travel well; like all R libraries, their 
 
 ## Commands
 
+Use `bootstrap()` to create a new packrat project, `snapshot()` to record changes to your project's library, and `restore()` to recreate your library the way it was the last time you (or anyone!) took a snapshot. 
+
+Using these simple functions and sharing packrat's files lets you collaborate in a shared, consistent environment with others as your project grows and changes, and provides an easy way to share your results when you're done.
+
     bootstrap(appDir = ".")
 
 Initializes a regular R project directory as a packrat project. This creates the supporting files and directories listed below in "Anatomy of a packrat project", including a private library and snapshot. **You must restart your R session after running `bootstrap()` in order to use packrat.**

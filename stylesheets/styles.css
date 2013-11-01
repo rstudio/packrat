@@ -237,6 +237,7 @@ code, pre {
   color: #333;
   font-size: 12px;
   overflow-x: auto;
+  font-weight: bold;
 }
 
 pre {
