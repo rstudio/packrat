@@ -2,10 +2,12 @@
 \alias{bootstrap}
 \title{Initialize Packrat on a new or existing R project}
 \usage{
-  bootstrap(appDir = ".", sourcePackagePaths = character())
+  bootstrap(projDir = ".",
+    sourcePackagePaths = character())
 }
 \arguments{
-  \item{appDir}{The directory that contains the R project.}
+  \item{projDir}{The directory that contains the R
+  project.}
 
   \item{sourcePackagePaths}{List of paths to unpacked R
   package source directories.  Use this argument only if
@@ -13,8 +15,8 @@
   on CRAN or Github.}
 }
 \description{
-  Given an application directory, makes a new packrat
-  project in the directory.
+  Given a project directory, makes a new packrat project in
+  the directory.
 }
 \details{
   \code{bootstrap} works as follows: \enumerate{ \item
@@ -22,7 +24,7 @@
   code as described in \code{\link{appDependencies}}.
 
   \item A snapshot is taken of the version of each package
-  currently used by the application as described in
+  currently used by the project as described in
   \code{\link{snapshot}}, and each package's sources are
   downloaded.
 
@@ -34,7 +36,7 @@
   the project depends are installed in a new, private
   library located inside the project directory.
 
-  You must restart your R session in the given application
+  You must restart your R session in the given project
   directory after running \code{bootstrap} in order for the
   changes to take effect.
 

@@ -2,11 +2,11 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-  restore(appDir = ".", overwriteDirty = FALSE,
+  restore(projDir = ".", overwriteDirty = FALSE,
     prompt = interactive())
 }
 \arguments{
-  \item{appDir}{The directory that contains the packrat
+  \item{projDir}{The directory that contains the packrat
   project.}
 
   \item{overwriteDirty}{A dirty package is one that has

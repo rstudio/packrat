@@ -2,15 +2,15 @@
 \alias{clean}
 \title{Remove unused packages}
 \usage{
-  clean(appDir = ".", lib.loc = libdir(appDir),
+  clean(projDir = ".", lib.loc = libdir(projDir),
     prompt = interactive())
 }
 \arguments{
-  \item{appDir}{Directory containing application. Defaults
-  to current working directory.}
+  \item{projDir}{The project directory. Defaults to current
+  working directory.}
 
   \item{lib.loc}{The library to clean. Defaults to the
-  private package library associated with the application
+  private package library associated with the project
   directory.}
 
   \item{prompt}{\code{TRUE} to prompt before removing
@@ -23,12 +23,11 @@
   Detects and removes orphaned packages. Orphaned packages
   are those that meet the following criteria: \itemize{
   \item Installed in the library \item Not directly used by
-  any R code in the application \item Not a dependency of
-  any non-orphaned package } If \code{clean} wants to
-  remove a package but your project actually needs the
-  package, add a statement such as
-  \code{\link{require}(package-name)} to any .R file in
-  your project's directory.
+  any R code in the project \item Not a dependency of any
+  non-orphaned package } If \code{clean} wants to remove a
+  package but your project actually needs the package, add
+  a statement such as \code{\link{require}(package-name)}
+  to any .R file in your project's directory.
 }
 \seealso{
   \code{\link{appDependencies}} for an explanation of how

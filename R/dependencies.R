@@ -1,31 +1,31 @@
-#' Detect Application Dependencies
-#' 
-#' Recursively detect all package dependencies for an application. This function
-#' parses all .R files in the application directory to determine what packages 
-#' the application depends directly.
-#' 
-#' Only direct dependencies are detected (i.e. no recursion is done to find the 
-#' dependencies of the dependencies).
-#' 
-#' @param appDir Directory containing application. Defaults to current working 
-#'   directory.
-#' @return Returns a list of the names of the packages on which R code in the
-#'   application depends.
-#' @details Dependencies are determined by parsing application source code and 
-#'   looking for calls to \code{library}, \code{require}, \code{::}, and 
-#'   \code{:::}.
-#'   
-#' @examples
-#' \dontrun{
-#' 
-#' # dependencies for the app in the current working dir
-#' appDependencies()
-#' 
-#' # dependencies for an app in another directory
-#' appDependencies("~/projects/shiny/app1")
-#' }
-appDependencies <- function(appDir = ".") {
-  unique(c(dirDependencies(appDir), 'packrat'))
+# Detect Application Dependencies
+# 
+# Recursively detect all package dependencies for an application. This function
+# parses all .R files in the application directory to determine what packages 
+# the application depends directly.
+# 
+# Only direct dependencies are detected (i.e. no recursion is done to find the 
+# dependencies of the dependencies).
+# 
+# @param projDir Directory containing application. Defaults to current working 
+#   directory.
+# @return Returns a list of the names of the packages on which R code in the
+#   application depends.
+# @details Dependencies are determined by parsing application source code and 
+#   looking for calls to \code{library}, \code{require}, \code{::}, and 
+#   \code{:::}.
+#   
+# @examples
+# \dontrun{
+# 
+# # dependencies for the app in the current working dir
+# appDependencies()
+# 
+# # dependencies for an app in another directory
+# appDependencies("~/projects/shiny/app1")
+# }
+appDependencies <- function(projDir = ".") {
+  unique(c(dirDependencies(projDir), 'packrat'))
 }
 
 # does str1 start with str2?

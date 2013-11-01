@@ -2,11 +2,11 @@
 \alias{libdir}
 \title{Show the path to the current private library}
 \usage{
-  libdir(appDir = ".")
+  libdir(projDir = ".")
 }
 \arguments{
-  \item{appDir}{Directory containing application. Defaults
-  to current working directory.}
+  \item{projDir}{The project directory. Defaults to current
+  working directory.}
 }
 \value{
   A character vector containing the path to the private
