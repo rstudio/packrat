@@ -16,7 +16,6 @@ Until packrat is ready for CRAN, you can install it directly from GitHub using [
     install.packages("devtools")
     devtools::install_github("rstudio/packrat")
 
-
 ## Basic concepts
 
 If you're like the vast majority of R users, when you start working on a new R project you create a new directory for all of your R scripts and data files.
@@ -29,27 +28,31 @@ Unfortunately, private libraries don't travel well; like all R libraries, their 
 
     bootstrap(appDir = ".")
 
-Initializes a regular R project directory as a packrat project. This creates the supporting files and directories listed below in "Anatomy of a packrat project". **You must restart your R session after running `bootstrap()` in order to use packrat.**
+Initializes a regular R project directory as a packrat project. This creates the supporting files and directories listed below in "Anatomy of a packrat project", including a private library and snapshot. **You must restart your R session after running `bootstrap()` in order to use packrat.**
 
-    status(appDir = '.', lib.loc = NULL, quiet = FALSE)`
+    status(appDir = '.')
 
-Shows the differences between the project's packrat dependencies, its private package library, and its R scripts.
+Shows the differences between the project's packrat snapshot, its private package library, and its R scripts.
 
 These differences are created when you use the normal R package management commands like `install.packages()`, `update.packages()`, and `remove.packages()`. To bring these differences into packrat, you can use `snapshot()`.
 
-Differences can also arise if one of your collaborators adds or removes packages from the packrat dependencies. In this case, you simply need to tell packrat to update your private package library using `restore()`.
+Differences can also arise if one of your collaborators adds or removes packages from the packrat snapshot. In this case, you simply need to tell packrat to update your private package library using `restore()`.
 
-    snapshot(appDir = ".")`
+    snapshot(appDir = ".")
 
 Stores the state of the private library (each package and its exact version) in packrat. 
 
 You'll need to call this after making changes to the private library as described above. Snapshotting your library makes it possible to restore to the snapshot later, and if you're sharing a project with someone else using a version control system, packrat can use the snapshot to mirror your library changes on your collaborator's library. 
 
-    restore(appDir = ".")`
+    restore(appDir = ".")
 
 Adds, removes, and changes packages installed in the private library so that they match the state of the most recent snapshot.
 
-You'll need to call this after copying a project onto a new machine, or if you're using version control (see section below) and someone else added a package that you don't have installed yet. 
+You'll need to call this after copying a project onto a new machine, or if you're using version control (see section below) and someone else added a package that you don't have installed yet.
+
+    clean(appDir = ".")
+
+Removes any packages in the private library that aren't being referenced from .R files in the project.
 
 ## Anatomy of a packrat project
 
