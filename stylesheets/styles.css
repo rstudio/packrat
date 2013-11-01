@@ -141,7 +141,7 @@ header ul:before {
 header ul li {
   width: 79px;
   float: left;
-  border-right: 1px solid #3A7CBE;
+  /*border-right: 1px solid #3A7CBE;*/
   height: 38px;
 }
 header ul li.single {
