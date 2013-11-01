@@ -2,14 +2,14 @@
 \alias{snapshot}
 \title{Capture and store the packages and versions in use}
 \usage{
-  snapshot(appDir = ".", available = NULL,
-    lib.loc = libdir(appDir), sourcePackagePaths = NULL,
+  snapshot(projDir = ".", available = NULL,
+    lib.loc = libdir(projDir), sourcePackagePaths = NULL,
     orphan.check = TRUE, ignore.stale = FALSE,
     dry.run = FALSE, prompt = interactive())
 }
 \arguments{
-  \item{appDir}{Directory containing application. Defaults
-  to current working directory.}
+  \item{projDir}{The project directory. Defaults to current
+  working directory.}
 
   \item{available}{A database of available packages, as
   returned by \code{\link{available.packages}}. It is only
@@ -33,8 +33,7 @@
   If the packages are truly orphans, they can be removed
   with \code{\link{clean}}; if they are not, you can make
   packrat aware that your project needs them by adding a
-  \code{require} statement to any R file (see
-  \code{\link{appDependencies}}).}
+  \code{require} statement to any R file.}
 
   \item{ignore.stale}{Stale packages are packages that are
   different from the last snapshot, but were installed by
@@ -60,9 +59,9 @@
   snapshot.}
 }
 \description{
-  Finds the packages in use by the R code in the
-  application, and stores a list of those packages, their
-  sources, and their current versions in packrat.
+  Finds the packages in use by the R code in the project,
+  and stores a list of those packages, their sources, and
+  their current versions in packrat.
 }
 \note{
   \code{snapshot} modifies the project's

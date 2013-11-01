@@ -1,8 +1,8 @@
 #' Capture and store the packages and versions in use
 #' 
-#' Finds the packages in use by the R code in the application, and stores a list
+#' Finds the packages in use by the R code in the project, and stores a list
 #' of those packages, their sources, and their current versions in packrat.
-#' @param appDir Directory containing application. Defaults to current working 
+#' @param projDir The project directory. Defaults to current working 
 #'   directory.
 #' @param available A database of available packages, as returned by 
 #'   \code{\link{available.packages}}. It is only necessary to supply this 
@@ -19,8 +19,7 @@
 #'   package in the private library is considered an orphan.  If the packages
 #'   are truly orphans, they can be removed with \code{\link{clean}}; if they
 #'   are not, you can make packrat aware that your project needs them by adding
-#'   a \code{require} statement to any R file (see
-#'   \code{\link{appDependencies}}).
+#'   a \code{require} statement to any R file.
 #' @param ignore.stale Stale packages are packages that are different from the 
 #'   last snapshot, but were installed by packrat. Typically, packages become
 #'   stale when a new snapshot is available, but you haven't applied it yet with
@@ -58,14 +57,14 @@
 #' snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
 #' }
 #' @export
-snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
+snapshot <- function(projDir = ".", available = NULL, lib.loc = libdir(projDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
                      ignore.stale = FALSE, dry.run = FALSE, 
                      prompt = interactive()) {
-  appDir <- normalizePath(appDir, winslash='/', mustWork=TRUE)
+  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-  appPackages <- snapshotImpl(appDir, available, lib.loc, sourcePackages, dry.run,
+  appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dry.run,
                               orphan.check = orphan.check,
                               ignore.stale = ignore.stale, 
                               prompt = prompt && !dry.run)
@@ -79,26 +78,26 @@ snapshot <- function(appDir = ".", available = NULL, lib.loc = libdir(appDir),
     for (pkgToInstall in pkgsToInstall) {
       message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
       type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
-                         appDir, NULL, activeRepos(), lib.loc)
+                         projDir, NULL, activeRepos(), lib.loc)
       message("OK (", type, ")")
     }
     for (pkgRecord in flattenPackageRecords(appPackages)) {
-      annotatePkgDesc(pkgRecord, appDir=appDir, lib=lib.loc)
+      annotatePkgDesc(pkgRecord, projDir=projDir, lib=lib.loc)
     }
   }
 }
 
-snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir),
+snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projDir),
                          sourcePackages = NULL, dry.run = FALSE,
                          orphan.check = FALSE, ignore.stale = FALSE,
                          prompt = interactive()) {
-  lockPackages <- lockInfo(appDir, fatal=FALSE)
+  lockPackages <- lockInfo(projDir, fatal=FALSE)
   
   # Get the package records for dependencies of the app. It's necessary to 
   # include .libPaths in the list of library locations because it's possible that
   # the user installed a package that relies on a recommended package, which
   # would be used by the app but not present in the private library.
-  appPackages <- getPackageRecords(sort(appDependencies(appDir)), available,
+  appPackages <- getPackageRecords(sort(appDependencies(projDir)), available,
                                    sourcePackages, 
                                    lib.loc = unique(c(lib.loc, .libPaths())))
   
@@ -169,11 +168,11 @@ snapshotImpl <- function(appDir = '.', available = NULL, lib.loc = libdir(appDir
   }
   
   if (!dry.run) {
-    writeLockFile(file.path(appDir, "packrat.lock"),
+    writeLockFile(file.path(projDir, "packrat.lock"),
                   appPackages)
-    snapshotSources(appDir, activeRepos(), lockInfo(appDir))
+    snapshotSources(projDir, activeRepos(), lockInfo(projDir))
     cat('Snapshot written to', 
-        normalizePath(file.path(appDir, "packrat.lock"), winslash = '/'), '\n')
+        normalizePath(file.path(projDir, "packrat.lock"), winslash = '/'), '\n')
   }
   
   return(invisible(appPackages))

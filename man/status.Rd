@@ -2,15 +2,15 @@
 \alias{status}
 \title{Show differences between the last snapshot and the library}
 \usage{
-  status(appDir = ".", lib.loc = libdir(appDir),
+  status(projDir = ".", lib.loc = libdir(projDir),
     quiet = FALSE)
 }
 \arguments{
-  \item{appDir}{The directory that contains the R project.}
+  \item{projDir}{The directory that contains the R
+  project.}
 
   \item{lib.loc}{The library to examine. Defaults to the
-  private library associated with the application
-  directory.}
+  private library associated with the project directory.}
 
   \item{quiet}{\code{TRUE} to suppress output, \code{FALSE}
   (the default) to show output.}
