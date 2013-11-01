@@ -299,17 +299,18 @@ installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
   }
   
   if (needsInstall) {
-    # Specify library parameter when not installing to the first library on
-    # the path
-    installArgs <- 
-      if (identical(.libPaths()[1], lib)) 
-        getOption("devtools.install.args")
-    else
-      paste("-l", lib)
-    
-    devtools::install_local(path = pkgSrc, reload = FALSE, 
-                            args = installArgs, dependencies = FALSE,
-                            quick = TRUE, quiet = TRUE)
+    local({
+      # devtools does not install to any libraries other than the default, so 
+      # if the library we wish to install to is not the default, set as the
+      # default while we do this operation. 
+      if (!identical(.libPaths()[1], lib)) {
+        oldLibPaths <- .libPaths() 
+        on.exit(.libPaths(oldLibPaths), add = TRUE)
+        .libPaths(lib)
+      }
+      devtools::install_local(path = pkgSrc, reload = FALSE, 
+                              dependencies = FALSE, quick = TRUE, quiet = TRUE)
+    })
   }
   
   # Annotate DESCRIPTION file so we know we installed it
