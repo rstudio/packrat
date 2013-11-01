@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
+@import url(https://fonts.googleapis.com/css?family=Lato:400italic,700italic,400,700);
 html {
   background: #6C7989;
   background: #6c7989 -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #6c7989), color-stop(100%, #434b55)) fixed;
@@ -14,7 +14,7 @@ body {
   margin: 0;
   font: 14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #555;
-  font-weight: 300;
+  font-weight: 400;
   background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAeCAYAAABNChwpAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAAAUdEVYdENyZWF0aW9uIFRpbWUAMy82LzEygrTcTAAAAFRJREFUSIljfPDggZRf5RIGGNjUHsNATz6jXmSL1Kb2GLiAX+USBnrymRgGGDCORgFmoNAXjEbBaBSMRsFoFIxGwWgUjEbBaBSMRsFoFIxGwWgUAABYNujumib3wAAAAABJRU5ErkJggg==') fixed;
 }
 
@@ -241,12 +241,15 @@ code, pre {
 
 pre {
   padding: 20px;
-  background: #3A3C42;
-  color: #f8f8f2;
+  /*background: #3A3C42;
+  color: #f8f8f2;*/
+  background: #ccc;
+  background: rgba(0, 0, 0, 0.06);
+  color: #222;
   margin: 0 -20px 20px;
 }
 pre code {
-  color: #f8f8f2;
+  /*color: #f8f8f2;*/
 }
 li pre {
   margin-left: -60px;
