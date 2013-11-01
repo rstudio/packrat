@@ -145,7 +145,9 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         if (file.exists(scratchDir))
           unlink(scratchDir, recursive=TRUE)
       })
-      untar(srczip, exdir=scratchDir, tar="internal")
+      # untar can emit noisy warnings (e.g. "skipping pax global extended 
+      # headers"); hide those
+      suppressWarnings(untar(srczip, exdir=scratchDir, tar="internal"))
       # Find the base directory
       basedir <- if (length(dir(scratchDir)) == 1)
         file.path(scratchDir, dir(scratchDir))
