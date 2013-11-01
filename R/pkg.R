@@ -18,7 +18,10 @@
 
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL, 
-                              recursive=TRUE, lib.loc=NULL, fatal=TRUE) {
+                              recursive=TRUE, lib.loc=NULL,
+                              missing.package=function(package, lib.loc) {
+                                stop('The package "', pkgName, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
+                              }) {
   records <- lapply(pkgNames, function(pkgName) {
     if (!is.null(sourcePackages) &&
         pkgName %in% rownames(sourcePackages)) {
@@ -53,15 +56,8 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
             Version = pkg[["Version"]],
             Repository = "CRAN")
           db <- available
-        } else if (fatal) {
-          where <- ifelse(is.null(lib.loc), 'the current libpath', lib.loc)
-          stop('The package "', pkgName, '" is not installed in ', where)
         } else {
-          return(list(
-            name = pkgName,
-            version = NA,
-            source = NA
-          ))
+          return(missing.package(pkgName, lib.loc))
         }
       } else {
         # This package's DESCRIPTION exists locally--read it, and use the database
@@ -80,7 +76,8 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
         )[[record$name]]
       }
       record$depends <- getPackageRecords(
-        deps, available, sourcePackages, TRUE, lib.loc=lib.loc, fatal=fatal)
+        deps, available, sourcePackages, TRUE, lib.loc=lib.loc,
+        missing.package=missing.package)
     }
     return(record)
   })

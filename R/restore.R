@@ -387,7 +387,7 @@ restoreImpl <- function(appDir, repos, pkgRecords, lib,
   installedPkgs <- 
     getPackageRecords(
       rownames(installed.packages(lib.loc = lib)), 
-      recursive = FALSE, fatal = FALSE, lib.loc = lib)
+      recursive = FALSE, lib.loc = lib)
   actions <- diff(installedPkgs, pkgRecords)
   actions[names(actions) %in% pkgsToIgnore] <- NA
   restartNeeded <- FALSE
