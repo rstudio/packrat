@@ -361,4 +361,5 @@ footer p + p {
 #screencast {
   border: 1px solid #AAA;
   padding: 3px;
+  margin-bottom: 12px;
 }

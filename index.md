@@ -2,7 +2,7 @@
 layout: home
 ---
 
-<iframe id="screencast" src="//player.vimeo.com/video/78556317" width="600" height="337" frameborder="0" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allowfullscreen="allowfullscreen"> </iframe>
+<iframe id="screencast" src="//player.vimeo.com/video/78556317" width="700" height="393" frameborder="0" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allowfullscreen="allowfullscreen"> </iframe>
 
 ## Packrat is a dependency management system for R.
 
