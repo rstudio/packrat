@@ -47,32 +47,24 @@ local({
   
   .libPaths(localLib)
 
-  # Bootstrap the installation of devtools and packrat
-  if (newLocalLib) {
-    if (length(find.package('packrat', lib.loc = localLib, quiet = TRUE)) == 0) {
-      packratBootstrap <- new.env(parent=emptyenv())
-      assign("initPackrat", function() {
-        message("Initializing packrat and installing dependencies: ", 
-                appendLF = FALSE)
-        pkgs <- c("bitops", "stringr", "digest", "RCurl", "httr", "memoise",
-                  "whisker", "evaluate", "devtools", "packrat")
-        for (pkg in pkgs) {
-          pkgPath <- file.path(appRoot, "packrat.sources", pkg)
-          srcPkg <- file.path(pkgPath, list.files(pkgPath)[1])
-          utils::install.packages(srcPkg, type = "source", repos = NULL, 
-                                  verbose = FALSE, dependencies = FALSE, 
-                                  quiet = TRUE)
-          message(".", appendLF = FALSE)
-        }
-        message(".", appendLF = TRUE)
-        packrat:::annotatePkgs(pkgs, appRoot)
-        packrat::restore(appRoot)
-        detach("packratBootstrap")
-      }, envir = packratBootstrap)
-      attach(packratBootstrap)
-      message("Packrat needs to install the packages this project depends on. ", 
-              "Run initPackrat() to get started.")
-    }
+  # If the local library is empty, offer to bootstrap it. 
+  if (length(list.files(localLib)) == 0) {
+    packratBootstrap <- new.env(parent=emptyenv())
+    assign("initPackrat", function() {
+      message("Initializing packrat... ", appendLF = FALSE)
+      pkgPath <- file.path(appRoot, "packrat.sources", "packrat")
+      srcPkg <- file.path(pkgPath, list.files(pkgPath)[1])
+      utils::install.packages(srcPkg, type = "source", repos = NULL, 
+                              verbose = FALSE, dependencies = FALSE, 
+                              quiet = TRUE)
+      message("OK", appendLF = TRUE)
+      packrat:::annotatePkgs("packrat", appRoot)
+      packrat::restore(appRoot)
+      detach("packratBootstrap")
+    }, envir = packratBootstrap)
+    attach(packratBootstrap)
+    message("Packrat needs to install the packages this project depends on. ", 
+            "Run initPackrat() to get started.")
   }
 
   # Remind the user to snapshot after making changes to the package library.

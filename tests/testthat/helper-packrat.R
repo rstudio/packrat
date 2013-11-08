@@ -45,9 +45,9 @@ setupTestRepo <- function() {
 installTestPkg <- function(pkg, ver, lib) {
   pkgSrc <- file.path("repo", "src", "contrib", pkg, 
                       paste(pkg, "_", ver, ".tar.gz", sep = ""))
-  devtools::install_local(path = pkgSrc, reload = FALSE, 
-                          args = paste("-l", lib), dependencies = FALSE,
-                          quick = TRUE, quiet = TRUE)
+  install_local(path = pkgSrc, reload = FALSE, 
+                args = paste("-l", lib), dependencies = FALSE,
+                quick = TRUE, quiet = TRUE)
 }
 
 # Adds a dependency on a package to a test project
