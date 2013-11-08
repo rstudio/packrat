@@ -14,14 +14,14 @@ Imports:
     tools,
     utils,
     methods,
-    devtools (>= 1.4),
-    httr
+    devtools (>= 1.4)
 Suggests:
     testthat (>= 0.7)
 Enhances: BiocInstaller
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 Collate:
+    'downloader.R'
     'dependencies.R'
     'descfile.R'
     'lockfile.R'
