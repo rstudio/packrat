@@ -128,8 +128,6 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
                         pkgRecord$gh_repo, "/archive/", pkgSrcFile,
                         sep = "")
-    request <- httr::GET(archiveUrl)
-    httr::stop_for_status(request)
     
     srczip <- tempfile(fileext='.zip')
     on.exit({
@@ -137,7 +135,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
         unlink(srczip, recursive=TRUE)
     })
     
-    writeBin(httr::content(request), srczip)
+    download(archiveUrl, srczip, quiet = TRUE, mode = "wb")
 
     local({
       scratchDir <- tempfile()
