@@ -13,8 +13,7 @@ Depends:
 Imports:
     tools,
     utils,
-    methods,
-    devtools (>= 1.4)
+    methods
 Suggests:
     testthat (>= 0.7)
 Enhances: BiocInstaller
@@ -24,6 +23,7 @@ Collate:
     'downloader.R'
     'dependencies.R'
     'descfile.R'
+    'install.R'
     'lockfile.R'
     'packrat.R'
     'pkg.R'

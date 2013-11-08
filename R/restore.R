@@ -306,8 +306,8 @@ installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
         on.exit(.libPaths(oldLibPaths), add = TRUE)
         .libPaths(lib)
       }
-      devtools::install_local(path = pkgSrc, reload = FALSE, 
-                              dependencies = FALSE, quick = TRUE, quiet = TRUE)
+      install_local(path = pkgSrc, reload = FALSE, 
+                    dependencies = FALSE, quick = TRUE, quiet = TRUE)
     })
   }
   
