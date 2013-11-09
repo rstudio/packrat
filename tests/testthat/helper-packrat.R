@@ -34,7 +34,8 @@ rebuildTestRepo <- function(testroot) {
 
 # Sets up the fake repo used for testing
 setupTestRepo <- function() {
-  repo <- paste("file://", normalizePath("repo"), sep = "")
+  repo <- paste("file:///", normalizePath("repo", winslash = "/"), 
+                sep = "")
   names(repo) <- "CRAN"
   options("repos" = repo) 
   options("pkgType" = "source")
