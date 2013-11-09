@@ -74,7 +74,7 @@ compile_rcpp_attributes <- function(pkg) {
   # Only scan for attributes in packages explicitly linking to Rcpp
   if (links_to_rcpp(pkg)) {
     
-    if (nchar(system.file(package("Rcpp"))) == 0)
+    if (nchar(system.file(package = "Rcpp")) == 0)
       stop("Rcpp required for building this package")
     
     # Only compile attributes if we know we have the function available
@@ -606,4 +606,21 @@ is.named <- function(x) {
 }
 
 "%||%" <- function(a, b) if (!is.null(a)) a else b
+
+get_path <- function() {
+  strsplit(Sys.getenv("PATH"), .Platform$path.sep)[[1]]
+}
+
+set_path <- function(path) {
+  path <- normalizePath(path, mustWork = FALSE)
+  
+  old <- get_path()
+  path <- paste(path, collapse = .Platform$path.sep)
+  Sys.setenv(PATH = path)
+  invisible(old)
+}
+
+add_path <- function(path, after = Inf) {
+  set_path(append(get_path(), path, after))
+}
 

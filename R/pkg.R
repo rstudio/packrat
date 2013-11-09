@@ -20,7 +20,7 @@
 getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL, 
                               recursive=TRUE, lib.loc=NULL,
                               missing.package=function(package, lib.loc) {
-                                stop('The package "', pkgName, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
+                                stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
                               }) {
   records <- lapply(pkgNames, function(pkgName) {
     if (!is.null(sourcePackages) &&
