@@ -15,7 +15,8 @@ Imports:
     utils,
     methods
 Suggests:
-    testthat (>= 0.7)
+    testthat (>= 0.7),
+    Rcpp
 Enhances: BiocInstaller
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
