@@ -40,8 +40,6 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
     path <- dirname(pkg$path)
   }
   
-  compile_rcpp_attributes(pkg)
-  
   if (binary) {
     args <- c("--build", args)
     cmd <- paste0("CMD INSTALL ", shQuote(pkg$path), " ",
@@ -67,28 +65,6 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
   targz <- paste0(pkg$package, "_", pkg$version, ".", ext)
   
   file.path(path, targz)
-}
-
-compile_rcpp_attributes <- function(pkg) {
-  
-  # Only scan for attributes in packages explicitly linking to Rcpp
-  if (links_to_rcpp(pkg)) {
-    
-    if (nchar(system.file(package = "Rcpp")) == 0)
-      stop("Rcpp required for building this package")
-    
-    # Only compile attributes if we know we have the function available
-    if (utils::packageVersion("Rcpp") >= "0.10.0")
-      Rcpp::compileAttributes(pkg$path)
-  }
-}
-
-links_to_rcpp <- function(pkg) {
-  "Rcpp" %in% pkg_linking_to(pkg)
-}
-
-pkg_linking_to <- function(pkg) {
-  parse_deps(pkg$linkingto)$name
 }
 
 R <- function(options, path = tempdir(), env_vars = NULL, ...) {
@@ -150,40 +126,6 @@ with_envvar <- function(new, code, action = "replace") {
   old <- set_envvar(new, action)
   on.exit(set_envvar(old, "replace"))
   force(code)
-}
-
-parse_deps <- function(string) {
-  if (is.null(string)) return()
-  stopifnot(is.character(string), length(string) == 1)
-  if (grepl("^\\s*$", string)) return()
-  
-  pieces <- strsplit(string, ",")[[1]]
-  
-  # Get the names
-  names <- gsub("\\s*\\(.*?\\)", "", pieces)
-  names <- gsub("^\\s+|\\s+$", "", names)
-  
-  # Get the versions and comparison operators
-  versions_str <- pieces
-  have_version <- grepl("\\(.*\\)", versions_str)
-  versions_str[!have_version] <- NA
-  
-  compare  <- sub(".*\\((\\S+)\\s+.*\\)", "\\1", versions_str)
-  versions <- sub(".*\\(\\S+\\s+(.*)\\)", "\\1", versions_str)
-  
-  # Check that non-NA comparison operators are valid
-  compare_nna   <- compare[!is.na(compare)]
-  compare_valid <- compare_nna %in% c(">", ">=", "==", "<=", "<")
-  if(!all(compare_valid)) {
-    stop("Invalid comparison operator in dependency: ",
-         paste(compare_nna[!compare_valid], collapse = ", "))
-  }
-  
-  deps <- data.frame(name = names, compare = compare,
-                     version = versions, stringsAsFactors = FALSE)
-  
-  # Remove R dependency
-  deps[names != "R", ]
 }
 
 install_local <- function(path, subdir = NULL, ...) {
