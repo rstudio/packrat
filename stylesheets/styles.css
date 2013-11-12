@@ -236,24 +236,21 @@ code, pre {
   color: #333;
   font-size: 12px;
   overflow-x: auto;
-  font-weight: bold;
 }
 
 pre {
   padding: 20px;
-  /*background: #3A3C42;
-  color: #f8f8f2;*/
   background: #ccc;
   background: rgba(0, 0, 0, 0.06);
   color: #222;
   margin: 0 -20px 20px;
 }
-pre code {
-  /*color: #f8f8f2;*/
-}
 li pre {
   margin-left: -60px;
   padding-left: 60px;
+}
+pre .command {
+  font-weight: bold;
 }
 
 table {
