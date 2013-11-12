@@ -8,7 +8,7 @@ module Packrat
     def render(context)
       code = super
       code.gsub!(/^    /m, '') if code =~ /^    /
-      code = ERB::Util::html_escape code
+      code = CGI.escapeHTML code
       code.gsub!(/^((&gt;|\$) [^\r\n]*)$/m, '<span class="command">\\1</span>')
       "<pre>#{code}</pre>"
     end
