@@ -211,3 +211,7 @@ Your collaborator applies your snapshot with `restore()`:
 Now you're both working with the `chartreuse` package.
 
 Of course, in addition to adding new dependencies, Packrat's controlled environment can help your team safely update and remove dependencies together without compromising your results.
+
+## Conflict resolution
+
+// TODO
