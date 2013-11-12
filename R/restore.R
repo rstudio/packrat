@@ -394,7 +394,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% actions)
   
   if (all(is.na(actions))) {
-    message("Already up to date")
+    cat("Already up to date")
     return(invisible())
   }
 
@@ -441,7 +441,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   # Play the list, if there's anything to play
   playActions(pkgRecords, actions, repos, projDir, targetLib)
   if (restartNeeded) {
-    message("You must restart R to finish applying these changes.")
+    cat("You must restart R to finish applying these changes.")
   }
 }
 
