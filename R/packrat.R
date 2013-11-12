@@ -289,9 +289,9 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   packratPackages <- lockInfo(projDir, fatal=FALSE)
   if (length(packratPackages) == 0) {
     bootstrapArg <- if (projDirDefault) '' else deparse(projDir)
-    message('This directory does not appear to be using packrat.\n',
-            'Call packrat::bootstrap(', bootstrapArg, ') to initialize ',
-            'packrat.')
+    cat('This directory does not appear to be using packrat.\n',
+        'Call packrat::bootstrap(', bootstrapArg, ') to initialize packrat.',
+        sep = '')
     return(invisible())
   }
   packratNames <- pkgNames(flattenPackageRecords(packratPackages))
@@ -398,7 +398,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   }
   
   if (!any(isChanged) && !any(isDirty) && !any(isOrphan)) {
-    message('Up to date.')
+    cat('Up to date.')
     return(invisible(TRUE))
   }
 
@@ -643,7 +643,9 @@ packify <- function(dir = '.') {
   augmentFile(system.file('Rprofile', package='packrat'), rprofile, TRUE)
   augmentFile(system.file('Renviron', package='packrat'), renviron, FALSE)
   
-  message('Packrat startup directives installed. Please quit and restart your R session.')
+  cat('Packrat startup directives installed.\n',
+      'Please quit and restart your R session.', 
+      sep = '')
   
   invisible()
 }
