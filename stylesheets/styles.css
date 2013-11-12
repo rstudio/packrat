@@ -234,7 +234,7 @@ section ul li, section ol li {
 }
 
 code, pre {
-  font-family: Monaco, Bitstream Vera Sans Mono, Consolas, Lucida Console, Terminal, monospace;
+  font-family: Menlo, Monaco, Bitstream Vera Sans Mono, Consolas, Lucida Console, Terminal, monospace;
   color: #333;
   font-size: 12px;
   overflow-x: auto;
