@@ -7,8 +7,15 @@ module Packrat
 
     def render(context)
       code = super
+
+      # Remove leading spaces
       code.gsub!(/^    /m, '') if code =~ /^    /
-      code = CGI.escapeHTML code
+
+      # HTML escape
+      code.gsub!(/&/n, '&amp;')
+      code.gsub!(/>/n, '&gt;')
+      code.gsub!(/</n, '&lt;')
+
       code.gsub!(/^((&gt;|\$) [^\r\n]*)$/m, '<span class="command">\\1</span>')
       "<pre>#{code}</pre>"
     end
