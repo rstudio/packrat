@@ -18,8 +18,12 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>Packrat</h1>
-        <p>Reproducible package management for R</p>
+        <h1>{{page.title}}</h1>
+        {% if page.url != '/index.html' %}
+          <p class="homelink"><a href="./">&lt; Return to homepage</a></p>
+        {% else %}
+          <p>{{page.subtitle}}</p>
+        {% endif %}
         <p class="view"><a href="https://github.com/rstudio/packrat">View the Project on GitHub <small>rstudio/packrat</small></a></p>
         <!--
         <ul>
