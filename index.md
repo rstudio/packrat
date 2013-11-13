@@ -32,6 +32,8 @@ Until packrat is ready for CRAN, you can install it directly from GitHub using [
     > detach("package:devtools", unload=TRUE)
     > devtools::install_github("rstudio/packrat")
 
+You'll also need to make sure your machine is able to build packages from source. See [Package Development Prerequisites](http://www.rstudio.com/ide/docs/packages/prerequisites) for the tools needed for your operating system.
+
 ## Next steps
 
 * If you skipped the screencast above, it's a good idea to go back and watch it.
