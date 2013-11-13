@@ -200,7 +200,7 @@ Later, your collaborator picks up your changes, and notices that you've made som
     Fast-forward
      colors.R | 3 ++-
      packrat.lock | 5 ++++++
-     packrat.sources/chartreuse/chartreuse-1.07.tar.gz 
+     packrat.sources/chartreuse/chartreuse-1.07.tar.gz | Bin 0 -> 20783 bytes
      3 files changed, 7 insertions(+), 1 deletion(-)
 
 Your collaborator applies your snapshot with `restore()`: 
@@ -214,4 +214,36 @@ Of course, in addition to adding new dependencies, Packrat's controlled environm
 
 ## Conflict resolution
 
-// TODO
+So far we've talked mostly about `packrat::status()` reporting single packages that need to be added or removed. However, if you don't snapshot frequently or forget to apply a snapshot from a collaborator for a while, the output can get complex.
+
+Let's say that your collaborator added a dependency called `fuchsia`. Meanwhile, you removed your dependency on `chartreuse` (but didn't remove the library) and you added one called `sienna`.  Now you want to snapshot your changes, so you call `packrat::status()` to see what will be changed. 
+
+    > packrat::status()
+    
+    The following packages are missing from your library, or are out of date:
+                    packrat   library
+        fuchsia         1.1        NA
+    Use packrat::restore() to install/remove the appropriate packages.
+    
+    The following packages have been updated in your library, but have not
+    been recorded in packrat:
+                 library   packrat
+        sienna   1.1.7-2        NA
+    Use packrat::snapshot() to record these packages in packrat.
+    
+    The following packages are installed but not needed:
+             _      
+        chartreuse   1.07
+    Use packrat::clean() to remove them. Or, if they are actually needed
+    by your project, add `library(packagename)` calls to a .R file
+    somewhere in your project.
+
+The best way to deal with this output is to *do the actions in the order suggested*. In other words:
+
+1. Use `packrat::restore()` to apply your collaborator's change. Now your private library has your changes *and* your collaborator's change.
+2. Use `packrat::snapshot()` to take a snapshot of the new library. Now Packrat is up to date with both changes.
+3. Use `packrat::clean()` to clean up libraries no longer in use.
+
+If you'd swapped the order of the first steps--that is, forced a snapshot as your first operation--you'd overwrite the snapshot your collaborator took, losing their changes.
+
+
