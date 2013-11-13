@@ -24,10 +24,11 @@ Unfortunately, private libraries don't travel well; like all R libraries, their 
 
 ## Installing packrat
 
-Until packrat is ready for CRAN, you can install it directly from GitHub using [devtools](https://github.com/hadley/devtools). **It's very important that you use devtools 1.4 or later to install packrat, otherwise you will get errors when you try to use it.** As of this writing, devtools 1.4 is not yet on CRAN. So these instructions must be followed for now.
+Until packrat is ready for CRAN, you can install it directly from GitHub using [devtools](https://github.com/hadley/devtools). **It's very important that you use devtools 1.4 or later to install packrat, otherwise you will get errors when you try to use it.** As of this writing, devtools 1.4 is not yet on CRAN. So these instructions must be followed precisely.
 
     > install.packages("devtools")
-    > devtools::install_github("devtools")
+    > require(devtools)
+    > install_github("devtools")
     > detach("package:devtools", unload=TRUE)
     > devtools::install_github("rstudio/packrat")
 
