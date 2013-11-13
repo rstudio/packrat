@@ -6,7 +6,9 @@ subtitle: Reproducible package management for R
 
 ## Packrat is a dependency management system for R.
 
-Use packrat to make your R projects more:
+R package dependencies can be frustrating. Have you ever had to use trial-and-error to figure out what R packages you need to install to make someone else's code work--and then been left with those packages globally installed forever, because now you're not sure whether you need them? Have have you ever updated a package to get code in one of your projects to work, only to find that the updated package makes code in another project *stop* working? 
+
+We built packrat to solve these problems. Use packrat to make your R projects more:
 
 * **Isolated:** Installing a new or updated package for one project won't break your other projects, and vice versa. That's because packrat gives each project its own private package library.
 * **Portable:** Easily transport your projects from one computer to another, even across different platforms. Packrat makes it easy to install the packages your project depends on.
