@@ -437,6 +437,21 @@ prettyPrint <- function(packages, header, footer = NULL) {
   }
 }
 
+showLibrary <- function(appDir = '.')
+{
+  lib.loc <- libdir(appDir)
+  libPackages <- getPackageRecords(
+    as.vector(installed.packages(lib.loc, noCache=TRUE)[,'Package']), 
+    NULL, lib.loc=lib.loc, recursive=FALSE)
+  do.call(rbind.data.frame, lapply(libPackages, function(pkg) {
+    list(Name = pkg$name, 
+         Source = pkg$source, 
+         Version = paste(pkg$version, if (identical(pkg$source, "github"))
+                                          paste("(", pkg$gh_sha1, ")", sep = "")
+                                      else ""))
+  }))
+}
+
 summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage, 
                            removeMessage, upgradeMessage, downgradeMessage, 
                            crossgradeMessage)
