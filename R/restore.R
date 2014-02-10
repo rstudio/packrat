@@ -126,8 +126,8 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     }
   } else if (identical(pkgRecord$source, "github")) {
     archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
-                        pkgRecord$gh_repo, "/archive/", pkgSrcFile,
-                        sep = "")
+                        pkgRecord$gh_repo, "/archive/", pkgRecord$gh_sha1,
+                        ".zip", sep = "")
     
     srczip <- tempfile(fileext='.zip')
     on.exit({
