@@ -127,9 +127,9 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
   } else if (identical(pkgRecord$source, "github")) {
     archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/", 
                         pkgRecord$gh_repo, "/archive/", pkgRecord$gh_sha1,
-                        ".zip", sep = "")
+                        ".tar.gz", sep = "")
     
-    srczip <- tempfile(fileext='.zip')
+    srczip <- tempfile(fileext='.tar.gz')
     on.exit({
       if (file.exists(srczip))
         unlink(srczip, recursive=TRUE)
