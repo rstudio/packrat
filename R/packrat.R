@@ -252,6 +252,7 @@ restore <- function(projDir = '.', overwriteDirty = FALSE,
   # Install each package from CRAN or github, from binaries when available and 
   # then from sources.
   repos <- lockInfo(projDir, 'repos')
+  repos <- strsplit(repos, "\\s*,\\s*")[[1]]
   restoreImpl(projDir, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt)
 }
