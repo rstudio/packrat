@@ -120,3 +120,15 @@ test_that("clean removes libraries and sources", {
   expect_false(file.exists(file.path(projRoot, "packrat.sources", "oatmeal")))
 })
 
+test_that("bootstrap works with multiple repos", {
+  repos <- getOption("repos")
+  pkgType <- getOption("pkgType")
+  on.exit({
+    options("repos"= repos)
+    options("pkgType" = pkgType)
+  }, add = TRUE)
+  options(repos=c(CRAN=getOption("repos"), custom=getOption("repos")))
+
+  projRoot <- cloneTestProject("empty")
+  bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
+})
