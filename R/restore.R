@@ -203,9 +203,16 @@ snapshotSources <- function(projDir, repos, pkgRecords) {
     dir.create(sourceDir)
   
   # Get the sources for each package
-  lapply(pkgRecords, function(pkgRecord) { 
-    getSourceForPkgRecord(pkgRecord, sourceDir, availablePkgs, repos)
+  results <- lapply(pkgRecords, function(pkgRecord) {
+    try(getSourceForPkgRecord(pkgRecord, sourceDir, availablePkgs, repos),
+        silent = TRUE)
   })
+
+  errors <- results[sapply(results, function(x) inherits(x, "try-error"))]
+  if (length(errors) > 0)
+    stop("Errors occurred when fetching source files:\n", errors)
+
+  invisible(NULL)
 }
 
 annotatePkgDesc <- function(pkgRecord, projDir, lib = libdir(projDir)) {
