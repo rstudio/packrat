@@ -78,7 +78,7 @@ snapshot <- function(projDir = ".", available = NULL, lib.loc = libdir(projDir),
     for (pkgToInstall in pkgsToInstall) {
       message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
       type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
-                         projDir, NULL, activeRepos(), lib.loc)
+                         projDir, NULL, activeRepos(projDir), lib.loc)
       message("OK (", type, ")")
     }
     for (pkgRecord in flattenPackageRecords(appPackages)) {
@@ -168,7 +168,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   }
   
   if (!dry.run) {
-    snapshotSources(projDir, activeRepos(), appPackages)
+    snapshotSources(projDir, activeRepos(projDir), appPackages)
     writeLockFile(file.path(projDir, "packrat.lock"),
                   appPackages)
     cat('Snapshot written to', 
@@ -180,7 +180,11 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
-activeRepos <- function() {
+activeRepos <- function(projDir) {
+  repos <- lockInfo(projDir, 'repos', fatal = FALSE)
+  if (length(repos) > 0)
+    return(strsplit(repos, '\\s*,\\s*')[[1]])
+
   repos <- as.vector(getOption("repos"))
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
   
