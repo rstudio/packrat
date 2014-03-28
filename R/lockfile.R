@@ -37,7 +37,7 @@ writeLockFile <- function(file, lockinfo) {
     PackratFormat = "1.1",
     PackratVersion = as.character(packageVersion("packrat")),
     RVersion = rver,
-    Repos = paste(activeRepos(), collapse = ", ")
+    Repos = paste(activeRepos(dirname(file)), collapse = ", ")
   )
   
   stopifnot(nrow(preamble) == 1)
