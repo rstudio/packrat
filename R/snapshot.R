@@ -100,10 +100,11 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   appPackages <- getPackageRecords(sort(appDependencies(projDir)), available,
                                    sourcePackages, 
                                    lib.loc = unique(c(lib.loc, .libPaths())))
+  appPackagesFlat <- flattenPackageRecords(appPackages)
   
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
   
-  orphans <- setdiff(allLibPkgs, pkgNames(flattenPackageRecords(appPackages)))
+  orphans <- setdiff(allLibPkgs, pkgNames(appPackagesFlat))
   
   if (orphan.check) {
     on.exit({
@@ -147,8 +148,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   if (all(is.na(diffs))) {
     message("Already up to date")
     if (is.null(lib.loc) || 
-          all(installedByPackrat(pkgNames(flattenPackageRecords(appPackages)),
-                                 lib.loc, FALSE))) {
+          all(installedByPackrat(pkgNames(appPackagesFlat), lib.loc, FALSE))) {
       # If none of the packages/versions differ, and all of the packages in the
       # private library were installed by packrat, then we can short-circuit.
       # If the package/versions differ, we obviously need to continue, so we can
@@ -168,7 +168,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   }
   
   if (!dry.run) {
-    snapshotSources(projDir, activeRepos(projDir), flattenPackageRecords(appPackages, depInfo=TRUE, sourcePath=TRUE))
+    snapshotSources(projDir, activeRepos(projDir), appPackagesFlat)
     writeLockFile(file.path(projDir, "packrat.lock"),
                   appPackages)
     cat('Snapshot written to', 
