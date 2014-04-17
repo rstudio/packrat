@@ -100,7 +100,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   appPackages <- getPackageRecords(sort(appDependencies(projDir)), available,
                                    sourcePackages, 
                                    lib.loc = unique(c(lib.loc, .libPaths())))
-  appPackagesFlat <- flattenPackageRecords(appPackages)
+  appPackagesFlat <- flattenPackageRecords(appPackages, sourcePath = TRUE)
   
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
   
