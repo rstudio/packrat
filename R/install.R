@@ -1,3 +1,4 @@
+##' @importFrom tools pkgVignettes
 install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
                     args = getOption("devtools.install.args"), quiet = FALSE,
                     dependencies = NA, build_vignettes = !quick,
