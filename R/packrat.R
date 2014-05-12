@@ -127,10 +127,9 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
     }
   }
   
-  # Get the inferred set of dependencies and take a snapshot
-  inferredDependencies <- appDependencies(projDir)
+  # Take a snapshot
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-  snapshotImpl(projDir, available.packages(contrib.url(activeRepos())),
+  snapshotImpl(projDir, available.packages(contrib.url(activeRepos(projDir))),
                sourcePackages=sourcePackages, lib.loc = NULL, ignore.stale=TRUE)
   
   # Use the lockfile to copy sources and install packages to the library

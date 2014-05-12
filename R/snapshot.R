@@ -78,7 +78,7 @@ snapshot <- function(projDir = ".", available = NULL, lib.loc = libdir(projDir),
     for (pkgToInstall in pkgsToInstall) {
       message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
       type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
-                         projDir, NULL, activeRepos(), lib.loc)
+                         projDir, NULL, activeRepos(projDir), lib.loc)
       message("OK (", type, ")")
     }
     for (pkgRecord in flattenPackageRecords(appPackages)) {
@@ -100,10 +100,11 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   appPackages <- getPackageRecords(sort(appDependencies(projDir)), available,
                                    sourcePackages, 
                                    lib.loc = unique(c(lib.loc, .libPaths())))
+  appPackagesFlat <- flattenPackageRecords(appPackages, sourcePath = TRUE)
   
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
   
-  orphans <- setdiff(allLibPkgs, pkgNames(flattenPackageRecords(appPackages)))
+  orphans <- setdiff(allLibPkgs, pkgNames(appPackagesFlat))
   
   if (orphan.check) {
     on.exit({
@@ -147,8 +148,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   if (all(is.na(diffs))) {
     message("Already up to date")
     if (is.null(lib.loc) || 
-          all(installedByPackrat(pkgNames(flattenPackageRecords(appPackages)),
-                                 lib.loc, FALSE))) {
+          all(installedByPackrat(pkgNames(appPackagesFlat), lib.loc, FALSE))) {
       # If none of the packages/versions differ, and all of the packages in the
       # private library were installed by packrat, then we can short-circuit.
       # If the package/versions differ, we obviously need to continue, so we can
@@ -168,9 +168,9 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
   }
   
   if (!dry.run) {
+    snapshotSources(projDir, activeRepos(projDir), appPackagesFlat)
     writeLockFile(file.path(projDir, "packrat.lock"),
                   appPackages)
-    snapshotSources(projDir, activeRepos(), lockInfo(projDir))
     cat('Snapshot written to', 
         normalizePath(file.path(projDir, "packrat.lock"), winslash = '/'), '\n')
   }
@@ -180,7 +180,11 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
-activeRepos <- function() {
+activeRepos <- function(projDir) {
+  repos <- lockInfo(projDir, 'repos', fatal = FALSE)
+  if (length(repos) > 0)
+    return(strsplit(repos, '\\s*,\\s*')[[1]])
+
   repos <- as.vector(getOption("repos"))
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
   
