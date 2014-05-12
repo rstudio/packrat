@@ -643,9 +643,9 @@ packify <- function(dir = '.') {
   augmentFile(system.file('Rprofile', package='packrat'), rprofile, TRUE)
   augmentFile(system.file('Renviron', package='packrat'), renviron, FALSE)
 
-  cat('Packrat startup directives installed.\n',
+  cat('Packrat startup directives installed.',
       'Please quit and restart your R session.',
-      sep = '')
+      sep = '\n')
 
   invisible()
 }
