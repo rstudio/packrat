@@ -39,7 +39,7 @@ dirDependencies <- function(dir) {
 
   # first get the packages referred to in source code
   pkgs <- character()
-  sapply(list.files(dir, pattern=glob2rx("*.R"),
+  sapply(list.files(dir, pattern="\\.[rR]$",
                     ignore.case=TRUE, recursive=TRUE),
          function(file) {
            # ignore files in the library directories
