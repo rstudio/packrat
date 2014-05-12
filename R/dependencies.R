@@ -89,7 +89,7 @@ expressionDependencies <- function(e) {
   
   # recursive case: expression (= list of calls)
   if (is.expression(e)) {
-    unlist(lapply(e, expressionDependencies))
+    return(unlist(lapply(e, expressionDependencies)))
   }
   
   # base case: a call
