@@ -204,8 +204,8 @@ restore <- function(projDir = '.', overwriteDirty = FALSE,
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
   # Unfortunately, R's implementation of tar treats this warning output as
   # though it were part of the list of files in the archive.
-  cygwin <- Sys.getenv("CYGWIN")
-  if (length(grep("nodosfilewarning", cygwin)) == 0) {
+  cygwin <- Sys.getenv("CYGWIN", unset = NA)
+  if (!is.na(cygwin) && length(grep("nodosfilewarning", cygwin)) == 0) {
     Sys.setenv("CYGWIN" = paste(cygwin, "nodosfilewarning"))
     on.exit(Sys.setenv("CYGWIN" = cygwin), add = TRUE)
   }
