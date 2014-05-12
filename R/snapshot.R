@@ -1,74 +1,74 @@
 #' Capture and store the packages and versions in use
-#' 
+#'
 #' Finds the packages in use by the R code in the project, and stores a list
 #' of those packages, their sources, and their current versions in packrat.
-#' @param projDir The project directory. Defaults to current working 
+#' @param projDir The project directory. Defaults to current working
 #'   directory.
-#' @param available A database of available packages, as returned by 
-#'   \code{\link{available.packages}}. It is only necessary to supply this 
-#'   parameter if the state being snapshotted includes packages not installed 
+#' @param available A database of available packages, as returned by
+#'   \code{\link{available.packages}}. It is only necessary to supply this
+#'   parameter if the state being snapshotted includes packages not installed
 #'   locally, which is rare.
-#' @param lib.loc The library to snapshot. Defaults to the private library 
+#' @param lib.loc The library to snapshot. Defaults to the private library
 #'   associated with the given directory.
-#' @param sourcePackagePaths A character vector of directories containing R 
+#' @param sourcePackagePaths A character vector of directories containing R
 #'   package sources. It is only necessary to supply this parameter when using a
 #'   package for which sources exist on neither CRAN or Github.
-#' @param orphan.check \code{TRUE} to check for orphaned packages; \code{FALSE} 
-#'   to skip the check. Packrat only considers packages used by your code and 
-#'   packages which are dependencies of packages used by your code. Any other 
+#' @param orphan.check \code{TRUE} to check for orphaned packages; \code{FALSE}
+#'   to skip the check. Packrat only considers packages used by your code and
+#'   packages which are dependencies of packages used by your code. Any other
 #'   package in the private library is considered an orphan.  If the packages
 #'   are truly orphans, they can be removed with \code{\link{clean}}; if they
 #'   are not, you can make packrat aware that your project needs them by adding
 #'   a \code{require} statement to any R file.
-#' @param ignore.stale Stale packages are packages that are different from the 
+#' @param ignore.stale Stale packages are packages that are different from the
 #'   last snapshot, but were installed by packrat. Typically, packages become
 #'   stale when a new snapshot is available, but you haven't applied it yet with
-#'   \code{\link{restore}}. By default, packrat will prevent you from taking a 
+#'   \code{\link{restore}}. By default, packrat will prevent you from taking a
 #'   snapshot when you have stale packages to prevent you from losing changes
 #'   from the unapplied snapshot. If your intent is to overwrite the last
 #'   snapshot without applying it, use \code{ignore.stale = TRUE} to skip this
 #'   check.
-#' @param dry.run Computes the changes to your packrat state that would be made 
+#' @param dry.run Computes the changes to your packrat state that would be made
 #'   if a snapshot were performed, and prints them to the console.
-#' @param prompt \code{TRUE} to prompt before performing snapshotting package 
-#'   changes that might be unintended; \code{FALSE} to perform these operations 
-#'   without confirmation. Potentially unintended changes include snapshotting 
-#'   packages at an older version than the last snapshot, or missing despite 
+#' @param prompt \code{TRUE} to prompt before performing snapshotting package
+#'   changes that might be unintended; \code{FALSE} to perform these operations
+#'   without confirmation. Potentially unintended changes include snapshotting
+#'   packages at an older version than the last snapshot, or missing despite
 #'   being present in the last snapshot.
-#'   
+#'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
 #' the sources stored in the project's \code{packrat.sources} directory. If you
 #' are working with a version control system, your collaborators can sync the
 #' changes to these files and then use \code{\link{restore}} to apply your
 #' snapshot.
 #' @seealso
-#' \code{\link{restore}} to apply a snapshot. 
+#' \code{\link{restore}} to apply a snapshot.
 #' \code{\link{status}} to view the differences between the most recent snapshot
 #' and the library.
 #' @examples
 #' \dontrun{
 #' # Take a snapshot of the current project
 #' snapshot()
-#' 
+#'
 #' # See what changes would be included in a snapshot
 #' snapshot(dry.run = TRUE)
-#' 
+#'
 #' # Take a snapshot of a project that includes a custom package
 #' snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
 #' }
 #' @export
 snapshot <- function(projDir = ".", available = NULL, lib.loc = libdir(projDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
-                     ignore.stale = FALSE, dry.run = FALSE, 
+                     ignore.stale = FALSE, dry.run = FALSE,
                      prompt = interactive()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dry.run,
                               orphan.check = orphan.check,
-                              ignore.stale = ignore.stale, 
+                              ignore.stale = ignore.stale,
                               prompt = prompt && !dry.run)
-  
+
   if (!dry.run) {
     # Check to see if any of the packages we just snapshotted are not, in fact,
     # located in the private library, and install them if necessary
@@ -92,20 +92,20 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
                          orphan.check = FALSE, ignore.stale = FALSE,
                          prompt = interactive()) {
   lockPackages <- lockInfo(projDir, fatal=FALSE)
-  
-  # Get the package records for dependencies of the app. It's necessary to 
+
+  # Get the package records for dependencies of the app. It's necessary to
   # include .libPaths in the list of library locations because it's possible that
   # the user installed a package that relies on a recommended package, which
   # would be used by the app but not present in the private library.
   appPackages <- getPackageRecords(sort(appDependencies(projDir)), available,
-                                   sourcePackages, 
+                                   sourcePackages,
                                    lib.loc = unique(c(lib.loc, .libPaths())))
   appPackagesFlat <- flattenPackageRecords(appPackages, sourcePath = TRUE)
-  
+
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
-  
+
   orphans <- setdiff(allLibPkgs, pkgNames(appPackagesFlat))
-  
+
   if (orphan.check) {
     on.exit({
       prettyPrint(
@@ -115,10 +115,10 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
         'You can remove them using packrat::clean(), or include them in packrat\nby adding a library or require call to your R code, and running\nsnapshot again.')
     })
   }
-  
+
   diffs <- diff(lockPackages, appPackages)
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% diffs)
-  
+
   if (!ignore.stale) {
     # If any packages are installed, different from what's in the lockfile, and
     # were installed by packrat, that means they are stale.
@@ -137,17 +137,17 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
       return(invisible())
     }
   }
-  
-  summarizeDiffs(diffs, lockPackages, appPackages, 
-                 'Adding these packages to packrat:', 
-                 'Removing these packages from packrat:', 
+
+  summarizeDiffs(diffs, lockPackages, appPackages,
+                 'Adding these packages to packrat:',
+                 'Removing these packages from packrat:',
                  'Upgrading these packages already present in packrat:',
                  'Downgrading these packages already present in packrat:',
                  'Modifying these packages already present in packrat:')
-  
+
   if (all(is.na(diffs))) {
     message("Already up to date")
-    if (is.null(lib.loc) || 
+    if (is.null(lib.loc) ||
           all(installedByPackrat(pkgNames(appPackagesFlat), lib.loc, FALSE))) {
       # If none of the packages/versions differ, and all of the packages in the
       # private library were installed by packrat, then we can short-circuit.
@@ -158,7 +158,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
       return()
     }
   }
-  
+
   if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n] ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
@@ -166,15 +166,15 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
       return(invisible())
     }
   }
-  
+
   if (!dry.run) {
     snapshotSources(projDir, activeRepos(projDir), appPackagesFlat)
     writeLockFile(file.path(projDir, "packrat.lock"),
                   appPackages)
-    cat('Snapshot written to', 
+    cat('Snapshot written to',
         normalizePath(file.path(projDir, "packrat.lock"), winslash = '/'), '\n')
   }
-  
+
   return(invisible(appPackages))
 }
 
@@ -187,13 +187,13 @@ activeRepos <- function(projDir) {
 
   repos <- as.vector(getOption("repos"))
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
-  
-  # Check to see whether Bioconductor is installed. Bioconductor maintains a 
-  # private set of repos, which we need to expose here so we can download 
+
+  # Check to see whether Bioconductor is installed. Bioconductor maintains a
+  # private set of repos, which we need to expose here so we can download
   # sources to Bioconducter packages.
   if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
-    # Bioconductor repos may include repos already accounted for above 
-    repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))                   
-  } 
+    # Bioconductor repos may include repos already accounted for above
+    repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))
+  }
   return(repos)
 }

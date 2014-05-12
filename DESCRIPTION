@@ -19,13 +19,3 @@ Suggests:
 Enhances: BiocInstaller
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
-Collate:
-    'downloader.R'
-    'dependencies.R'
-    'descfile.R'
-    'install.R'
-    'lockfile.R'
-    'packrat.R'
-    'pkg.R'
-    'restore.R'
-    'snapshot.R'
