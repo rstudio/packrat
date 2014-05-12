@@ -23,7 +23,7 @@ rebuildTestRepo <- function(testroot) {
   pkgs <- list.files(src)
   for (pkg in pkgs) {
     descfile <- as.data.frame(read.dcf(file.path(src, pkg, "DESCRIPTION")))
-    tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz", 
+    tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
                      sep = "")
     tar(tarball, pkg, compression = "gzip", tar = "internal")
     dir.create(file.path(target, pkg))
@@ -34,27 +34,27 @@ rebuildTestRepo <- function(testroot) {
 
 # Sets up the fake repo used for testing
 setupTestRepo <- function() {
-  repo <- paste("file:///", normalizePath("repo", winslash = "/"), 
+  repo <- paste("file:///", normalizePath("repo", winslash = "/"),
                 sep = "")
   names(repo) <- "CRAN"
-  options("repos" = repo) 
+  options("repos" = repo)
   options("pkgType" = "source")
 }
 
-# Installs a test package from source. Necessary because install.packages 
-# fails under R CMD CHECK.  
+# Installs a test package from source. Necessary because install.packages
+# fails under R CMD CHECK.
 installTestPkg <- function(pkg, ver, lib) {
-  pkgSrc <- file.path("repo", "src", "contrib", pkg, 
+  pkgSrc <- file.path("repo", "src", "contrib", pkg,
                       paste(pkg, "_", ver, ".tar.gz", sep = ""))
-  install_local(path = pkgSrc, reload = FALSE, 
+  install_local(path = pkgSrc, reload = FALSE,
                 args = paste("-l", lib), dependencies = FALSE,
                 quick = TRUE, quiet = TRUE)
 }
 
 # Adds a dependency on a package to a test project
 addTestDependency <- function(projRoot, pkg) {
-  write(paste("library(", pkg, ")", sep = ""), 
-        file = file.path(projRoot, "deps.R"), 
+  write(paste("library(", pkg, ")", sep = ""),
+        file = file.path(projRoot, "deps.R"),
         append = TRUE)
 }
 
