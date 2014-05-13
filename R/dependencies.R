@@ -55,7 +55,38 @@ dirDependencies <- function(dir) {
 
 # detect all package dependencies for a source file (parses the file and then
 # recursively examines all expressions in the file)
+
+# ad-hoc dispatch based on the file extension
 fileDependencies <- function(file) {
+  fileext <- tolower(gsub(".*\\.", "", file))
+  switch (fileext,
+    r = fileDependencies.R(file),
+    rmd = fileDependencies.Rmd(file),
+    rnw = fileDependencies.Rnw(file),
+    rpres = fileDependencies.Rpres(file),
+    stop("Unrecognized file type '", file, "'")
+  )
+}
+
+fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
+  if (require("knitr")) {
+    tempfile <- tempfile()
+    silent(
+      knitr::knit(file, output = tempfile, tangle = TRUE)
+    )
+    fileDependencies.R(tempfile)
+  } else {
+    warning("knitr is required to parse dependencies from .Rmd files, but is not available")
+  }
+}
+
+fileDependencies.Rnw <- function(file) {
+  tempfile <- tempfile()
+  silent(Stangle(file, output = tempfile))
+  fileDependencies.R(tempfile)
+}
+
+fileDependencies.R <- function(file) {
   # build a list of package dependencies to return
   pkgs <- character()
 
@@ -76,7 +107,7 @@ fileDependencies <- function(file) {
   unique(pkgs)
 }
 
-# detect the pacakge dependencies of an expression (adapted from
+# detect the package dependencies of an expression (adapted from
 # tools:::.check_packages_used)
 #
 # expressionDependencies(quote(library("h")))
