@@ -14,6 +14,14 @@ associated with the project directory.}
 \item{quiet}{\code{TRUE} to suppress output, \code{FALSE} (the default) to
 show output.}
 }
+\value{
+Either \code{NULL} if a \code{packrat} project has not yet been
+initialized, or a (invisibly) a \code{data.frame} with components:
+\item{package}{The package name.}
+\item{packrat.version}{The package version used in the last snapshot.}
+\item{library.version}{The package version available in the local library.}
+\item{currently.used}{Whether the package is used in any of the R code in the current project.}
+}
 \description{
 Shows the differences between the project's packrat dependencies, its private
 package library, and its R scripts.
