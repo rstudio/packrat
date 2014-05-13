@@ -1,14 +1,4 @@
-# Lockfile tests
-#
-# To run these tests, set the working directory to packrat/tests and run
-# test_check("lockfile")
-#
-# Also run by R CMD CHECK.
-
-library(testthat)
-
-# Set up test context.
-context("Lockfile tests")
+context("lockfile")
 
 test_that("Topo sort works", {
 
@@ -34,4 +24,20 @@ test_that("Topo sort works", {
     'A' = c('D')
   )
   expect_error(topoSort(bad.graph.2))
+})
+
+test_that("Repository is properly split by readLockFile", {
+
+  lf <- readLockFile("lockfiles/lockfile-multipleRepos.txt")
+  expect_identical(
+    lf$repos,
+    c("http://cran.rstudio.com/",
+      "http://bioconductor.org/packages/3.0/bioc",
+      "http://bioconductor.org/packages/3.0/data/annotation",
+      "http://bioconductor.org/packages/3.0/data/experiment",
+      "http://bioconductor.org/packages/3.0/extra",
+      "http://cran.fhcrc.org"
+    )
+  )
+
 })

@@ -69,11 +69,15 @@ readLockFile <- function(file) {
   df <- cleanupWhitespace(df)
   names(df) <- translate(names(df), aliases)
 
+  # Split the repos
+  repos <- gsub("[\r\n]", " ", df[1, 'Repos'])
+  repos <- unlist(strsplit(repos, ", *"))
+
   list(
     packrat_format = df[1, 'PackratFormat'],
     packrat_version = df[1, 'PackratVersion'],
     r_version = df[1, 'RVersion'],
-    repos = df[1, 'Repos'],
+    repos = repos,
     packages = deserializePackages(tail(df, -1))
   )
 }

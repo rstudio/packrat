@@ -1,0 +1,13 @@
+PackratFormat: 1.1
+PackratVersion: 0.1.0
+RVersion: 3.2.0
+Repos: http://cran.rstudio.com/,
+  http://bioconductor.org/packages/3.0/bioc,
+  http://bioconductor.org/packages/3.0/data/annotation,
+  http://bioconductor.org/packages/3.0/data/experiment,
+  http://bioconductor.org/packages/3.0/extra, http://cran.fhcrc.org
+
+Package: packrat
+Source: source
+Version: 0.1.0
+SourcePath: /Users/kevin/git/packrat
