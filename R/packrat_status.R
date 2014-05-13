@@ -138,12 +138,12 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
 
   if (length(missingFromPackrat)) {
     prettyPrintPair(
+      searchPackages(installedPkgRecords, missingFromPackrat),
       searchPackages(packratPackages, missingFromPackrat),
-      searchPackages(installedPkgNames, missingFromPackrat),
       "The following packages have been updated in your library, but have not been recorded in packrat:",
       "Use packrat::snapshot() to record these packages in packrat.",
-      "packrat",
-      "library"
+      "library",
+      "packrat"
     )
   }
 
