@@ -38,8 +38,9 @@ dirDependencies <- function(dir) {
   dir <- normalizePath(dir, winslash='/')
 
   # first get the packages referred to in source code
+  pattern <- "\\.[rR]$|\\.[rR]md$|\\.[rR]nw$|\\.[rR]pres$"
   pkgs <- character()
-  sapply(list.files(dir, pattern="\\.[rR]$",
+  sapply(list.files(dir, pattern=pattern,
                     ignore.case=TRUE, recursive=TRUE),
          function(file) {
            # ignore files in the library directories
