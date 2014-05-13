@@ -51,7 +51,6 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   packratNames <- unlist(lapply(packratPackages, "[[", "name"))
   packratVersions <- unlist(lapply(packratPackages, "[[", "version"))
   packratSources <- unlist(lapply(packratPackages, "[[", "source"))
-  names(packratVersions) <- packratNames
 
   ## Packages in the library (with their version)
   installedPkgs <- installed.packages(
@@ -75,14 +74,16 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
 
   # Match the above with the set of all package names
   packrat.version <- packratVersions[allPkgNames]
+  packrat.source  <- packratSources[allPkgNames]
   library.version <- installedPkgVersions[allPkgNames]
   currently.used <- allPkgNames %in% inferredPkgNames
 
   # Generate a table that holds the current overall state
   statusTbl <- data.frame( stringsAsFactors = FALSE,
+                           row.names = 1:length(allPkgNames),
                            package = allPkgNames,
                            packrat.version = packrat.version,
-                           packrat.source  = packratSources,
+                           packrat.source  = packrat.source,
                            library.version = library.version,
                            currently.used  = currently.used
   )
