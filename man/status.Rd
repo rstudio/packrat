@@ -19,6 +19,7 @@ Either \code{NULL} if a \code{packrat} project has not yet been
 initialized, or a (invisibly) a \code{data.frame} with components:
 \item{package}{The package name.}
 \item{packrat.version}{The package version used in the last snapshot.}
+\item{packrat.source}{The location from which the package was obtained.}
 \item{library.version}{The package version available in the local library.}
 \item{currently.used}{Whether the package is used in any of the R code in the current project.}
 }
