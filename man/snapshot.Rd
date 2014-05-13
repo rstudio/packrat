@@ -3,7 +3,7 @@
 \alias{snapshot}
 \title{Capture and store the packages and versions in use}
 \usage{
-snapshot(projDir = ".", available = NULL, lib.loc = libdir(projDir),
+snapshot(projDir = ".", available = NULL, lib.loc = libDir(projDir),
   sourcePackagePaths = NULL, orphan.check = TRUE, ignore.stale = FALSE,
   dry.run = FALSE, prompt = interactive())
 }

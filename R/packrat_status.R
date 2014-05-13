@@ -27,7 +27,12 @@
 #' \item{currently.used}{Whether the package is used in any of the R code in the current project.}
 #'
 #' @export
-status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
+status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
+
+  if (!packratModeOn()) {
+    message("Packrat mode is currently turned off. Toggle it on with 'packrat_mode()'.")
+    return(invisible(NULL))
+  }
 
   projDirDefault <- identical(projDir, '.')
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)

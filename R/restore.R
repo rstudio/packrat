@@ -196,9 +196,9 @@ snapshotSources <- function(projDir, repos, pkgRecords) {
                                       type = "source")
 
   # Find the source directory (create it if necessary)
-  sourceDir <- file.path(projDir, "packrat.sources")
+  sourceDir <- srcDir(projDir)
   if (!file.exists(sourceDir))
-    dir.create(sourceDir)
+    dir.create(sourceDir, recursive = TRUE)
 
   # Get the sources for each package
   results <- lapply(pkgRecords, function(pkgRecord) {
@@ -213,7 +213,7 @@ snapshotSources <- function(projDir, repos, pkgRecords) {
   invisible(NULL)
 }
 
-annotatePkgDesc <- function(pkgRecord, projDir, lib = libdir(projDir)) {
+annotatePkgDesc <- function(pkgRecord, projDir, lib = libDir(projDir)) {
   descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
   appendToDcf(descFile, data.frame(
     InstallAgent=paste('packrat', packageVersion('packrat')),
@@ -221,7 +221,7 @@ annotatePkgDesc <- function(pkgRecord, projDir, lib = libdir(projDir)) {
 }
 
 # Annotate a set of packages by name.
-annotatePkgs <- function(pkgNames, projDir, lib = libdir(projDir)) {
+annotatePkgs <- function(pkgNames, projDir, lib = libDir(projDir)) {
   records <- searchPackages(lockInfo(projDir), pkgNames)
   lapply(records, function(record) {
     annotatePkgDesc(record, projDir, lib)
@@ -247,15 +247,15 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
 
 # Removes one or more packages from the app's private library and cached
 # sources.
-removePkgs <- function(projDir, pkgNames, lib.loc = libdir(projDir)) {
-  unlink(file.path(projDir, "packrat.sources", pkgNames), recursive = TRUE)
+removePkgs <- function(projDir, pkgNames, lib.loc = libDir(projDir)) {
+  unlink(file.path(srcDir(projDir), pkgNames), recursive = TRUE)
   remove.packages(pkgNames, lib.loc)
 }
 
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
-                       lib = libdir(projDir)) {
+                       lib = libDir(projDir)) {
   pkgSrc <- NULL
   type <- "built source"
   needsInstall <- TRUE
@@ -286,14 +286,14 @@ installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
   if (is.null(pkgSrc)) {
     # When installing from github or an older version, use the cached source
     # tarball or zip created in snapshotSources
-    pkgSrc <- file.path(projDir, "packrat.sources", pkgRecord$name,
+    pkgSrc <- file.path(srcDir(projDir), pkgRecord$name,
                         pkgSrcFilename(pkgRecord))
   }
   if (!file.exists(pkgSrc)) {
     # If the source file is missing, try to download it. (Could happen in the
     # case where the packrat lockfile is present but cached sources are
     # missing.)
-    getSourceForPkgRecord(pkgRecord, file.path(projDir, "packrat.sources"),
+    getSourceForPkgRecord(pkgRecord, srcDir(projDir),
                           availablePkgs, repos, quiet = TRUE)
     if (!file.exists(pkgSrc)) {
       stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
@@ -435,10 +435,10 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
                    identical(lib, .libPaths()[1])) {
     newlib <- file.path(projDir, 'library.new')
-    dir.create(newlib)
+    dir.create(newlib, recursive = TRUE)
     file.copy(file.path(projDir, 'library'), newlib, recursive = TRUE)
     restartNeeded <- TRUE
-    libdir(newlib)
+    libDir(newlib)
   } else {
     lib
   }

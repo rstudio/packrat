@@ -57,7 +57,7 @@
 #' snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
 #' }
 #' @export
-snapshot <- function(projDir = ".", available = NULL, lib.loc = libdir(projDir),
+snapshot <- function(projDir = ".", available = NULL, lib.loc = libDir(projDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
                      ignore.stale = FALSE, dry.run = FALSE,
                      prompt = interactive()) {
@@ -87,7 +87,7 @@ snapshot <- function(projDir = ".", available = NULL, lib.loc = libdir(projDir),
   }
 }
 
-snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projDir),
+snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libDir(projDir),
                          sourcePackages = NULL, dry.run = FALSE,
                          orphan.check = FALSE, ignore.stale = FALSE,
                          prompt = interactive()) {
@@ -169,10 +169,12 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libdir(projD
 
   if (!dry.run) {
     snapshotSources(projDir, activeRepos(projDir), appPackagesFlat)
-    writeLockFile(file.path(projDir, "packrat.lock"),
-                  appPackages)
+    writeLockFile(
+      lockFilePath(projDir),
+      appPackages
+    )
     cat('Snapshot written to',
-        normalizePath(file.path(projDir, "packrat.lock"), winslash = '/'), '\n')
+        normalizePath(lockFilePath(projDir), winslash = '/'), '\n')
   }
 
   return(invisible(appPackages))

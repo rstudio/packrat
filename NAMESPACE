@@ -2,9 +2,11 @@
 
 export(bootstrap)
 export(clean)
-export(libdir)
+export(libDir)
 export(packify)
+export(packrat_mode)
 export(restore)
 export(snapshot)
+export(srcDir)
 export(status)
 importFrom(tools,pkgVignettes)

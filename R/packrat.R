@@ -112,7 +112,7 @@ NULL
 bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
-  if (nzchar(Sys.getenv("R_PACKRAT"))) {
+  if (nzchar(Sys.getenv("R_PACKRAT_MODE"))) {
     stop("This project is already running under packrat!")
   }
 
@@ -122,7 +122,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
     description <- as.data.frame(read.dcf(descriptionFile))
     package <- description$Package
     if (!is.null(package)) {
-      stop("This project appears to be an R package. Packrat doesn't work on ",
+      stop("This project appears to be an R package. Packrat does not yet work with ",
            "packages.")
     }
   }
@@ -135,8 +135,6 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   # Use the lockfile to copy sources and install packages to the library
   restore(projDir, overwriteDirty=TRUE)
 
-  # Write the .Rprofile and .Renviron files
-  packify(projDir)
 
   invisible()
 }
@@ -218,7 +216,7 @@ restore <- function(projDir = '.', overwriteDirty = FALSE,
   }
 
   # Make sure the library directory exists
-  libDir <- libdir(projDir)
+  libDir <- libDir(projDir)
   if (!file.exists(libDir)) {
     dir.create(libDir, recursive=TRUE)
   }
@@ -397,7 +395,7 @@ prettyPrintNames <- function(packageNames, header, footer = NULL) {
 #' @seealso \code{\link{appDependencies}} for an explanation of how dependencies are detected.
 #'
 #' @export
-clean <- function(projDir = ".", lib.loc = libdir(projDir),
+clean <- function(projDir = ".", lib.loc = libDir(projDir),
                   prompt = interactive()) {
 
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
@@ -571,17 +569,50 @@ deaugmentFile <- function(file, delete.if.empty=TRUE) {
 #' The private package library is normally created by \code{\link{bootstrap}}.
 #' @examples
 #' # Show the library directory for the current working directory
-#' libdir()
+#' libDir()
 #'
 #' @export
-libdir <- function(projDir = ".") {
-  file.path(normalizePath(projDir, winslash='/', mustWork=TRUE), 'library',
-            R.version$platform, getRversion())
+libDir <- function(projDir = ".") {
+  file.path(
+    normalizePath(projDir, winslash='/', mustWork=TRUE),
+    .packrat$packratFolderName,
+    'lib',
+    R.version$platform,
+    getRversion()
+  )
+}
+
+#' Show the path to the current private sources
+#'
+#' Returns the path to the private package sources used by packrat.
+#'
+#' @param projDir The project directory. Defaults to current working
+#' directory.
+#' @return A character vector containing the path to the private package sources. The path
+#' is not guaranteed to exist on disk.
+#'
+#' @note
+#' The private package library is normally created by \code{\link{bootstrap}}.
+#' @examples
+#' # Show the library directory for the current working directory
+#' srcDir()
+#'
+#' @export
+srcDir <- function(projDir = ".") {
+  file.path(
+    normalizePath(projDir, winslash='/', mustWork=TRUE),
+    .packrat$packratFolderName,
+    'src'
+  )
+}
+
+lockFilePath <- function(projDir) {
+  file.path(projDir, .packrat$packratFolderName, "packrat.lock")
 }
 
 lockInfo <- function(projDir, property='packages', fatal=TRUE) {
   # Get and parse the lockfile
-  lockFilePath <- file.path(projDir, "packrat.lock")
+  lockFilePath <- lockFilePath(projDir)
   if (!file.exists(lockFilePath)) {
     if (fatal) {
       stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",

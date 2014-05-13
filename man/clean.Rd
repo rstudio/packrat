@@ -3,7 +3,7 @@
 \alias{clean}
 \title{Remove unused packages}
 \usage{
-clean(projDir = ".", lib.loc = libdir(projDir), prompt = interactive())
+clean(projDir = ".", lib.loc = libDir(projDir), prompt = interactive())
 }
 \arguments{
 \item{projDir}{The project directory. Defaults to current working
