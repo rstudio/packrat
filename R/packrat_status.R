@@ -152,14 +152,19 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
                          currently.used &
                            !is.na(packrat.version) &
                            packrat.version != library.version)
+  # NA return due to NA comparison in != above should mean out of sync
+  whichOutOfSync[is.na(whichOutOfSync)] <- TRUE
   pkgNamesOutOfSync <- statusTbl$package[whichOutOfSync]
+
   if (length(pkgNamesOutOfSync)) {
     prettyPrintPair(
       searchPackages(packratPackages, pkgNamesOutOfSync),
       searchPackages(installedPkgRecords, pkgNamesOutOfSync),
       "The following packages are out of sync between packrat and your current library:",
       c("Use packrat::snapshot() to set packrat to use the current library, or use\n",
-        "packrat::restore() to reset the library to the last snapshot.")
+        "packrat::restore() to reset the library to the last snapshot."),
+      "packrat",
+      "library"
     )
   }
 
