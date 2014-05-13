@@ -135,6 +135,11 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   # Use the lockfile to copy sources and install packages to the library
   restore(projDir, overwriteDirty=TRUE)
 
+  # Copy bootstrap.R so a user can 'start from zero' with a project
+  file.copy(
+    system.file(package="packrat", "bootstrap.R"),
+    file.path(projDir, .packrat$packratFolderName, "bootstrap.R")
+  )
 
   invisible()
 }
