@@ -108,22 +108,22 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
     )
   }
 
-  # Packages that are missing from the library, or out of sync
-  whichOutOfSync <- with(statusTbl,
-                         currently.used &
-                           (packrat.version != library.version)
+  # Packages that are used in the code, but are not mentioned in either packrat
+  # or the library
+  whichUntrackedPackages <- with(statusTbl,
+                                 currently.used &
+                                   is.na(packrat.version) &
+                                   is.na(library.version)
   )
-  whichOutOfSync[is.na(whichOutOfSync)] <- TRUE
+  pkgNamesUntracked <- statusTbl$package[whichUntrackedPackages]
 
-  pkgNamesOutOfSync <- statusTbl$package[whichOutOfSync]
-  if (length(pkgNamesOutOfSync)) {
-    prettyPrintPair(
-      searchPackages(packratPackages, pkgNamesOutOfSync),
-      searchPackages(libPackages, pkgNamesOutOfSync),
-      "The following packages are missing from your library, or out of sync with packrat:",
-      "Use packrat::restore() to install/remove the appropriate packages.",
-      "packrat",
-      "library"
+  if (length(pkgNamesUntracked)) {
+    prettyPrintNames(
+      pkgNamesUntracked,
+      c("The following packages are referenced in your code, but are not present\n",
+        "in your library nor in packrat:"),
+      c("You will need to install these packages manually, then use\n",
+        "packrat::snapshot() to record these packages in packrat.")
     )
   }
 
@@ -139,7 +139,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   if (length(missingFromPackrat)) {
     prettyPrintPair(
       searchPackages(packratPackages, missingFromPackrat),
-      searchPackages(libPackages, missingFromPackrat),
+      searchPackages(installedPkgNames, missingFromPackrat),
       "The following packages have been updated in your library, but have not been recorded in packrat:",
       "Use packrat::snapshot() to record these packages in packrat.",
       "packrat",
@@ -147,6 +147,23 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
     )
   }
 
+  # Packages that are tracked by packrat, currently used, but out of sync in the library
+  whichOutOfSync <- with(statusTbl,
+                         currently.used &
+                           !is.na(packrat.version) &
+                           packrat.version != library.version)
+  pkgNamesOutOfSync <- statusTbl$package[whichOutOfSync]
+  if (length(pkgNamesOutOfSync)) {
+    prettyPrintPair(
+      searchPackages(packratPackages, pkgNamesOutOfSync),
+      searchPackages(installedPkgRecords, pkgNamesOutOfSync),
+      "The following packages are out of sync between packrat and your currently library:",
+      c("Use packrat::snapshot() to set packrat to use the current library, or use\n",
+        "packrat::restore() to reset the library to the last snapshot.")
+    )
+  }
+
+  # Packages that are no longer used, but still seen in the library
   whichPkgsNotNeeded <- with(statusTbl,
                         !currently.used &
                           !is.na(library.version)
@@ -154,7 +171,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   pkgsNotNeeded <- statusTbl$package[whichPkgsNotNeeded]
   if (length(pkgsNotNeeded)) {
     prettyPrint(
-      searchPackages(libPackages, pkgsNotNeeded),
+      searchPackages(installedPkgNames, pkgsNotNeeded),
       "The following packages are installed but not needed:",
       c("Use packrat::clean() to remove them. Or, if they are actually needed\n",
         "by your project, add `library(packagename)` calls to a .R file\n",
@@ -163,7 +180,12 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   }
 
   # If everything is in order, let the user know
-  if (!(any(onlyPackrat) || length(pkgNamesOutOfSync) || length(missingFromPackrat) || length(pkgsNotNeeded))) {
+  if (!(any(onlyPackrat) ||
+          length(missingFromPackrat) ||
+          length(pkgNamesUntracked) ||
+          length(pkgNamesOutOfSync) ||
+          length(missingFromPackrat) ||
+          length(pkgsNotNeeded))) {
     cat("Up to date.\n")
   }
 
