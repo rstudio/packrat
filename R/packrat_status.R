@@ -22,6 +22,7 @@
 #' initialized, or a (invisibly) a \code{data.frame} with components:
 #' \item{package}{The package name.}
 #' \item{packrat.version}{The package version used in the last snapshot.}
+#' \item{packrat.source}{The location from which the package was obtained.}
 #' \item{library.version}{The package version available in the local library.}
 #' \item{currently.used}{Whether the package is used in any of the R code in the current project.}
 #'
@@ -49,6 +50,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   # Get the names, alongside the versions, of packages recorded in the lockfile
   packratNames <- unlist(lapply(packratPackages, "[[", "name"))
   packratVersions <- unlist(lapply(packratPackages, "[[", "version"))
+  packratSources <- unlist(lapply(packratPackages, "[[", "source"))
   names(packratVersions) <- packratNames
 
   ## Packages in the library (with their version)
@@ -80,6 +82,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   statusTbl <- data.frame( stringsAsFactors = FALSE,
                            package = allPkgNames,
                            packrat.version = packrat.version,
+                           packrat.source  = packratSources,
                            library.version = library.version,
                            currently.used  = currently.used
   )
