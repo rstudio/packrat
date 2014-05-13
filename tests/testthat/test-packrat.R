@@ -8,7 +8,7 @@
 library(testthat)
 
 # Set up test context.
-context("Packrat tests")
+context("packrat")
 
 # For the context of these tests, we need to use a private repo.
 repos <- getOption("repos")
@@ -22,12 +22,10 @@ setupTestRepo()
 test_that("bootstrap creates project structure and installs dependencies", {
   projRoot <- cloneTestProject("sated")
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
-  lib <- libdir(projRoot)
-  expect_true(file.exists(file.path(projRoot, "packrat.lock")))
-  expect_true(file.exists(file.path(projRoot, "packrat.sources")))
-  expect_true(file.exists(file.path(projRoot, "library")))
-  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
-  expect_true(file.exists(file.path(projRoot, ".Renviron")))
+  lib <- libDir(projRoot)
+  expect_true(file.exists(lockFilePath(projRoot)))
+  expect_true(file.exists(srcDir(projRoot)))
+  expect_true(file.exists(libDir(projRoot)))
   expect_true(file.exists(file.path(lib, "breakfast")))
   expect_true(file.exists(file.path(lib, "bread")))
   expect_true(file.exists(file.path(lib, "oatmeal")))
@@ -37,7 +35,7 @@ test_that("bootstrap creates project structure and installs dependencies", {
 
 test_that("restore ignores dirty packages", {
   projRoot <- cloneTestProject("carbs")
-  lib <- libdir(projRoot)
+  lib <- libDir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
   expect_true(file.exists(file.path(lib, "bread")))
 
@@ -49,7 +47,7 @@ test_that("restore ignores dirty packages", {
 
 test_that("restore installs missing packages", {
   projRoot <- cloneTestProject("carbs")
-  lib <- libdir(projRoot)
+  lib <- libDir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
   expect_true(file.exists(file.path(lib, "bread")))
 
@@ -62,7 +60,7 @@ test_that("restore installs missing packages", {
 
 test_that("snapshot captures new dependencies", {
   projRoot <- cloneTestProject("healthy")
-  lib <- libdir(projRoot)
+  lib <- libDir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
 
   # Simulate the addition of a dependency
@@ -88,7 +86,7 @@ test_that("snapshot captures new dependencies", {
 
 test_that("dependencies in library directories are ignored", {
   projRoot <- cloneTestProject("libraries")
-  lib <- libdir(projRoot)
+  lib <- libDir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
 
   # This test project has a file called library.R that depends on bread, and
@@ -100,13 +98,14 @@ test_that("dependencies in library directories are ignored", {
 
 test_that("clean removes libraries and sources", {
   projRoot <- cloneTestProject("smallbreakfast")
-  lib <- libdir(projRoot)
+  lib <- libDir(projRoot)
+  src <- srcDir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))
 
   expect_true(file.exists(file.path(lib, "bread")))
   expect_true(file.exists(file.path(lib, "oatmeal")))
-  expect_true(file.exists(file.path(projRoot, "packrat.sources", "bread")))
-  expect_true(file.exists(file.path(projRoot, "packrat.sources", "oatmeal")))
+  expect_true(file.exists(file.path(src, "bread")))
+  expect_true(file.exists(file.path(src, "oatmeal")))
 
   # Remove the dependency on oatmeal and clean
   removeTestDependencyFile(projRoot, "oatmeal.R")
@@ -116,8 +115,8 @@ test_that("clean removes libraries and sources", {
   # package oatmeal
   expect_true(file.exists(file.path(lib, "bread")))
   expect_false(file.exists(file.path(lib, "oatmeal")))
-  expect_true(file.exists(file.path(projRoot, "packrat.sources", "bread")))
-  expect_false(file.exists(file.path(projRoot, "packrat.sources", "oatmeal")))
+  expect_true(file.exists(file.path(src, "bread")))
+  expect_false(file.exists(file.path(src, "oatmeal")))
 })
 
 test_that("bootstrap works with multiple repos", {
