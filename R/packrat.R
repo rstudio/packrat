@@ -590,8 +590,6 @@ lockInfo <- function(projDir, property='packages', fatal=TRUE) {
       return(list())
     }
   }
-  result <- readLockFile(lockFilePath)[[property]]
-  names(result) <- unlist(lapply(result, "[[", "name"))
-  result
+  readLockFile(lockFilePath)[[property]]
 }
 

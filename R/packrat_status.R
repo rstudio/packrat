@@ -48,9 +48,9 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   }
 
   # Get the names, alongside the versions, of packages recorded in the lockfile
-  packratNames <- unlist(lapply(packratPackages, "[[", "name"))
-  packratVersions <- unlist(lapply(packratPackages, "[[", "version"))
-  packratSources <- unlist(lapply(packratPackages, "[[", "source"))
+  packratNames <- getPackageElement(packratPackages, "name")
+  packratVersions <- getPackageElement(packratPackages, "version")
+  packratSources <- getPackageElement(packratPackages, "source")
 
   ## Packages in the library (with their version)
   installedPkgs <- installed.packages(
@@ -62,7 +62,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
     installedPkgs
   )
   installedPkgNames <- names(installedPkgRecords)
-  installedPkgVersions <- unlist(lapply(installedPkgRecords, "[[", "version"))
+  installedPkgVersions <- getPackageElement(installedPkgRecords, "version")
 
   # Packages inferred from the code
   inferredPkgNames <- appDependencies(projDir)
@@ -157,7 +157,7 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
     prettyPrintPair(
       searchPackages(packratPackages, pkgNamesOutOfSync),
       searchPackages(installedPkgRecords, pkgNamesOutOfSync),
-      "The following packages are out of sync between packrat and your currently library:",
+      "The following packages are out of sync between packrat and your current library:",
       c("Use packrat::snapshot() to set packrat to use the current library, or use\n",
         "packrat::restore() to reset the library to the last snapshot.")
     )
@@ -190,5 +190,14 @@ status <- function(projDir = '.', lib.loc = libdir(projDir), quiet = FALSE) {
   }
 
   invisible(statusTbl)
+
+}
+
+getPackageElement <- function(package, element) {
+
+  setNames(
+    unlist(lapply(package, "[[", element)),
+    unlist(lapply(package, "[[", "name"))
+  )
 
 }
