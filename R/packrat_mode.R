@@ -2,19 +2,25 @@ packratModeOn <- function() {
   !is.na(Sys.getenv("R_PACKRAT_MODE", unset = NA))
 }
 
-togglePackratMode <- function() {
+togglePackratMode <- function(message = NULL) {
+
+  if (!is.null(message)) {
+    message(message)
+  }
+
   if (!packratModeOn()) {
     Sys.setenv("R_PACKRAT_MODE" = "1")
   } else {
     Sys.unsetenv("R_PACKRAT_MODE")
   }
+
 }
 
 ##' Packrat Mode
 ##'
 ##' Use this function to switch \code{packrat} mode on and off. When within
 ##' \code{packrat} mode, the library is set to use a local packrat library
-##' within \code{packrat/lib}.
+##' within \code{file.path(projDir, ".packrat/lib")}.
 ##'
 ##' @export
 packrat_mode <- function(projDir = ".") {
@@ -36,16 +42,16 @@ packrat_mode <- function(projDir = ".") {
     .libPaths(localLib)
 
     # Give the user some visual indication that they're starting a packrat project
-    message("PACKRAT MODE: ON")
-    togglePackratMode()
+    msg <- paste0("Packrat mode initialized in directory: '", appRoot, "'.")
+    togglePackratMode(msg)
     options(prompt = "pr> ")
     invisible(.libPaths())
 
   } else {
 
     # Turn off packrat mode
-    message("PACKRAT MODE: OFF")
-    togglePackratMode()
+    msg <- "Packrat mode off."
+    togglePackratMode(msg)
     options(prompt = .packrat$promptOnLoad)
 
     # Remove the local library
