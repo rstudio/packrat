@@ -181,7 +181,7 @@ status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
   pkgsNotNeeded <- statusTbl$package[whichPkgsNotNeeded]
   if (length(pkgsNotNeeded)) {
     prettyPrint(
-      searchPackages(installedPkgNames, pkgsNotNeeded),
+      searchPackages(installedPkgRecords, pkgsNotNeeded),
       "The following packages are installed but not needed:",
       c("Use packrat::clean() to remove them. Or, if they are actually needed\n",
         "by your project, add `library(packagename)` calls to a .R file\n",
