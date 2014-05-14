@@ -4,7 +4,7 @@ packratModeOn <- function() {
 
 togglePackratMode <- function(message = NULL) {
 
-  if (!is.null(message)) {
+  if (!is.null(message) && interactive()) {
     message(message)
   }
 
@@ -22,6 +22,8 @@ togglePackratMode <- function(message = NULL) {
 ##' \code{packrat} mode, the library is set to use a local packrat library
 ##' within \code{file.path(projDir, ".packrat/lib")}.
 ##'
+##' @param projDir The directory in which packrat mode is launched -- this is
+##'   where local libraries will be used and updated.
 ##' @export
 packrat_mode <- function(projDir = ".") {
 
@@ -39,7 +41,14 @@ packrat_mode <- function(projDir = ".") {
       newLocalLib <- TRUE
     }
 
+    # Insert hooks to library modifying functions to auto-snapshot on change
+    addTaskCallback(snapshotHook, name = "snapshotHook")
+
+    # Set the library
     .libPaths(localLib)
+
+    # Record the project directory, in case the user meanders around
+    .packrat$projectDir <- appRoot
 
     # Give the user some visual indication that they're starting a packrat project
     msg <- paste0("Packrat mode initialized in directory: '", appRoot, "'.")
@@ -49,10 +58,16 @@ packrat_mode <- function(projDir = ".") {
 
   } else {
 
+    # Disable hooks that were turned on before
+    removeTaskCallback("snapshotHook")
+
     # Turn off packrat mode
     msg <- "Packrat mode off."
     togglePackratMode(msg)
     options(prompt = .packrat$promptOnLoad)
+
+    # NULLify the project directory
+    .packrat$projectDir <- NULL
 
     # Remove the local library
     .libPaths(.packrat$origLibPaths)
