@@ -141,6 +141,13 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
     file.path(projDir, .packrat$packratFolderName, "bootstrap.R")
   )
 
+  # Copy .Rprofile from init.R so that users are bounced into packrat mode
+  # when launching R session in project dir
+  file.copy(
+    system.file(package="packrat", "init.R"),
+    file.path(projDir, ".Rprofile")
+  )
+
   invisible()
 }
 

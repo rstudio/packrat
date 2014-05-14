@@ -8,6 +8,6 @@ packrat_mode(projDir = ".")
 \description{
 Use this function to switch \code{packrat} mode on and off. When within
 \code{packrat} mode, the library is set to use a local packrat library
-within \code{packrat/lib}.
+within \code{file.path(projDir, ".packrat/lib")}.
 }
 
