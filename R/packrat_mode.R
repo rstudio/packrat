@@ -51,7 +51,7 @@ packrat_mode <- function(projDir = ".") {
     .packrat$projectDir <- appRoot
 
     # Give the user some visual indication that they're starting a packrat project
-    msg <- paste0("Packrat mode initialized in directory: '", appRoot, "'.")
+    msg <- paste0("Packrat mode initialized in directory:\n- \"", appRoot, "\"")
     togglePackratMode(msg)
     options(prompt = "pr> ")
     invisible(.libPaths())
