@@ -119,7 +119,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   descriptionFile <- file.path(projDir, 'DESCRIPTION')
 
   if (file.exists(descriptionFile)) {
-    description <- as.data.frame(read.dcf(descriptionFile))
+    description <- as.data.frame(readDcf(descriptionFile))
     package <- description$Package
     if (!is.null(package)) {
       stop("This project appears to be an R package. Packrat doesn't work on ",

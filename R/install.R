@@ -236,7 +236,7 @@ load_pkg_description <- function(path) {
     stop("No description at ", path_desc, call. = FALSE)
   }
 
-  desc <- as.list(read.dcf(path_desc)[1, ])
+  desc <- as.list(readDcf(path_desc)[1, ])
   names(desc) <- tolower(names(desc))
   desc$path <- path
 

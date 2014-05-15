@@ -23,7 +23,7 @@ versionMatchesDb <- function(pkgRecord, db) {
     # may be updated even if the version hasn't been bumped)
     pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
     installedPkgRecord <-
-      inferPackageRecord(as.data.frame(read.dcf(pkgDescFile)))
+      inferPackageRecord(as.data.frame(readDcf(pkgDescFile)))
     versionMatch <- identical(pkgRecord$gh_sha1,
                               installedPkgRecord$gh_sha1)
   }
@@ -238,7 +238,7 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
     descFile <- file.path(lib.loc, pkg, 'DESCRIPTION')
     if (!file.exists(descFile))
       return(default)
-    ia <- as.character(as.data.frame(read.dcf(descFile))$InstallAgent)
+    ia <- as.character(as.data.frame(readDcf(descFile))$InstallAgent)
     if (length(ia) == 0)
       return(FALSE)
     return(grepl('^packrat\\b', ia)[1])
