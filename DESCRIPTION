@@ -12,10 +12,10 @@ Depends:
     R (>= 2.14.1)
 Imports:
     tools,
-    utils,
-    methods
+    utils
 Suggests:
-    testthat (>= 0.7)
+    testthat (>= 0.7),
+    knitr
 Enhances: BiocInstaller
 URL: http://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues

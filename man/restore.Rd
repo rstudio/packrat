@@ -6,6 +6,10 @@
 restore(projDir = NULL, overwriteDirty = FALSE, prompt = interactive())
 }
 \arguments{
+\item{projDir}{The project directory. When in packrat mode, if this is \code{NULL},
+then the directory associated with the current packrat project is used. Otherwise,
+the project directory specified is used.}
+
 \item{overwriteDirty}{A dirty package is one that has been changed since the
 last snapshot or restore. Packrat will leave these alone by default. If you
 want to guarantee that \code{restore} will put you in the exact state

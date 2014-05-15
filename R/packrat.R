@@ -189,6 +189,9 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
 #' \code{restore} works only on the private package library created by packrat;
 #' if you have other libraries on your path, they will be unaffected.
 #'
+#' @param projDir The project directory. When in packrat mode, if this is \code{NULL},
+#' then the directory associated with the current packrat project is used. Otherwise,
+#' the project directory specified is used.
 #' @param overwriteDirty A dirty package is one that has been changed since the
 #' last snapshot or restore. Packrat will leave these alone by default. If you
 #' want to guarantee that \code{restore} will put you in the exact state
@@ -576,20 +579,6 @@ getProjectDir <- function(projDir = NULL) {
   )
 }
 
-#' Show the path to the current private library
-#'
-#' @param projDir The project directory. Defaults to current working
-#' directory.
-#' @return A character vector containing the path to the private package library. The path
-#' is not guaranteed to exist on disk.
-#'
-#' @note
-#' The private package library is normally created by \code{\link{bootstrap}}.
-#' @examples
-#' # Show the library directory for the current working directory
-#' libDir()
-#'
-#' @export
 libDir <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   file.path(
@@ -629,20 +618,6 @@ oldLibraryDir <- function(projDir = NULL) {
   )
 }
 
-#' Show the path to the current private sources
-#'
-#' Returns the path to the private package sources used by packrat.
-#'
-#' @return A character vector containing the path to the private package sources. The path
-#' is not guaranteed to exist on disk.
-#'
-#' @note
-#' The private package library is normally created by \code{\link{bootstrap}}.
-#' @examples
-#' # Show the library directory for the current working directory
-#' srcDir()
-#'
-#' @export
 srcDir <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   file.path(
