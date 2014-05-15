@@ -17,3 +17,50 @@ list_files <- function(path = ".", pattern = NULL, all.files = FALSE,
   setdiff(files, dirs)
 
 }
+
+is_dir <- function(file) {
+  isTRUE(file.info(file)$isdir) ## isTRUE guards against NA (ie, missing file)
+}
+
+# Copy a directory at file location 'from' to location 'to' -- this is kludgey,
+# but file.copy does not handle copying of directories cleanly
+dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
+                     pattern = NULL, ignore.case = TRUE) {
+
+  # Make sure we're doing sane things
+  if (!is_dir(from)) stop("'", from, "' is not a directory.")
+
+  if (file.exists(to)) {
+    if (overwrite) {
+      unlink(to, recursive = TRUE)
+    } else {
+      stop(paste0(
+        if (is_dir(to)) "Directory" else "File",
+        " already exists at path '", to, "'."
+      ))
+    }
+  }
+
+  success <- dir.create(to)
+  if (!success) stop("Couldn't create directory '", to, "'.")
+
+  # Get relative file paths
+  files.relative <- list.files(from, all.files = all.files, full.names = FALSE,
+                               pattern = pattern, recursive = TRUE, no.. = TRUE)
+
+  # Get paths from and to
+  files.from <- file.path(from, files.relative)
+  files.to <- file.path(to, files.relative)
+
+  # Create the directory structure
+  dirnames <- unique(dirname(files.to))
+  sapply(dirnames, function(x) dir.create(x, recursive = TRUE, showWarnings = FALSE))
+
+  # Copy the files
+  res <- file.copy(files.from, files.to)
+  if (!all(res)) {
+    warning("Could not copy all files from directory '", from, "' to directory '", to, "'!")
+  }
+  setNames(res, files.relative)
+
+}
