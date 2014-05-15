@@ -206,9 +206,11 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
 #' and the library.
 #'
 #' @export
-restore <- function(projDir = '.', overwriteDirty = FALSE,
+restore <- function(projDir = NULL,
+                    overwriteDirty = FALSE,
                     prompt = interactive()) {
-  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
+
+  if (is.null(projDir)) projDir <- getProjectDir()
 
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
@@ -568,9 +570,14 @@ deaugmentFile <- function(file, delete.if.empty=TRUE) {
   return(invisible())
 }
 
+getProjectDir <- function(projDir = NULL) {
+  if (is.null(projDir)) projDir <- .packrat$projectDir
+  file.path(
+    normalizePath(projDir, winslash = '/', mustWork = TRUE)
+  )
+}
+
 #' Show the path to the current private library
-#'
-#' Returns the path to the private package library used by packrat.
 #'
 #' @param projDir The project directory. Defaults to current working
 #' directory.
@@ -584,9 +591,10 @@ deaugmentFile <- function(file, delete.if.empty=TRUE) {
 #' libDir()
 #'
 #' @export
-libDir <- function(projDir = ".") {
+libDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
   file.path(
-    normalizePath(projDir, winslash='/', mustWork=TRUE),
+    projDir,
     .packrat$packratFolderName,
     'lib',
     R.version$platform,
