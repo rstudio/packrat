@@ -19,7 +19,7 @@ versionMatchesDb <- function(pkgRecord, db) {
   versionMatch <-
     identical(pkgRecord$version, db[pkgRecord$name,"Version"])
   if (versionMatch && identical(pkgRecord$source, "github")) {
-    # For Github, we also need to check that the SHA1 is identical (the source
+    # For GitHub, we also need to check that the SHA1 is identical (the source
     # may be updated even if the version hasn't been bumped)
     pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
     installedPkgRecord <-
@@ -399,7 +399,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% actions)
 
   if (all(is.na(actions))) {
-    cat("Already up to date")
+    cat("Already up to date\n")
     return(invisible())
   }
 
@@ -434,11 +434,18 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   actions <- actions[!is.na(actions)]
   targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
                    identical(lib, .libPaths()[1])) {
-    newlib <- file.path(projDir, 'library.new')
-    dir.create(newlib, recursive = TRUE)
-    file.copy(file.path(projDir, 'library'), newlib, recursive = TRUE)
+
+    newLibrary <- newLibraryDir(projDir)
+    dir.create(newLibrary, recursive = TRUE)
+    # We want to copy everything within the library dir, but not the library
+    # dir itself (ie, to get a structure 'library.new/<arch>/<R_version>/...')
+    file.copy(
+      list.files(libraryDir(), full.names = TRUE),
+      newLibrary,
+      recursive = TRUE
+    )
     restartNeeded <- TRUE
-    libDir(newlib)
+    file.path(newLibrary, R.version$platform, getRversion())
   } else {
     lib
   }
@@ -446,7 +453,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   # Play the list, if there's anything to play
   playActions(pkgRecords, actions, repos, projDir, targetLib)
   if (restartNeeded) {
-    cat("You must restart R to finish applying these changes.")
+    message("You must restart R to finish applying these changes.")
   }
 }
 
