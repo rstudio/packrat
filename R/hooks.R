@@ -4,14 +4,15 @@ snapshotHook <- function(expr, value, ok, visible) {
   tryCatch(
 
     expr = {
-      suppressMessages(
+      silent(
         snapshot(projDir = .packrat$projectDir, orphan.check = FALSE)
       )
     },
 
     error = function(e) {
-      message("ERROR: Automatic snapshotting failed!")
-      stop(e)
+      message("NOTE: Automatic snapshotting failed. Automatic snapshotting is now disabled. Reason:\n")
+      message(e)
+      message("\nConsider submitting a bug report at 'https://github.com/rstudio/packrat/issues'.\n")
     }
 
   )
