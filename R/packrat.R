@@ -189,7 +189,6 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
 #' \code{restore} works only on the private package library created by packrat;
 #' if you have other libraries on your path, they will be unaffected.
 #'
-#' @param projDir The directory that contains the packrat project.
 #' @param overwriteDirty A dirty package is one that has been changed since the
 #' last snapshot or restore. Packrat will leave these alone by default. If you
 #' want to guarantee that \code{restore} will put you in the exact state
@@ -602,12 +601,38 @@ libDir <- function(projDir = NULL) {
   )
 }
 
+libraryDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
+  file.path(
+    projDir,
+    .packrat$packratFolderName,
+    'lib'
+  )
+}
+
+# Temporary library directory when modifying an in-use library
+newLibraryDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
+  file.path(
+    projDir,
+    .packrat$packratFolderName,
+    'library.new'
+  )
+}
+
+oldLibraryDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
+  file.path(
+    projDir,
+    .packrat$packratFolderName,
+    'library.old'
+  )
+}
+
 #' Show the path to the current private sources
 #'
 #' Returns the path to the private package sources used by packrat.
 #'
-#' @param projDir The project directory. Defaults to current working
-#' directory.
 #' @return A character vector containing the path to the private package sources. The path
 #' is not guaranteed to exist on disk.
 #'
@@ -618,11 +643,21 @@ libDir <- function(projDir = NULL) {
 #' srcDir()
 #'
 #' @export
-srcDir <- function(projDir = ".") {
+srcDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
   file.path(
-    normalizePath(projDir, winslash='/', mustWork=TRUE),
+    projDir,
     .packrat$packratFolderName,
     'src'
+  )
+}
+
+bundlesDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
+  file.path(
+    projDir,
+    .packrat$packratFolderName,
+    'bundles'
   )
 }
 

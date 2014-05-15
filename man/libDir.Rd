@@ -3,7 +3,7 @@
 \alias{libDir}
 \title{Show the path to the current private library}
 \usage{
-libDir(projDir = ".")
+libDir(projDir = NULL)
 }
 \arguments{
 \item{projDir}{The project directory. Defaults to current working
@@ -14,7 +14,7 @@ A character vector containing the path to the private package library. The path
 is not guaranteed to exist on disk.
 }
 \description{
-Returns the path to the private package library used by packrat.
+Show the path to the current private library
 }
 \note{
 The private package library is normally created by \code{\link{bootstrap}}.

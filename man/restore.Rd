@@ -3,11 +3,9 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-restore(projDir = ".", overwriteDirty = FALSE, prompt = interactive())
+restore(projDir = NULL, overwriteDirty = FALSE, prompt = interactive())
 }
 \arguments{
-\item{projDir}{The directory that contains the packrat project.}
-
 \item{overwriteDirty}{A dirty package is one that has been changed since the
 last snapshot or restore. Packrat will leave these alone by default. If you
 want to guarantee that \code{restore} will put you in the exact state
