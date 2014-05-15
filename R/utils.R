@@ -16,6 +16,8 @@ list_files <- function(path = ".", pattern = NULL, all.files = FALSE,
   dirs <- list.dirs(path = path, full.names = full.names, recursive = recursive)
   setdiff(files, dirs)
 
+}
+
 # wrapper around read.dcf to workaround LC_CTYPE bug
 # (see: http://r.789695.n4.nabble.com/Bug-in-read-dcf-all-TRUE-td4690578.html)
 readDcf <- function(...) {
