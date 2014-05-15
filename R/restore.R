@@ -436,14 +436,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
                    identical(lib, .libPaths()[1])) {
 
     newLibrary <- newLibraryDir(projDir)
-    dir.create(newLibrary, recursive = TRUE)
-    # We want to copy everything within the library dir, but not the library
-    # dir itself (ie, to get a structure 'library.new/<arch>/<R_version>/...')
-    file.copy(
-      list.files(libraryDir(), full.names = TRUE),
-      newLibrary,
-      recursive = TRUE
-    )
+    dir_copy(libraryRootDir(projDir), newLibrary)
     restartNeeded <- TRUE
     file.path(newLibrary, R.version$platform, getRversion())
   } else {
