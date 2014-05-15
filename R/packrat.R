@@ -579,6 +579,11 @@ getProjectDir <- function(projDir = NULL) {
   )
 }
 
+## We differentiate between the 'libDir' -- the actual architecture-specific
+## directory containing libraries for the current system, and the 'libraryRootDir'
+## containing all libraries for a given project (which may want to be copied around
+## -- unlikely since we encourage people to build from snapshots, but we leave it
+## possible)
 libDir <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   file.path(
@@ -590,12 +595,20 @@ libDir <- function(projDir = NULL) {
   )
 }
 
-libraryDir <- function(projDir = NULL) {
+libraryRootDir <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   file.path(
     projDir,
     .packrat$packratFolderName,
     'lib'
+  )
+}
+
+relativeLibDir <- function(libraryRoot) {
+  file.path(
+    libraryRoot,
+    R.version$platform,
+    getRversion()
   )
 }
 
