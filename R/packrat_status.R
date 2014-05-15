@@ -78,9 +78,14 @@ status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
   )))
 
   # Match the above with the set of all package names
-  packrat.version <- packratVersions[allPkgNames]
-  packrat.source  <- packratSources[allPkgNames]
-  library.version <- installedPkgVersions[allPkgNames]
+  .match <- function(what, from = allPkgNames) {
+    if (is.null(what)) NA
+    else what[from]
+  }
+
+  packrat.version <- .match(packratVersions)
+  packrat.source  <- .match(packratSources)
+  library.version <- .match(installedPkgVersions)
   currently.used <- allPkgNames %in% inferredPkgNames
 
   # Generate a table that holds the current overall state
@@ -196,10 +201,10 @@ status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
           length(pkgNamesOutOfSync) ||
           length(missingFromPackrat) ||
           length(pkgsNotNeeded))) {
-    cat("Up to date.\n")
+    message("Up to date.")
   }
 
-  invisible(statusTbl)
+  statusTbl
 
 }
 

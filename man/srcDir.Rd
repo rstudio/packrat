@@ -3,11 +3,7 @@
 \alias{srcDir}
 \title{Show the path to the current private sources}
 \usage{
-srcDir(projDir = ".")
-}
-\arguments{
-\item{projDir}{The project directory. Defaults to current working
-directory.}
+srcDir(projDir = NULL)
 }
 \value{
 A character vector containing the path to the private package sources. The path
