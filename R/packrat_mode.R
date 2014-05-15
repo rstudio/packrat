@@ -66,8 +66,8 @@ packrat_mode <- function(projDir = ".") {
     togglePackratMode(msg)
     options(prompt = .packrat$promptOnLoad)
 
-    # NULLify the project directory
-    .packrat$projectDir <- NULL
+    # Default back to the current working directory for packrat function calls
+    .packrat$projectDir <- "."
 
     # Remove the local library
     .libPaths(.packrat$origLibPaths)
