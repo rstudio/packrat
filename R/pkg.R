@@ -36,7 +36,7 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
 
       # Read the dependency information directly from the DESCRIPTION file
       sourceDesc <- as.data.frame(
-          read.dcf(file.path(sourcePackages[pkgName,"path"], "DESCRIPTION")))
+          readDcf(file.path(sourcePackages[pkgName,"path"], "DESCRIPTION")))
       deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
       deps <- deps[deps != "R"]
       db <- NULL
@@ -62,7 +62,7 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
       } else {
         # This package's DESCRIPTION exists locally--read it, and use the database
         # of installed packages to compute its dependencies.
-        df <- as.data.frame(read.dcf(pkgDescFile))
+        df <- as.data.frame(readDcf(pkgDescFile))
         db <- installed.packages(lib.loc = lib.loc)
       }
       record <- inferPackageRecord(df)
@@ -152,7 +152,7 @@ getSourcePackageInfo <- function(sourcePackagePaths) {
       stop("Cannot treat ", path, " as a source package directory; ", descPath,
            " is missing.")
     }
-    desc <- as.data.frame(read.dcf(descPath))
+    desc <- as.data.frame(readDcf(descPath))
     results <<- rbind(results, data.frame(
       name = as.character(desc$Package),
       version = as.character(desc$Version),

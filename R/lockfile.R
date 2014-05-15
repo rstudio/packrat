@@ -65,7 +65,7 @@ writeLockFile <- function(file, lockinfo) {
 }
 
 readLockFile <- function(file) {
-  df <- as.data.frame(read.dcf(file), stringsAsFactors = FALSE)
+  df <- as.data.frame(readDcf(file), stringsAsFactors = FALSE)
   df <- cleanupWhitespace(df)
   names(df) <- translate(names(df), aliases)
 
