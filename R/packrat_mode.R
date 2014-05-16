@@ -51,41 +51,33 @@ checkPackified <- function(projDir = NULL) {
 ##'
 ##' Use this function to switch \code{packrat} mode on and off. When within
 ##' \code{packrat} mode, the library is set to use a local packrat library
-##' within \code{file.path(projDir, ".packrat/lib")}.
+##' within the current project.
 ##'
 ##' @param projDir The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
 ##' @export
 packrat_mode <- function(projDir = ".") {
 
-  appRoot <- normalizePath(projDir, winslash='/')
+  projDir <- normalizePath(projDir, winslash='/')
   libRoot <- libraryRootDir(projDir)
-  localLib <- libDir(appRoot)
+  localLib <- libDir(projDir)
 
   # If we're not in packrat mode, check if we need to do some initialization steps
   if (!packratModeOn()) {
 
-    # Create the private package library if it doesn't already exist
-    newLocalLib <- FALSE
-    if (!file.exists(localLib)) {
-      message("Creating private package library at:\n- \"", localLib, "\"")
-      dir.create(localLib, recursive=TRUE)
-      newLocalLib <- TRUE
-    }
-
     # If there's a new library (created to make changes to packages loaded in the
     # last R session), remove the old library and replace it with the new one.
-    newLibRoot <- newLibraryDir(appRoot)
+    newLibRoot <- newLibraryDir(projDir)
     if (file.exists(newLibRoot)) {
       message("Applying Packrat library updates ... ", appendLF = FALSE)
       succeeded <- FALSE
-      if (file.rename(libRoot, oldLibraryDir(appRoot))) {
+      if (file.rename(libRoot, oldLibraryDir(projDir))) {
         if (file.rename(newLibRoot, libRoot)) {
           succeeded <- TRUE
         } else {
           # Moved the old library out of the way but couldn't move the new
           # in its place; move the old library back
-          file.rename(oldLibraryDir(appRoot), libRoot)
+          file.rename(oldLibraryDir(projDir), libRoot)
         }
       }
       if (succeeded) {
@@ -110,14 +102,19 @@ packrat_mode <- function(projDir = ".") {
       unlink(oldLibDir, recursive = TRUE)
     }
 
+    # Try a bootstrap the directory if there is no packrat directory
+    if (!file.exists(packratDir(projDir))) {
+      bootstrap(projDir = projDir)
+    }
+
     # Set the library
     .libPaths(localLib)
 
     # Record the project directory, in case the user meanders around
-    .packrat$projectDir <- appRoot
+    .packrat$projectDir <- projDir
 
     # Give the user some visual indication that they're starting a packrat project
-    msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(appRoot), "\"", sep = "")
+    msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(projDir), "\"", sep = "")
     togglePackratMode(msg)
     # setPackratPrompt()
 
