@@ -344,6 +344,7 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
     }
 
     removePkgs(projDir, orphans, lib.loc)
+    message("Packages '", paste(orphans, collapse = ", "), "' have been removed from the private library.")
     return(invisible(orphans))
   }
 }

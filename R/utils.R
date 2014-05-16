@@ -42,7 +42,7 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
     if (overwrite) {
       unlink(to, recursive = TRUE)
     } else {
-      stop(paste0(
+      stop(paste( sep = "",
         if (is_dir(to)) "Directory" else "File",
         " already exists at path '", to, "'."
       ))
@@ -73,4 +73,8 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
   }
   setNames(res, files.relative)
 
+}
+
+wrap <- function(x, width = 78, ...) {
+  paste(strwrap(x = paste(x, collapse = " "), width = width, ...), collapse = "\n")
 }
