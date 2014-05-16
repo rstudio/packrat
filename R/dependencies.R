@@ -90,7 +90,7 @@ fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
     ), error = function(e) {
       message("Unable to knit file '", file, "'; cannot parse dependencies")
       character()
-    }
+    })
     fileDependencies.R(tempfile)
   } else {
     warning("knitr is required to parse dependencies from .Rmd files, but is not available")
