@@ -16,6 +16,41 @@ togglePackratMode <- function(message = NULL) {
 
 }
 
+## Check whether the directory has been packified -- it has a 'packrat'
+## directory, lock file, etc.
+## We don't check the .Rprofile as it is not necessary for packrat functionality;
+## it is simply used to automatically jump into packrat mode.
+checkPackified <- function(projDir = NULL) {
+
+  projDir <- getProjectDir(projDir)
+
+  packratDir <- getPackratDir(projDir)
+  if (!file.exists(packratDir)) {
+    message("The packrat directory does not exist; this project has not been packified.")
+    return(FALSE)
+  }
+
+  libraryRootDir <- libraryRootDir(projDir)
+  if (!file.exists(libraryRootDir)) {
+    message("The packrat library does not exist.")
+    return(FALSE)
+  }
+
+  srcDir <- srcDir(projDir)
+  if (!file.exists(srcDir)) {
+    message("The packrat sources directory does not exist.")
+    return(FALSE)
+  }
+
+  lockPath <- lockFilePath(projDir)
+  if (!file.exists(lockPath)) {
+    message("The packrat lock file does not exist.")
+    return(FALSE)
+  }
+
+  TRUE
+}
+
 ##' Packrat Mode
 ##'
 ##' Use this function to switch \code{packrat} mode on and off. When within
@@ -28,7 +63,7 @@ togglePackratMode <- function(message = NULL) {
 packrat_mode <- function(projDir = ".") {
 
   appRoot <- normalizePath(projDir, winslash='/')
-  libRoot <- file.path(appRoot, .packrat$packratFolderName, "lib")
+  libRoot <- libraryRootDir(projDir)
   localLib <- libDir(appRoot)
 
   # If we're not in packrat mode, check if we need to do some initialization steps
@@ -69,11 +104,14 @@ packrat_mode <- function(projDir = ".") {
 
     # If the new library temporary folder exists, remove it now so we don't
     # attempt to reapply the same failed changes
-    if (file.exists(file.path(appRoot, 'library.new'))) {
-      unlink(file.path(appRoot, 'library.new'), recursive = TRUE)
+    newLibDir <- newLibraryDir(projDir)
+    if (file.exists(newLibDir)) {
+      unlink(newLibDir, recursive = TRUE)
     }
-    if (file.exists(file.path(appRoot, 'library.old'))) {
-      unlink(file.path(appRoot, 'library.old'), recursive = TRUE)
+
+    oldLibDir <- oldLibraryDir(projDir)
+    if (file.exists(oldLibDir)) {
+      unlink(oldLibDir, recursive = TRUE)
     }
 
     # Set the library
@@ -83,9 +121,9 @@ packrat_mode <- function(projDir = ".") {
     .packrat$projectDir <- appRoot
 
     # Give the user some visual indication that they're starting a packrat project
-    msg <- paste0("Packrat mode on. Using library in directory:\n- \"", libDir(appRoot), "\"")
+    msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(appRoot), "\"", sep = "")
     togglePackratMode(msg)
-    options(prompt = "pr> ")
+    setPackratPrompt()
 
     # Insert hooks to library modifying functions to auto-snapshot on change
     addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
@@ -110,10 +148,15 @@ packrat_mode <- function(projDir = ".") {
     options(prompt = .packrat$promptOnLoad)
 
     # Default back to the current working directory for packrat function calls
-    .packrat$projectDir <- "."
+    .packrat$projectDir <- NULL
 
     invisible(.libPaths())
 
   }
 
+}
+
+setPackratPrompt <- function() {
+  oldPromptLeftTrimmed <- gsub(" *", "", getOption("prompt"))
+  options(prompt = paste("pr", oldPromptLeftTrimmed))
 }
