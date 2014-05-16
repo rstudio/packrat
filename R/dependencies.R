@@ -74,11 +74,11 @@ dirDependencies <- function(dir) {
 fileDependencies <- function(file) {
   fileext <- tolower(gsub(".*\\.", "", file))
   switch (fileext,
-    r = fileDependencies.R(file),
-    rmd = fileDependencies.Rmd(file),
-    rnw = fileDependencies.Rnw(file),
-    rpres = fileDependencies.Rpres(file),
-    stop("Unrecognized file type '", file, "'")
+          r = fileDependencies.R(file),
+          rmd = fileDependencies.Rmd(file),
+          rnw = fileDependencies.Rnw(file),
+          rpres = fileDependencies.Rpres(file),
+          stop("Unrecognized file type '", file, "'")
   )
 }
 
@@ -101,6 +101,12 @@ fileDependencies.Rnw <- function(file) {
 }
 
 fileDependencies.R <- function(file) {
+
+  if (!file.exists(file)) {
+    warning("No file at path '", file, "'.")
+    return(character())
+  }
+
   # build a list of package dependencies to return
   pkgs <- character()
 
