@@ -6,5 +6,5 @@ mkdir testPkg
 cd testPkg
 touch foo.R bar.R baz.R
 echo "library(digest)" >> foo.R
-R --vanilla -e "packrat::bootstrap(source='~/git/packrat')"
+R --vanilla -e "library(packrat); bootstrap(source='~/git/packrat')"
 R

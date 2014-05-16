@@ -17,7 +17,7 @@ getProjectDir <- function(projDir = NULL) {
   )
 }
 
-getPackratDir <- function(projDir = NULL) {
+packratDir <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   file.path(
     projDir,
@@ -94,6 +94,7 @@ bundlesDir <- function(projDir = NULL) {
   )
 }
 
-lockFilePath <- function(projDir) {
-  file.path(projDir, .packrat$packratFolderName, "packrat.lock")
+lockFilePath <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
+  file.path(projDir, "packrat.lock")
 }

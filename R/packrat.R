@@ -393,6 +393,9 @@ packify <- function(projDir = NULL) {
 }
 
 lockInfo <- function(projDir, property='packages', fatal=TRUE) {
+
+  projDir <- getProjectDir(projDir)
+
   # Get and parse the lockfile
   lockFilePath <- lockFilePath(projDir)
   if (!file.exists(lockFilePath)) {

@@ -1,5 +1,11 @@
 userPkgsInSystemLibrary <- function() {
-  systemPkgs <- as.data.frame(installed.packages(tail(.libPaths(), 1)), stringsAsFactors = FALSE)
+
+  installed.packages <- utils::installed.packages
+  tail <- utils::tail
+
+  systemPkgs <- as.data.frame( stringsAsFactors = FALSE,
+                               installed.packages(tail(.libPaths(), 1))
+  )
   userLibs <- with(systemPkgs, {
     Package[is.na(Priority)]
   })

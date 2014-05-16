@@ -16,15 +16,11 @@ togglePackratMode <- function(message = NULL) {
 
 }
 
-## Check whether the directory has been packified -- it has a 'packrat'
-## directory, lock file, etc.
-## We don't check the .Rprofile as it is not necessary for packrat functionality;
-## it is simply used to automatically jump into packrat mode.
 checkPackified <- function(projDir = NULL) {
 
   projDir <- getProjectDir(projDir)
 
-  packratDir <- getPackratDir(projDir)
+  packratDir <- packratDir(projDir)
   if (!file.exists(packratDir)) {
     message("The packrat directory does not exist; this project has not been packified.")
     return(FALSE)
@@ -123,7 +119,7 @@ packrat_mode <- function(projDir = ".") {
     # Give the user some visual indication that they're starting a packrat project
     msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(appRoot), "\"", sep = "")
     togglePackratMode(msg)
-    setPackratPrompt()
+    # setPackratPrompt()
 
     # Insert hooks to library modifying functions to auto-snapshot on change
     addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
@@ -145,7 +141,7 @@ packrat_mode <- function(projDir = ".") {
     togglePackratMode(paste(msg, collapse = "\n"))
 
     # Reset the prompt
-    options(prompt = .packrat$promptOnLoad)
+    # options(prompt = .packrat$promptOnLoad)
 
     # Default back to the current working directory for packrat function calls
     .packrat$projectDir <- NULL
@@ -157,6 +153,6 @@ packrat_mode <- function(projDir = ".") {
 }
 
 setPackratPrompt <- function() {
-  oldPromptLeftTrimmed <- gsub(" *", "", getOption("prompt"))
-  options(prompt = paste("pr", oldPromptLeftTrimmed))
+  oldPromptLeftTrimmed <- gsub("^ *", "", getOption("prompt"))
+  options(prompt = paste("pr", oldPromptLeftTrimmed, sep = ""))
 }

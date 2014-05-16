@@ -52,7 +52,7 @@ dirDependencies <- function(dir) {
                         recursive = TRUE
   )
 
-  ## Avoid anything within the packrat directory itself -- all inferrence
+  ## Avoid anything within the packrat directory itself -- all inference
   ## should be done on user code
   packratDirRegex <- paste("^", .packrat$packratFolderName, sep = "")
   R_files <- grep(packratDirRegex, R_files, invert = TRUE, value = TRUE)
@@ -94,6 +94,7 @@ fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
     fileDependencies.R(tempfile)
   } else {
     warning("knitr is required to parse dependencies from .Rmd files, but is not available")
+    character()
   }
 }
 

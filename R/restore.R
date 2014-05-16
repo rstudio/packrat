@@ -191,6 +191,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
 }
 
 snapshotSources <- function(projDir, repos, pkgRecords) {
+
   # Get a list of source packages available on the repositories
   availablePkgs <- available.packages(contrib.url(repos, "source"),
                                       type = "source")
