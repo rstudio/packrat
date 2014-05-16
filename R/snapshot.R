@@ -88,7 +88,7 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
   }
 }
 
-snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libDir(projDir),
+snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
                          sourcePackages = NULL, dry.run = FALSE,
                          orphan.check = FALSE, ignore.stale = FALSE,
                          prompt = interactive()) {
