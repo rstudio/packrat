@@ -161,9 +161,8 @@ status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
   whichOutOfSync <- with(statusTbl,
                          currently.used &
                            !is.na(packrat.version) &
+                           !is.na(library.version) &
                            packrat.version != library.version)
-  # NA return due to NA comparison in != above should mean out of sync
-  whichOutOfSync[is.na(whichOutOfSync)] <- TRUE
   pkgNamesOutOfSync <- statusTbl$package[whichOutOfSync]
 
   if (length(pkgNamesOutOfSync)) {
@@ -176,6 +175,22 @@ status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
       "packrat",
       "library"
     )
+  }
+
+  # Packages which have been deleted from the library, but are still tracked by packrat,
+  # and still in use
+  whichDeletedButStillTracked <- with(statusTbl,
+                                      currently.used &
+                                        !is.na(packrat.version) &
+                                        is.na(library.version))
+  deletedButStillTracked <- statusTbl$package[whichDeletedButStillTracked]
+
+  if (length(deletedButStillTracked)) {
+    prettyPrintPair(
+      searchPackages(packratPackages, deletedButStillTracked),
+      searchPackages(installedPkgRecords, deletedButStillTracked),
+      "The following packages are used in your code, tracked by packrat, but no longer present in your library:",
+      c("Use packrat::restore() to restore these libraries, or "))
   }
 
   # Packages that are no longer used, but still seen in the library
