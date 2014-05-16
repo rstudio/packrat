@@ -14,7 +14,21 @@ snapshotHook <- function(expr, value, ok, visible) {
     # 1. A library is deleted, e.g. with remove.packages.
     # TODO: How should we handle an automatic snapshot fail?
     error = function(e) {
-      cat(e, file = file.path(.packrat$projectDir, "packrat.log"), append = TRUE)
+      if (is.null(.packrat$projectDir)) {
+        file = "" ## to stdout
+      } else {
+        file = file.path(.packrat$projectDir, "packrat.log")
+      }
+      if (inherits(e, "simpleError")) {
+        msg <- e$message
+      } else {
+        msg <- e
+      }
+
+      if (identical(file, ""))
+        message(paste("Error on automatic snapshot:", msg))
+      else
+        cat(msg, file = file, append = TRUE)
     }
 
   )

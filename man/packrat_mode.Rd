@@ -12,6 +12,6 @@ where local libraries will be used and updated.}
 \description{
 Use this function to switch \code{packrat} mode on and off. When within
 \code{packrat} mode, the library is set to use a local packrat library
-within \code{file.path(projDir, ".packrat/lib")}.
+within the current project.
 }
 

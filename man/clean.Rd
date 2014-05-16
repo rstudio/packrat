@@ -23,7 +23,7 @@ Detects and removes orphaned packages. Orphaned packages are those that meet
 the following criteria:
 \itemize{
   \item Installed in the library
-  \item Not directly used by any R code in the project
+  \item Not directly used by any \R code in the project
   \item Not a dependency of any non-orphaned package
 }
 If \code{clean} wants to remove a package but your project actually needs the

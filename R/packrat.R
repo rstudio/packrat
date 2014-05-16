@@ -1,9 +1,9 @@
 #' Packrat: Reproducible dependency management
 #'
-#' Packrat is a tool for managing the R packages your project depends on in
+#' Packrat is a tool for managing the \R packages your project depends on in
 #' an isolated, portable, and reproducible way.
 #'
-#' Use packrat to make your R projects more:
+#' Use packrat to make your \R projects more:
 #'
 #' \itemize{
 #' \item \strong{Isolated}: Installing a new or updated package for one project
@@ -32,16 +32,15 @@
 #' already exist.
 #'
 #' \describe{
-#'   \item{\code{library/}}{Private package library for this project.}
+#'   \item{\code{packrat/lib/}}{Private package library for this project.}
+#'   \item{\code{packrat/src/}}{Source packages of all the dependencies that
+#'packrat has been made aware of.}
 #'
-#'   \item{\code{packrat.lock}}{Lists the precise package versions that were used
+#'   \item{\code{packrat/packrat.lock}}{Lists the precise package versions that were used
 #' to satisfy dependencies, including dependencies of dependencies. (This file
 #' should never be edited by hand!)}
 #'
-#'   \item{\code{packrat.sources/}}{Source packages of all the dependencies that
-#' packrat has been made aware of.}
-#'
-#'   \item{\code{.Rprofile and .Renviron}}{Directs R to use the private package
+#'   \item{\code{.Rprofile}}{Directs \R to use the private package
 #' library (when it is started from the project directory).}
 #' }
 #'
@@ -49,14 +48,14 @@
 #'
 #' Packrat is designed to work hand in hand with Git, Subversion, or any other
 #' version control system. Be sure to check in the \code{.Rprofile},
-#' \code{.Renviron}, and \code{packrat.lock} files, as well as everything under
-#' \code{packrat.sources/}. You can tell your VCS to ignore \code{library} (or
+#' \code{packrat.lock} files, and everything under
+#' \code{packrat/src/}. You can tell your VCS to ignore \code{packrat/lib/} (or
 #' feel free to check it in if you don't mind taking up some extra space in your
 #' repository).
 #'
 #' @examples
 #' \dontrun{
-#' # Create a new packrat project from an existing directory of R code
+#' # Create a new packrat project from an existing directory of \R code
 #' bootstrap()
 #'
 #' # Install a package and take a snapshot of the new state of the library
@@ -73,12 +72,16 @@
 #' @author RStudio, Inc.
 NULL
 
-#' Initialize Packrat on a new or existing R project
+#' Initialize Packrat on a new or existing \R project
 #'
 #' Given a project directory, makes a new packrat project in the directory.
 #'
-#' \code{bootstrap} works as follows: \enumerate{ \item Application dependencies
-#' are computed by examining the R code as described in
+#' \code{bootstrap} works as follows:
+#'
+#' \enumerate{
+#'
+#' \item Application dependencies
+#' are computed by examining the \R code as described in
 #' \code{\link{appDependencies}}.
 #'
 #' \item A snapshot is taken of the version of each package currently used by
@@ -92,16 +95,18 @@ NULL
 #' on which the project depends are installed in a new, private library located
 #' inside the project directory.
 #'
-#' You must restart your R session in the given project directory after
-#' running \code{bootstrap} in order for the changes to take effect.
+#' \strong{You must restart your \R session in the given project directory after
+#' running \code{bootstrap} in order for the changes to take effect!}
 #'
-#' When R is started in the directory, it will use the new, private library by
-#' default whenever you make library changes (using
-#' \code{\link{install.packages}}, etc.). You can sync this private library with
+#' When \R is started in the directory, it will use the new, private library.
+#' Calls to \code{\link{require}} and \code{\link{library}} will load packages
+#' from the private library (except for 'base' or 'recommended' \R packages,
+#' which are found in the system library), and functions such as \code{\link{install.packages}}
+#' will modify that private library. You can sync this private library with
 #' packrat using \code{\link{snapshot}} and \code{\link{restore}}.
 #'
-#' @param projDir The directory that contains the R project.
-#' @param sourcePackagePaths List of paths to unpacked R package source
+#' @param projDir The directory that contains the \R project.
+#' @param sourcePackagePaths List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or Github.
 #'
@@ -122,8 +127,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
     description <- as.data.frame(readDcf(descriptionFile))
     package <- description$Package
     if (!is.null(package)) {
-      stop("This project appears to be an R package. Packrat does not yet work with ",
-           "packages.")
+      warning("This project appears to be an R package. Packrat does not yet have full support for packages.")
     }
   }
 
@@ -142,7 +146,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   )
 
   # Copy .Rprofile from init.R so that users are bounced into packrat mode
-  # when launching R session in project dir
+  # when launching \R session in project dir
   file.copy(
     system.file(package="packrat", "init.R"),
     file.path(projDir, ".Rprofile")
@@ -173,9 +177,9 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
 #'
 #' \code{restore} cannot make changes to packages that are currently loaded. If
 #' changes are necessary to currently loaded packages, you will need to restart
-#' R to apply the changes (\code{restore} will let you know when this is
+#' \R to apply the changes (\code{restore} will let you know when this is
 #' necessary). It is recommended that you do this as soon as possible, because
-#' any library changes made between running \code{restore} and restarting R will
+#' any library changes made between running \code{restore} and restarting \R will
 #' be lost.
 #'
 #' @note
@@ -278,7 +282,7 @@ restore <- function(projDir = NULL,
 #' the following criteria:
 #' \itemize{
 #'   \item Installed in the library
-#'   \item Not directly used by any R code in the project
+#'   \item Not directly used by any \R code in the project
 #'   \item Not a dependency of any non-orphaned package
 #' }
 #' If \code{clean} wants to remove a package but your project actually needs the
@@ -349,30 +353,28 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
   }
 }
 
-#' Install packrat startup directives
+#' Automatically Enter Packrat Mode on Startup
 #'
-#' Install .Rprofile in the given directory to make it use a private package library.
-#'
-#' Packrat uses entries in the \code{.Rprofile} and \code{.Renviron} files to keep
-#' package library operations (such as \code{\link{install.packages}}) local to
-#' the project's local library.
+#' Install \code{.Rprofile} in the given directory, so that all \R sessions
+#' started in this directory enter \code{packrat mode}, and use the local
+#' project library.
 #'
 #' It is not normally necessary to call \code{packify} directly; these files are
 #' normally installed by \code{\link{bootstrap}}. \code{packify} can be used to
 #' restore the files if they are missing (for instance, if they were not added to
 #' source control, or were accidentally removed).
 #'
-#' You'll need to restart R in the specified directory after running
+#' You'll need to restart \R in the specified directory after running
 #' \code{packify} in order to start using the private package library.
 #'
-#' @param projDir The directory in which to install .Rprofile and .Renviron files.
+#' @param projDir The directory in which to install the \code{.Rprofile} file.
 #'
 #' @export
 packify <- function(projDir = NULL) {
 
   projDir <- getProjectDir(projDir)
 
-  .Rprofile <- file.path(dir, ".Rprofile")
+  .Rprofile <- file.path(projDir, ".Rprofile")
   init.R <- system.file(package = "packrat", "init.R")
 
   if (!file.exists(.Rprofile)) {
@@ -387,7 +389,16 @@ packify <- function(projDir = NULL) {
     cat(txt, file = .Rprofile, append = TRUE)
   }
 
-  message('Packrat startup directives installed. Please restart your R session.')
+  msg <- "Packrat startup directives installed."
+
+  if (identical(projDir, getwd())) {
+    msg <- paste(msg, "Please call \"packrat::packrat_mode()\" to initialize packrat.")
+  } else {
+    msg <- paste(msg, "Please call \"packrat::packrat_mode(projDir = '", projDir, "')\"",
+                 "to initialize packrat.")
+  }
+
+  message(msg)
 
   invisible()
 }

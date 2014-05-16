@@ -41,9 +41,9 @@ to the library since the last snapshot.
 
 \code{restore} cannot make changes to packages that are currently loaded. If
 changes are necessary to currently loaded packages, you will need to restart
-R to apply the changes (\code{restore} will let you know when this is
+\R to apply the changes (\code{restore} will let you know when this is
 necessary). It is recommended that you do this as soon as possible, because
-any library changes made between running \code{restore} and restarting R will
+any library changes made between running \code{restore} and restarting \R will
 be lost.
 }
 \note{
