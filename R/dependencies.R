@@ -30,7 +30,13 @@ appDependencies <- function(projDir = ".") {
 
 # does str1 start with str2?
 startswith <- function(str1, str2) {
-  identical(substr(str1, 1, min(nchar(str1), nchar(str2))), str2)
+  if (!length(str2) == 1) stop("expecting a length 1 string for 'str2'")
+  sapply(str1, function(x) {
+    identical(
+      substr(x, 1, min(nchar(x), nchar(str2))),
+      str2
+    )
+  })
 }
 
 # detect all package dependencies for a directory of files
@@ -40,16 +46,24 @@ dirDependencies <- function(dir) {
   # first get the packages referred to in source code
   pattern <- "\\.[rR]$|\\.[rR]md$|\\.[rR]nw$|\\.[rR]pres$"
   pkgs <- character()
-  sapply(list.files(dir, pattern=pattern,
-                    ignore.case=TRUE, recursive=TRUE),
-         function(file) {
-           # ignore files in the library directories
-           filePath <- file.path(dir, file)
-           if (!(startswith(filePath, file.path(dir, "library", "")) ||
-                 startswith(filePath, file.path(dir, "library.new", "")) ||
-                 startswith(filePath, file.path(dir, "library.old", ""))))
-             pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
-         })
+  R_files <- list.files(dir,
+                        pattern = pattern,
+                        ignore.case = TRUE,
+                        recursive = TRUE
+  )
+
+  ## Avoid anything within the packrat directory itself -- all inferrence
+  ## should be done on user code
+  packratDirRegex <- paste("^", .packrat$packratFolderName, sep = "")
+  R_files <- grep(packratDirRegex, R_files, invert = TRUE, value = TRUE)
+
+
+  sapply(R_files, function(file) {
+    filePath <- file.path(dir, file)
+    pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
+
+  })
+
   unique(pkgs)
 }
 
