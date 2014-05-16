@@ -1,5 +1,6 @@
-## Base package
-cd ${TMPDIR}
+## Launch into a test package using packrat
+cd ~/git
+R CMD build packrat && R CMD INSTALL packrat_0.1.0.99.tar.gz
 rm -rf testPkg
 mkdir testPkg
 cd testPkg

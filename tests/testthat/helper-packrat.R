@@ -80,3 +80,27 @@ verifyTopoSort <- function(graph, sorted) {
   }
   return(TRUE)
 }
+
+# Make the 'libraries' 'project' -- this is used to test whether files within the
+# packrat controlled libraries are ignored
+makeLibrariesProject <- function() {
+  if (basename(getwd()) != "testthat") {
+    warning("This function is only used to build a sample 'libraries' project in the testthat dir")
+    return(NULL)
+  }
+  projDir <- file.path("projects", "libraries")
+  unlink(projDir, recursive = TRUE)
+  dir.create(projDir)
+  cat("library(bread)", file = file.path(projDir, "library.R"))
+
+  ## Create the potential packrat libraries that might exist
+  dir.create(newLibraryDir(projDir), recursive = TRUE)
+  dir.create(oldLibraryDir(projDir), recursive = TRUE)
+  dir.create(libraryRootDir(projDir), recursive = TRUE)
+
+  # Some files within depending on oatmeal
+  cat("library(oatmeal)", file = file.path(libraryRootDir(projDir), "lib-current.R"))
+  cat("library(oatmeal)", file = file.path(oldLibraryDir(projDir), "lib-old.R"))
+  cat("library(oatmeal)", file = file.path(newLibraryDir(projDir), "lib-new.R"))
+  projDir
+}
