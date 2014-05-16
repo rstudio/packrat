@@ -1,9 +1,27 @@
 ## Different paths that are used for a packrat project
 
 getProjectDir <- function(projDir = NULL) {
-  if (is.null(projDir)) projDir <- .packrat$projectDir
+
+  ## If projDir is NULL, and .packrat$projectDir is NULL, then we should look
+  ## in the current working directory
+  if (is.null(projDir)) {
+    if (is.null(.packrat$projectDir)) {
+      projDir <- getwd()
+    } else {
+      projDir <- .packrat$projectDir
+    }
+  }
+
   file.path(
     normalizePath(projDir, winslash = '/', mustWork = TRUE)
+  )
+}
+
+getPackratDir <- function(projDir = NULL) {
+  projDir <- getProjectDir(projDir)
+  file.path(
+    projDir,
+    .packrat$packratFolderName
   )
 }
 

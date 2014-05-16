@@ -99,7 +99,12 @@ fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
 
 fileDependencies.Rnw <- function(file) {
   tempfile <- tempfile()
-  silent(Stangle(file, output = tempfile))
+  tryCatch(silent(
+    Stangle(file, output = tempfile)
+  ), error = function(e) {
+    message("Unable to stangle file '", file, "'; cannot parse dependencies")
+    character()
+  })
   fileDependencies.R(tempfile)
 }
 

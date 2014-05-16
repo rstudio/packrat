@@ -24,7 +24,7 @@ bundle <- function(projDir = NULL,
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
     zipName <- paste(basename(projDir), Sys.Date(), sep = "-")
-    zipName <- paste0(zipName, ".zip")
+    zipName <- paste(zipName, ".zip", sep = "")
     bundlesDir <- bundlesDir(projDir)
     if (!file.exists(bundlesDir)) {
       dir.create(bundlesDir)
