@@ -9,10 +9,12 @@ snapshotHook <- function(expr, value, ok, visible) {
       )
     },
 
+    # Cases where an automatic snapshot can fail:
+    #
+    # 1. A library is deleted, e.g. with remove.packages.
+    # TODO: How should we handle an automatic snapshot fail?
     error = function(e) {
-      message("NOTE: Automatic snapshotting failed. Automatic snapshotting is now disabled. Reason:\n")
-      message(e)
-      message("\nConsider submitting a bug report at 'https://github.com/rstudio/packrat/issues'.\n")
+      cat(e, file = file.path(.packrat$projectDir, "packrat.log"), append = TRUE)
     }
 
   )
