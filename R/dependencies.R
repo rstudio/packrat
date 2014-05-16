@@ -85,9 +85,12 @@ fileDependencies <- function(file) {
 fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
   if (require("knitr")) {
     tempfile <- tempfile()
-    silent(
+    tryCatch(silent(
       knitr::knit(file, output = tempfile, tangle = TRUE)
-    )
+    ), error = function(e) {
+      message("Unable to knit file '", file, "'; cannot parse dependencies")
+      character()
+    }
     fileDependencies.R(tempfile)
   } else {
     warning("knitr is required to parse dependencies from .Rmd files, but is not available")

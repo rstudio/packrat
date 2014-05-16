@@ -67,7 +67,9 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
   # Copy the files
   res <- file.copy(files.from, files.to)
   if (!all(res)) {
-    warning("Could not copy all files from directory '", from, "' to directory '", to, "'!")
+    # The copy failed; we should clean up after ourselves and return an error
+    unlink(to, recursive = TRUE)
+    stop("Could not copy all files from directory '", from, "' to directory '", to, "'.")
   }
   setNames(res, files.relative)
 

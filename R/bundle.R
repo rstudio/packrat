@@ -19,9 +19,7 @@ bundle <- function(projDir = NULL,
                    overwrite = FALSE,
                    ...) {
 
-  if (is.null(projDir)) {
-    projDir <- .packrat$projectDir
-  }
+  projDir <- getProjectDir(projDir)
 
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
