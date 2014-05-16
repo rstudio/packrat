@@ -399,7 +399,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% actions)
 
   if (all(is.na(actions))) {
-    cat("Already up to date\n")
+    message("Already up to date.")
     return(invisible())
   }
 

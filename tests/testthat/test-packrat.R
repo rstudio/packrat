@@ -85,6 +85,7 @@ test_that("snapshot captures new dependencies", {
 
 
 test_that("dependencies in library directories are ignored", {
+  makeLibrariesProject()
   projRoot <- cloneTestProject("libraries")
   lib <- libDir(projRoot)
   bootstrap(projRoot, sourcePackagePaths = file.path("packages", "packrat"))

@@ -57,11 +57,12 @@
 #' snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
 #' }
 #' @export
-snapshot <- function(projDir = ".", available = NULL, lib.loc = libDir(projDir),
+snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
                      sourcePackagePaths = NULL, orphan.check = TRUE,
                      ignore.stale = FALSE, dry.run = FALSE,
                      prompt = interactive()) {
-  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
+
+  projDir <- getProjectDir(projDir)
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dry.run,
@@ -146,7 +147,7 @@ snapshotImpl <- function(projDir = '.', available = NULL, lib.loc = libDir(projD
                  'Modifying these packages already present in packrat:')
 
   if (all(is.na(diffs))) {
-    message("Already up to date")
+    message("Already up to date.")
     if (is.null(lib.loc) ||
           all(installedByPackrat(pkgNames(appPackagesFlat), lib.loc, FALSE))) {
       # If none of the packages/versions differ, and all of the packages in the
