@@ -3,14 +3,13 @@
 \alias{packify}
 \title{Install packrat startup directives}
 \usage{
-packify(dir = ".")
+packify(projDir = NULL)
 }
 \arguments{
-\item{dir}{The directory in which to install .Rprofile and .Renviron files.}
+\item{projDir}{The directory in which to install .Rprofile and .Renviron files.}
 }
 \description{
-Install .Rprofile and .Renviron files in the given directory to make it
-use a private package library.
+Install .Rprofile in the given directory to make it use a private package library.
 }
 \details{
 Packrat uses entries in the \code{.Rprofile} and \code{.Renviron} files to keep

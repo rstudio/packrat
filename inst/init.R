@@ -1,3 +1,4 @@
+## -- packrat::packify -- ##
 if (suppressWarnings(require("packrat", quietly = TRUE))) {
   packrat::packrat_mode()
 } else {

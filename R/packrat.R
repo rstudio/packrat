@@ -212,7 +212,7 @@ restore <- function(projDir = NULL,
                     overwriteDirty = FALSE,
                     prompt = interactive()) {
 
-  if (is.null(projDir)) projDir <- getProjectDir()
+  projDir <- getProjectDir(projDir)
 
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
@@ -270,122 +270,6 @@ restore <- function(projDir = NULL,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt)
 }
 
-extractVersions <- function(packages, packageNames) {
-  as.character(lapply(
-    searchPackages(packages, packageNames),
-    function(pkg) {
-      if (is.null(pkg))
-        return(NA)
-      else
-        return(pkg$version)
-    }
-  ))
-}
-
-prettyPrint <- function(packages, header, footer = NULL) {
-  if (length(packages) > 0) {
-    cat('\n')
-    if (!is.null(header)) {
-      cat(paste(header, collapse=''))
-      cat('\n')
-    }
-    print.simple.list(lapply(packages, function(pkg) {
-      result <- ifelse(is.na(pkg$version), '', pkg$version)
-      result <- paste(" ", result)
-      names(result) <- paste("   ", pkg$name)
-      result
-    }))
-    if (!is.null(footer)) {
-      cat(paste(footer, collapse=''))
-    }
-    cat('\n')
-  }
-}
-
-summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage,
-                           removeMessage, upgradeMessage, downgradeMessage,
-                           crossgradeMessage)
-{
-  prettyPrint(
-    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'add']),
-    addMessage
-  )
-  prettyPrint(
-    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'remove']),
-    removeMessage
-  )
-  prettyPrintPair(
-    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'upgrade']),
-    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'upgrade']),
-    upgradeMessage
-  )
-  prettyPrintPair(
-    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'downgrade']),
-    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'downgrade']),
-    downgradeMessage
-  )
-  prettyPrintPair(
-    searchPackages(pkgsA, names(diffs)[!is.na(diffs) & diffs == 'crossgrade']),
-    searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'crossgrade']),
-    crossgradeMessage
-  )
-}
-
-prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
-                            fromLabel = 'from', toLabel = 'to') {
-
-  if (length(packagesFrom) != length(packagesTo)) {
-    stop('Invalid arguments--package record lengths mismatch')
-  }
-
-  if (length(packagesFrom) > 0) {
-    if (any(sapply(packagesFrom, is.null) & sapply(packagesTo, is.null))) {
-      stop('Invalid arguments--NULL packages')
-    }
-    for (i in seq_along(packagesFrom)) {
-      if (!is.null(packagesFrom[[i]]) && !is.null(packagesTo[[i]])) {
-        if (!identical(packagesFrom[[i]]$name , packagesTo[[i]]$name)) {
-          stop('Invalid arguments--package names did not match')
-        }
-      }
-    }
-
-    cat('\n')
-    if (!is.null(header)) {
-      cat(paste(header, collapse=''))
-      cat('\n')
-    }
-
-    pickVersion <- pick("version", defaultValue="NA")
-    df <- data.frame(paste(" ", sapply(packagesFrom, pickVersion)),
-                     paste(" ", sapply(packagesTo, pickVersion)))
-    names(df) <- c(paste(" ", fromLabel), paste(" ", toLabel))
-    row.names(df) <- paste("   ", pkgNames(packagesFrom))
-    print(df)
-
-    if (!is.null(footer)) {
-      cat(paste(footer, collapse=''))
-    }
-    cat('\n')
-  }
-}
-
-prettyPrintNames <- function(packageNames, header, footer = NULL) {
-  if (length(packageNames) > 0) {
-    cat('\n')
-    if (!is.null(header)) {
-      cat(paste(header, collapse=''))
-      cat('\n')
-    }
-    cat(paste("    ", packageNames, sep = '', collapse = '\n'))
-    cat('\n')
-    if (!is.null(footer)) {
-      cat(paste(footer, collapse=''))
-    }
-    cat('\n')
-  }
-}
-
 #' Remove unused packages
 #'
 #' Remove unused packages from the given library.
@@ -411,10 +295,10 @@ prettyPrintNames <- function(packageNames, header, footer = NULL) {
 #' @seealso \code{\link{appDependencies}} for an explanation of how dependencies are detected.
 #'
 #' @export
-clean <- function(projDir = ".", lib.loc = libDir(projDir),
+clean <- function(projDir = NULL, lib.loc = libDir(projDir),
                   prompt = interactive()) {
 
-  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
+  projDir <- getProjectDir(projDir)
 
   rootDeps <- appDependencies(projDir)
   missingPackageNames <- character(0)
@@ -464,26 +348,9 @@ clean <- function(projDir = ".", lib.loc = libDir(projDir),
   }
 }
 
-wipe <- function(projDir = getwd()) {
-
-  deaugmentFile(file.path(projDir, ".Rprofile"))
-  deaugmentFile(file.path(projDir, ".Renviron"))
-
-  files <- "packrat.lock"
-  dirs <- c("library", "library.old", "library.new", "packrat.sources")
-
-  # Clean up dependency information
-  unlink(file.path(projDir, files))
-  # Clean up downloaded sources and library directories
-  unlink(file.path(projDir, dirs), recursive = TRUE)
-
-  return(invisible())
-}
-
 #' Install packrat startup directives
 #'
-#' Install .Rprofile and .Renviron files in the given directory to make it
-#' use a private package library.
+#' Install .Rprofile in the given directory to make it use a private package library.
 #'
 #' Packrat uses entries in the \code{.Rprofile} and \code{.Renviron} files to keep
 #' package library operations (such as \code{\link{install.packages}}) local to
@@ -497,160 +364,31 @@ wipe <- function(projDir = getwd()) {
 #' You'll need to restart R in the specified directory after running
 #' \code{packify} in order to start using the private package library.
 #'
-#' @param dir The directory in which to install .Rprofile and .Renviron files.
+#' @param projDir The directory in which to install .Rprofile and .Renviron files.
 #'
 #' @export
-packify <- function(dir = '.') {
-  dir <- normalizePath(dir, winslash='/', mustWork = TRUE)
-  rprofile <- file.path(dir, '.Rprofile')
-  renviron <- file.path(dir, '.Renviron')
+packify <- function(projDir = NULL) {
 
-  augmentFile(system.file('Rprofile', package='packrat'), rprofile, TRUE)
-  augmentFile(system.file('Renviron', package='packrat'), renviron, FALSE)
+  projDir <- getProjectDir(projDir)
 
-  cat('Packrat startup directives installed.',
-      'Please quit and restart your R session.',
-      sep = '\n')
+  .Rprofile <- file.path(dir, ".Rprofile")
+  init.R <- system.file(package = "packrat", "init.R")
 
-  invisible()
-}
-
-# Add the contents of srcFile into targetFile, with "magic" comments bracketing
-# the contents. Should be safe to run multiple times--each subsequent call will
-# replace the contents between magic comments.
-augmentFile <- function(srcFile, targetFile, preferTop) {
-  header <- '# -- BEGIN PACKRAT --\n'
-  footer <- '# -- END PACKRAT --'
-  headerFooterRegex <- '# -- BEGIN PACKRAT --\\s*\n.*?# -- END PACKRAT --'
-  emptyHeaderFooter <- paste(header, footer, sep='')
-
-  src <- paste(readLines(srcFile, warn=FALSE), collapse='\n')
-  target <- if (file.exists(targetFile)) {
-    paste(readLines(targetFile, warn=FALSE), collapse='\n')
+  if (!file.exists(.Rprofile)) {
+    file.copy(init.R, .Rprofile)
   } else {
-    ''
-  }
-
-  target <- gsub(headerFooterRegex,
-                 emptyHeaderFooter,
-                 target)
-
-  if (!isTRUE(grepl(paste(header, footer, sep=''), target, fixed = TRUE))) {
-    if (preferTop) {
-      if (nzchar(target) > 0)
-        target <- paste(emptyHeaderFooter, target, sep='\n')
-      else
-        target <- emptyHeaderFooter
-    } else {
-      if (nzchar(target) > 0)
-        target <- paste(target, emptyHeaderFooter, sep='\n')
-      else
-        target <- emptyHeaderFooter
+    # Check and see if we've already packified
+    txt <- readLines(.Rprofile)
+    if (any(grepl("## -- packrat::packify -- ##", txt, fixed = TRUE))) {
+      message("This project has already been packified!")
+      return(invisible())
     }
+    cat(txt, file = .Rprofile, append = TRUE)
   }
 
-  target <- gsub(headerFooterRegex,
-                 paste(header, src, '\n', footer, sep=''),
-                 target)
-
-  writeLines(target[[1]], targetFile)
+  message('Packrat startup directives installed. Please restart your R session.')
 
   invisible()
-}
-
-deaugmentFile <- function(file, delete.if.empty=TRUE) {
-  if (!file.exists(file))
-    return()
-  headerFooterRegex <- '# -- BEGIN PACKRAT --\\s*\n.*?# -- END PACKRAT --\\s*?(\n|$)'
-  contents <- paste(readLines(file, warn=FALSE), collapse='\n')
-  contents <- gsub(headerFooterRegex, '', contents)
-  if (delete.if.empty && isTRUE(grepl('^[\r\n]*$', contents))) {
-    unlink(file)
-  } else {
-    writeLines(contents, file)
-  }
-  return(invisible())
-}
-
-getProjectDir <- function(projDir = NULL) {
-  if (is.null(projDir)) projDir <- .packrat$projectDir
-  file.path(
-    normalizePath(projDir, winslash = '/', mustWork = TRUE)
-  )
-}
-
-## We differentiate between the 'libDir' -- the actual architecture-specific
-## directory containing libraries for the current system, and the 'libraryRootDir'
-## containing all libraries for a given project (which may want to be copied around
-## -- unlikely since we encourage people to build from snapshots, but we leave it
-## possible)
-libDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(
-    projDir,
-    .packrat$packratFolderName,
-    'lib',
-    R.version$platform,
-    getRversion()
-  )
-}
-
-libraryRootDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(
-    projDir,
-    .packrat$packratFolderName,
-    'lib'
-  )
-}
-
-relativeLibDir <- function(libraryRoot) {
-  file.path(
-    libraryRoot,
-    R.version$platform,
-    getRversion()
-  )
-}
-
-# Temporary library directory when modifying an in-use library
-newLibraryDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(
-    projDir,
-    .packrat$packratFolderName,
-    'library.new'
-  )
-}
-
-oldLibraryDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(
-    projDir,
-    .packrat$packratFolderName,
-    'library.old'
-  )
-}
-
-srcDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(
-    projDir,
-    .packrat$packratFolderName,
-    'src'
-  )
-}
-
-bundlesDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(
-    projDir,
-    .packrat$packratFolderName,
-    'bundles'
-  )
-}
-
-lockFilePath <- function(projDir) {
-  file.path(projDir, .packrat$packratFolderName, "packrat.lock")
 }
 
 lockInfo <- function(projDir, property='packages', fatal=TRUE) {
