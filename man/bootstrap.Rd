@@ -10,7 +10,7 @@ bootstrap(projDir = ".", sourcePackagePaths = character())
 
 \item{sourcePackagePaths}{List of paths to unpacked \R package source
   directories.  Use this argument only if your project depends on packages
-  that are not available on CRAN or Github.}
+  that are not available on CRAN or GitHub.}
 }
 \description{
 Given a project directory, makes a new packrat project in the directory.

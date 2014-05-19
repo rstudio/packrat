@@ -17,7 +17,7 @@ snapshotHook <- function(expr, value, ok, visible) {
       if (is.null(.packrat$projectDir)) {
         file = "" ## to stdout
       } else {
-        file = file.path(.packrat$projectDir, "packrat.log")
+        file = file.path(.packrat$projectDir, .packrat$packratFolderName, "packrat.log")
       }
       if (inherits(e, "simpleError")) {
         msg <- e$message

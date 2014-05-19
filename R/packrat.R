@@ -108,7 +108,7 @@ NULL
 #' @param projDir The directory that contains the \R project.
 #' @param sourcePackagePaths List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
-#'   that are not available on CRAN or Github.
+#'   that are not available on CRAN or GitHub.
 #'
 #' @seealso \link{packrat} for a description of the files created by
 #'   \code{bootstrap}.
@@ -148,6 +148,9 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   # Copy .Rprofile from init.R so that users are bounced into packrat mode
   # when launching \R session in project dir
   augmentRprofile(projDir)
+
+  # Make sure the packrat directory is ignored if we're in a package
+  updateRBuildIgnore(projDir)
 
   invisible()
 }
