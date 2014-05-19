@@ -147,10 +147,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
 
   # Copy .Rprofile from init.R so that users are bounced into packrat mode
   # when launching \R session in project dir
-  file.copy(
-    system.file(package="packrat", "init.R"),
-    file.path(projDir, ".Rprofile")
-  )
+  augmentRprofile(projDir)
 
   invisible()
 }
@@ -355,7 +352,7 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
 
 #' Automatically Enter Packrat Mode on Startup
 #'
-#' Install \code{.Rprofile} in the given directory, so that all \R sessions
+#' Install/augment the \code{.Rprofile} in a project, so that all \R sessions
 #' started in this directory enter \code{packrat mode}, and use the local
 #' project library.
 #'
@@ -382,7 +379,7 @@ packify <- function(projDir = NULL) {
   } else {
     # Check and see if we've already packified
     txt <- readLines(.Rprofile)
-    if (any(grepl("## -- packrat::packify -- ##", txt, fixed = TRUE))) {
+    if (any(grepl("#### -- Packrat Autoloader", txt, fixed = TRUE))) {
       message("This project has already been packified!")
       return(invisible())
     }
