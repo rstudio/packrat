@@ -78,3 +78,57 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
 wrap <- function(x, width = 78, ...) {
   paste(strwrap(x = paste(x, collapse = " "), width = width, ...), collapse = "\n")
 }
+
+pkgDescriptionDependencies <- function(file) {
+
+  fields <- c("Depends", "Imports", "Suggests", "LinkingTo")
+
+  if (!file.exists(file)) stop("no file '", file, "'")
+  DESCRIPTION <- readDcf("DESCRIPTION")
+  requirements <- DESCRIPTION[1, fields[fields %in% colnames(DESCRIPTION)]]
+
+  ## Remove whitespace
+  requirements <- gsub("[[:space:]]*", "", requirements)
+
+  ## Parse packages + their version
+  parsed <- vector("list", length(requirements))
+  for (i in seq_along(requirements)) {
+    x <- requirements[[i]]
+    splat <- unlist(strsplit(x, ",", fixed = TRUE))
+    res <- lapply(splat, function(y) {
+      if (grepl("(", y, fixed = TRUE)) {
+        list(
+          Package = gsub("\\(.*", "", y),
+          Version = gsub(".*\\((.*?)\\)", "\\1", y, perl = TRUE),
+          Field = names(requirements)[i]
+        )
+      } else {
+        list(
+          Package = y,
+          Version = NA,
+          Field = names(requirements)[i]
+        )
+      }
+    })
+    parsed[[i]] <- list(
+      Package = sapply(res, "[[", "Package"),
+      Version = sapply(res, "[[", "Version"),
+      Field = sapply(res, "[[", "Field")
+    )
+  }
+
+  result <- do.call(rbind, lapply(parsed, function(x) {
+    as.data.frame(x, stringsAsFactors = FALSE)
+  }))
+
+  ## Don't include 'base' packages
+  ip <- installed.packages()
+  basePkgs <- ip[ Vectorize(isTRUE)(ip[, "Priority"] == "base"), "Package" ]
+  result <- result[ !(result$Package %in% basePkgs), ]
+
+  ## Don't include R
+  result <- result[ !result$Package == "R", ]
+
+  result
+
+}

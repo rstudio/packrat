@@ -3,7 +3,7 @@
 \alias{appDependencies}
 \title{Detect Application Dependencies}
 \usage{
-appDependencies(projDir = ".")
+appDependencies(projDir = NULL)
 }
 \arguments{
 \item{projDir}{Directory containing application. Defaults to current working

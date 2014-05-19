@@ -24,8 +24,19 @@
 #' # dependencies for an app in another directory
 #' appDependencies("~/projects/shiny/app1")
 #' }
-appDependencies <- function(projDir = ".") {
-  unique(c(dirDependencies(projDir), 'packrat'))
+appDependencies <- function(projDir = NULL) {
+
+  projDir <- getProjectDir(projDir)
+  inferredDeps <- unique(c(dirDependencies(projDir), 'packrat'))
+
+  ## If it appears that we're in an R package, process the package dependencies in there as well
+  if (file.exists(file.path(projDir, "DESCRIPTION"))) {
+    pkgDeps <- pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))
+    inferredDeps <- c(inferredDeps, pkgDeps$Package)
+  }
+
+  inferredDeps
+
 }
 
 # does str1 start with str2?
