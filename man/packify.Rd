@@ -9,7 +9,7 @@ packify(projDir = NULL)
 \item{projDir}{The directory in which to install the \code{.Rprofile} file.}
 }
 \description{
-Install \code{.Rprofile} in the given directory, so that all \R sessions
+Install/augment the \code{.Rprofile} in a project, so that all \R sessions
 started in this directory enter \code{packrat mode}, and use the local
 project library.
 }

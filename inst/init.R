@@ -1,4 +1,4 @@
-## -- packrat::packify -- ##
+#### -- Packrat Autoloader (version 0.1.0.99) -- ####
 if (suppressWarnings(require("packrat", quietly = TRUE))) {
   packrat:::checkPackified()
   packrat::packrat_mode()
@@ -8,3 +8,4 @@ if (suppressWarnings(require("packrat", quietly = TRUE))) {
     message("Run 'source(\".packrat/bootstrap.R\")' to bootstrap a packrat installation.")
   }
 }
+#### -- End Packrat Autoloader -- ####
