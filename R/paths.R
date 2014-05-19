@@ -17,7 +17,7 @@ getProjectDir <- function(projDir = NULL) {
   )
 }
 
-packratDir <- function(projDir = NULL) {
+getPackratDir <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   file.path(
     projDir,
@@ -59,42 +59,33 @@ relativeLibDir <- function(libraryRoot) {
 
 # Temporary library directory when modifying an in-use library
 newLibraryDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
   file.path(
-    projDir,
-    .packrat$packratFolderName,
+    getPackratDir(projDir),
     'library.new'
   )
 }
 
 oldLibraryDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
   file.path(
-    projDir,
-    .packrat$packratFolderName,
+    getPackratDir(projDir),
     'library.old'
   )
 }
 
 srcDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
   file.path(
-    projDir,
-    .packrat$packratFolderName,
+    getPackratDir(projDir),
     'src'
   )
 }
 
 bundlesDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
   file.path(
-    projDir,
-    .packrat$packratFolderName,
+    getPackratDir(projDir),
     'bundles'
   )
 }
 
 lockFilePath <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  file.path(projDir, "packrat.lock")
+  file.path(getPackratDir(projDir), "packrat.lock")
 }

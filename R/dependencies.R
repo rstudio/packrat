@@ -27,15 +27,13 @@
 appDependencies <- function(projDir = NULL) {
 
   projDir <- getProjectDir(projDir)
-  inferredDeps <- unique(c(dirDependencies(projDir), 'packrat'))
 
-  ## If it appears that we're in an R package, process the package dependencies in there as well
+  ## For R packages, we only use the DESCRIPTION file
   if (file.exists(file.path(projDir, "DESCRIPTION"))) {
-    pkgDeps <- pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))
-    inferredDeps <- c(inferredDeps, pkgDeps$Package)
+    c(pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))$Package, "packrat")
+  } else {
+    unique(c(dirDependencies(projDir), 'packrat'))
   }
-
-  inferredDeps
 
 }
 

@@ -16,7 +16,7 @@ updateRBuildIgnore <- function(projDir = NULL) {
 
   ## If it already exists, check for a '^packrat/' directive; add it if none
   .Rbuildignore <- readLines(path)
-  if (!("^packrat/" %in% .Rbuildignore)) {
+  if (!(ignoreDirective %in% .Rbuildignore)) {
     .Rbuildignore <- c(.Rbuildignore, ignoreDirective)
     cat(.Rbuildignore, file = path, sep = "\n")
   }

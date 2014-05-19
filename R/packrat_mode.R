@@ -20,7 +20,7 @@ checkPackified <- function(projDir = NULL) {
 
   projDir <- getProjectDir(projDir)
 
-  packratDir <- packratDir(projDir)
+  packratDir <- getPackratDir(projDir)
   if (!file.exists(packratDir)) {
     message("The packrat directory does not exist; this project has not been packified.")
     return(FALSE)
@@ -103,7 +103,7 @@ packrat_mode <- function(projDir = ".") {
     }
 
     # Try a bootstrap the directory if there is no packrat directory
-    if (!file.exists(packratDir(projDir))) {
+    if (!file.exists(getPackratDir(projDir))) {
       bootstrap(projDir = projDir)
     }
 

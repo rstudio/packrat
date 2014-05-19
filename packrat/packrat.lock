@@ -1,0 +1,48 @@
+PackratFormat: 1.1
+PackratVersion: 0.1.0.99
+RVersion: 3.2.0
+Repos: http://cran.rstudio.org,
+  http://bioconductor.org/packages/3.0/bioc,
+  http://bioconductor.org/packages/3.0/data/annotation,
+  http://bioconductor.org/packages/3.0/data/experiment,
+  http://bioconductor.org/packages/3.0/extra
+
+Package: digest
+Source: CRAN
+Version: 0.6.4
+
+Package: evaluate
+Source: CRAN
+Version: 0.5.5
+Requires: stringr
+
+Package: formatR
+Source: CRAN
+Version: 0.10
+
+Package: highr
+Source: CRAN
+Version: 0.3
+
+Package: knitr
+Source: CRAN
+Version: 1.5
+Requires: evaluate, digest, formatR, highr, markdown, stringr
+
+Package: markdown
+Source: CRAN
+Version: 0.6.5
+
+Package: packrat
+Source: source
+Version: 0.1.0.99
+SourcePath: /Users/kevin/git/packrat
+
+Package: stringr
+Source: CRAN
+Version: 0.6.2
+
+Package: testthat
+Source: CRAN
+Version: 0.8.1
+Requires: digest
