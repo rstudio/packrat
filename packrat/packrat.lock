@@ -1,7 +1,7 @@
 PackratFormat: 1.1
 PackratVersion: 0.1.0.99
 RVersion: 3.2.0
-Repos: http://cran.rstudio.org,
+Repos: http://cran.rstudio.com,
   http://bioconductor.org/packages/3.0/bioc,
   http://bioconductor.org/packages/3.0/data/annotation,
   http://bioconductor.org/packages/3.0/data/experiment,
@@ -36,13 +36,17 @@ Version: 0.6.5
 Package: packrat
 Source: source
 Version: 0.1.0.99
-SourcePath: /Users/kevin/git/packrat
+SourcePath: /Users/kevinushey/git/packrat
 
 Package: stringr
 Source: CRAN
 Version: 0.6.2
 
 Package: testthat
-Source: CRAN
-Version: 0.8.1
+Source: github
+Version: 0.8.1.0.99
 Requires: digest
+GithubRepo: testthat
+GithubUsername: hadley
+GithubRef: master
+GithubSha1: 0918b7c27324b1a90371c653b429e7e84aeb3d90
