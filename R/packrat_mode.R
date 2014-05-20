@@ -55,8 +55,11 @@ checkPackified <- function(projDir = NULL) {
 ##'
 ##' @param projDir The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
+##' @param auto.snapshot Whether or not we should use automatic snapshotting.
+##' @param bootstrap Whether or not we should try to bootstrap a project directory
+##'   that has not yet been packified.
 ##' @export
-packrat_mode <- function(projDir = ".") {
+packrat_mode <- function(projDir = ".", auto.snapshot = TRUE, bootstrap = TRUE) {
 
   projDir <- normalizePath(projDir, winslash='/')
   libRoot <- libraryRootDir(projDir)
@@ -102,9 +105,14 @@ packrat_mode <- function(projDir = ".") {
       unlink(oldLibDir, recursive = TRUE)
     }
 
-    # Try a bootstrap the directory if there is no packrat directory
-    if (!file.exists(getPackratDir(projDir))) {
+    # Try to bootstrap the directory if there is no packrat directory
+    if (bootstrap && !file.exists(getPackratDir(projDir))) {
       bootstrap(projDir = projDir)
+    }
+
+    # If the library directory doesn't exist, create it
+    if (!file.exists(localLib)) {
+      dir.create(localLib, recursive = TRUE)
     }
 
     # Set the library
@@ -119,7 +127,13 @@ packrat_mode <- function(projDir = ".") {
     # setPackratPrompt()
 
     # Insert hooks to library modifying functions to auto-snapshot on change
-    addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
+    if (auto.snapshot) {
+      if (file.exists(getPackratDir(projDir))) {
+        addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
+      } else {
+        warning("this project has not been packified; cannot activate automatic snapshotting")
+      }
+    }
 
     invisible(.libPaths())
 

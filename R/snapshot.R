@@ -186,7 +186,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
       lockFilePath(projDir),
       appPackages
     )
-    if (!verbose) {
+    if (verbose) {
       message('Snapshot written to',
         normalizePath(lockFilePath(projDir), winslash = '/'))
     }
