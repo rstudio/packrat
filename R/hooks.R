@@ -5,7 +5,11 @@ snapshotHook <- function(expr, value, ok, visible) {
 
     expr = {
       silent(
-        snapshot(projDir = .packrat$projectDir, orphan.check = FALSE)
+        snapshotImpl(
+          projDir = .packrat$projectDir,
+          orphan.check = FALSE,
+          auto.snapshot = TRUE
+        )
       )
     },
 

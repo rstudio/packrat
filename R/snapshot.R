@@ -91,7 +91,8 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
 snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
                          sourcePackages = NULL, dry.run = FALSE,
                          orphan.check = FALSE, ignore.stale = FALSE,
-                         prompt = interactive()) {
+                         prompt = interactive(),
+                         auto.snapshot = FALSE) {
   lockPackages <- lockInfo(projDir, fatal=FALSE)
 
   # Get the package records for dependencies of the app. It's necessary to
@@ -159,6 +160,10 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
       return()
     }
   }
+
+  ## For use by automatic snapshotting -- only perform the automatic snapshot
+  ## if it's a 'safe' action
+  if (mustConfirm && auto.snapshot) return(invisible())
 
   if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n] ')

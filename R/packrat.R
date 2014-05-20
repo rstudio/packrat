@@ -330,6 +330,9 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
   orphans <- setdiff(installedPkgNames,
                      pkgNames(flattenPackageRecords(packagesInUse)))
 
+  ## Exclude 'manipulate', 'rstudio'
+  orphans <- setdiff(orphans, c("manipulate", "rstudio"))
+
   if (length(orphans) > 0) {
     orphanRecs <- getPackageRecords(orphans, available=NULL,
                                     sourcePackages=NULL,
@@ -350,6 +353,8 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
     removePkgs(projDir, orphans, lib.loc)
     message("Packages '", paste(orphans, collapse = ", "), "' have been removed from the private library.")
     return(invisible(orphans))
+  } else {
+    message("Already up to date.")
   }
 }
 
