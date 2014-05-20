@@ -117,9 +117,6 @@ NULL
 bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
-  ## Use the project directory as a potential package path
-  sourcePackagePaths <- c(sourcePackagePaths, projDir)
-
   if (nzchar(Sys.getenv("R_PACKRAT_MODE"))) {
     stop("This project is already running under packrat!")
   }
@@ -150,7 +147,9 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   augmentRprofile(projDir)
 
   # Make sure the packrat directory is ignored if we're in a package
-  updateRBuildIgnore(projDir)
+  if (file.exists(descriptionFile)) {
+    updateRBuildIgnore(projDir)
+  }
 
   invisible()
 }
