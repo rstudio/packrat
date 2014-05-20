@@ -14,6 +14,8 @@
 #   gh_username = 'hadley',
 #   gh_ref = 'master',
 #   gh_sha1 = '66b81e9307793029f6083fc6108592786a564b09'
+# # Optional:
+#   , gh_subdir = 'pkg'
 # )
 
 # Returns a package records for the given packages
@@ -101,14 +103,15 @@ inferPackageRecord <- function(df) {
     ), class=c('packageRecord', 'CRAN')))
   } else if (!is.null(df$GithubRepo)) {
     # It's GitHub!
-    return(structure(list(
+    return(structure(c(list(
       name = name,
       source = 'github',
       version = ver,
       gh_repo = as.character(df$GithubRepo),
       gh_username = as.character(df$GithubUsername),
       gh_ref = as.character(df$GithubRef),
-      gh_sha1 = as.character(df$GithubSHA1)
+      gh_sha1 = as.character(df$GithubSHA1)),
+      c(gh_subdir = as.character(df$GithubSubdir))
     ), class=c('packageRecord', 'github')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
