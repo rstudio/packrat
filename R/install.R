@@ -41,6 +41,12 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
     path <- dirname(pkg$path)
   }
 
+  if (getRversion() < "3.1.0") {
+    noBuildVignettes <- "--no-vignettes"
+  } else {
+    noBuildVignettes <- "--no-build-vignettes"
+  }
+
   if (binary) {
     args <- c("--build", args)
     cmd <- paste0("CMD INSTALL ", shQuote(pkg$path), " ",
@@ -50,11 +56,11 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
     args <- c(args, "--no-manual", "--no-resave-data")
 
     if (!vignettes) {
-      args <- c(args, "--no-vignettes")
+      args <- c(args, noBuildVignettes)
 
     } else if (!nzchar(Sys.which("pdflatex"))) {
       message("pdflatex not found. Not building PDF vignettes.")
-      args <- c(args, "--no-vignettes")
+      args <- c(args, noBuildVignettes)
     }
 
     cmd <- paste0("CMD build ", shQuote(pkg$path), " ",

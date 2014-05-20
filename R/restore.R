@@ -79,8 +79,19 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       wd <- getwd()
       on.exit(setwd(wd), add = TRUE)
       setwd(file.path(pkgRecord$source_path, ".."))
-      tar(file.path(pkgSrcDir, pkgSrcFile), files = pkgRecord$name,
-          compression = "gzip", tar = "internal")
+      ## If it's a package, don't just tar it up -- R CMD build it
+      if (file.exists(file.path(pkgRecord$source_path, "DESCRIPTION"))) {
+        build(
+          pkg = pkgRecord$source_path,
+          path = file.path(pkgSrcDir),
+          binary = FALSE,
+          vignettes = FALSE,
+          quiet = TRUE
+        )
+      } else {
+        tar(file.path(pkgSrcDir, pkgSrcFile), files = pkgRecord$name,
+            compression = "gzip", tar = "internal")
+      }
     })()
     type <- "local"
   } else if (isFromCranlikeRepo(pkgRecord) &&
