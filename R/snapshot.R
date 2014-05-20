@@ -64,6 +64,10 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
 
   projDir <- getProjectDir(projDir)
 
+  if (file.exists(snapshotLockFilePath(projDir))) {
+    stop("An automatic snapshot is currently in progress -- cannot proceed")
+  }
+
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dry.run,
                               orphan.check = orphan.check,
@@ -92,7 +96,8 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
                          sourcePackages = NULL, dry.run = FALSE,
                          orphan.check = FALSE, ignore.stale = FALSE,
                          prompt = interactive(),
-                         auto.snapshot = FALSE) {
+                         auto.snapshot = FALSE,
+                         verbose = TRUE) {
   lockPackages <- lockInfo(projDir, fatal=FALSE)
 
   # Get the package records for dependencies of the app. It's necessary to
@@ -108,7 +113,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
 
   orphans <- setdiff(allLibPkgs, pkgNames(appPackagesFlat))
 
-  if (orphan.check) {
+  if (orphan.check && verbose) {
     on.exit({
       prettyPrint(
         getPackageRecords(orphans, NULL, sourcePackages = sourcePackages,
@@ -125,7 +130,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
     # If any packages are installed, different from what's in the lockfile, and
     # were installed by packrat, that means they are stale.
     stale <- names(diffs)[!is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)]
-    if (length(stale) > 0) {
+    if (length(stale) > 0 && verbose) {
       prettyPrint(
         getPackageRecords(stale, NULL, sourcePackages = sourcePackages,
                           recursive = FALSE, lib.loc = lib.loc),
@@ -140,15 +145,17 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
     }
   }
 
-  summarizeDiffs(diffs, lockPackages, appPackages,
+  if (verbose) {
+    summarizeDiffs(diffs, lockPackages, appPackages,
                  'Adding these packages to packrat:',
                  'Removing these packages from packrat:',
                  'Upgrading these packages already present in packrat:',
                  'Downgrading these packages already present in packrat:',
                  'Modifying these packages already present in packrat:')
+  }
 
   if (all(is.na(diffs))) {
-    message("Already up to date.")
+    if (!verbose) message("Already up to date.")
     if (is.null(lib.loc) ||
           all(installedByPackrat(pkgNames(appPackagesFlat), lib.loc, FALSE))) {
       # If none of the packages/versions differ, and all of the packages in the
@@ -179,8 +186,10 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
       lockFilePath(projDir),
       appPackages
     )
-    cat('Snapshot written to',
-        normalizePath(lockFilePath(projDir), winslash = '/'), '\n')
+    if (!verbose) {
+      message('Snapshot written to',
+        normalizePath(lockFilePath(projDir), winslash = '/'))
+    }
   }
 
   return(invisible(appPackages))

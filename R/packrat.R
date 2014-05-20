@@ -117,6 +117,9 @@ NULL
 bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
+  ## Use the project directory as a potential package path
+  sourcePackagePaths <- c(sourcePackagePaths, projDir)
+
   if (nzchar(Sys.getenv("R_PACKRAT_MODE"))) {
     stop("This project is already running under packrat!")
   }
@@ -126,9 +129,6 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   if (file.exists(descriptionFile)) {
     description <- as.data.frame(readDcf(descriptionFile))
     package <- description$Package
-    if (!is.null(package)) {
-      warning("This project appears to be an R package. Packrat does not yet have full support for packages.")
-    }
   }
 
   # Take a snapshot

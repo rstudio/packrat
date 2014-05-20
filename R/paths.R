@@ -89,3 +89,7 @@ bundlesDir <- function(projDir = NULL) {
 lockFilePath <- function(projDir = NULL) {
   file.path(getPackratDir(projDir), "packrat.lock")
 }
+
+snapshotLockFilePath <- function(projDir = NULL) {
+  file.path(getPackratDir(projDir), "snapshot.lock")
+}
