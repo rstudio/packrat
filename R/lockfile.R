@@ -237,6 +237,7 @@ aliases <- c(
   GithubUsername = "gh_username",
   GithubRef = "gh_ref",
   GithubSha1 = "gh_sha1",
+  GithubSubdir = "gh_subdir",
   SourcePath = "source_path"
 )
 r_aliases <- structure(names(aliases), names = aliases)
