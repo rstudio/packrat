@@ -163,15 +163,19 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       else
         scratchDir
 
+      if (!is.null(pkgRecord$gh_subdir))
+        basedir <- file.path(basedir, pkgRecord$gh_subdir)
+
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
         stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
       }
 
-      ghinfo <- data.frame(
+      ghinfo <- as.data.frame(c(list(
         GithubRepo = pkgRecord$gh_repo,
         GithubUsername = pkgRecord$gh_username,
         GithubRef = pkgRecord$gh_ref,
-        GithubSHA1 = pkgRecord$gh_sha1
+        GithubSHA1 = pkgRecord$gh_sha1)),
+        c(GithubSubdir = pkgRecord$gh_subdir)
       )
       appendToDcf(file.path(basedir, 'DESCRIPTION'), ghinfo)
 

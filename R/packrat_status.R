@@ -70,7 +70,7 @@ status <- function(projDir = '.', lib.loc = libDir(projDir), quiet = FALSE) {
   installedPkgVersions <- getPackageElement(installedPkgRecords, "version")
 
   # Packages inferred from the code
-  inferredPkgNames <- appDependencies(projDir)
+  inferredPkgNames <- pkgNames(flattenPackageRecords(getPackageRecords(appDependencies(projDir))))
 
   # All packages mentioned in one of the three above
   allPkgNames <- sort(unique(c(
