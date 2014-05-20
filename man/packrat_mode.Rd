@@ -3,11 +3,16 @@
 \alias{packrat_mode}
 \title{Packrat Mode}
 \usage{
-packrat_mode(projDir = ".")
+packrat_mode(projDir = ".", auto.snapshot = TRUE, bootstrap = TRUE)
 }
 \arguments{
 \item{projDir}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
+
+\item{auto.snapshot}{Whether or not we should use automatic snapshotting.}
+
+\item{bootstrap}{Whether or not we should try to bootstrap a project directory
+that has not yet been packified.}
 }
 \description{
 Use this function to switch \code{packrat} mode on and off. When within

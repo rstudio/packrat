@@ -13,7 +13,6 @@ snapshotHook <- function(expr, value, ok, visible) {
       snapshotLockPath <- file.path(packratDir, "snapshot.lock")
 
       ## This file needs to be checked, and deleted, by the async process
-
       if (file.exists(snapshotLockPath)) {
         return(FALSE)
       }
@@ -26,9 +25,11 @@ snapshotHook <- function(expr, value, ok, visible) {
                             peq("auto.snapshot", "TRUE"),
                             peq("verbose", "FALSE")
       )
-      snapshotCmd <- paste("suppressMessages(packrat:::snapshotImpl(", snapshotArgs, "))")
+      setwdCmd <- paste("setwd(", shQuote(projDir), ")")
+      snapshotCmd <- paste("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")))")
       cleanupCmd <- paste("file.remove(", shQuote(snapshotLockPath), ")")
       fullCmd <- paste(sep = "; ",
+                       setwdCmd,
                        snapshotCmd,
                        cleanupCmd,
                        "invisible()"
@@ -38,8 +39,6 @@ snapshotHook <- function(expr, value, ok, visible) {
       ## TODO: Use the private local packrat library
 
       cmd <- paste(shQuote(r_path), "--vanilla", "--slave", "-e", shQuote(fullCmd))
-
-
       system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
       invisible(TRUE)
 
