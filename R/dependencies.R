@@ -30,7 +30,16 @@ appDependencies <- function(projDir = NULL) {
 
   ## For R packages, we only use the DESCRIPTION file
   if (file.exists(file.path(projDir, "DESCRIPTION"))) {
-    c(pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))$Package, "packrat")
+    ## Make sure we get records recursively from the packages in DESCRIPTION
+    pkgDeps <- c(
+      pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))$Package,
+      "packrat"
+    )
+    pkgRecords <- flattenPackageRecords(
+      suppressWarnings(getPackageRecords(pkgDeps))
+    )
+    allPkgs <- sapply(pkgRecords, "[[", "name")
+    allPkgs
   } else {
     unique(c(dirDependencies(projDir), 'packrat'))
   }
