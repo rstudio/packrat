@@ -13,22 +13,22 @@
 #' @param sourcePackagePaths A character vector of directories containing R
 #'   package sources. It is only necessary to supply this parameter when using a
 #'   package for which sources exist on neither CRAN or Github.
-#' @param orphan.check \code{TRUE} to check for orphaned packages; \code{FALSE}
+#' @param orphanCheck \code{TRUE} to check for orphaned packages; \code{FALSE}
 #'   to skip the check. Packrat only considers packages used by your code and
 #'   packages which are dependencies of packages used by your code. Any other
 #'   package in the private library is considered an orphan.  If the packages
 #'   are truly orphans, they can be removed with \code{\link{clean}}; if they
 #'   are not, you can make packrat aware that your project needs them by adding
 #'   a \code{require} statement to any R file.
-#' @param ignore.stale Stale packages are packages that are different from the
+#' @param ignoreStale Stale packages are packages that are different from the
 #'   last snapshot, but were installed by packrat. Typically, packages become
 #'   stale when a new snapshot is available, but you haven't applied it yet with
 #'   \code{\link{restore}}. By default, packrat will prevent you from taking a
 #'   snapshot when you have stale packages to prevent you from losing changes
 #'   from the unapplied snapshot. If your intent is to overwrite the last
-#'   snapshot without applying it, use \code{ignore.stale = TRUE} to skip this
+#'   snapshot without applying it, use \code{ignoreStale = TRUE} to skip this
 #'   check.
-#' @param dry.run Computes the changes to your packrat state that would be made
+#' @param dryRun Computes the changes to your packrat state that would be made
 #'   if a snapshot were performed, and prints them to the console.
 #' @param prompt \code{TRUE} to prompt before performing snapshotting package
 #'   changes that might be unintended; \code{FALSE} to perform these operations
@@ -51,15 +51,15 @@
 #' snapshot()
 #'
 #' # See what changes would be included in a snapshot
-#' snapshot(dry.run = TRUE)
+#' snapshot(dryRun = TRUE)
 #'
 #' # Take a snapshot of a project that includes a custom package
 #' snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
 #' }
 #' @export
 snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
-                     sourcePackagePaths = NULL, orphan.check = TRUE,
-                     ignore.stale = FALSE, dry.run = FALSE,
+                     sourcePackagePaths = NULL, orphanCheck = TRUE,
+                     ignoreStale = FALSE, dryRun = FALSE,
                      prompt = interactive()) {
 
   projDir <- getProjectDir(projDir)
@@ -69,12 +69,12 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
   }
 
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-  appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dry.run,
-                              orphan.check = orphan.check,
-                              ignore.stale = ignore.stale,
-                              prompt = prompt && !dry.run)
+  appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dryRun,
+                              orphanCheck = orphanCheck,
+                              ignoreStale = ignoreStale,
+                              prompt = prompt && !dryRun)
 
-  if (!dry.run) {
+  if (!dryRun) {
     # Check to see if any of the packages we just snapshotted are not, in fact,
     # located in the private library, and install them if necessary
     appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
@@ -93,10 +93,10 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
 }
 
 snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
-                         sourcePackages = NULL, dry.run = FALSE,
-                         orphan.check = FALSE, ignore.stale = FALSE,
+                         sourcePackages = NULL, dryRun = FALSE,
+                         orphanCheck = FALSE, ignoreStale = FALSE,
                          prompt = interactive(),
-                         auto.snapshot = FALSE,
+                         autoSnapshot = FALSE,
                          verbose = TRUE) {
   lockPackages <- lockInfo(projDir, fatal=FALSE)
 
@@ -113,7 +113,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
 
   orphans <- setdiff(allLibPkgs, pkgNames(appPackagesFlat))
 
-  if (orphan.check && verbose) {
+  if (orphanCheck && verbose) {
     on.exit({
       prettyPrint(
         getPackageRecords(orphans, NULL, sourcePackages = sourcePackages,
@@ -126,7 +126,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
   diffs <- diff(lockPackages, appPackages)
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% diffs)
 
-  if (!ignore.stale) {
+  if (!ignoreStale) {
     # If any packages are installed, different from what's in the lockfile, and
     # were installed by packrat, that means they are stale.
     stale <- names(diffs)[!is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)]
@@ -138,7 +138,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
         c('These packages must be updated by calling packrat::restore() before\n',
           'snapshotting. If you are sure you want the installed versions of these\n',
           'packages to be snapshotted, call packrat::snapshot() again with\n',
-          'ignore.stale=TRUE.')
+          'ignoreStale=TRUE.')
       )
       message('--\nSnapshot operation was cancelled, no changes were made.')
       return(invisible())
@@ -170,7 +170,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
 
   ## For use by automatic snapshotting -- only perform the automatic snapshot
   ## if it's a 'safe' action
-  if (mustConfirm && auto.snapshot) return(invisible())
+  if (mustConfirm && autoSnapshot) return(invisible())
 
   if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n] ')
@@ -180,7 +180,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
     }
   }
 
-  if (!dry.run) {
+  if (!dryRun) {
     snapshotSources(projDir, activeRepos(projDir), appPackagesFlat)
     writeLockFile(
       lockFilePath(projDir),

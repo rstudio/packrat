@@ -30,4 +30,4 @@ system(fullCmd)
 message("> Attaching packrat")
 library("packrat", character.only = TRUE, lib.loc = lib)
 
-message("Packrat successfully installed. Run 'packrat_mode()' to enter packrat mode.")
+message("Packrat successfully installed. Run 'packratMode()' to enter packrat mode.")

@@ -2,7 +2,7 @@ isPackratModeOn <- function(projDir = NULL) {
   file.exists(packratModeFilePath(projDir))
 }
 
-setPackratModeOn <- function(projDir = NULL, bootstrap = TRUE, auto.snapshot = TRUE) {
+setPackratModeOn <- function(projDir = NULL, bootstrap = TRUE, autoSnapshot = TRUE) {
 
   projDir <- getProjectDir(projDir)
   libRoot <- libraryRootDir(projDir)
@@ -68,8 +68,8 @@ setPackratModeOn <- function(projDir = NULL, bootstrap = TRUE, auto.snapshot = T
   msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(projDir), "\"", sep = "")
   message(msg)
 
-  # Insert hooks to library modifying functions to auto-snapshot on change
-  if (auto.snapshot) {
+  # Insert hooks to library modifying functions to autoSnapshot on change
+  if (autoSnapshot) {
     if (file.exists(getPackratDir(projDir))) {
       addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
     } else {
@@ -160,30 +160,30 @@ checkPackified <- function(projDir = NULL) {
 ##'
 ##' @param projDir The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
-##' @param auto.snapshot Whether or not we should use automatic snapshotting.
+##' @param autoSnapshot Whether or not we should use automatic snapshotting.
 ##' @param bootstrap Whether or not we should try to bootstrap a project directory
 ##'   that has not yet been packified.
-##' @rdname packrat_mode
+##' @rdname packratMode
 ##' @export
-packrat_on <- function(projDir = ".", auto.snapshot = TRUE, bootstrap = FALSE) {
+packratOn <- function(projDir = ".", autoSnapshot = TRUE, bootstrap = FALSE) {
   projDir <- normalizePath(projDir, winslash='/')
   setPackratModeOn(projDir)
 }
 
-##' @rdname packrat_mode
+##' @rdname packratMode
 ##' @export
-packrat_off <- function(projDir = NULL) {
+packratOff <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   setPackratModeOff(projDir)
 }
 
-##' @rdname packrat_mode
+##' @rdname packratMode
 ##' @export
-packrat_mode <- function(projDir = NULL, autoSnapshot = TRUE, bootstrap = FALSE) {
+packratMode <- function(projDir = NULL, autoSnapshot = TRUE, bootstrap = FALSE) {
   if (isPackratModeOn()) {
-    packrat_off(projDir)
+    packratOff(projDir)
   } else {
-    packrat_on(projDir, autoSnapshot, bootstrap)
+    packratOn(projDir, autoSnapshot, bootstrap)
   }
 }
 

@@ -3,19 +3,19 @@
 #' This function bundles a \code{packrat} project.
 #'
 #' @param projDir The project directory. Defaults to the currently activate
-#'  project. By default, the current project active under \code{packrat_mode}
+#'  project. By default, the current project active under \code{packratMode}
 #'  is checked.
 #' @param file The location to file the bundled file. By default, we write
 #'  to a file with name \code{<package>-<date>.zip}.
-#' @param include.src Include the packrat sources?
-#' @param include.lib Include the packrat private library?
+#' @param includeSrc Include the packrat sources?
+#' @param includeLib Include the packrat private library?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
 #' @param ... Optional arguments passed to \code{\link{zip}}.
 #' @export
 bundle <- function(projDir = NULL,
                    file = NULL,
-                   include.src = TRUE,
-                   include.lib = FALSE,
+                   includeSrc = TRUE,
+                   includeLib = FALSE,
                    overwrite = FALSE,
                    ...) {
 
@@ -66,7 +66,7 @@ bundle <- function(projDir = NULL,
   files_to_zip <- c(project_files, packrat_files_base)
 
   # These need to be relative paths
-  if (include.src) {
+  if (includeSrc) {
     packrat_src <- list_files(
       file.path(.packrat$packratFolderName, "src"),
       recursive = TRUE,
@@ -75,7 +75,7 @@ bundle <- function(projDir = NULL,
     files_to_zip <- c(files_to_zip, packrat_src)
   }
 
-  if (include.lib) {
+  if (includeLib) {
     packrat_lib <- list.files(
       file.path(.packrat$packratFolderName, "lib"),
       recursive = TRUE,

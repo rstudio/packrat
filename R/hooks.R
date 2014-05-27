@@ -1,4 +1,4 @@
-# Hooks for library modifying functions that can be used to auto-snapshot
+# Hooks for library modifying functions that can be used to autoSnapshot
 # and also maintain library state consistency when within packrat mode
 snapshotHook <- function(expr, value, ok, visible) {
 
@@ -21,8 +21,8 @@ snapshotHook <- function(expr, value, ok, visible) {
       peq <- function(x, y) paste(x, y, sep = " = ")
       snapshotArgs <- paste(sep = ", ",
                             peq("projDir", shQuote(projDir)),
-                            peq("orphan.check", "FALSE"),
-                            peq("auto.snapshot", "TRUE"),
+                            peq("orphanCheck", "FALSE"),
+                            peq("autoSnapshot", "TRUE"),
                             peq("verbose", "FALSE")
       )
       setwdCmd <- paste("setwd(", shQuote(projDir), ")")
