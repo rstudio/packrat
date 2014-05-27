@@ -3,6 +3,7 @@
 export(bootstrap)
 export(bundle)
 export(clean)
+export(extlib)
 export(packify)
 export(packrat_mode)
 export(packrat_off)
