@@ -165,14 +165,14 @@ checkPackified <- function(projDir = NULL) {
 ##'   that has not yet been packified.
 ##' @rdname packratMode
 ##' @export
-packratOn <- function(projDir = ".", autoSnapshot = TRUE, bootstrap = FALSE) {
+packratModeOn <- function(projDir = ".", autoSnapshot = TRUE, bootstrap = FALSE) {
   projDir <- normalizePath(projDir, winslash='/')
   setPackratModeOn(projDir)
 }
 
 ##' @rdname packratMode
 ##' @export
-packratOff <- function(projDir = NULL) {
+packratModeOff <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   setPackratModeOff(projDir)
 }
@@ -181,9 +181,9 @@ packratOff <- function(projDir = NULL) {
 ##' @export
 packratMode <- function(projDir = NULL, autoSnapshot = TRUE, bootstrap = FALSE) {
   if (isPackratModeOn()) {
-    packratOff(projDir)
+    packratModeOff(projDir)
   } else {
-    packratOn(projDir, autoSnapshot, bootstrap)
+    packratModeOn(projDir, autoSnapshot, bootstrap)
   }
 }
 
