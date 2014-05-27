@@ -9,7 +9,7 @@ updateInit <- function() {
   source("R/aaa-globals.R")
 
   ## Update library path
-  libraryPathMarker <- "## -- packrat::library_path -- ##"
+  libraryPathMarker <- "## -- packrat::libDir -- ##"
   filePathArgs <- c(
     shQuote(.packrat$packratFolderName),
     shQuote("lib"),
@@ -20,29 +20,25 @@ updateInit <- function() {
                        "file.path(", paste(filePathArgs, collapse = ", "), ")")
   libPathLine <- grep(paste(sep = "", libraryPathMarker, "$"),
                       init.R)
-  libPathCmd <- paste(sep = "",
-                      "libDir <- ", filePathCmd, " ", libraryPathMarker)
-  init.R[libPathLine] <- libPathCmd
+  libPathCmd <- paste(sep = "", "libDir <- ", filePathCmd)
+  init.R[libPathLine + 1] <- paste("  ", libPathCmd, sep = "")
 
   ## Update bootstrap path
-  bootstrapPathMarker <- "## -- packrat::bootstrap_path -- ##"
+  bootstrapPathMarker <- "## -- packrat::bootstrapPath -- ##"
   bootstrapPath <- file.path(.packrat$packratFolderName, "bootstrap.R")
   fileCheckLine <- grep( paste(sep = "", bootstrapPathMarker, "$"),
                          init.R)
-  checkCmd <- paste(sep = "",
-                    "  if (file.exists(", shQuote(bootstrapPath), ")) ",
-                    bootstrapPathMarker)
-  init.R[fileCheckLine] <- checkCmd
+  bootstrapPathCmd <- paste("    bootstrapPath <-", shQuote(bootstrapPath))
+  init.R[fileCheckLine + 1] <- bootstrapPathCmd
 
   ## Update bootstrap message
-  bootstrapMsgMarker <- "## -- packrat::bootstrap_message -- ##"
+  bootstrapMsgMarker <- "## -- packrat::bootstrapMessage -- ##"
   msgLine <- grep(paste(sep = "", bootstrapMsgMarker, "$"),
                   init.R)
-  init.R[msgLine] <- paste(sep = "",
-                           "    message('Run \\\'source(\"",
+  init.R[msgLine + 1] <- paste(sep = "",
+                           "      message('Run \\\'source(\"",
                            bootstrapPath,
-                           "\")\\\' to bootstrap a packrat installation.\') ",
-                           bootstrapMsgMarker)
+                           "\")\\\' to bootstrap a packrat installation.\')")
 
   cat(init.R, file=file.path("inst", "init.R"), sep = "\n")
 }
