@@ -171,11 +171,11 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       }
 
       ghinfo <- as.data.frame(c(list(
-        GithubRepo = pkgRecord$gh_repo,
-        GithubUsername = pkgRecord$gh_username,
-        GithubRef = pkgRecord$gh_ref,
-        GithubSHA1 = pkgRecord$gh_sha1)),
-        c(GithubSubdir = pkgRecord$gh_subdir)
+        GitHubRepo = pkgRecord$gh_repo,
+        GitHubUsername = pkgRecord$gh_username,
+        GitHubRef = pkgRecord$gh_ref,
+        GitHubSHA1 = pkgRecord$gh_sha1)),
+        c(GitHubSubdir = pkgRecord$gh_subdir)
       )
       appendToDcf(file.path(basedir, 'DESCRIPTION'), ghinfo)
 
@@ -192,7 +192,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       )
     })
 
-    type <- "Github"
+    type <- "GitHub"
   }
   if (!quiet) {
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
