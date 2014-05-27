@@ -12,7 +12,7 @@
 #'   associated with the given directory.
 #' @param sourcePackagePaths A character vector of directories containing R
 #'   package sources. It is only necessary to supply this parameter when using a
-#'   package for which sources exist on neither CRAN or Github.
+#'   package for which sources exist on neither CRAN or GitHub.
 #' @param orphanCheck \code{TRUE} to check for orphaned packages; \code{FALSE}
 #'   to skip the check. Packrat only considers packages used by your code and
 #'   packages which are dependencies of packages used by your code. Any other

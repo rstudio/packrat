@@ -21,7 +21,7 @@ associated with the given directory.}
 
 \item{sourcePackagePaths}{A character vector of directories containing R
 package sources. It is only necessary to supply this parameter when using a
-package for which sources exist on neither CRAN or Github.}
+package for which sources exist on neither CRAN or GitHub.}
 
 \item{orphanCheck}{\code{TRUE} to check for orphaned packages; \code{FALSE}
 to skip the check. Packrat only considers packages used by your code and

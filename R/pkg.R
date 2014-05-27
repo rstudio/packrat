@@ -101,17 +101,17 @@ inferPackageRecord <- function(df) {
       source = 'CRAN',
       version = ver
     ), class=c('packageRecord', 'CRAN')))
-  } else if (!is.null(df$GithubRepo)) {
+  } else if (!is.null(df$GitHubRepo)) {
     # It's GitHub!
     return(structure(c(list(
       name = name,
       source = 'github',
       version = ver,
-      gh_repo = as.character(df$GithubRepo),
-      gh_username = as.character(df$GithubUsername),
-      gh_ref = as.character(df$GithubRef),
-      gh_sha1 = as.character(df$GithubSHA1)),
-      c(gh_subdir = as.character(df$GithubSubdir))
+      gh_repo = as.character(df$GitHubRepo),
+      gh_username = as.character(df$GitHubUsername),
+      gh_ref = as.character(df$GitHubRef),
+      gh_sha1 = as.character(df$GitHubSHA1)),
+      c(gh_subdir = as.character(df$GitHubSubdir))
     ), class=c('packageRecord', 'github')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!

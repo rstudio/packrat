@@ -163,6 +163,7 @@ checkPackified <- function(projDir = NULL) {
 ##' @param autoSnapshot Whether or not we should use automatic snapshotting.
 ##' @param bootstrap Whether or not we should try to bootstrap a project directory
 ##'   that has not yet been packified.
+##' @name packrat-mode
 ##' @rdname packratMode
 ##' @export
 packratModeOn <- function(projDir = ".", autoSnapshot = TRUE, bootstrap = FALSE) {
