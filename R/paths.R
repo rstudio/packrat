@@ -4,11 +4,12 @@ getProjectDir <- function(projDir = NULL) {
 
   ## If projDir is NULL, and .packrat$projectDir is NULL, then we should look
   ## in the current working directory
+  cachedDir <- .packrat_mutables$get("projDir")
   if (is.null(projDir)) {
-    if (is.null(.packrat$projectDir)) {
+    if (is.null(cachedDir)) {
       projDir <- getwd()
     } else {
-      projDir <- .packrat$projectDir
+      projDir <- cachedDir
     }
   }
 
@@ -92,4 +93,11 @@ lockFilePath <- function(projDir = NULL) {
 
 snapshotLockFilePath <- function(projDir = NULL) {
   file.path(getPackratDir(projDir), "snapshot.lock")
+}
+
+## Use a file instead of env. variables as it's better handled across
+## multiple R sessions
+packratModeFilePath <- function(projDir = NULL) {
+  packratDir <- getPackratDir(projDir)
+  file.path(packratDir, "packrat.mode")
 }

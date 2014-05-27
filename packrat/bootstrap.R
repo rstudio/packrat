@@ -1,13 +1,33 @@
-## This file is used to bootstrap a packrat package from an empty R installation
-packratSrcPath <- list.files(".packrat/src/packrat", full.names = TRUE)[1]
-tmpLib <- file.path(tempdir(), "packrat", "library")
-dir.create(tmpLib, recursive = TRUE)
+## Install packrat into local project library
+packratSrcPath <- list.files("packrat/src/packrat", full.names = TRUE)[1]
+if (!length(packratSrcPath)) {
+  stop("Could not find a local packrat source tarball")
+}
+lib <- file.path("packrat", "lib", R.version$platform, getRversion())
+if (!file.exists(lib)) {
+  dir.create(lib, recursive = TRUE)
+}
+message("> Installing packrat into project private library:")
+message("> ", shQuote(lib))
+peq <- function(x, y) paste(x, y, sep = " = ")
+installArgs <- c(
+  peq("pkgs", shQuote(packratSrcPath)),
+  peq("lib", shQuote(lib)),
+  peq("repos", "NULL")
+)
+installCmd <- paste(sep = "",
+                    "install.packages(", paste(installArgs, collapse = ", "), ")")
 
-message("> Installing packrat to temporary library in directory:")
-message("> ", tmpLib)
-install.packages(packratSrcPath, lib = tmpLib, repos = NULL)
+fullCmd <- paste(
+  shQuote(file.path(R.home("bin"), "R")),
+  "--vanilla",
+  "--slave",
+  "-e",
+  shQuote(installCmd)
+)
+system(fullCmd)
 
 message("> Attaching packrat")
-library("packrat", lib.loc = tmpLib)
+library("packrat", character.only = TRUE, lib.loc = lib)
 
 message("Packrat successfully installed. Run 'packrat_mode()' to enter packrat mode.")
