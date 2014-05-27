@@ -37,7 +37,7 @@
 #'   being present in the last snapshot.
 #'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
-#' the sources stored in the project's \code{packrat.sources} directory. If you
+#' the sources stored in the project's \code{packrat/src} directory. If you
 #' are working with a version control system, your collaborators can sync the
 #' changes to these files and then use \code{\link{restore}} to apply your
 #' snapshot.
@@ -187,8 +187,9 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
       appPackages
     )
     if (verbose) {
-      message('Snapshot written to',
-        normalizePath(lockFilePath(projDir), winslash = '/'))
+      message('Snapshot written to ',
+        shQuote(normalizePath(lockFilePath(projDir), winslash = '/'))
+      )
     }
   }
 

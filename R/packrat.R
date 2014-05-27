@@ -396,9 +396,9 @@ packify <- function(projDir = NULL) {
   msg <- "Packrat startup directives installed."
 
   if (identical(projDir, getwd())) {
-    msg <- paste(msg, "Please call \"packrat::packrat_mode()\" to initialize packrat.")
+    msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
   } else {
-    msg <- paste(msg, "Please call \"packrat::packrat_mode(projDir = '", projDir, "')\"",
+    msg <- paste(msg, "Please call \"packrat::packrat_on(projDir = '", projDir, "')\"",
                  "to initialize packrat.")
   }
 

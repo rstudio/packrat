@@ -74,6 +74,8 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
   file.path(path, targz)
 }
 
+R.path <- function() file.path(R.home("bin"), "R")
+
 R <- function(options, path = tempdir(), env_vars = NULL, ...) {
   options <- paste("--vanilla", options)
   r_path <- file.path(R.home("bin"), "R")

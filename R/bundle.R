@@ -43,6 +43,12 @@ bundle <- function(projDir = NULL,
   # or files hidden in . folders
   project_files <- list.files(recursive = TRUE)
 
+  # Exclude the packrat folder at this stage -- we re-add the components we
+  # need piece by piece
+  project_files <- project_files[
+    !startswith(project_files, .packrat$packratFolderName)
+  ]
+
   # Make sure we add the .Rprofile file if it exists
   .Rprofile <- file.path(".Rprofile")
   if (file.exists(.Rprofile)) {

@@ -55,7 +55,7 @@ of those packages, their sources, and their current versions in packrat.
 }
 \note{
 \code{snapshot} modifies the project's \code{packrat.lock} file, and
-the sources stored in the project's \code{packrat.sources} directory. If you
+the sources stored in the project's \code{packrat/src} directory. If you
 are working with a version control system, your collaborators can sync the
 changes to these files and then use \code{\link{restore}} to apply your
 snapshot.

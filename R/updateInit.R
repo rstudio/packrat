@@ -8,6 +8,22 @@ updateInit <- function() {
   ## Sync the packrat path, messages
   source("R/aaa-globals.R")
 
+  ## Update library path
+  libraryPathMarker <- "## -- packrat::library_path -- ##"
+  filePathArgs <- c(
+    shQuote(.packrat$packratFolderName),
+    shQuote("lib"),
+    "R.version$platform",
+    "getRversion()"
+  )
+  filePathCmd <- paste(sep = "",
+                       "file.path(", paste(filePathArgs, collapse = ", "), ")")
+  libPathLine <- grep(paste(sep = "", libraryPathMarker, "$"),
+                      init.R)
+  libPathCmd <- paste(sep = "",
+                      "libDir <- ", filePathCmd, " ", libraryPathMarker)
+  init.R[libPathLine] <- libPathCmd
+
   ## Update bootstrap path
   bootstrapPathMarker <- "## -- packrat::bootstrap_path -- ##"
   bootstrapPath <- file.path(.packrat$packratFolderName, "bootstrap.R")
