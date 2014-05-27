@@ -5,9 +5,11 @@
 \usage{
 extlib(packages)
 }
+\arguments{
+\item{packages}{A list of \R packages to load from the default user library.}
+}
 \description{
-This function loads a non-packrat package that might be useful for development
-while within a packrat project, but otherwise unused for a current project.
+Load a package from the user (non-private) library.
 }
 \details{
 Unlike \code{\link{library}}, this function requires you to supply the package
