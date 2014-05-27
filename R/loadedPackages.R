@@ -1,10 +1,10 @@
 ##' Get Packages on the Search Path
 ##'
-##' This function retrieves the packages on the search path, as well as their
+##' Retrieve the packages on the search path, as well as the
 ##' associated library location.
 ##'
 ##' @export
-loaded_packages <- function() {
+loadedPackages <- function() {
 
   ## Start by getting everything on the search path + the library location
   pkgs <- data.frame(

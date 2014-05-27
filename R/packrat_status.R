@@ -13,7 +13,7 @@
 #' packrat to update your private package library using \code{\link{restore}}.
 #'
 #' @param projDir The directory that contains the R project.
-#' @param lib.loc The library to examine. Defaults to the private library
+#' @param libLoc The library to examine. Defaults to the private library
 #' associated with the project directory.
 #' @param quiet \code{TRUE} to suppress output, \code{FALSE} (the default) to
 #' show output.
@@ -27,12 +27,12 @@
 #' \item{currently.used}{Whether the package is used in any of the R code in the current project.}
 #'
 #' @export
-status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
+status <- function(projDir = NULL, libLoc = libDir(projDir), quiet = FALSE) {
 
   projDir <- getProjectDir(projDir)
 
   if (!isPackratModeOn()) {
-    message("Packrat mode is currently turned off. Toggle it on with 'packrat_on()'.")
+    message("Packrat mode is currently turned off. Toggle it on with 'packratOn()'.")
     return(invisible(NULL))
   }
 
@@ -61,7 +61,7 @@ status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
 
   ## Packages in the library (with their version)
   installedPkgs <- installed.packages(
-    lib.loc = lib.loc,
+    lib.loc = libLoc,
     noCache = TRUE
   )[, "Package"]
 

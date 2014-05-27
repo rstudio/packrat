@@ -131,7 +131,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   # Take a snapshot
   sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
   snapshotImpl(projDir, available.packages(contrib.url(activeRepos(projDir))),
-               sourcePackages=sourcePackages, lib.loc = NULL, ignore.stale=TRUE)
+               sourcePackages=sourcePackages, lib.loc = NULL, ignoreStale=TRUE)
 
   # Use the lockfile to copy sources and install packages to the library
   restore(projDir, overwriteDirty=TRUE)
@@ -396,9 +396,9 @@ packify <- function(projDir = NULL) {
   msg <- "Packrat startup directives installed."
 
   if (identical(projDir, getwd())) {
-    msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
+    msg <- paste(msg, "Please call \"packrat::packratOn()\" to initialize packrat.")
   } else {
-    msg <- paste(msg, "Please call \"packrat::packrat_on(projDir = '", projDir, "')\"",
+    msg <- paste(msg, "Please call \"packrat::packratOn(projDir = '", projDir, "')\"",
                  "to initialize packrat.")
   }
 
