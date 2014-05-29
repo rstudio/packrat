@@ -13,8 +13,8 @@ augmentRprofile <- function(projDir = NULL) {
 
     ## Read the .Rprofile in and see if it's been packified
     .Rprofile <- readLines(path)
-    packifyStart <- grep("#### -- packrat::packify -- ####", .Rprofile, fixed = TRUE)
-    packifyEnd <- grep("#### -- end packrat::packify -- ####", .Rprofile, fixed = TRUE)
+    packifyStart <- grep("#### -- Packrat Autoloader", .Rprofile, fixed = TRUE)
+    packifyEnd <- grep("#### -- End Packrat Autoloader -- ####", .Rprofile, fixed = TRUE)
 
     if (length(packifyStart) && length(packifyEnd)) {
       .Rprofile <- .Rprofile[-c(packifyStart:packifyEnd)]
