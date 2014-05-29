@@ -46,17 +46,6 @@ appDependencies <- function(projDir = NULL) {
 
 }
 
-# does str1 start with str2?
-startswith <- function(str1, str2) {
-  if (!length(str2) == 1) stop("expecting a length 1 string for 'str2'")
-  sapply(str1, function(x) {
-    identical(
-      substr(x, 1, min(nchar(x), nchar(str2))),
-      str2
-    )
-  })
-}
-
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
   dir <- normalizePath(dir, winslash='/')

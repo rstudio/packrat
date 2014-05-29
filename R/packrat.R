@@ -106,7 +106,7 @@ NULL
 #' packrat using \code{\link{snapshot}} and \code{\link{restore}}.
 #'
 #' @param projDir The directory that contains the \R project.
-#' @param sourcePackagePaths List of paths to unpacked \R package source
+#' @param sourcePackages List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or GitHub.
 #'
@@ -114,7 +114,7 @@ NULL
 #'   \code{bootstrap}.
 #'
 #' @export
-bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
+bootstrap <- function(projDir = '.', sourcePackages = character()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
   if (nzchar(Sys.getenv("R_PACKRAT_MODE"))) {
@@ -129,7 +129,7 @@ bootstrap <- function(projDir = '.', sourcePackagePaths = character()) {
   }
 
   # Take a snapshot
-  sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
+  sourcePackages <- getSourcePackageInfo(sourcePackages)
   snapshotImpl(projDir, available.packages(contrib.url(activeRepos(projDir))),
                sourcePackages=sourcePackages, lib.loc = NULL, ignoreStale=TRUE)
 

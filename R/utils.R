@@ -132,3 +132,27 @@ pkgDescriptionDependencies <- function(file) {
   result
 
 }
+
+# does str1 start with str2?
+startswith <- function(str1, str2) {
+  if (!length(str2) == 1) stop("expecting a length 1 string for 'str2'")
+  sapply(str1, function(x) {
+    identical(
+      substr(x, 1, min(nchar(x), nchar(str2))),
+      str2
+    )
+  })
+}
+
+# does str1 end with str2?
+endswith <- function(str1, str2) {
+  if (!length(str2) == 1) stop ("expecting a length 1 string for 'str2'")
+  n2 <- nchar(str2)
+  sapply(str1, function(x) {
+    nx <- nchar(x)
+    identical(
+      substr(x, nx - n2 + 1, nx),
+      str2
+    )
+  })
+}

@@ -50,7 +50,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
          "find sources for packages on CRAN-like repositories and packages ",
          "installed using devtools::install_github. For other package types, ",
          "supply the path to the package's source using the argument ",
-         "sourcePackagePaths = c('~/path/to/package1', 'path/to/package2', ...)")
+         "sourcePackages = c('~/path/to/package1', 'path/to/package2', ...)")
   }
 
   # Create the directory in which to place this package's sources
