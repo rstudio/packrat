@@ -4,7 +4,7 @@ Title: Reproducible dependency management
 Version: 0.1.0.99
 Date: 2013-10-28
 Author: RStudio, Inc.
-Maintainer: Jonathan McPherson <jonathan@rstudio.com>
+Maintainer: Kevin Ushey <kevin@rstudio.com>
 Description: Packrat is a tool for managing the R packages your project depends
     on in an isolated, portable, and reproducible way.
 License: GPL-2
