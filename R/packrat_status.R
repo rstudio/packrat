@@ -218,7 +218,7 @@ status <- function(projDir = NULL, libLoc = libDir(projDir), quiet = FALSE) {
           length(pkgNamesOutOfSync) ||
           length(missingFromPackrat) ||
           length(pkgsNotNeeded))) {
-    message("Up to date.")
+    if (!quiet) message("Up to date.")
   }
 
   statusTbl
