@@ -34,7 +34,7 @@ writeLockFile <- function(file, lockinfo) {
 
   # The first record contains metadata about the project and lockfile
   preamble <- data.frame(
-    PackratFormat = "1.1",
+    PackratFormat = "1.2",
     PackratVersion = as.character(packageVersion("packrat")),
     RVersion = rver,
     Repos = paste(activeRepos(dirname(file)), collapse = ", ")

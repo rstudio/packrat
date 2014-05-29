@@ -1,6 +1,5 @@
 ## Augment the .Rprofile for a project -- if it doesn't exist, just copy
 ## from packrat; if it does, check it and add if necessary
-
 augmentRprofile <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
 
