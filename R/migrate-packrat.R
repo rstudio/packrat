@@ -8,6 +8,9 @@
 ##' 3. Move the \code{packrat.lock} file to \code{packrat/packrat.lock},
 ##' 4. Remove the \code{.Renviron} file as it is no longer needed,
 ##' 5. Update the package \code{.Rprofile}.
+##'
+##' @param projDir The project directory.
+##' @param ask Boolean, ask before removing the \code{.Renviron} file?
 migrate <- function(projDir = ".", ask = TRUE) {
 
   owd <- getwd()
@@ -107,7 +110,7 @@ migrate <- function(projDir = ".", ask = TRUE) {
 
   ## Make sure an updated version of packrat is installed in the user library
   oldLibPaths <- .libPaths()
-  on.exit(libPaths(oldLibPaths), add = TRUE)
+  on.exit(.libPaths(oldLibPaths), add = TRUE)
   .libPaths(libDir())
 
   ## TODO -- update when merged to master -- or install a specific tag?

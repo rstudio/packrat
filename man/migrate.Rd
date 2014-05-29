@@ -5,6 +5,11 @@
 \usage{
 migrate(projDir = ".", ask = TRUE)
 }
+\arguments{
+\item{projDir}{The project directory.}
+
+\item{ask}{Boolean, ask before removing the \code{.Renviron} file?}
+}
 \description{
 Migrate a project using the older version of packrat + packrat structure
 to the newer version. This function will:
