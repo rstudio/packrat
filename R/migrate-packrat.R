@@ -72,7 +72,7 @@ migrate <- function(projDir = ".", ask = TRUE) {
   ## Update the packrat version in the lockfile
   lockFile <- readLines(lockFilePath())
   formatLine <- grep("PackratFormat:", lockFile)
-  lockFile[formatLine] <- paste("PackratFormat", "1.2")
+  lockFile[formatLine] <- "PackratFormat: 1.2"
   cat(lockFile, file = lockFilePath(), sep = "\n")
   message("- packrat.lock succesffuly copied and updated to version 1.2")
 
@@ -104,6 +104,14 @@ migrate <- function(projDir = ".", ask = TRUE) {
   unlink("packrat.sources", recursive = TRUE)
   unlink("library", recursive = TRUE)
   unlink("packrat.lock", recursive = TRUE)
+
+  ## Make sure an updated version of packrat is installed in the user library
+  oldLibPaths <- .libPaths()
+  on.exit(libPaths(oldLibPaths), add = TRUE)
+  .libPaths(libDir())
+
+  ## TODO -- update when merged to master -- or install a specific tag?
+  installGithub("rstudio/packrat", ref = "feature/packrat-mode")
 
   message("- Packrat successfully updated. Please restart your R session to continue.")
 
