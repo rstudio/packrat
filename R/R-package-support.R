@@ -9,16 +9,16 @@ updateIgnoreFile <- function(projDir = NULL, file) {
   }
 
   ## If the file doesn't exist, create and fill it
-  path <- file.path(projDir, "file")
-  if (!file.exists("file")) {
-    cat("^packrat/", file = file.path(projDir, "file"))
+  path <- file.path(projDir, file)
+  if (!file.exists(path)) {
+    cat("^packrat/", file = path)
   }
 
   ## If it already exists, check for a '^packrat/' directive; add it if none
-  file <- readLines(path)
-  if (!(ignoreDirective %in% file)) {
-    file <- c(file, ignoreDirective)
-    cat(file, file = path, sep = "\n")
+  content <- readLines(path)
+  if (!(ignoreDirective %in% content)) {
+    content <- c(content, ignoreDirective)
+    cat(content, file = path, sep = "\n")
   }
 
 }
