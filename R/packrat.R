@@ -117,7 +117,7 @@ NULL
 bootstrap <- function(projDir = '.', sourcePackages = character()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
-  if (nzchar(Sys.getenv("R_PACKRAT_MODE"))) {
+  if (checkPackified(projDir = projDir, quiet = TRUE)) {
     stop("This project is already running under packrat!")
   }
 
@@ -149,6 +149,7 @@ bootstrap <- function(projDir = '.', sourcePackages = character()) {
   # Make sure the packrat directory is ignored if we're in a package
   if (file.exists(descriptionFile)) {
     updateRBuildIgnore(projDir)
+    updateRInstIgnore(projDir)
   }
 
   invisible()
