@@ -1,5 +1,5 @@
-## Update the .Rbuildignore so that packrat-related files are not included
-updateRBuildIgnore <- function(projDir = NULL) {
+## Expected to be used with .Rbuildignore, .Rinstignore
+updateIgnoreFile <- function(projDir = NULL, file) {
 
   projDir <- getProjectDir(projDir)
   ignoreDirective <- paste("^", .packrat$packratFolderName, "/", sep = "")
@@ -8,17 +8,25 @@ updateRBuildIgnore <- function(projDir = NULL) {
     stop("This project does not appear to be an R package -- there is no 'DESCRIPTION' file.")
   }
 
-  ## If the .Rbuildignore doesn't exist, create and fill it
-  path <- file.path(projDir, ".Rbuildignore")
-  if (!file.exists(".Rbuildignore")) {
-    cat("^packrat/", file = file.path(projDir, ".Rbuildignore"))
+  ## If the file doesn't exist, create and fill it
+  path <- file.path(projDir, "file")
+  if (!file.exists("file")) {
+    cat("^packrat/", file = file.path(projDir, "file"))
   }
 
   ## If it already exists, check for a '^packrat/' directive; add it if none
-  .Rbuildignore <- readLines(path)
-  if (!(ignoreDirective %in% .Rbuildignore)) {
-    .Rbuildignore <- c(.Rbuildignore, ignoreDirective)
-    cat(.Rbuildignore, file = path, sep = "\n")
+  file <- readLines(path)
+  if (!(ignoreDirective %in% file)) {
+    file <- c(file, ignoreDirective)
+    cat(file, file = path, sep = "\n")
   }
 
+}
+
+updateRBuildIgnore <- function(projDir = NULL) {
+  updateIgnoreFile(projDir = projDir, file = ".Rbuildignore")
+}
+
+updateRInstIgnore <- function(projDir = NULL) {
+  updateIgnoreFIle(projDir = projDir, file = ".Rinstignore")
 }
