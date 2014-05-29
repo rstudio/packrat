@@ -147,23 +147,36 @@ inferPackageRecord <- function(df) {
 
 # Given a list of source package paths, parses the DESCRIPTION for each and
 # returns a data frame containing each (with row names given by package names)
-getSourcePackageInfo <- function(sourcePackagePaths) {
-  results <- data.frame()
-  names <- lapply(sourcePackagePaths, function(path) {
-    descPath <- file.path(path, "DESCRIPTION")
-    if (!file.exists(descPath)) {
-      stop("Cannot treat ", path, " as a source package directory; ", descPath,
-           " is missing.")
-    }
-    desc <- as.data.frame(readDcf(descPath))
-    results <<- rbind(results, data.frame(
-      name = as.character(desc$Package),
-      version = as.character(desc$Version),
-      path = normalizePath(path, winslash='/')))
-    as.character(desc$Package)
-  })
-  row.names(results) <- names
-  results
+getSourcePackageInfo <- function(sourcePackages) {
+  info <- lapply(sourcePackages, getSourcePackageInfoImpl)
+  result <- do.call(rbind, info)
+  row.names(result) <- result$name
+  result
+}
+
+getSourcePackageInfoImpl <- function(path) {
+
+  ## For tarballs, we unzip them to a temporary directory and then read from there
+  tempdir <- file.path(tempdir(), "packrat", path)
+  if (endswith(path, "tar.gz")) {
+    paths <- untar(path, exdir = tempdir)
+    folderName <- list.files(tempdir, full.names = TRUE)[[1]]
+  } else {
+    folderName <- path
+  }
+  descPath <- file.path(folderName, "DESCRIPTION")
+  if (!file.exists(descPath)) {
+    stop("Cannot treat ", path, " as a source package directory; ", descPath,
+         " is missing.")
+  }
+  desc <- as.data.frame(readDcf(descPath))
+  data.frame(
+    name = as.character(desc$Package),
+    version = as.character(desc$Version),
+    path = normalizePath(path, winslash='/'),
+    stringsAsFactors = FALSE
+  )
+
 }
 
 pick <- function(property, package, defaultValue = NA) {

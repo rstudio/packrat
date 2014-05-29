@@ -6,7 +6,7 @@ local({
 
   if (suppressWarnings(require("packrat", quietly = TRUE, lib.loc = libDir))) {
     packrat:::checkPackified()
-    packrat:::setPackratModeOn(silent = TRUE)
+    packrat:::setPackratModeOn()
   } else {
     message("error: packrat not installed; cannot enter packrat mode")
 

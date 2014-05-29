@@ -10,7 +10,7 @@
 #'   locally, which is rare.
 #' @param lib.loc The library to snapshot. Defaults to the private library
 #'   associated with the given directory.
-#' @param sourcePackagePaths A character vector of directories containing R
+#' @param sourcePackages A character vector of directories containing R
 #'   package sources. It is only necessary to supply this parameter when using a
 #'   package for which sources exist on neither CRAN or GitHub.
 #' @param orphanCheck \code{TRUE} to check for orphaned packages; \code{FALSE}
@@ -54,11 +54,14 @@
 #' snapshot(dryRun = TRUE)
 #'
 #' # Take a snapshot of a project that includes a custom package
-#' snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
+#' snapshot(sourcePackages = c(
+#'   "~/R/MyCustomPackage",
+#'   "~/R/MyOtherPackage_0.1.0.tar.gz"
+#' ))
 #' }
 #' @export
 snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
-                     sourcePackagePaths = NULL, orphanCheck = TRUE,
+                     sourcePackages = NULL, orphanCheck = TRUE,
                      ignoreStale = FALSE, dryRun = FALSE,
                      prompt = interactive()) {
 
@@ -68,8 +71,9 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
     stop("An automatic snapshot is currently in progress -- cannot proceed")
   }
 
-  sourcePackages <- getSourcePackageInfo(sourcePackagePaths)
-  appPackages <- snapshotImpl(projDir, available, lib.loc, sourcePackages, dryRun,
+  sourcePackages <- getSourcePackageInfo(sourcePackages)
+  appPackages <- snapshotImpl(projDir, available, lib.loc,
+                              sourcePackages, dryRun,
                               orphanCheck = orphanCheck,
                               ignoreStale = ignoreStale,
                               prompt = prompt && !dryRun)

@@ -4,7 +4,7 @@
 \title{Capture and store the packages and versions in use}
 \usage{
 snapshot(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
-  sourcePackagePaths = NULL, orphanCheck = TRUE, ignoreStale = FALSE,
+  sourcePackages = NULL, orphanCheck = TRUE, ignoreStale = FALSE,
   dryRun = FALSE, prompt = interactive())
 }
 \arguments{
@@ -19,7 +19,7 @@ locally, which is rare.}
 \item{lib.loc}{The library to snapshot. Defaults to the private library
 associated with the given directory.}
 
-\item{sourcePackagePaths}{A character vector of directories containing R
+\item{sourcePackages}{A character vector of directories containing R
 package sources. It is only necessary to supply this parameter when using a
 package for which sources exist on neither CRAN or GitHub.}
 
@@ -69,7 +69,10 @@ snapshot()
 snapshot(dryRun = TRUE)
 
 # Take a snapshot of a project that includes a custom package
-snapshot(sourcePackagePaths = "~/R/MyCustomPackage")
+snapshot(sourcePackages = c(
+  "~/R/MyCustomPackage",
+  "~/R/MyOtherPackage_0.1.0.tar.gz"
+))
 }
 }
 \seealso{
