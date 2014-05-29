@@ -28,15 +28,16 @@ snapshotHook <- function(expr, value, ok, visible) {
       setwdCmd <- paste("setwd(", shQuote(projDir), ")")
       snapshotCmd <- paste("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")))")
       cleanupCmd <- paste("file.remove(", shQuote(snapshotLockPath), ")")
+      setLibsCmd <- paste(".libPaths(", .libPaths(), ")")
       fullCmd <- paste(sep = "; ",
                        setwdCmd,
+                       setLibsCmd,
                        snapshotCmd,
                        cleanupCmd,
                        "invisible()"
       )
-      r_path <- file.path(R.home("bin"), "R")
 
-      ## TODO: Use the private local packrat library
+      r_path <- file.path(R.home("bin"), "R")
 
       cmd <- paste(shQuote(r_path), "--vanilla", "--slave", "-e", shQuote(fullCmd))
       system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
