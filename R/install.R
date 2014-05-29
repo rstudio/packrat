@@ -173,7 +173,25 @@ install_local_single <- function(path, subdir = NULL, before_install = NULL, ...
     before_install(bundle, pkg_path)
 
   # Finally, run install
-  install(pkg_path, quiet = quiet, ...)
+  with_build_tools({
+    install(pkg_path, quiet = quiet, ...)
+  })
+}
+
+with_build_tools <- function(code) {
+  check <- getOption("buildtools.check", NULL)
+  if (!is.null(check)) {
+    if (check("Installing R packages from source")) {
+      with <- getOption("buildtools.with", NULL)
+      if (!is.null(with))
+        with(code)
+      else
+        force(code)
+    }
+  }
+  else {
+    force(code)
+  }
 }
 
 decompress <- function(src, target = tempdir()) {
