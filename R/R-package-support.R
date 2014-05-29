@@ -28,5 +28,5 @@ updateRBuildIgnore <- function(projDir = NULL) {
 }
 
 updateRInstIgnore <- function(projDir = NULL) {
-  updateIgnoreFIle(projDir = projDir, file = ".Rinstignore")
+  updateIgnoreFile(projDir = projDir, file = ".Rinstignore")
 }
