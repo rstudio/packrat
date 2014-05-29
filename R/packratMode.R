@@ -65,8 +65,10 @@ setPackratModeOn <- function(projDir = NULL, bootstrap = TRUE, autoSnapshot = TR
   .libPaths(localLib)
 
   # Give the user some visual indication that they're starting a packrat project
-  msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(projDir), "\"", sep = "")
-  message(msg)
+  if (interactive()) {
+    msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(projDir), "\"", sep = "")
+    message(msg)
+  }
 
   # Insert hooks to library modifying functions to autoSnapshot on change
   if (autoSnapshot) {
@@ -103,12 +105,14 @@ setPackratModeOff <- function(projDir = NULL) {
   }
 
   # Turn off packrat mode
-  msg <- paste(collapse = "\n",
-               c("Packrat mode off. Resetting library paths to:",
-                 paste("- \"", .libPaths(), "\"", sep = "")
-               )
-  )
-  message(msg)
+  if (interactive()) {
+    msg <- paste(collapse = "\n",
+                 c("Packrat mode off. Resetting library paths to:",
+                   paste("- \"", .libPaths(), "\"", sep = "")
+                 )
+    )
+    message(msg)
+  }
 
   # Reset the prompt
   # options(prompt = .packrat$promptOnLoad)
@@ -121,31 +125,31 @@ setPackratModeOff <- function(projDir = NULL) {
 
 }
 
-checkPackified <- function(projDir = NULL) {
+checkPackified <- function(projDir = NULL, quiet = FALSE) {
 
   projDir <- getProjectDir(projDir)
   packratDir <- getPackratDir(projDir)
 
   if (!file.exists(packratDir)) {
-    message("The packrat directory does not exist; this project has not been packified.")
+    if (!quiet) message("The packrat directory does not exist; this project has not been packified.")
     return(FALSE)
   }
 
   libraryRootDir <- libraryRootDir(projDir)
   if (!file.exists(libraryRootDir)) {
-    message("The packrat library does not exist.")
+    if (!quiet) message("The packrat library does not exist.")
     return(FALSE)
   }
 
   srcDir <- srcDir(projDir)
   if (!file.exists(srcDir)) {
-    message("The packrat sources directory does not exist.")
+    if (!quiet) message("The packrat sources directory does not exist.")
     return(FALSE)
   }
 
   lockPath <- lockFilePath(projDir)
   if (!file.exists(lockPath)) {
-    message("The packrat lock file does not exist.")
+    if (!quiet) message("The packrat lock file does not exist.")
     return(FALSE)
   }
 
