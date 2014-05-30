@@ -21,6 +21,11 @@ bundle <- function(projDir = NULL,
 
   projDir <- getProjectDir(projDir)
 
+  # Make sure this is actually a packrat project
+  if (!checkPackified(projDir = projDir, quiet = TRUE)) {
+    stop("The project at '", projDir, "' does not appear to be a packrat project.")
+  }
+
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
     tarName <- paste(basename(projDir), Sys.Date(), sep = "-")
@@ -39,24 +44,24 @@ bundle <- function(projDir = NULL,
   on.exit(setwd(owd))
   setwd(projDir)
 
+  # Blacklist certain files / folders
+  blackList <- c(
+    "^\\.Rproj\\.user/"
+  )
+
   # Collect all the files we want to zip up -- this ignores any dot files,
   # or files hidden in . folders
-  projectFiles <- list.files(recursive = TRUE)
+  projectFiles <- list.files(recursive = TRUE, all.files = TRUE)
+  for (item in blackList) {
+    projectFiles <- grep(item, projectFiles, perl = TRUE, invert = TRUE, value = TRUE)
+  }
+
 
   # Exclude the packrat folder at this stage -- we re-add the components we
   # need piece by piece
   projectFiles <- projectFiles[
     !startswith(projectFiles, .packrat$packratFolderName)
   ]
-
-  # Make sure we add white-listed dot files
-  whiteList <- c(".Rprofile", ".Renviron", ".Rbuildignore", ".Rinstignore")
-  for (item in whiteList) {
-    filePath <- file.path(item)
-    if (file.exists(filePath)) {
-      projectFiles <- c(projectFiles, filePath)
-    }
-  }
 
   # Make sure we add packrat
   basePackratFiles <- list_files(
