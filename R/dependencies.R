@@ -16,6 +16,7 @@
 #'   \code{:::}.
 #'
 #' @examples
+#'
 #' \dontrun{
 #'
 #' # dependencies for the app in the current working dir
@@ -24,6 +25,7 @@
 #' # dependencies for an app in another directory
 #' appDependencies("~/projects/shiny/app1")
 #' }
+#' @keywords internal
 appDependencies <- function(projDir = NULL) {
 
   projDir <- getProjectDir(projDir)

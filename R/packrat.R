@@ -106,7 +106,7 @@ NULL
 #' packrat using \code{\link{snapshot}} and \code{\link{restore}}.
 #'
 #' @param projDir The directory that contains the \R project.
-#' @param sourcePackages List of paths to unpacked \R package source
+#' @param source.packages List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or GitHub.
 #'
@@ -114,7 +114,7 @@ NULL
 #'   \code{bootstrap}.
 #'
 #' @export
-bootstrap <- function(projDir = '.', sourcePackages = character()) {
+bootstrap <- function(projDir = '.', source.packages = character()) {
   projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
   if (checkPackified(projDir = projDir, quiet = TRUE)) {
@@ -129,12 +129,12 @@ bootstrap <- function(projDir = '.', sourcePackages = character()) {
   }
 
   # Take a snapshot
-  sourcePackages <- getSourcePackageInfo(sourcePackages)
+  source.packages <- getSourcePackageInfo(source.packages)
   snapshotImpl(projDir, available.packages(contrib.url(activeRepos(projDir))),
-               sourcePackages=sourcePackages, lib.loc = NULL, ignoreStale=TRUE)
+               source.packages=source.packages, lib.loc = NULL, ignore.stale=TRUE)
 
   # Use the lockfile to copy sources and install packages to the library
-  restore(projDir, overwriteDirty=TRUE)
+  restore(projDir, overwrite.dirty=TRUE)
 
   # Copy bootstrap.R so a user can 'start from zero' with a project
   file.copy(
@@ -196,10 +196,10 @@ bootstrap <- function(projDir = '.', sourcePackages = character()) {
 #' @param projDir The project directory. When in packrat mode, if this is \code{NULL},
 #' then the directory associated with the current packrat project is used. Otherwise,
 #' the project directory specified is used.
-#' @param overwriteDirty A dirty package is one that has been changed since the
+#' @param overwrite.dirty A dirty package is one that has been changed since the
 #' last snapshot or restore. Packrat will leave these alone by default. If you
 #' want to guarantee that \code{restore} will put you in the exact state
-#' represented by the snapshot being applied, use \code{overwriteDirty = TRUE}.
+#' represented by the snapshot being applied, use \code{overwrite.dirty = TRUE}.
 #' @param prompt \code{TRUE} to prompt before performing potentially destructive
 #' changes (package removals or downgrades); \code{FALSE} to perform these
 #' operations without confirmation.
@@ -213,7 +213,7 @@ bootstrap <- function(projDir = '.', sourcePackages = character()) {
 #'
 #' @export
 restore <- function(projDir = NULL,
-                    overwriteDirty = FALSE,
+                    overwrite.dirty = FALSE,
                     prompt = interactive()) {
 
   projDir <- getProjectDir(projDir)
@@ -244,23 +244,23 @@ restore <- function(projDir = NULL,
   # See if any of the packages that are currently in the library are dirty.
   # Dirty packages that are represented in the snapshot will be either ignored
   # (with a message) or overwritten, depending on the value of the
-  # overwriteDirty flag. Dirty packages that are not represented in the snapshot
+  # overwrite.dirty flag. Dirty packages that are not represented in the snapshot
   # (like git untracked) will be silently ignored in all cases.
 
   libPkgNames <- rownames(installed.packages(libDir, noCache=TRUE))
   dirty <- !installedByPackrat(libPkgNames, libDir, TRUE)
   dirtyPackageNames <- libPkgNames[dirty]
 
-  if (!isTRUE(overwriteDirty)) {
+  if (!isTRUE(overwrite.dirty)) {
     prettyPrint(
       packages[pkgNames(packages) %in% dirtyPackageNames],
       'The following packages were not installed by packrat and will be ignored:',
-      'If you would like to overwrite them, call restore again with\noverwriteDirty = TRUE.'
+      'If you would like to overwrite them, call restore again with\noverwrite.dirty = TRUE.'
     )
     # Keep all dirty packages
     pkgsToIgnore <- dirtyPackageNames
   } else {
-    # Even if overwriteDirty is TRUE, we still want to keep packages that are
+    # Even if overwrite.dirty is TRUE, we still want to keep packages that are
     # dirty and NOT represented in the list of packages to install (this is akin
     # to "untracked" files in git).
     pkgsToIgnore <- dirtyPackageNames[!dirtyPackageNames %in% pkgNames(packages)]
@@ -307,7 +307,7 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
   rootDeps <- appDependencies(projDir)
   missingPackageNames <- character(0)
   packagesInUse <- getPackageRecords(
-    rootDeps, available=NULL, sourcePackages=NULL, recursive=TRUE,
+    rootDeps, available=NULL, source.packages=NULL, recursive=TRUE,
     lib.loc=c(lib.loc, .libPaths()),
     missing.package = function(pkgName, lib.loc) {
       missingPackageNames <<- c(missingPackageNames, pkgName)
@@ -335,7 +335,7 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
 
   if (length(orphans) > 0) {
     orphanRecs <- getPackageRecords(orphans, available=NULL,
-                                    sourcePackages=NULL,
+                                    source.packages=NULL,
                                     recursive=FALSE,
                                     lib.loc=lib.loc)
 
@@ -397,9 +397,9 @@ packify <- function(projDir = NULL) {
   msg <- "Packrat startup directives installed."
 
   if (identical(projDir, getwd())) {
-    msg <- paste(msg, "Please call \"packrat::packratModeOn()\" to initialize packrat.")
+    msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
   } else {
-    msg <- paste(msg, "Please call \"packrat::packratModeOn(projDir = '", projDir, "')\"",
+    msg <- paste(msg, "Please call \"packrat::packrat_on(projDir = '", projDir, "')\"",
                  "to initialize packrat.")
   }
 

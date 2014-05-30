@@ -8,7 +8,7 @@ local({
     packrat:::checkPackified()
     packrat:::setPackratModeOn()
   } else {
-    message("error: packrat not installed; cannot enter packrat mode")
+    message("Error: packrat not installed; cannot enter packrat mode")
 
     ## -- packrat::bootstrapPath -- ##
     bootstrapPath <- 'packrat/bootstrap.R'

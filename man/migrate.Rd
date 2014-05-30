@@ -12,13 +12,17 @@ migrate(projDir = ".", ask = TRUE)
 }
 \description{
 Migrate a project using the older version of packrat + packrat structure
-to the newer version. This function will:
+to the newer version.
 }
 \details{
-1. Move the \code{library} folder to the \code{packrat/lib} folder,
-2. Move the \code{packrat.sources} folder to the \code{packrat/src} folder,
-3. Move the \code{packrat.lock} file to \code{packrat/packrat.lock},
-4. Remove the \code{.Renviron} file as it is no longer needed,
-5. Update the package \code{.Rprofile}.
+This function will:
+
+\enumerate{
+\item Move the \code{library} folder to the \code{packrat/lib} folder,
+\item Move the \code{packrat.sources} folder to the \code{packrat/src} folder,
+\item Move the \code{packrat.lock} file to \code{packrat/packrat.lock},
+\item Remove the \code{.Renviron} file as it is no longer needed,
+\item Update the package \code{.Rprofile}.
+}
 }
 

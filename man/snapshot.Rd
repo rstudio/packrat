@@ -4,8 +4,8 @@
 \title{Capture and store the packages and versions in use}
 \usage{
 snapshot(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
-  sourcePackages = NULL, orphanCheck = TRUE, ignoreStale = FALSE,
-  dryRun = FALSE, prompt = interactive())
+  source.packages = NULL, orphan.check = TRUE, ignore.stale = FALSE,
+  dry.run = FALSE, prompt = interactive())
 }
 \arguments{
 \item{projDir}{The project directory. Defaults to current working
@@ -19,11 +19,11 @@ locally, which is rare.}
 \item{lib.loc}{The library to snapshot. Defaults to the private library
 associated with the given directory.}
 
-\item{sourcePackages}{A character vector of directories containing R
+\item{source.packages}{A character vector of directories containing R
 package sources. It is only necessary to supply this parameter when using a
 package for which sources exist on neither CRAN or GitHub.}
 
-\item{orphanCheck}{\code{TRUE} to check for orphaned packages; \code{FALSE}
+\item{orphan.check}{\code{TRUE} to check for orphaned packages; \code{FALSE}
 to skip the check. Packrat only considers packages used by your code and
 packages which are dependencies of packages used by your code. Any other
 package in the private library is considered an orphan.  If the packages
@@ -31,16 +31,16 @@ are truly orphans, they can be removed with \code{\link{clean}}; if they
 are not, you can make packrat aware that your project needs them by adding
 a \code{require} statement to any R file.}
 
-\item{ignoreStale}{Stale packages are packages that are different from the
+\item{ignore.stale}{Stale packages are packages that are different from the
 last snapshot, but were installed by packrat. Typically, packages become
 stale when a new snapshot is available, but you haven't applied it yet with
 \code{\link{restore}}. By default, packrat will prevent you from taking a
 snapshot when you have stale packages to prevent you from losing changes
 from the unapplied snapshot. If your intent is to overwrite the last
-snapshot without applying it, use \code{ignoreStale = TRUE} to skip this
+snapshot without applying it, use \code{ignore.stale = TRUE} to skip this
 check.}
 
-\item{dryRun}{Computes the changes to your packrat state that would be made
+\item{dry.run}{Computes the changes to your packrat state that would be made
 if a snapshot were performed, and prints them to the console.}
 
 \item{prompt}{\code{TRUE} to prompt before performing snapshotting package
@@ -66,10 +66,10 @@ snapshot.
 snapshot()
 
 # See what changes would be included in a snapshot
-snapshot(dryRun = TRUE)
+snapshot(dry.run = TRUE)
 
 # Take a snapshot of a project that includes a custom package
-snapshot(sourcePackages = c(
+snapshot(source.packages = c(
   "~/R/MyCustomPackage",
   "~/R/MyOtherPackage_0.1.0.tar.gz"
 ))

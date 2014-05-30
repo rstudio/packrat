@@ -19,26 +19,26 @@
 # )
 
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
+getPackageRecords <- function(pkgNames, available=NULL, source.packages=NULL,
                               recursive=TRUE, lib.loc=NULL,
                               missing.package=function(package, lib.loc) {
                                 stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
                               }) {
   records <- lapply(pkgNames, function(pkgName) {
-    if (!is.null(sourcePackages) &&
-        pkgName %in% rownames(sourcePackages)) {
+    if (!is.null(source.packages) &&
+        pkgName %in% rownames(source.packages)) {
       # This package was a manually specified source package; use the
       # description file from there
       record <- structure(list(
         name = pkgName,
         source = 'source',
-        version = as.character(sourcePackages[pkgName,"version"]),
-        source_path = as.character(sourcePackages[pkgName,"path"])
+        version = as.character(source.packages[pkgName,"version"]),
+        source_path = as.character(source.packages[pkgName,"path"])
       ), class=c('packageRecord', 'source'))
 
       # Read the dependency information directly from the DESCRIPTION file
       sourceDesc <- as.data.frame(
-          readDcf(file.path(sourcePackages[pkgName,"path"], "DESCRIPTION")))
+          readDcf(file.path(source.packages[pkgName,"path"], "DESCRIPTION")))
       deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
       deps <- deps[deps != "R"]
       db <- NULL
@@ -78,7 +78,7 @@ getPackageRecords <- function(pkgNames, available=NULL, sourcePackages=NULL,
         )[[record$name]]
       }
       record$depends <- getPackageRecords(
-        deps, available, sourcePackages, TRUE, lib.loc=lib.loc,
+        deps, available, source.packages, TRUE, lib.loc=lib.loc,
         missing.package=missing.package)
     }
     return(record)
@@ -147,8 +147,8 @@ inferPackageRecord <- function(df) {
 
 # Given a list of source package paths, parses the DESCRIPTION for each and
 # returns a data frame containing each (with row names given by package names)
-getSourcePackageInfo <- function(sourcePackages) {
-  info <- lapply(sourcePackages, getSourcePackageInfoImpl)
+getSourcePackageInfo <- function(source.packages) {
+  info <- lapply(source.packages, getSourcePackageInfoImpl)
   result <- do.call(rbind, info)
   row.names(result) <- result$name
   result

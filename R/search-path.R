@@ -4,7 +4,7 @@
 ##' associated library location.
 ##'
 ##' @export
-loadedPackages <- function() {
+search_path <- function() {
 
   ## Start by getting everything on the search path + the library location
   pkgs <- data.frame(

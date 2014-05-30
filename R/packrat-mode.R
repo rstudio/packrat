@@ -1,21 +1,23 @@
 isPackratModeOn <- function(projDir = NULL) {
-  file.exists(packratModeFilePath(projDir))
+  !is.na(Sys.getenv("R_PACKRAT_MODE", unset = NA))
 }
 
 setPackratModeOn <- function(projDir = NULL,
                              bootstrap = TRUE,
-                             autoSnapshot = TRUE) {
+                             auto.snapshot = TRUE) {
 
   projDir <- getProjectDir(projDir)
   libRoot <- libraryRootDir(projDir)
   localLib <- libDir(projDir)
   dir.create(libRoot, recursive = TRUE, showWarnings = FALSE)
-  file.create(packratModeFilePath(projDir))
 
-  # Override autoSnapshot if running under RStudio, as it has its own packrat
+  ## The item that denotes whether we're in packrat mode or not
+  Sys.setenv("R_PACKRAT_MODE" = "1")
+
+  # Override auto.snapshot if running under RStudio, as it has its own packrat
   # file handlers
   if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
-    autoSnapshot <- FALSE
+    auto.snapshot <- FALSE
   }
 
   # If snapshot.lock exists, assume it's an orphan of an earlier, crashed
@@ -84,8 +86,8 @@ setPackratModeOn <- function(projDir = NULL,
     message(msg)
   }
 
-  # Insert hooks to library modifying functions to autoSnapshot on change
-  if (autoSnapshot) {
+  # Insert hooks to library modifying functions to auto.snapshot on change
+  if (auto.snapshot) {
     if (file.exists(getPackratDir(projDir))) {
       addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
     } else {
@@ -100,7 +102,7 @@ setPackratModeOn <- function(projDir = NULL,
 setPackratModeOff <- function(projDir = NULL) {
 
   path <- packratModeFilePath(projDir)
-  if (file.exists(path)) file.remove(path)
+  Sys.unsetenv("R_PACKRAT_MODE")
 
   # Disable hooks that were turned on before
   removeTaskCallback("packrat.snapshotHook")
@@ -173,43 +175,48 @@ checkPackified <- function(projDir = NULL, quiet = FALSE) {
 ##' Packrat Mode
 ##'
 ##' Use these functions to switch \code{packrat} mode on and off. When within
-##' \code{packrat} mode, the library is set to use a local packrat library
-##' within the current project.
+##' \code{packrat} mode, the \R session will use the private library generated
+##' for the current project.
+##'
+##' \code{packrat_mode} is used to toggle packrat mode on and off, while
+##' \code{packrat_on} and \code{packrat_on} can be used to force packrat mode
+##' on and off, respectively.
 ##'
 ##' @param projDir The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
-##' @param autoSnapshot Whether or not we should use automatic snapshotting.
+##' @param auto.snapshot Whether or not we should use automatic snapshotting.
 ##' @param bootstrap Whether or not we should try to bootstrap a project directory
 ##'   that has not yet been packified.
 ##' @name packrat-mode
-##' @rdname packratMode
-##' @export
-packratModeOn <- function(projDir = ".",
-                          autoSnapshot = TRUE,
+##' @rdname packrat-mode
+packrat_on <- function(projDir = ".",
+                          auto.snapshot = TRUE,
                           bootstrap = FALSE) {
   projDir <- normalizePath(projDir, winslash='/')
-  setPackratModeOn(projDir, bootstrap = bootstrap, autoSnapshot = autoSnapshot)
+  setPackratModeOn(projDir, bootstrap = bootstrap, auto.snapshot = auto.snapshot)
 }
 
-##' @rdname packratMode
+##' @name packrat-mode
+##' @rdname packrat-mode
 ##' @export
-packratModeOff <- function(projDir = NULL) {
+packrat_off <- function(projDir = NULL) {
   projDir <- getProjectDir(projDir)
   setPackratModeOff(projDir)
 }
 
-##' @rdname packratMode
+##' @name packrat-mode
+##' @rdname packrat-mode
 ##' @export
-packratMode <- function(projDir = NULL,
-                        autoSnapshot = TRUE,
+packrat_mode <- function(projDir = NULL,
+                        auto.snapshot = TRUE,
                         bootstrap = FALSE) {
 
   projDir <- getProjectDir(projDir)
 
   if (isPackratModeOn()) {
-    packratModeOff(projDir)
+    packrat_off(projDir)
   } else {
-    packratModeOn(projDir, bootstrap = bootstrap, autoSnapshot = autoSnapshot)
+    packrat_on(projDir, bootstrap = bootstrap, auto.snapshot = auto.snapshot)
   }
 }
 
