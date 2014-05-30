@@ -94,6 +94,7 @@ fileDependencies <- function(file) {
 fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
   if (require("knitr")) {
     tempfile <- tempfile()
+    on.exit(unlink(tempfile))
     tryCatch(silent(
       knitr::knit(file, output = tempfile, tangle = TRUE)
     ), error = function(e) {
@@ -109,6 +110,7 @@ fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
 
 fileDependencies.Rnw <- function(file) {
   tempfile <- tempfile()
+  on.exit(unlink(tempfile))
   tryCatch(silent(
     Stangle(file, output = tempfile)
   ), error = function(e) {
