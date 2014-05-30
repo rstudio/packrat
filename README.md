@@ -9,5 +9,5 @@ Use packrat to make your R projects more:
 * **Portable:** Easily transport your projects from one computer to another, even across different platforms. Packrat makes it easy to install the packages your project depends on.
 * **Reproducible:** Packrat records the exact package versions you depend on, and ensures those exact versions are the ones that get installed wherever you go.
 
-See the [project page](http://rstudio.github.io/packrat/) for more information.
+See the [project page](http://rstudio.github.io/packrat/) for more information, or join the discussion at [packrat-discuss](https://groups.google.com/forum/#!forum/packrat-discuss).
 
