@@ -96,11 +96,14 @@ migrate <- function(projDir = ".", ask = TRUE) {
   if (file.exists(".Rprofile")) {
     .Rprofile <- readLines(".Rprofile")
 
-    ## Remove the old packrat stuff
+    ## Remove the prior packrat autoloader
     oldStart <- which(.Rprofile == "# -- BEGIN PACKRAT --")
     oldEnd <- which(.Rprofile == "# -- END PACKRAT --")
-    .Rprofile <- .Rprofile[-c(oldStart:oldEnd)]
-    cat(.Rprofile, file = ".Rprofile", sep = "\n")
+    if (length(oldStart) == 1 && length(oldEnd) == 1) {
+      .Rprofile <- .Rprofile[-c(oldStart:oldEnd)]
+      cat(.Rprofile, file = ".Rprofile", sep = "\n")
+    }
+
   }
 
   ## Now, update it with new packrat
