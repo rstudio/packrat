@@ -145,7 +145,6 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
   # Copy .Rprofile from init.R so that users are bounced into packrat mode
   # when launching \R session in project dir
   augmentRprofile(projDir)
-  augmentRenviron(projDir)
 
   # Make sure the packrat directory is ignored if we're in a package
   if (file.exists(descriptionFile)) {
