@@ -189,6 +189,7 @@ checkPackified <- function(projDir = NULL, quiet = FALSE) {
 ##'   that has not yet been packified.
 ##' @name packrat-mode
 ##' @rdname packrat-mode
+##' @export
 packrat_on <- function(projDir = ".",
                           auto.snapshot = TRUE,
                           bootstrap = FALSE) {
