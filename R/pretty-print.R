@@ -13,6 +13,7 @@ prettyPrint <- function(packages, header, footer = NULL) {
       result
     }))
     if (!is.null(footer)) {
+      cat('\n')
       cat(paste(footer, collapse=''))
     }
     cat('\n')
@@ -81,6 +82,7 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
     print(df)
 
     if (!is.null(footer)) {
+      cat('\n')
       cat(paste(footer, collapse=''))
     }
     cat('\n')
