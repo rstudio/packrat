@@ -78,22 +78,23 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
                               ignore.stale = ignore.stale,
                               prompt = prompt && !dry.run)
 
-  if (!dry.run) {
-    # Check to see if any of the packages we just snapshotted are not, in fact,
-    # located in the private library, and install them if necessary
-    appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
-    privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
-    pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
-    for (pkgToInstall in pkgsToInstall) {
-      message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
-      type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
-                         projDir, NULL, activeRepos(projDir), lib.loc)
-      message("OK (", type, ")")
-    }
-    for (pkgRecord in flattenPackageRecords(appPackages)) {
-      annotatePkgDesc(pkgRecord, projDir=projDir, lib=lib.loc)
-    }
+  if (dry.run) return(invisible())
+
+  # Check to see if any of the packages we just snapshotted are not, in fact,
+  # located in the private library, and install them if necessary
+  appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
+  privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
+  pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
+  for (pkgToInstall in pkgsToInstall) {
+    message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
+    type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
+                       projDir, NULL, activeRepos(projDir), lib.loc)
+    message("OK (", type, ")")
   }
+  for (pkgRecord in flattenPackageRecords(appPackages)) {
+    annotatePkgDesc(pkgRecord, projDir=projDir, lib=lib.loc)
+  }
+
 }
 
 snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
@@ -108,9 +109,13 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
   # include .libPaths in the list of library locations because it's possible that
   # the user installed a package that relies on a recommended package, which
   # would be used by the app but not present in the private library.
-  appPackages <- getPackageRecords(sort(appDependencies(projDir)), available,
+  appPackages <- getPackageRecords(sort(appDependencies(projDir)),
+                                   available,
                                    source.packages,
-                                   lib.loc = unique(c(lib.loc, .libPaths())))
+                                   lib.loc = unique(c(lib.loc, .libPaths())),
+                                   missing.package=function(package, lib.loc) {
+                                     NULL
+                                   })
   appPackagesFlat <- flattenPackageRecords(appPackages, sourcePath = TRUE)
 
   allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
@@ -151,11 +156,11 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
 
   if (verbose) {
     summarizeDiffs(diffs, lockPackages, appPackages,
-                 'Adding these packages to packrat:',
-                 'Removing these packages from packrat:',
-                 'Upgrading these packages already present in packrat:',
-                 'Downgrading these packages already present in packrat:',
-                 'Modifying these packages already present in packrat:')
+                   'Adding these packages to packrat:',
+                   'Removing these packages from packrat:',
+                   'Upgrading these packages already present in packrat:',
+                   'Downgrading these packages already present in packrat:',
+                   'Modifying these packages already present in packrat:')
   }
 
   if (all(is.na(diffs))) {
@@ -192,7 +197,7 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
     )
     if (verbose) {
       message('Snapshot written to ',
-        shQuote(normalizePath(lockFilePath(projDir), winslash = '/'))
+              shQuote(normalizePath(lockFilePath(projDir), winslash = '/'))
       )
     }
   }
