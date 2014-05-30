@@ -3,24 +3,23 @@
 \alias{status}
 \title{Show differences between the last snapshot and the library}
 \usage{
-status(projDir = NULL, libLoc = libDir(projDir), quiet = FALSE)
+status(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE)
 }
 \arguments{
 \item{projDir}{The directory that contains the R project.}
 
-\item{libLoc}{The library to examine. Defaults to the private library
+\item{lib.loc}{The library to examine. Defaults to the private library
 associated with the project directory.}
 
-\item{quiet}{\code{TRUE} to suppress output, \code{FALSE} (the default) to
-show output.}
+\item{quiet}{Print detailed information about the packrat status to the console?}
 }
 \value{
 Either \code{NULL} if a \code{packrat} project has not yet been
 initialized, or a (invisibly) a \code{data.frame} with components:
-\item{package}{The package name.}
-\item{packrat.version}{The package version used in the last snapshot.}
-\item{packrat.source}{The location from which the package was obtained.}
-\item{library.version}{The package version available in the local library.}
+\item{package}{The package name,}
+\item{packrat.version}{The package version used in the last snapshot,}
+\item{packrat.source}{The location from which the package was obtained,}
+\item{library.version}{The package version available in the local library,}
 \item{currently.used}{Whether the package is used in any of the R code in the current project.}
 }
 \description{

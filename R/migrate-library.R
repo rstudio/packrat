@@ -53,5 +53,3 @@ macLibraryMigration <- function() {
                 "Please run the following command at a terminal to migrate your user libraries to a user library folder:\n",
                 "    ", scriptCall))
 }
-
-

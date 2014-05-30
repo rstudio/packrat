@@ -7,6 +7,7 @@ lib <- file.path("packrat", "lib", R.version$platform, getRversion())
 if (!file.exists(lib)) {
   dir.create(lib, recursive = TRUE)
 }
+lib <- normalizePath(lib, winslash = "/")
 message("> Installing packrat into project private library:")
 message("> ", shQuote(lib))
 peq <- function(x, y) paste(x, y, sep = " = ")
@@ -30,4 +31,4 @@ system(fullCmd)
 message("> Attaching packrat")
 library("packrat", character.only = TRUE, lib.loc = lib)
 
-message("Packrat successfully installed. Run 'packratMode()' to enter packrat mode.")
+message("Packrat successfully installed. Run 'packrat_mode()' to enter packrat mode.")

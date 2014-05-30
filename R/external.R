@@ -1,15 +1,21 @@
-##' Temporarily load External Libraries for Evaluation of an Expression
+##' Managing External Libraries
 ##'
-##' This can be useful if you need to call a function from a library
-##' not managed by \code{packrat}, e.g. \code{devtools}.
+##' These functions provide a mechanism for (temporarily) using packages outside of the
+##' packrat private library.
 ##'
-##' @param libs A set of library names (as a character vector) to load for
+##'
+##' @param packages A set of library names (as a character vector) to load for
 ##'   the duration of evaluation of \code{expr}.
 ##' @param expr An \R expression.
-withExtLibs <- function(libs, expr) {
+##' @name packrat-external
+##' @rdname packrat-external
+##' @examples
+##' with_extlib("lattice", xyplot(1 ~ 1))
+##' @export
+with_extlib <- function(packages, expr) {
 
-  if (!is.character(libs)) {
-    stop("'libs' should be a character vector of libraries", call. = FALSE)
+  if (!is.character(packages)) {
+    stop("'packages' should be a character vector of libraries", call. = FALSE)
   }
 
   call <- match.call()
@@ -24,8 +30,8 @@ withExtLibs <- function(libs, expr) {
       ## we should use the user library anyway, so this is fine
       origLibPaths <- .packrat_mutables$get("origLibPaths")
 
-      for (lib in libs) {
-        library(lib, character.only = TRUE, lib.loc = origLibPaths, warn.conflicts = FALSE)
+      for (package in packages) {
+        library(package, character.only = TRUE, lib.loc = origLibPaths, warn.conflicts = FALSE)
       }
 
       ## Evaluate the call
@@ -48,4 +54,17 @@ withExtLibs <- function(libs, expr) {
 
   })
 
+}
+
+##' @name packrat-external
+##' @rdname packrat-external
+##' @export
+extlib <- function(packages) {
+  for (package in packages) {
+    lib.loc <- .packrat_mutables$get("origLibPaths")
+    if (is.null(lib.loc)) {
+      lib.loc <- .libPaths()
+    }
+    library(package, character.only = TRUE, lib.loc = lib.loc)
+  }
 }

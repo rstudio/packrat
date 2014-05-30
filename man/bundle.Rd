@@ -3,8 +3,8 @@
 \alias{bundle}
 \title{Bundle a Packrat Project}
 \usage{
-bundle(projDir = NULL, file = NULL, includeSrc = TRUE,
-  includeLib = FALSE, overwrite = FALSE, ...)
+bundle(projDir = NULL, file = NULL, include.src = TRUE,
+  include.lib = FALSE, overwrite = FALSE, ...)
 }
 \arguments{
 \item{projDir}{The project directory. Defaults to the currently activate
@@ -14,9 +14,9 @@ is checked.}
 \item{file}{The location to file the bundled file. By default, we write
 to a file with name \code{<package>-<date>.zip}.}
 
-\item{includeSrc}{Include the packrat sources?}
+\item{include.src}{Include the packrat sources?}
 
-\item{includeLib}{Include the packrat private library?}
+\item{include.lib}{Include the packrat private library?}
 
 \item{overwrite}{Boolean; overwrite the file at \code{file} if it already exists?}
 

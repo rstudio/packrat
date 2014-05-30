@@ -33,7 +33,7 @@ versionMatchesDb <- function(pkgRecord, db) {
 # Given a package record, fetch the sources for the package and place them in
 # the source directory root given by sourceDir.
 getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
-                                  sourcePackages, quiet = FALSE) {
+                                  source.packages, quiet = FALSE) {
   # Skip packages for which we can't find sources
   if (is.null(pkgRecord$source) ||
       is.na(pkgRecord$source)) {
@@ -50,7 +50,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
          "find sources for packages on CRAN-like repositories and packages ",
          "installed using devtools::install_github. For other package types, ",
          "supply the path to the package's source using the argument ",
-         "sourcePackages = c('~/path/to/package1', 'path/to/package2', ...)")
+         "source.packages = c('~/path/to/package1', 'path/to/package2', ...)")
   }
 
   # Create the directory in which to place this package's sources

@@ -12,7 +12,7 @@ test_that("packratMode successfully sets the library paths when turned on and of
 
   ## Make sure packrat mode is off
   if (packrat:::isPackratModeOn()) {
-    packratModeOff()
+    packrat_off()
     cat("Turning packratMode off\n")
   }
 
@@ -22,13 +22,13 @@ test_that("packratMode successfully sets the library paths when turned on and of
 
   orig_libs <- .libPaths()
 
-  packratModeOn(autoSnapshot = FALSE, bootstrap = FALSE)
+  packrat_on(auto.snapshot = FALSE, bootstrap = FALSE)
 
   cat(".libPaths() after entering packratMode:\n")
   cat(.libPaths(), sep = "\n")
   cat("\n\n")
 
-  packratModeOff()
+  packrat_off()
 
   cat(".libPaths() after exiting packratMode:\n")
   cat(.libPaths(), sep = "\n")

@@ -3,12 +3,12 @@
 \alias{bootstrap}
 \title{Initialize Packrat on a new or existing \R project}
 \usage{
-bootstrap(projDir = ".", sourcePackages = character())
+bootstrap(projDir = ".", source.packages = character())
 }
 \arguments{
 \item{projDir}{The directory that contains the \R project.}
 
-\item{sourcePackages}{List of paths to unpacked \R package source
+\item{source.packages}{List of paths to unpacked \R package source
   directories.  Use this argument only if your project depends on packages
   that are not available on CRAN or GitHub.}
 }

@@ -3,17 +3,17 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-restore(projDir = NULL, overwriteDirty = FALSE, prompt = interactive())
+restore(projDir = NULL, overwrite.dirty = FALSE, prompt = interactive())
 }
 \arguments{
 \item{projDir}{The project directory. When in packrat mode, if this is \code{NULL},
 then the directory associated with the current packrat project is used. Otherwise,
 the project directory specified is used.}
 
-\item{overwriteDirty}{A dirty package is one that has been changed since the
+\item{overwrite.dirty}{A dirty package is one that has been changed since the
 last snapshot or restore. Packrat will leave these alone by default. If you
 want to guarantee that \code{restore} will put you in the exact state
-represented by the snapshot being applied, use \code{overwriteDirty = TRUE}.}
+represented by the snapshot being applied, use \code{overwrite.dirty = TRUE}.}
 
 \item{prompt}{\code{TRUE} to prompt before performing potentially destructive
 changes (package removals or downgrades); \code{FALSE} to perform these
