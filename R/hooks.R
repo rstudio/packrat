@@ -28,7 +28,7 @@ snapshotHook <- function(expr, value, ok, visible) {
       setwdCmd <- paste("setwd(", shQuote(projDir), ")")
       snapshotCmd <- paste("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")))")
       cleanupCmd <- paste("file.remove(", shQuote(snapshotLockPath), ")")
-      setLibsCmd <- paste(".libPaths(", .libPaths(), ")")
+      setLibsCmd <- paste(".libPaths( c(", paste(shQuote(.libPaths()), collapse = ", "), ") )")
       fullCmd <- paste(sep = "; ",
                        setwdCmd,
                        setLibsCmd,
@@ -40,7 +40,7 @@ snapshotHook <- function(expr, value, ok, visible) {
       r_path <- file.path(R.home("bin"), "R")
 
       cmd <- paste(shQuote(r_path), "--vanilla", "--slave", "-e", shQuote(fullCmd))
-      system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
+      res <- system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
       invisible(TRUE)
 
     },
@@ -50,11 +50,15 @@ snapshotHook <- function(expr, value, ok, visible) {
     # 1. A library is deleted, e.g. with remove.packages.
     # TODO: How should we handle an automatic snapshot fail?
     error = function(e) {
-      if (is.null(.packrat$projectDir)) {
+
+      projDir <- .packrat_mutables$get("projDir")
+
+      if (is.null(projDir)) {
         file = "" ## to stdout
       } else {
-        file = file.path(.packrat$projectDir, .packrat$packratFolderName, "packrat.log")
+        file = file.path(projDir, .packrat$packratFolderName, "packrat.log")
       }
+
       if (inherits(e, "simpleError")) {
         msg <- e$message
       } else {
