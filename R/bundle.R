@@ -91,6 +91,7 @@ bundle <- function(projDir = NULL,
     stop("A file already exists at file location '", file, "'.")
   }
 
+  ## Make sure the base folder name is inheritted from the project name
   setwd("../")
   tar(file, files = file.path(basename(projDir), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
   message("The packrat project has been bundled at:\n- \"", file, "\"")

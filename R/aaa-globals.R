@@ -1,6 +1,7 @@
 ## Default values that shouldn't change
 .packrat <- new.env(parent = emptyenv())
 .packrat$packratFolderName <- "packrat"
+.packrat$packratFormat <- "1.2"
 
 
 ## Mutable values that might be modified by the user (code borrowed from knitr)

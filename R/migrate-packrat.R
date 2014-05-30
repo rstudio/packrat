@@ -79,7 +79,7 @@ migrate <- function(projDir = ".", ask = TRUE) {
   ## Update the packrat version in the lockfile
   lockFile <- readLines(lockFilePath())
   formatLine <- grep("PackratFormat:", lockFile)
-  lockFile[formatLine] <- "PackratFormat: 1.2"
+  lockFile[formatLine] <- paste("PackratFormat:", .packrat$packratFormat)
   cat(lockFile, file = lockFilePath(), sep = "\n")
   message("- packrat.lock succesffuly copied and updated to version 1.2")
 
