@@ -14,6 +14,9 @@ setPackratModeOn <- function(projDir = NULL,
   ## The item that denotes whether we're in packrat mode or not
   Sys.setenv("R_PACKRAT_MODE" = "1")
 
+  # Hide the site libraries
+  hideSiteLibraries()
+
   # Override auto.snapshot if running under RStudio, as it has its own packrat
   # file handlers
   if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
