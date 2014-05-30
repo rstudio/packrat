@@ -203,6 +203,8 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
 #' @param prompt \code{TRUE} to prompt before performing potentially destructive
 #' changes (package removals or downgrades); \code{FALSE} to perform these
 #' operations without confirmation.
+#' @param dry.run If \code{TRUE}, compute the changes to your packrat state that
+#'   would be made if a restore was performed, without actually executing them.
 #'
 #' @seealso
 #' \code{\link{snapshot}}, the command that creates the snapshots applied with
@@ -214,7 +216,8 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
 #' @export
 restore <- function(projDir = NULL,
                     overwrite.dirty = FALSE,
-                    prompt = interactive()) {
+                    prompt = interactive(),
+                    dry.run = FALSE) {
 
   projDir <- getProjectDir(projDir)
 
@@ -271,7 +274,8 @@ restore <- function(projDir = NULL,
   repos <- lockInfo(projDir, 'repos')
   repos <- strsplit(repos, "\\s*,\\s*")[[1]]
   restoreImpl(projDir, repos, packages, libDir,
-              pkgsToIgnore = pkgsToIgnore, prompt = prompt)
+              pkgsToIgnore = pkgsToIgnore, prompt = prompt,
+              dry.run = dry.run)
 }
 
 #' Remove unused packages

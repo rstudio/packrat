@@ -9,8 +9,9 @@
 ##' @param expr An \R expression.
 ##' @name packrat-external
 ##' @rdname packrat-external
-##' @examples
+##' @examples \dontrun{
 ##' with_extlib("lattice", xyplot(1 ~ 1))
+##' }
 ##' @export
 with_extlib <- function(packages, expr) {
 

@@ -20,6 +20,8 @@ These functions provide a mechanism for (temporarily) using packages outside of 
 packrat private library.
 }
 \examples{
+\dontrun{
 with_extlib("lattice", xyplot(1 ~ 1))
+}
 }
 
