@@ -1,6 +1,6 @@
 #' Bundle a Packrat Project
 #'
-#' This function bundles a \code{packrat} project.
+#' Bundle a packrat project, for easy sharing.
 #'
 #' @param projDir The project directory. Defaults to the currently activate
 #'  project. By default, the current project active under \code{packratMode}
@@ -10,7 +10,7 @@
 #' @param include.src Include the packrat sources?
 #' @param include.lib Include the packrat private library?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
-#' @param ... Optional arguments passed to \code{\link{zip}}.
+#' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
 bundle <- function(projDir = NULL,
                    file = NULL,
@@ -23,13 +23,13 @@ bundle <- function(projDir = NULL,
 
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
-    zipName <- paste(basename(projDir), Sys.Date(), sep = "-")
-    zipName <- paste(zipName, ".zip", sep = "")
+    tarName <- paste(basename(projDir), Sys.Date(), sep = "-")
+    tarName <- paste(tarName, ".tar.gz", sep = "")
     bundlesDir <- bundlesDir(projDir)
     if (!file.exists(bundlesDir)) {
       dir.create(bundlesDir)
     }
-    file <- file.path(bundlesDir(projDir), zipName)
+    file <- file.path(bundlesDir(projDir), tarName)
   }
 
   file <- normalizePath(file, mustWork = FALSE)
@@ -41,54 +41,58 @@ bundle <- function(projDir = NULL,
 
   # Collect all the files we want to zip up -- this ignores any dot files,
   # or files hidden in . folders
-  project_files <- list.files(recursive = TRUE)
+  projectFiles <- list.files(recursive = TRUE)
 
   # Exclude the packrat folder at this stage -- we re-add the components we
   # need piece by piece
-  project_files <- project_files[
-    !startswith(project_files, .packrat$packratFolderName)
+  projectFiles <- projectFiles[
+    !startswith(projectFiles, .packrat$packratFolderName)
   ]
 
-  # Make sure we add the .Rprofile file if it exists
-  .Rprofile <- file.path(".Rprofile")
-  if (file.exists(.Rprofile)) {
-    project_files <- c(project_files, .Rprofile)
+  # Make sure we add white-listed dot files
+  whiteList <- c(".Rprofile", ".Renviron", ".Rbuildignore", ".Rinstignore")
+  for (item in whiteList) {
+    filePath <- file.path(item)
+    if (file.exists(filePath)) {
+      projectFiles <- c(projectFiles, filePath)
+    }
   }
 
   # Make sure we add packrat
-  packrat_files_base <- list_files(
+  basePackratFiles <- list_files(
     .packrat$packratFolderName,
     all.files = TRUE,
     recursive = FALSE,
     full.names = TRUE
   )
 
-  files_to_zip <- c(project_files, packrat_files_base)
+  filesToZip <- c(projectFiles, basePackratFiles)
 
   # These need to be relative paths
   if (include.src) {
-    packrat_src <- list_files(
+    packratSrc <- list_files(
       file.path(.packrat$packratFolderName, "src"),
       recursive = TRUE,
       full.names = TRUE
     )
-    files_to_zip <- c(files_to_zip, packrat_src)
+    filesToZip <- c(filesToZip, packratSrc)
   }
 
   if (include.lib) {
-    packrat_lib <- list.files(
+    packratLib <- list.files(
       file.path(.packrat$packratFolderName, "lib"),
       recursive = TRUE,
       full.names = TRUE
     )
-    files_to_zip <- c(files_to_zip, packrat_lib)
+    filesToZip <- c(filesToZip, packratLib)
   }
 
   if (file.exists(file) && !overwrite) {
     stop("A file already exists at file location '", file, "'.")
   }
 
-  zip(file, files = files_to_zip, ...)
+  setwd("../")
+  tar(file, files = file.path(basename(projDir), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
   message("The packrat project has been bundled at:\n- \"", file, "\"")
 
 }
