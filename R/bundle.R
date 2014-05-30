@@ -95,5 +95,20 @@ bundle <- function(projDir = NULL,
   setwd("../")
   tar(file, files = file.path(basename(projDir), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
   message("The packrat project has been bundled at:\n- \"", file, "\"")
+  invisible(file)
+}
 
+##' Unbundle a Packrat Project
+##'
+##' Unbundle a previously \code{\link{bundle}}d project.
+##'
+##' @param bundle Path to the bundled file.
+##' @param where The directory where we will unbundle the project.
+##' @param ... Optional arguments passed to \code{\link{tar}}.
+##' @export
+unbundle <- function(bundle, where, ...) {
+  where <- normalizePath(where, winslash = "/", mustWork = FALSE)
+  untar(bundle, exdir = where, ...)
+  message("The packrat project has been unbundled at:\n- \"", file, "\"")
+  invisible(file)
 }
