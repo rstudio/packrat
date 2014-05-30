@@ -2,13 +2,27 @@ isPackratModeOn <- function(projDir = NULL) {
   file.exists(packratModeFilePath(projDir))
 }
 
-setPackratModeOn <- function(projDir = NULL, bootstrap = TRUE, autoSnapshot = TRUE) {
+setPackratModeOn <- function(projDir = NULL,
+                             bootstrap = TRUE,
+                             autoSnapshot = TRUE) {
 
   projDir <- getProjectDir(projDir)
   libRoot <- libraryRootDir(projDir)
   localLib <- libDir(projDir)
   dir.create(libRoot, recursive = TRUE, showWarnings = FALSE)
   file.create(packratModeFilePath(projDir))
+
+  # Override autoSnapshot if running under RStudio, as it has its own packrat
+  # file handlers
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
+    autoSnapshot <- FALSE
+  }
+
+  # If snapshot.lock exists, assume it's an orphan of an earlier, crashed
+  # R process -- remove it
+  if (file.exists(snapshotLockFilePath(projDir))) {
+    unlink(snapshotLockFilePath(projDir))
+  }
 
   # If there's a new library (created to make changes to packages loaded in the
   # last R session), remove the old library and replace it with the new one.
@@ -170,9 +184,11 @@ checkPackified <- function(projDir = NULL, quiet = FALSE) {
 ##' @name packrat-mode
 ##' @rdname packratMode
 ##' @export
-packratModeOn <- function(projDir = ".", autoSnapshot = TRUE, bootstrap = FALSE) {
+packratModeOn <- function(projDir = ".",
+                          autoSnapshot = TRUE,
+                          bootstrap = FALSE) {
   projDir <- normalizePath(projDir, winslash='/')
-  setPackratModeOn(projDir)
+  setPackratModeOn(projDir, bootstrap = bootstrap, autoSnapshot = autoSnapshot)
 }
 
 ##' @rdname packratMode
@@ -184,11 +200,16 @@ packratModeOff <- function(projDir = NULL) {
 
 ##' @rdname packratMode
 ##' @export
-packratMode <- function(projDir = NULL, autoSnapshot = TRUE, bootstrap = FALSE) {
+packratMode <- function(projDir = NULL,
+                        autoSnapshot = TRUE,
+                        bootstrap = FALSE) {
+
+  projDir <- getProjectDir(projDir)
+
   if (isPackratModeOn()) {
     packratModeOff(projDir)
   } else {
-    packratModeOn(projDir, autoSnapshot, bootstrap)
+    packratModeOn(projDir, bootstrap = bootstrap, autoSnapshot = autoSnapshot)
   }
 }
 
