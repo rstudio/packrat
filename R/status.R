@@ -228,13 +228,10 @@ status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
             length(pkgsNotNeeded))) {
       message("Up to date.")
     }
-    message("") ## newline
-    message("Packrat project status:")
-    print(statusTbl)
 
   }
 
-  statusTbl
+  invisible(statusTbl)
 
 }
 
