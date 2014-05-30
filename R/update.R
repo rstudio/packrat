@@ -36,9 +36,26 @@ updateInit <- function() {
   msgLine <- grep(paste(sep = "", bootstrapMsgMarker, "$"),
                   init.R)
   init.R[msgLine + 1] <- paste(sep = "",
-                           "      message('Run \\\'source(\"",
-                           bootstrapPath,
-                           "\")\\\' to bootstrap a packrat installation.\')")
+                               "      message('Run \\\'source(\"",
+                               bootstrapPath,
+                               "\")\\\' to bootstrap a packrat installation.\')")
 
   cat(init.R, file=file.path("inst", "init.R"), sep = "\n")
+}
+
+
+updateBootstrap <- function() {
+  bootstrap.R <- readLines(file.path("inst", "bootstrap.R"))
+  packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
+
+  ## Sync the packrat path, messages
+  source("R/aaa-globals.R")
+
+  installAgentLine <- grep("## -- InstallAgent -- ##", bootstrap.R)
+  bootstrap.R[installAgentLine + 1] <- paste("installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version)))
+
+  installSourceLine <- grep("## -- InstallSource -- ##", bootstrap.R)
+  bootstrap.R[installSourceLine + 1] <- paste("installSource <-", shQuote(paste("InstallSource:", "source")))
+
+  cat(bootstrap.R, file = file.path("inst", "bootstrap.R"), sep = "\n")
 }

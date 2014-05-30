@@ -9,7 +9,7 @@ if (!file.exists(lib)) {
 }
 lib <- normalizePath(lib, winslash = "/")
 message("> Installing packrat into project private library:")
-message("> ", shQuote(lib))
+message("- ", shQuote(lib))
 peq <- function(x, y) paste(x, y, sep = " = ")
 installArgs <- c(
   peq("pkgs", shQuote(packratSrcPath)),
@@ -27,6 +27,19 @@ fullCmd <- paste(
   shQuote(installCmd)
 )
 system(fullCmd)
+
+## Tag the installed packrat so we know it's managed by packrat
+
+## -- InstallAgent -- ##
+installAgent <- 'InstallAgent: packrat 0.1.0.99'
+
+## -- InstallSource -- ##
+installSource <- 'InstallSource: source'
+
+packratDescPath <- file.path(lib, "packrat", "DESCRIPTION")
+DESCRIPTION <- readLines(packratDescPath)
+DESCRIPTION <- c(DESCRIPTION, installAgent, installSource)
+cat(DESCRIPTION, file = packratDescPath, sep = "\n")
 
 message("> Attaching packrat")
 library("packrat", character.only = TRUE, lib.loc = lib)
