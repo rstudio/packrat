@@ -120,8 +120,9 @@ migrate <- function(projDir = ".", ask = TRUE) {
   on.exit(.libPaths(oldLibPaths), add = TRUE)
   .libPaths(libDir())
 
-  ## TODO -- update when merged to master -- or install a specific tag?
-  installGithub("rstudio/packrat", ref = "feature/packrat-mode")
+  if (require("devtools")) {
+    install_github("rstudio/packrat")
+  }
 
   message("- Packrat successfully updated. Please restart your R session to continue.")
 
