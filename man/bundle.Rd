@@ -20,9 +20,9 @@ to a file with name \code{<package>-<date>.zip}.}
 
 \item{overwrite}{Boolean; overwrite the file at \code{file} if it already exists?}
 
-\item{...}{Optional arguments passed to \code{\link{zip}}.}
+\item{...}{Optional arguments passed to \code{\link{tar}}.}
 }
 \description{
-This function bundles a \code{packrat} project.
+Bundle a packrat project, for easy sharing.
 }
 

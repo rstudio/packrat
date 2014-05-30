@@ -124,7 +124,9 @@ status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
         searchPackages(packratPackages, statusTbl$package[onlyPackrat]),
         header = c("The following packages are tracked by packrat, but are no longer ",
                    "available in the local library nor present in your code:"),
-        footer = c("You should call packrat::snapshot() to update the packrat lockfile.")
+        footer = c("You can call packrat::snapshot() to remove these packages from the lockfile, ",
+                   "or if you intend to use these packages, use packrat::restore() to restore them ",
+                   "to your private library.")
       )
     }
 
