@@ -31,7 +31,7 @@ system(fullCmd)
 ## Tag the installed packrat so we know it's managed by packrat
 
 ## -- InstallAgent -- ##
-installAgent <- 'InstallAgent: packrat 0.1.0.99'
+installAgent <- 'InstallAgent: packrat 0.2.0'
 
 ## -- InstallSource -- ##
 installSource <- 'InstallSource: source'
