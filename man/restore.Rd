@@ -3,7 +3,8 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-restore(projDir = NULL, overwrite.dirty = FALSE, prompt = interactive())
+restore(projDir = NULL, overwrite.dirty = FALSE, prompt = interactive(),
+  dry.run = FALSE)
 }
 \arguments{
 \item{projDir}{The project directory. When in packrat mode, if this is \code{NULL},
@@ -18,6 +19,9 @@ represented by the snapshot being applied, use \code{overwrite.dirty = TRUE}.}
 \item{prompt}{\code{TRUE} to prompt before performing potentially destructive
 changes (package removals or downgrades); \code{FALSE} to perform these
 operations without confirmation.}
+
+\item{dry.run}{If \code{TRUE}, compute the changes to your packrat state that
+  would be made if a restore was performed, without actually executing them.}
 }
 \description{
 Applies the most recent snapshot to the project's private library.
