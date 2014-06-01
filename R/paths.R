@@ -2,7 +2,7 @@
 
 getProjectDir <- function(projDir = NULL) {
 
-  ## If projDir is NULL, and .packrat$projectDir is NULL, then we should look
+  ## If projDir is NULL, and .packrat$projDir is NULL, then we should look
   ## in the current working directory
   cachedDir <- .packrat_mutables$get("projDir")
   if (is.null(projDir)) {
