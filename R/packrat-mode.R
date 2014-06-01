@@ -14,9 +14,6 @@ setPackratModeOn <- function(projDir = NULL,
   ## The item that denotes whether we're in packrat mode or not
   Sys.setenv("R_PACKRAT_MODE" = "1")
 
-  # Hide the site libraries
-  hideSiteLibraries()
-
   # Override auto.snapshot if running under RStudio, as it has its own packrat
   # file handlers
   if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
@@ -80,6 +77,9 @@ setPackratModeOn <- function(projDir = NULL,
   .packrat_mutables$set(origLibPaths = .libPaths())
   .packrat_mutables$set(projDir = projDir)
 
+  # Hide the site libraries
+  hideSiteLibraries()
+
   # Set the library
   .libPaths(localLib)
 
@@ -110,6 +110,9 @@ setPackratModeOff <- function(projDir = NULL) {
   # Disable hooks that were turned on before
   removeTaskCallback("packrat.snapshotHook")
 
+  # Restore .Library.site
+  restoreSiteLibraries()
+
   # Reset the library paths to what one gets in a 'clean' session
   #   cmd <- paste(
   #     shQuote(file.path(R.home("bin"), "R")),
@@ -137,7 +140,7 @@ setPackratModeOff <- function(projDir = NULL) {
   # options(prompt = .packrat$promptOnLoad)
 
   # Default back to the current working directory for packrat function calls
-  .packrat_mutables$set(projectDir = NULL)
+  .packrat_mutables$set(projDir = NULL)
   .packrat_mutables$set(origLibPaths = NULL)
 
   invisible(.libPaths())
