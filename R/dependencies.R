@@ -26,22 +26,26 @@
 #' appDependencies("~/projects/shiny/app1")
 #' }
 #' @keywords internal
-appDependencies <- function(projDir = NULL) {
+appDependencies <- function(projDir = NULL, available.packages = NULL) {
+
+  if (is.null(available.packages)) available.packages <- available.packages()
 
   projDir <- getProjectDir(projDir)
 
   ## For R packages, we only use the DESCRIPTION file
   if (file.exists(file.path(projDir, "DESCRIPTION"))) {
+
     ## Make sure we get records recursively from the packages in DESCRIPTION
-    pkgDeps <- c(
-      pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))$Package,
-      "packrat"
-    )
-    pkgRecords <- flattenPackageRecords(
-      suppressWarnings(getPackageRecords(pkgDeps))
-    )
-    allPkgs <- sapply(pkgRecords, "[[", "name")
-    allPkgs
+    descriptionDeps <-
+      pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))$Package
+
+    ## For downstream dependencies, we don't grab their Suggests:
+    ## Presumedly, we can build child dependencies without vignettes, and hence
+    ## do not need suggests -- for the package itself, we should make sure
+    ## we grab suggests, however
+    childDeps <- recursivePackageDependencies(descriptionDeps,
+                                              available.packages)
+    sort(unique(c(descriptionDeps, childDeps)))
   } else {
     unique(c(dirDependencies(projDir), 'packrat'))
   }

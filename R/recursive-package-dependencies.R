@@ -1,0 +1,41 @@
+getPackageDependencies <- function(pkgs, available.packages = available.packages()) {
+
+  deps <- unlist(lapply(pkgs, function(pkg) {
+
+    if (!(pkg %in% row.names(available.packages))) {
+      warning("Package '", pkg, "' not available in repository")
+      return(NULL)
+    }
+
+    theseDeps <- as.list(available.packages[pkg, c("Depends", "Imports", "LinkingTo")])
+
+    ## Split fields, remove white space, get versioning
+    splitDeps <- lapply(theseDeps, function(x) {
+      if (is.na(x)) return(NULL)
+      splat <- unlist(strsplit(x, ",[[:space:]]*"))
+      gsub("[[:space:]].*", "", splat)
+    })
+    unlist(splitDeps, use.names = FALSE)
+
+  }))
+
+  ## Don't worry about R, base, recommended packages
+  ip <- installed.packages()
+  basePkgs <- rownames(ip)[!is.na(ip[, "Priority"])]
+  deps <- setdiff(deps, c("R", basePkgs))
+
+  sort(unique(deps))
+}
+
+recursivePackageDependencies <- function(pkgs, available.packages = available.packages()) {
+
+  deps <- getPackageDependencies(pkgs, available.packages)
+  depsToCheck <- setdiff(deps, getPackageDependencies(deps, available.packages))
+  while (length(depsToCheck)) {
+    newDeps <- getPackageDependencies(depsToCheck, available.packages)
+    deps <<- sort(unique(c(deps, newDeps)))
+    depsToCheck <- setdiff(newDeps, deps)
+  }
+  sort(unique(c("packrat", deps)))
+
+}
