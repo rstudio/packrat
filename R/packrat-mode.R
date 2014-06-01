@@ -77,6 +77,9 @@ setPackratModeOn <- function(projDir = NULL,
   .packrat_mutables$set(origLibPaths = .libPaths())
   .packrat_mutables$set(projDir = projDir)
 
+  # Clean the search path up -- unload libraries that may have been loaded before
+  cleanSearchPath(lib.loc = .libPaths())
+
   # Hide the site libraries
   hideSiteLibraries()
 
