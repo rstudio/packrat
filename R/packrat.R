@@ -134,11 +134,11 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
                source.packages=source.packages, lib.loc = NULL, ignore.stale=TRUE)
 
   # Use the lockfile to copy sources and install packages to the library
-  restore(projDir, overwrite.dirty=TRUE)
+  restore(projDir, overwrite.dirty = TRUE)
 
   # Copy bootstrap.R so a user can 'start from zero' with a project
   file.copy(
-    system.file(package="packrat", "bootstrap.R"),
+    system.file(package = "packrat", "bootstrap.R"),
     file.path(projDir, .packrat$packratFolderName, "bootstrap.R")
   )
 
@@ -151,6 +151,12 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
     updateRBuildIgnore(projDir)
   }
 
+  message("Bootstrap complete!")
+  if (projDir == getwd()) {
+    packrat_mode()
+  } else {
+    message("Start a new R session at '", projDir, "' to enter packrat mode.")
+  }
   invisible()
 }
 
