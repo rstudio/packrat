@@ -2,17 +2,16 @@
 \name{packrat-mode}
 \alias{packrat-mode}
 \alias{packrat_mode}
-\alias{packrat_off}
-\alias{packrat_on}
 \title{Packrat Mode}
 \usage{
-packrat_on(projDir = ".", auto.snapshot = TRUE, bootstrap = FALSE)
-
-packrat_off(projDir = NULL)
-
-packrat_mode(projDir = NULL, auto.snapshot = TRUE, bootstrap = FALSE)
+packrat_mode(mode = c("toggle", "on", "off"), projDir = NULL,
+  auto.snapshot = TRUE, bootstrap = FALSE)
 }
 \arguments{
+\item{mode}{If \code{toggle}, switch packrat mode to the opposite state; if
+\code{on}, force packrat mode on for \code{projDir}; if \code{off}, force
+packrat mode off for \code{projDir}.}
+
 \item{projDir}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
 
