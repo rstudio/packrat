@@ -29,19 +29,31 @@ getPackageRecords <- function(pkgNames, available=NULL, source.packages=NULL,
         pkgName %in% rownames(source.packages)) {
       # This package was a manually specified source package; use the
       # description file from there
-      record <- structure(list(
-        name = pkgName,
-        source = 'source',
-        version = as.character(source.packages[pkgName,"version"]),
-        source_path = as.character(source.packages[pkgName,"path"])
-      ), class=c('packageRecord', 'source'))
+      source_path <- as.character(source.packages[pkgName,"path"])
+      version <- as.character(source.packages[pkgName,"version"])
 
-      # Read the dependency information directly from the DESCRIPTION file
-      sourceDesc <- as.data.frame(
+      ## If it ends with tar.gz, pull the DESCRIPTION file out
+      if (endswith(source_path, "tar.gz")) {
+        tempdir <- file.path(tempdir(), paste("packrat", pkgName, version, sep = "-"))
+        dir.create(tempdir, recursive = TRUE)
+        untar(source_path, exdir = tempdir)
+        sourceDesc <- as.data.frame(
+          readDcf(file.path(tempdir, pkgName, "DESCRIPTION"))
+        )
+      } else {
+        # Read the dependency information directly from the DESCRIPTION file
+        sourceDesc <- as.data.frame(
           readDcf(file.path(source.packages[pkgName,"path"], "DESCRIPTION")))
+      }
       deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
       deps <- deps[deps != "R"]
       db <- NULL
+      record <- structure(list(
+        name = pkgName,
+        source = 'source',
+        version = version,
+        source_path = source_path
+      ), class=c('packageRecord', 'source'))
     } else {
       # This package is from an external source (CRAN-like repo or github);
       # attempt to get its description from the installed package database.
