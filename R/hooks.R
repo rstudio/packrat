@@ -5,8 +5,8 @@ snapshotHook <- function(expr, value, ok, visible) {
   tryCatch(
     expr = {
 
-      projDir <- getProjectDir()
-      packratDir <- getPackratDir(projDir)
+      project <- getProjectDir()
+      packratDir <- getPackratDir(project)
 
       ## A snapshot lock file that we should check to ensure we don't try to
       ## snapshot multiple times
@@ -20,12 +20,12 @@ snapshotHook <- function(expr, value, ok, visible) {
 
       peq <- function(x, y) paste(x, y, sep = " = ")
       snapshotArgs <- paste(sep = ", ",
-                            peq("projDir", shQuote(projDir)),
+                            peq("project", shQuote(project)),
                             peq("orphan.check", "FALSE"),
                             peq("auto.snapshot", "TRUE"),
                             peq("verbose", "FALSE")
       )
-      setwdCmd <- paste("setwd(", shQuote(projDir), ")")
+      setwdCmd <- paste("setwd(", shQuote(project), ")")
       snapshotCmd <- paste("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")))")
       cleanupCmd <- paste("file.remove(", shQuote(snapshotLockPath), ")")
       setLibsCmd <- paste(".libPaths( c(", paste(shQuote(.libPaths()), collapse = ", "), ") )")
@@ -51,12 +51,12 @@ snapshotHook <- function(expr, value, ok, visible) {
     # TODO: How should we handle an automatic snapshot fail?
     error = function(e) {
 
-      projDir <- .packrat_mutables$get("projDir")
+      project <- .packrat_mutables$get("project")
 
-      if (is.null(projDir)) {
+      if (is.null(project)) {
         file = "" ## to stdout
       } else {
-        file = file.path(projDir, .packrat$packratFolderName, "packrat.log")
+        file = file.path(project, .packrat$packratFolderName, "packrat.log")
       }
 
       if (inherits(e, "simpleError")) {

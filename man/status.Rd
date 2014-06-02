@@ -3,10 +3,10 @@
 \alias{status}
 \title{Show differences between the last snapshot and the library}
 \usage{
-status(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE)
+status(project = NULL, lib.loc = libDir(project), quiet = FALSE)
 }
 \arguments{
-\item{projDir}{The directory that contains the R project.}
+\item{project}{The directory that contains the R project.}
 
 \item{lib.loc}{The library to examine. Defaults to the private library
 associated with the project directory.}

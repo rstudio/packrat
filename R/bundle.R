@@ -2,7 +2,7 @@
 #'
 #' Bundle a packrat project, for easy sharing.
 #'
-#' @param projDir The project directory. Defaults to the currently activate
+#' @param project The project directory. Defaults to the currently activate
 #'  project. By default, the current project active under \code{packratMode}
 #'  is checked.
 #' @param file The location to file the bundled file. By default, we write
@@ -12,25 +12,25 @@
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
 #' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
-bundle <- function(projDir = NULL,
+bundle <- function(project = NULL,
                    file = NULL,
                    include.src = TRUE,
                    include.lib = FALSE,
                    overwrite = FALSE,
                    ...) {
 
-  projDir <- getProjectDir(projDir)
-  stopIfNotPackified(projDir)
+  project <- getProjectDir(project)
+  stopIfNotPackified(project)
 
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
-    tarName <- paste(basename(projDir), Sys.Date(), sep = "-")
+    tarName <- paste(basename(project), Sys.Date(), sep = "-")
     tarName <- paste(tarName, ".tar.gz", sep = "")
-    bundlesDir <- bundlesDir(projDir)
+    bundlesDir <- bundlesDir(project)
     if (!file.exists(bundlesDir)) {
       dir.create(bundlesDir)
     }
-    file <- file.path(bundlesDir(projDir), tarName)
+    file <- file.path(bundlesDir(project), tarName)
   }
 
   file <- normalizePath(file, mustWork = FALSE)
@@ -38,7 +38,7 @@ bundle <- function(projDir = NULL,
   # Make sure we're in the project dir so relative paths are properly set
   owd <- getwd()
   on.exit(setwd(owd))
-  setwd(projDir)
+  setwd(project)
 
   # Blacklist certain files / folders
   blackList <- c(
@@ -94,7 +94,7 @@ bundle <- function(projDir = NULL,
 
   ## Make sure the base folder name is inheritted from the project name
   setwd("../")
-  tar(file, files = file.path(basename(projDir), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
+  tar(file, files = file.path(basename(project), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
   message("The packrat project has been bundled at:\n- \"", file, "\"")
   invisible(file)
 }

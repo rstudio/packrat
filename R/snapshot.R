@@ -2,7 +2,7 @@
 #'
 #' Finds the packages in use by the R code in the project, and stores a list
 #' of those packages, their sources, and their current versions in packrat.
-#' @param projDir The project directory. Defaults to current working
+#' @param project The project directory. Defaults to current working
 #'   directory.
 #' @param available A database of available packages, as returned by
 #'   \code{\link{available.packages}}. It is only necessary to supply this
@@ -60,22 +60,22 @@
 #' ))
 #' }
 #' @export
-snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
+snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project),
                      source.packages = NULL, orphan.check = TRUE,
                      ignore.stale = FALSE, dry.run = FALSE,
                      prompt = interactive()) {
 
-  projDir <- getProjectDir(projDir)
+  project <- getProjectDir(project)
 
   # Prompt the user to bootstrap if the project has not yet been bootstrapped
-  stopIfNotPackified(projDir)
+  stopIfNotPackified(project)
 
-  if (file.exists(snapshotLockFilePath(projDir))) {
+  if (file.exists(snapshotLockFilePath(project))) {
     stop("An automatic snapshot is currently in progress -- cannot proceed")
   }
 
   source.packages <- getSourcePackageInfo(source.packages)
-  appPackages <- snapshotImpl(projDir, available, lib.loc,
+  appPackages <- snapshotImpl(project, available, lib.loc,
                               source.packages, dry.run,
                               orphan.check = orphan.check,
                               ignore.stale = ignore.stale,
@@ -91,28 +91,28 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
   for (pkgToInstall in pkgsToInstall) {
     message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
     type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
-                       projDir, NULL, activeRepos(projDir), lib.loc)
+                       project, NULL, activeRepos(project), lib.loc)
     message("OK (", type, ")")
   }
   for (pkgRecord in flattenPackageRecords(appPackages)) {
-    annotatePkgDesc(pkgRecord, projDir=projDir, lib=lib.loc)
+    annotatePkgDesc(pkgRecord, project=project, lib=lib.loc)
   }
 
 }
 
-snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
+snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
                          source.packages = NULL, dry.run = FALSE,
                          orphan.check = FALSE, ignore.stale = FALSE,
                          prompt = interactive(),
                          auto.snapshot = FALSE,
                          verbose = TRUE) {
-  lockPackages <- lockInfo(projDir, fatal=FALSE)
+  lockPackages <- lockInfo(project, fatal=FALSE)
 
   # Get the package records for dependencies of the app. It's necessary to
   # include .libPaths in the list of library locations because it's possible that
   # the user installed a package that relies on a recommended package, which
   # would be used by the app but not present in the private library.
-  appPackages <- getPackageRecords(sort(appDependencies(projDir)),
+  appPackages <- getPackageRecords(sort(appDependencies(project)),
                                    available,
                                    source.packages,
                                    lib.loc = unique(c(lib.loc, .libPaths())),
@@ -193,14 +193,14 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
   }
 
   if (!dry.run) {
-    snapshotSources(projDir, activeRepos(projDir), appPackagesFlat)
+    snapshotSources(project, activeRepos(project), appPackagesFlat)
     writeLockFile(
-      lockFilePath(projDir),
+      lockFilePath(project),
       appPackages
     )
     if (verbose) {
       message('Snapshot written to ',
-              shQuote(normalizePath(lockFilePath(projDir), winslash = '/'))
+              shQuote(normalizePath(lockFilePath(project), winslash = '/'))
       )
     }
   }
@@ -210,8 +210,8 @@ snapshotImpl <- function(projDir, available = NULL, lib.loc = libDir(projDir),
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
-activeRepos <- function(projDir) {
-  repos <- lockInfo(projDir, 'repos', fatal = FALSE)
+activeRepos <- function(project) {
+  repos <- lockInfo(project, 'repos', fatal = FALSE)
   if (length(repos) > 0)
     return(strsplit(repos, '\\s*,\\s*')[[1]])
 

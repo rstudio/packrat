@@ -3,10 +3,10 @@
 \alias{migrate}
 \title{Migrate to Packrat Mode}
 \usage{
-migrate(projDir = ".", ask = TRUE)
+migrate(project = ".", ask = TRUE)
 }
 \arguments{
-\item{projDir}{The project directory.}
+\item{project}{The project directory.}
 
 \item{ask}{Boolean, ask before removing the \code{.Renviron} file?}
 }

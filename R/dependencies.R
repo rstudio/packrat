@@ -7,7 +7,7 @@
 #' Only direct dependencies are detected (i.e. no recursion is done to find the
 #' dependencies of the dependencies).
 #'
-#' @param projDir Directory containing application. Defaults to current working
+#' @param project Directory containing application. Defaults to current working
 #'   directory.
 #' @return Returns a list of the names of the packages on which R code in the
 #'   application depends.
@@ -26,18 +26,18 @@
 #' appDependencies("~/projects/shiny/app1")
 #' }
 #' @keywords internal
-appDependencies <- function(projDir = NULL, available.packages = NULL) {
+appDependencies <- function(project = NULL, available.packages = NULL) {
 
   if (is.null(available.packages)) available.packages <- available.packages()
 
-  projDir <- getProjectDir(projDir)
+  project <- getProjectDir(project)
 
   ## For R packages, we only use the DESCRIPTION file
-  if (file.exists(file.path(projDir, "DESCRIPTION"))) {
+  if (file.exists(file.path(project, "DESCRIPTION"))) {
 
     ## Make sure we get records recursively from the packages in DESCRIPTION
     descriptionDeps <-
-      pkgDescriptionDependencies(file.path(projDir, "DESCRIPTION"))$Package
+      pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
 
     ## For downstream dependencies, we don't grab their Suggests:
     ## Presumedly, we can build child dependencies without vignettes, and hence
@@ -47,7 +47,7 @@ appDependencies <- function(projDir = NULL, available.packages = NULL) {
                                               available.packages)
     sort(unique(c(descriptionDeps, childDeps)))
   } else {
-    unique(c(dirDependencies(projDir), 'packrat'))
+    unique(c(dirDependencies(project), 'packrat'))
   }
 
 }

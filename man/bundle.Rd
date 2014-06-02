@@ -3,11 +3,11 @@
 \alias{bundle}
 \title{Bundle a Packrat Project}
 \usage{
-bundle(projDir = NULL, file = NULL, include.src = TRUE,
+bundle(project = NULL, file = NULL, include.src = TRUE,
   include.lib = FALSE, overwrite = FALSE, ...)
 }
 \arguments{
-\item{projDir}{The project directory. Defaults to the currently activate
+\item{project}{The project directory. Defaults to the currently activate
 project. By default, the current project active under \code{packratMode}
 is checked.}
 
