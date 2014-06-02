@@ -3,12 +3,12 @@
 \alias{snapshot}
 \title{Capture and store the packages and versions in use}
 \usage{
-snapshot(projDir = NULL, available = NULL, lib.loc = libDir(projDir),
+snapshot(project = NULL, available = NULL, lib.loc = libDir(project),
   source.packages = NULL, orphan.check = TRUE, ignore.stale = FALSE,
   dry.run = FALSE, prompt = interactive())
 }
 \arguments{
-\item{projDir}{The project directory. Defaults to current working
+\item{project}{The project directory. Defaults to current working
 directory.}
 
 \item{available}{A database of available packages, as returned by

@@ -4,14 +4,14 @@
 \alias{packrat_mode}
 \title{Packrat Mode}
 \usage{
-packrat_mode(on = NULL, projDir = NULL, bootstrap = FALSE,
+packrat_mode(on = NULL, project = NULL, bootstrap = FALSE,
   auto.snapshot = TRUE, clean.search.path = TRUE)
 }
 \arguments{
 \item{on}{Turn packrat mode on (\code{TRUE}) or off (\code{FALSE}). If omitted, packrat mode
 will be toggled.}
 
-\item{projDir}{The directory in which packrat mode is launched -- this is
+\item{project}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
 
 \item{auto.snapshot}{Whether or not we should use automatic snapshotting.}

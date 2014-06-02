@@ -1,27 +1,27 @@
 ## Different paths that are used for a packrat project
 
-getProjectDir <- function(projDir = NULL) {
+getProjectDir <- function(project = NULL) {
 
-  ## If projDir is NULL, and .packrat$projDir is NULL, then we should look
+  ## If project is NULL, and .packrat$project is NULL, then we should look
   ## in the current working directory
-  cachedDir <- .packrat_mutables$get("projDir")
-  if (is.null(projDir)) {
+  cachedDir <- .packrat_mutables$get("project")
+  if (is.null(project)) {
     if (is.null(cachedDir)) {
-      projDir <- getwd()
+      project <- getwd()
     } else {
-      projDir <- cachedDir
+      project <- cachedDir
     }
   }
 
   file.path(
-    normalizePath(projDir, winslash = '/', mustWork = TRUE)
+    normalizePath(project, winslash = '/', mustWork = TRUE)
   )
 }
 
-getPackratDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
+getPackratDir <- function(project = NULL) {
+  project <- getProjectDir(project)
   file.path(
-    projDir,
+    project,
     .packrat$packratFolderName
   )
 }
@@ -31,20 +31,20 @@ getPackratDir <- function(projDir = NULL) {
 ## containing all libraries for a given project (which may want to be copied around
 ## -- unlikely since we encourage people to build from snapshots, but we leave it
 ## possible)
-libDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
+libDir <- function(project = NULL) {
+  project <- getProjectDir(project)
   file.path(
-    libraryRootDir(projDir),
+    libraryRootDir(project),
     R.version$platform,
     getRversion()
   )
 }
 
 ## The root library directory for a project, e.g. <proj>/<packrat>/lib
-libraryRootDir <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
+libraryRootDir <- function(project = NULL) {
+  project <- getProjectDir(project)
   file.path(
-    projDir,
+    project,
     .packrat$packratFolderName,
     'lib'
   )
@@ -59,45 +59,45 @@ relativeLibDir <- function(libraryRoot) {
 }
 
 # Temporary library directory when modifying an in-use library
-newLibraryDir <- function(projDir = NULL) {
+newLibraryDir <- function(project = NULL) {
   file.path(
-    getPackratDir(projDir),
+    getPackratDir(project),
     'library.new'
   )
 }
 
-oldLibraryDir <- function(projDir = NULL) {
+oldLibraryDir <- function(project = NULL) {
   file.path(
-    getPackratDir(projDir),
+    getPackratDir(project),
     'library.old'
   )
 }
 
-srcDir <- function(projDir = NULL) {
+srcDir <- function(project = NULL) {
   file.path(
-    getPackratDir(projDir),
+    getPackratDir(project),
     'src'
   )
 }
 
-bundlesDir <- function(projDir = NULL) {
+bundlesDir <- function(project = NULL) {
   file.path(
-    getPackratDir(projDir),
+    getPackratDir(project),
     'bundles'
   )
 }
 
-lockFilePath <- function(projDir = NULL) {
-  file.path(getPackratDir(projDir), "packrat.lock")
+lockFilePath <- function(project = NULL) {
+  file.path(getPackratDir(project), "packrat.lock")
 }
 
-snapshotLockFilePath <- function(projDir = NULL) {
-  file.path(getPackratDir(projDir), "snapshot.lock")
+snapshotLockFilePath <- function(project = NULL) {
+  file.path(getPackratDir(project), "snapshot.lock")
 }
 
 ## Use a file instead of env. variables as it's better handled across
 ## multiple R sessions
-packratModeFilePath <- function(projDir = NULL) {
-  packratDir <- getPackratDir(projDir)
+packratModeFilePath <- function(project = NULL) {
+  packratDir <- getPackratDir(project)
   file.path(packratDir, "packrat.mode")
 }

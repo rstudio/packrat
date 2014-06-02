@@ -105,7 +105,7 @@ NULL
 #' will modify that private library. You can sync this private library with
 #' packrat using \code{\link{snapshot}} and \code{\link{restore}}.
 #'
-#' @param projDir The directory that contains the \R project.
+#' @param project The directory that contains the \R project.
 #' @param source.packages List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or GitHub.
@@ -114,14 +114,14 @@ NULL
 #'   \code{bootstrap}.
 #'
 #' @export
-bootstrap <- function(projDir = '.', source.packages = character()) {
+bootstrap <- function(project = '.', source.packages = character()) {
 
-  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
-  if (!checkPackified(projDir = projDir, quiet = TRUE)) {
-    packify(projDir = projDir)
+  project <- normalizePath(project, winslash='/', mustWork=TRUE)
+  if (!checkPackified(project = project, quiet = TRUE)) {
+    packify(project = project)
   }
 
-  descriptionFile <- file.path(projDir, 'DESCRIPTION')
+  descriptionFile <- file.path(project, 'DESCRIPTION')
 
   if (file.exists(descriptionFile)) {
     description <- as.data.frame(readDcf(descriptionFile))
@@ -130,42 +130,42 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
 
   # Take a snapshot
   source.packages <- getSourcePackageInfo(source.packages)
-  snapshotImpl(projDir, available.packages(contrib.url(activeRepos(projDir))),
+  snapshotImpl(project, available.packages(contrib.url(activeRepos(project))),
                source.packages=source.packages, lib.loc = NULL, ignore.stale=TRUE)
 
   # Use the lockfile to copy sources and install packages to the library
-  restore(projDir, overwrite.dirty = TRUE)
+  restore(project, overwrite.dirty = TRUE)
 
   # Copy bootstrap.R so a user can 'start from zero' with a project
   file.copy(
     system.file(package = "packrat", "bootstrap.R"),
-    file.path(projDir, .packrat$packratFolderName, "bootstrap.R")
+    file.path(project, .packrat$packratFolderName, "bootstrap.R")
   )
 
   # Copy .Rprofile from init.R so that users are bounced into packrat mode
   # when launching \R session in project dir
-  augmentRprofile(projDir)
+  augmentRprofile(project)
 
   # Make sure the packrat directory is ignored if we're in a package
   if (file.exists(descriptionFile)) {
-    updateRBuildIgnore(projDir)
+    updateRBuildIgnore(project)
   }
 
   # Update the .gitignore to ignore the packrat library
-  if (isGitProject(projDir)) {
-    updateGitIgnore(projDir)
+  if (isGitProject(project)) {
+    updateGitIgnore(project)
   }
 
   # Update the svn ignore to ignore the packrat library
-  if (isSvnProject(projDir)) {
-    updateSvnIgnore(projDir)
+  if (isSvnProject(project)) {
+    updateSvnIgnore(project)
   }
 
   message("Bootstrap complete!")
-  if (projDir == getwd()) {
+  if (project == getwd()) {
     packrat_mode()
   } else {
-    message("Start a new R session at '", projDir, "' to enter packrat mode.")
+    message("Start a new R session at '", project, "' to enter packrat mode.")
   }
   invisible()
 }
@@ -208,7 +208,7 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
 #' \code{restore} works only on the private package library created by packrat;
 #' if you have other libraries on your path, they will be unaffected.
 #'
-#' @param projDir The project directory. When in packrat mode, if this is \code{NULL},
+#' @param project The project directory. When in packrat mode, if this is \code{NULL},
 #' then the directory associated with the current packrat project is used. Otherwise,
 #' the project directory specified is used.
 #' @param overwrite.dirty A dirty package is one that has been changed since the
@@ -229,13 +229,13 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
 #' and the library.
 #'
 #' @export
-restore <- function(projDir = NULL,
+restore <- function(project = NULL,
                     overwrite.dirty = FALSE,
                     prompt = interactive(),
                     dry.run = FALSE) {
 
-  projDir <- getProjectDir(projDir)
-  stopIfNotPackified(projDir)
+  project <- getProjectDir(project)
+  stopIfNotPackified(project)
 
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
@@ -247,15 +247,15 @@ restore <- function(projDir = NULL,
     on.exit(Sys.setenv("CYGWIN" = cygwin), add = TRUE)
   }
 
-  packages <- lockInfo(projDir)
-  r_version <- lockInfo(projDir, 'r_version')
+  packages <- lockInfo(project)
+  r_version <- lockInfo(project, 'r_version')
   if (!identical(as.character(getRversion()), r_version)) {
     warning('The most recent snapshot was generated using R version ',
             r_version)
   }
 
   # Make sure the library directory exists
-  libDir <- libDir(projDir)
+  libDir <- libDir(project)
   if (!file.exists(libDir)) {
     dir.create(libDir, recursive=TRUE)
   }
@@ -287,9 +287,9 @@ restore <- function(projDir = NULL,
 
   # Install each package from CRAN or github, from binaries when available and
   # then from sources.
-  repos <- lockInfo(projDir, 'repos')
+  repos <- lockInfo(project, 'repos')
   repos <- strsplit(repos, "\\s*,\\s*")[[1]]
-  restoreImpl(projDir, repos, packages, libDir,
+  restoreImpl(project, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt,
               dry.run = dry.run)
 }
@@ -309,7 +309,7 @@ restore <- function(projDir = NULL,
 #' package, add a statement such as \code{\link{require}(package-name)} to any .R
 #' file in your project's directory.
 #'
-#' @param projDir The project directory. Defaults to current working
+#' @param project The project directory. Defaults to current working
 #' directory.
 #' @param lib.loc The library to clean. Defaults to the private package library
 #' associated with the project directory.
@@ -319,13 +319,13 @@ restore <- function(projDir = NULL,
 #' @seealso \code{\link{appDependencies}} for an explanation of how dependencies are detected.
 #'
 #' @export
-clean <- function(projDir = NULL, lib.loc = libDir(projDir),
+clean <- function(project = NULL, lib.loc = libDir(project),
                   prompt = interactive()) {
 
-  projDir <- getProjectDir(projDir)
-  stopIfNotPackified(projDir)
+  project <- getProjectDir(project)
+  stopIfNotPackified(project)
 
-  rootDeps <- appDependencies(projDir)
+  rootDeps <- appDependencies(project)
   missingPackageNames <- character(0)
   packagesInUse <- getPackageRecords(
     rootDeps, available=NULL, source.packages=NULL, recursive=TRUE,
@@ -371,7 +371,7 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
       }
     }
 
-    removePkgs(projDir, orphans, lib.loc)
+    removePkgs(project, orphans, lib.loc)
     message("Packages '", paste(orphans, collapse = ", "), "' have been removed from the private library.")
     return(invisible(orphans))
   } else {
@@ -393,29 +393,29 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
 #' You'll need to restart \R in the specified directory after running
 #' \code{packify} in order to start using the private package library.
 #'
-#' @param projDir The directory in which to install the \code{.Rprofile} file.
+#' @param project The directory in which to install the \code{.Rprofile} file.
 #'
 #' @export
-packify <- function(projDir = NULL) {
+packify <- function(project = NULL) {
 
-  projDir <- getProjectDir(projDir)
-  packratDir <- getPackratDir(projDir)
+  project <- getProjectDir(project)
+  packratDir <- getPackratDir(project)
 
   if (!file.exists(packratDir)) {
     dir.create(packratDir)
   }
 
-  libraryRootDir <- libraryRootDir(projDir)
+  libraryRootDir <- libraryRootDir(project)
   if (!file.exists(libraryRootDir)) {
     dir.create(libraryRootDir)
   }
 
-  srcDir <- srcDir(projDir)
+  srcDir <- srcDir(project)
   if (!file.exists(srcDir)) {
     dir.create(srcDir)
   }
 
-  .Rprofile <- file.path(projDir, ".Rprofile")
+  .Rprofile <- file.path(project, ".Rprofile")
   init.R <- system.file(package = "packrat", "init.R")
 
   if (!file.exists(.Rprofile)) {
@@ -432,10 +432,10 @@ packify <- function(projDir = NULL) {
 
   msg <- "Packrat startup directives installed."
 
-  if (identical(projDir, getwd())) {
+  if (identical(project, getwd())) {
     msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
   } else {
-    msg <- paste(msg, "Please call \"packrat::packrat_on(projDir = '", projDir, "')\"",
+    msg <- paste(msg, "Please call \"packrat::packrat_on(project = '", project, "')\"",
                  "to initialize packrat.")
   }
 
@@ -444,16 +444,16 @@ packify <- function(projDir = NULL) {
   invisible()
 }
 
-lockInfo <- function(projDir, property='packages', fatal=TRUE) {
+lockInfo <- function(project, property='packages', fatal=TRUE) {
 
-  projDir <- getProjectDir(projDir)
+  project <- getProjectDir(project)
 
   # Get and parse the lockfile
-  lockFilePath <- lockFilePath(projDir)
+  lockFilePath <- lockFilePath(project)
   if (!file.exists(lockFilePath)) {
     if (fatal) {
       stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
-                 projDir, "') to generate it.", sep = ""))
+                 project, "') to generate it.", sep = ""))
     } else {
       return(list())
     }

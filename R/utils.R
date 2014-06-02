@@ -157,29 +157,29 @@ endswith <- function(str1, str2) {
   })
 }
 
-stopIfNotPackified <- function(projDir) {
-  if (!checkPackified(projDir, quiet = TRUE)) {
-    if (identical(projDir, getwd())) {
+stopIfNotPackified <- function(project) {
+  if (!checkPackified(project, quiet = TRUE)) {
+    if (identical(project, getwd())) {
       stop("This project has not yet been packified.\nRun 'packrat::bootstrap() to bootstrap packrat.",
            call. = FALSE)
     } else {
-      stop("The project at '", projDir, "' has not yet been packified.\nRun 'packrat::bootstrap('", projDir, "') to bootstrap packrat.",
+      stop("The project at '", project, "' has not yet been packified.\nRun 'packrat::bootstrap('", project, "') to bootstrap packrat.",
            call. = FALSE)
     }
   }
 }
 
-isGitProject <- function(projDir) {
-  .git <- file.path(projDir, ".git")
+isGitProject <- function(project) {
+  .git <- file.path(project, ".git")
   file.exists(.git) && is_dir(.git)
 }
 
-isSvnProject <- function(projDir) {
+isSvnProject <- function(project) {
   ## TODO
   FALSE
 }
 
-updateSvnIgnore <- function(projDir) {
+updateSvnIgnore <- function(project) {
   ## TODO
   FALSE
 }

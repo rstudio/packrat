@@ -13,13 +13,13 @@
 ##' \item Update the package \code{.Rprofile}.
 ##' }
 ##'
-##' @param projDir The project directory.
+##' @param project The project directory.
 ##' @param ask Boolean, ask before removing the \code{.Renviron} file?
-migrate <- function(projDir = ".", ask = TRUE) {
+migrate <- function(project = ".", ask = TRUE) {
 
   owd <- getwd()
   on.exit(setwd(owd))
-  setwd(projDir)
+  setwd(project)
 
   ## Check and see if we're using an older packrat project
   if (!file.exists("packrat.lock")) {
@@ -41,32 +41,32 @@ migrate <- function(projDir = ".", ask = TRUE) {
 
   ## Clean up on fail if we are generating the new library directory but
   ## copying fails
-  needsCleanupOnFail <- !file.exists(libraryRootDir(projDir))
+  needsCleanupOnFail <- !file.exists(libraryRootDir(project))
 
   ## Copy the library folder
   tryCatch({
-    res <- dir_copy("library", libraryRootDir(projDir))
+    res <- dir_copy("library", libraryRootDir(project))
     if (!all(res)) {
       stop()
     }
     message("- Library folder successfully copied.")
   }, error = function(e) {
     if (needsCleanupOnFail) {
-      unlink(libraryRootDir(projDir), recursive = TRUE)
+      unlink(libraryRootDir(project), recursive = TRUE)
     }
     stop("Could not successfully copy library")
   })
 
   ## Copy the packrat sources
-  needsCleanupOnFail <- !file.exists(srcDir(projDir))
+  needsCleanupOnFail <- !file.exists(srcDir(project))
 
   tryCatch({
-    res <- dir_copy("packrat.sources", srcDir(projDir))
+    res <- dir_copy("packrat.sources", srcDir(project))
     if (!all(res)) stop()
     message("- Source folder successfully copied.")
   }, error = function(e) {
     if (needsCleanupOnFail) {
-      unlink(srcDir(projDir), recursive = TRUE)
+      unlink(srcDir(project), recursive = TRUE)
     }
     stop("Could not successfully copy packrat sources")
   })

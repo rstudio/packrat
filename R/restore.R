@@ -205,14 +205,14 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
   }
 }
 
-snapshotSources <- function(projDir, repos, pkgRecords) {
+snapshotSources <- function(project, repos, pkgRecords) {
 
   # Get a list of source packages available on the repositories
   availablePkgs <- available.packages(contrib.url(repos, "source"),
                                       type = "source")
 
   # Find the source directory (create it if necessary)
-  sourceDir <- srcDir(projDir)
+  sourceDir <- srcDir(project)
   if (!file.exists(sourceDir))
     dir.create(sourceDir, recursive = TRUE)
 
@@ -229,7 +229,7 @@ snapshotSources <- function(projDir, repos, pkgRecords) {
   invisible(NULL)
 }
 
-annotatePkgDesc <- function(pkgRecord, projDir, lib = libDir(projDir)) {
+annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
   descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
   appendToDcf(descFile, data.frame(
     InstallAgent=paste('packrat', packageVersion('packrat')),
@@ -237,10 +237,10 @@ annotatePkgDesc <- function(pkgRecord, projDir, lib = libDir(projDir)) {
 }
 
 # Annotate a set of packages by name.
-annotatePkgs <- function(pkgNames, projDir, lib = libDir(projDir)) {
-  records <- searchPackages(lockInfo(projDir), pkgNames)
+annotatePkgs <- function(pkgNames, project, lib = libDir(project)) {
+  records <- searchPackages(lockInfo(project), pkgNames)
   lapply(records, function(record) {
-    annotatePkgDesc(record, projDir, lib)
+    annotatePkgDesc(record, project, lib)
   })
 }
 
@@ -263,15 +263,15 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
 
 # Removes one or more packages from the app's private library and cached
 # sources.
-removePkgs <- function(projDir, pkgNames, lib.loc = libDir(projDir)) {
-  unlink(file.path(srcDir(projDir), pkgNames), recursive = TRUE)
+removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
+  unlink(file.path(srcDir(project), pkgNames), recursive = TRUE)
   remove.packages(pkgNames, lib.loc)
 }
 
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
-installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
-                       lib = libDir(projDir)) {
+installPkg <- function(pkgRecord, project, availablePkgs, repos,
+                       lib = libDir(project)) {
   pkgSrc <- NULL
   type <- "built source"
   needsInstall <- TRUE
@@ -302,14 +302,14 @@ installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
   if (is.null(pkgSrc)) {
     # When installing from github or an older version, use the cached source
     # tarball or zip created in snapshotSources
-    pkgSrc <- file.path(srcDir(projDir), pkgRecord$name,
+    pkgSrc <- file.path(srcDir(project), pkgRecord$name,
                         pkgSrcFilename(pkgRecord))
   }
   if (!file.exists(pkgSrc)) {
     # If the source file is missing, try to download it. (Could happen in the
     # case where the packrat lockfile is present but cached sources are
     # missing.)
-    getSourceForPkgRecord(pkgRecord, srcDir(projDir),
+    getSourceForPkgRecord(pkgRecord, srcDir(project),
                           availablePkgs, repos, quiet = TRUE)
     if (!file.exists(pkgSrc)) {
       stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
@@ -336,12 +336,12 @@ installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
   }
 
   # Annotate DESCRIPTION file so we know we installed it
-  annotatePkgDesc(pkgRecord, projDir, lib)
+  annotatePkgDesc(pkgRecord, project, lib)
 
   return(type)
 }
 
-playActions <- function(pkgRecords, actions, repos, projDir, lib) {
+playActions <- function(pkgRecords, actions, repos, project, lib) {
   # Get the list of available packages and the latest version of those packages
   # from the repositories, and the local install list for comparison
   availablePkgs <- available.packages(contrib.url(repos))
@@ -370,7 +370,7 @@ playActions <- function(pkgRecords, actions, repos, projDir, lib) {
         message("Installing ", pkgRecord$name, " (", pkgRecord$version,
                 ") ... ", appendLF = FALSE)
         file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
-        annotatePkgDesc(pkgRecord, projDir, lib)
+        annotatePkgDesc(pkgRecord, project, lib)
         message("OK (copied local binary)")
         next
       }
@@ -383,29 +383,29 @@ playActions <- function(pkgRecords, actions, repos, projDir, lib) {
       message("Replacing ", pkgRecord$name, " (", action, " ",
               installedPkgs[pkgRecord$name,"Version"], " to ",
               pkgRecord$version, ") ... ", appendLF = FALSE)
-      removePkgs(projDir, pkgRecord$name, lib)
+      removePkgs(project, pkgRecord$name, lib)
     } else if (identical(action, "add")) {
       message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ",
               appendLF = FALSE)
     } else if (identical(action, "remove")) {
       if (is.null(pkgRecord)) {
         message("Removing ", names(actions[i]), " ... ", appendLF = FALSE)
-        removePkgs(projDir, names(actions[i]), lib)
+        removePkgs(project, names(actions[i]), lib)
       } else {
         message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
           appendLF = FALSE)
-        removePkgs(projDir, pkgRecord$name, lib)
+        removePkgs(project, pkgRecord$name, lib)
       }
       message("OK")
       next
     }
-    type <- installPkg(pkgRecord, projDir, availablePkgs, repos, lib)
+    type <- installPkg(pkgRecord, project, availablePkgs, repos, lib)
     message("OK (", type, ")")
   }
   invisible()
 }
 
-restoreImpl <- function(projDir, repos, pkgRecords, lib,
+restoreImpl <- function(project, repos, pkgRecords, lib,
                         pkgsToIgnore=character(0),
                         prompt=interactive(),
                         dry.run = FALSE) {
@@ -456,8 +456,8 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
   targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
                    identical(lib, .libPaths()[1])) {
 
-    newLibrary <- newLibraryDir(projDir)
-    dir_copy(libraryRootDir(projDir), newLibrary)
+    newLibrary <- newLibraryDir(project)
+    dir_copy(libraryRootDir(project), newLibrary)
     restartNeeded <- TRUE
     file.path(newLibrary, R.version$platform, getRversion())
   } else {
@@ -466,7 +466,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
 
   # Play the list, if there's anything to play
   if (!dry.run) {
-    playActions(pkgRecords, actions, repos, projDir, targetLib)
+    playActions(pkgRecords, actions, repos, project, targetLib)
     if (restartNeeded) {
       message("You must restart R to finish applying these changes.")
     }
@@ -474,7 +474,7 @@ restoreImpl <- function(projDir, repos, pkgRecords, lib,
     list(pkgRecords = pkgRecords,
          actions = actions,
          repos = repos,
-         projDir = projDir,
+         project = project,
          targetLib = targetLib)
   }
 }

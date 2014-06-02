@@ -3,11 +3,11 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-restore(projDir = NULL, overwrite.dirty = FALSE, prompt = interactive(),
+restore(project = NULL, overwrite.dirty = FALSE, prompt = interactive(),
   dry.run = FALSE)
 }
 \arguments{
-\item{projDir}{The project directory. When in packrat mode, if this is \code{NULL},
+\item{project}{The project directory. When in packrat mode, if this is \code{NULL},
 then the directory associated with the current packrat project is used. Otherwise,
 the project directory specified is used.}
 

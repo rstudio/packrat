@@ -88,19 +88,19 @@ makeLibrariesProject <- function() {
     warning("This function is only used to build a sample 'libraries' project in the testthat dir")
     return(NULL)
   }
-  projDir <- file.path("projects", "libraries")
-  unlink(projDir, recursive = TRUE)
-  dir.create(projDir)
-  cat("library(bread)", file = file.path(projDir, "library.R"), sep = "\n")
+  project <- file.path("projects", "libraries")
+  unlink(project, recursive = TRUE)
+  dir.create(project)
+  cat("library(bread)", file = file.path(project, "library.R"), sep = "\n")
 
   ## Create the potential packrat libraries that might exist
-  dir.create(newLibraryDir(projDir), recursive = TRUE)
-  dir.create(oldLibraryDir(projDir), recursive = TRUE)
-  dir.create(libraryRootDir(projDir), recursive = TRUE)
+  dir.create(newLibraryDir(project), recursive = TRUE)
+  dir.create(oldLibraryDir(project), recursive = TRUE)
+  dir.create(libraryRootDir(project), recursive = TRUE)
 
   # Some files within depending on oatmeal
-  cat("library(oatmeal)", file = file.path(libraryRootDir(projDir), "lib-current.R"), sep = "\n")
-  cat("library(oatmeal)", file = file.path(oldLibraryDir(projDir), "lib-old.R"), sep = "\n")
-  cat("library(oatmeal)", file = file.path(newLibraryDir(projDir), "lib-new.R"), sep = "\n")
-  projDir
+  cat("library(oatmeal)", file = file.path(libraryRootDir(project), "lib-current.R"), sep = "\n")
+  cat("library(oatmeal)", file = file.path(oldLibraryDir(project), "lib-old.R"), sep = "\n")
+  cat("library(oatmeal)", file = file.path(newLibraryDir(project), "lib-new.R"), sep = "\n")
+  project
 }

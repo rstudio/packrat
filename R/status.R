@@ -12,7 +12,7 @@
 #' packages from the packrat dependencies. In this case, you simply need to tell
 #' packrat to update your private package library using \code{\link{restore}}.
 #'
-#' @param projDir The directory that contains the R project.
+#' @param project The directory that contains the R project.
 #' @param lib.loc The library to examine. Defaults to the private library
 #' associated with the project directory.
 #' @param quiet Print detailed information about the packrat status to the console?
@@ -26,23 +26,23 @@
 #' \item{currently.used}{Whether the package is used in any of the R code in the current project.}
 #'
 #' @export
-status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
+status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
 
-  projDir <- getProjectDir(projDir)
-  stopIfNotPackified(projDir)
+  project <- getProjectDir(project)
+  stopIfNotPackified(project)
 
-  projDirDefault <- identical(projDir, '.')
-  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
+  projectDefault <- identical(project, '.')
+  project <- normalizePath(project, winslash='/', mustWork=TRUE)
 
   ### Step 1: Collect packages from three sources: packrat.lock, code inspection
   ### (using lib.loc and .libPaths() to find packages/dependencies), and by
   ### enumerating the packages in lib.loc.
 
   ## Packages from the lockfile (with their version)
-  packratPackages <- lockInfo(projDir, fatal=FALSE)
+  packratPackages <- lockInfo(project, fatal=FALSE)
 
   if (length(packratPackages) == 0) {
-    bootstrapArg <- if (projDirDefault) '' else deparse(projDir)
+    bootstrapArg <- if (projectDefault) '' else deparse(project)
     cat('This directory does not appear to be using packrat.\n',
         'Call packrat::bootstrap(', bootstrapArg, ') to initialize packrat.',
         sep = '')
@@ -70,7 +70,7 @@ status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
   # Don't stop execution if package missing from library; just propogate later
   # as information to user
   inferredPkgRecords <- getPackageRecords(
-    appDependencies(projDir),
+    appDependencies(project),
     missing.package = function(package, lib.loc) NULL
   )
   inferredPkgNames <- pkgNames(flattenPackageRecords(inferredPkgRecords))

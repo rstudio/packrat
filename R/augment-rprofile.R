@@ -1,9 +1,9 @@
 ## Augment the .Rprofile for a project -- if it doesn't exist, just copy
 ## from packrat; if it does, check it and add if necessary
-augmentRprofile <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
+augmentRprofile <- function(project = NULL) {
+  project <- getProjectDir(project)
 
-  path <- file.path(projDir, ".Rprofile")
+  path <- file.path(project, ".Rprofile")
   if (!file.exists(path)) {
     file.copy(
       system.file(package="packrat", "init.R"),
