@@ -115,10 +115,10 @@ NULL
 #'
 #' @export
 bootstrap <- function(projDir = '.', source.packages = character()) {
-  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
 
-  if (checkPackified(projDir = projDir, quiet = TRUE)) {
-    stop("This project is already running under packrat!")
+  projDir <- normalizePath(projDir, winslash='/', mustWork=TRUE)
+  if (!checkPackified(projDir = projDir, quiet = TRUE)) {
+    packify(projDir = projDir)
   }
 
   descriptionFile <- file.path(projDir, 'DESCRIPTION')
@@ -399,6 +399,21 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
 packify <- function(projDir = NULL) {
 
   projDir <- getProjectDir(projDir)
+  packratDir <- getPackratDir(projDir)
+
+  if (!file.exists(packratDir)) {
+    dir.create(packratDir)
+  }
+
+  libraryRootDir <- libraryRootDir(projDir)
+  if (!file.exists(libraryRootDir)) {
+    dir.create(libraryRootDir)
+  }
+
+  srcDir <- srcDir(projDir)
+  if (!file.exists(srcDir)) {
+    dir.create(srcDir)
+  }
 
   .Rprofile <- file.path(projDir, ".Rprofile")
   init.R <- system.file(package = "packrat", "init.R")
