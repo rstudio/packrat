@@ -4,13 +4,12 @@
 \alias{packrat_mode}
 \title{Packrat Mode}
 \usage{
-packrat_mode(mode = c("toggle", "on", "off"), projDir = NULL,
-  auto.snapshot = TRUE, bootstrap = FALSE)
+packrat_mode(on = NULL, projDir = NULL, bootstrap = FALSE,
+  auto.snapshot = TRUE, clean.search.path = TRUE)
 }
 \arguments{
-\item{mode}{If \code{toggle}, switch packrat mode to the opposite state; if
-\code{on}, force packrat mode on for \code{projDir}; if \code{off}, force
-packrat mode off for \code{projDir}.}
+\item{on}{Turn packrat mode on (\code{TRUE}) or off (\code{FALSE}). If omitted, packrat mode
+will be toggled.}
 
 \item{projDir}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
@@ -19,6 +18,9 @@ where local libraries will be used and updated.}
 
 \item{bootstrap}{Whether or not we should try to bootstrap a project directory
 that has not yet been packified.}
+
+\item{clean.search.path}{Detach and unload any packages loaded from a user library before
+entering packrat mode?}
 }
 \description{
 Use these functions to switch \code{packrat} mode on and off. When within
