@@ -14,7 +14,8 @@ peq <- function(x, y) paste(x, y, sep = " = ")
 installArgs <- c(
   peq("pkgs", shQuote(packratSrcPath)),
   peq("lib", shQuote(lib)),
-  peq("repos", "NULL")
+  peq("repos", "NULL"),
+  peq("type", shQuote("source"))
 )
 installCmd <- paste(sep = "",
                     "install.packages(", paste(installArgs, collapse = ", "), ")")
@@ -44,4 +45,10 @@ cat(DESCRIPTION, file = packratDescPath, sep = "\n")
 message("> Attaching packrat")
 library("packrat", character.only = TRUE, lib.loc = lib)
 
-message("Packrat successfully installed. Run 'packrat_mode()' to enter packrat mode.")
+message("> Entering packrat mode")
+packrat_mode()
+
+message("> Restoring library")
+restore()
+
+message("Packrat bootstrap successfully completed.")
