@@ -67,6 +67,9 @@ snapshot <- function(projDir = NULL, available = NULL, lib.loc = libDir(projDir)
 
   projDir <- getProjectDir(projDir)
 
+  # Prompt the user to bootstrap if the project has not yet been bootstrapped
+  stopIfNotPackified(projDir)
+
   if (file.exists(snapshotLockFilePath(projDir))) {
     stop("An automatic snapshot is currently in progress -- cannot proceed")
   }

@@ -30,6 +30,8 @@ status <- function(projDir = NULL, lib.loc = libDir(projDir), quiet = FALSE) {
 
   projDir <- getProjectDir(projDir)
 
+  stopIfNotPackified(projDir)
+
   if (!isPackratModeOn()) {
     message("Packrat mode is currently turned off. Toggle it on with 'packrat_on()'.")
     return(invisible(NULL))

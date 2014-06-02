@@ -156,3 +156,15 @@ endswith <- function(str1, str2) {
     )
   })
 }
+
+stopIfNotPackified <- function(projDir) {
+  if (!checkPackified(projDir, quiet = TRUE)) {
+    if (identical(projDir, getwd())) {
+      stop("This project has not yet been packified.\nRun 'packrat::bootstrap() to bootstrap packrat.",
+           call. = FALSE)
+    } else {
+      stop("The project at '", projDir, "' has not yet been packified.\nRun 'packrat::bootstrap('", projDir, "') to bootstrap packrat.",
+           call. = FALSE)
+    }
+  }
+}

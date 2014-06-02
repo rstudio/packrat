@@ -231,6 +231,7 @@ restore <- function(projDir = NULL,
                     dry.run = FALSE) {
 
   projDir <- getProjectDir(projDir)
+  stopIfNotPackified(projDir)
 
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
@@ -318,6 +319,7 @@ clean <- function(projDir = NULL, lib.loc = libDir(projDir),
                   prompt = interactive()) {
 
   projDir <- getProjectDir(projDir)
+  stopIfNotPackified(projDir)
 
   rootDeps <- appDependencies(projDir)
   missingPackageNames <- character(0)
