@@ -4,7 +4,8 @@ isPackratModeOn <- function(projDir = NULL) {
 
 setPackratModeOn <- function(projDir = NULL,
                              bootstrap = TRUE,
-                             auto.snapshot = TRUE) {
+                             auto.snapshot = TRUE,
+                             clean.search.path = TRUE) {
 
   projDir <- getProjectDir(projDir)
   libRoot <- libraryRootDir(projDir)
@@ -78,7 +79,9 @@ setPackratModeOn <- function(projDir = NULL,
   .packrat_mutables$set(projDir = projDir)
 
   # Clean the search path up -- unload libraries that may have been loaded before
-  cleanSearchPath(lib.loc = .libPaths())
+  if (clean.search.path) {
+    cleanSearchPath(lib.loc = .libPaths())
+  }
 
   # Hide the site libraries
   hideSiteLibraries()
@@ -191,48 +194,52 @@ checkPackified <- function(projDir = NULL, quiet = FALSE) {
 ##' \code{packrat_on} and \code{packrat_on} can be used to force packrat mode
 ##' on and off, respectively.
 ##'
-##' @param mode If \code{toggle}, switch packrat mode to the opposite state; if
-##'   \code{on}, force packrat mode on for \code{projDir}; if \code{off}, force
-##'   packrat mode off for \code{projDir}.
+##' @param on Turn packrat mode on (\code{TRUE}) or off (\code{FALSE}). If omitted, packrat mode
+##'   will be toggled.
 ##' @param projDir The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
 ##' @param auto.snapshot Whether or not we should use automatic snapshotting.
 ##' @param bootstrap Whether or not we should try to bootstrap a project directory
 ##'   that has not yet been packified.
+##' @param clean.search.path Detach and unload any packages loaded from a user library before
+##'   entering packrat mode?
 ##' @name packrat-mode
 ##' @rdname packrat-mode
 ##' @export
-packrat_mode <- function(mode = c("toggle", "on", "off"),
+packrat_mode <- function(on = NULL,
                          projDir = NULL,
                          bootstrap = FALSE,
-                         auto.snapshot = TRUE) {
+                         auto.snapshot = TRUE,
+                         clean.search.path = TRUE) {
 
-  mode <- match.arg(mode)
   projDir <- getProjectDir(projDir)
 
-  switch(mode,
-
-         toggle = togglePackratMode(projDir = projDir,
-                                    bootstrap = bootstrap,
-                                    auto.snapshot = auto.snapshot)
-
-         on = setPackratModeOn(projDir = projDir,
-                               bootstrap = bootstrap,
-                               auto.snapshot = auto.snapshot)
-
-         off = setPackratModeOff(projDir = projDir)
-
-  )
+  if (is.null(on)) {
+    togglePackratMode(projDir = projDir,
+                      bootstrap = bootstrap,
+                      auto.snapshot = auto.snapshot,
+                      clean.search.path = clean.search.path)
+  } else if (identical(on, TRUE)) {
+    setPackratModeOn(projDir = projDir,
+                     bootstrap = bootstrap,
+                     auto.snapshot = auto.snapshot,
+                     clean.search.path = clean.search.path)
+  } else if (identical(on, FALSE)) {
+    setPackratModeOff(projDir = projDir)
+  } else {
+    stop("'on' must be one of TRUE, FALSE or NULL, was '", on, "'")
+  }
 
 }
 
-togglePackratMode <- function(projDir, bootstrap, auto.snapshot) {
+togglePackratMode <- function(projDir, bootstrap, auto.snapshot, clean.search.path) {
   if (isPackratModeOn(projDir = projDir)) {
     setPackratModeOff(projDir)
   } else {
     setPackratModeOn(projDir = projDir,
                      bootstrap = bootstrap,
-                     auto.snapshot = auto.snapshot)
+                     auto.snapshot = auto.snapshot,
+                     clean.search.path)
   }
 }
 
