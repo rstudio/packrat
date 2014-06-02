@@ -118,7 +118,7 @@ bootstrap <- function(project = '.', source.packages = character()) {
 
   project <- normalizePath(project, winslash='/', mustWork=TRUE)
   if (!checkPackified(project = project, quiet = TRUE)) {
-    packify(project = project)
+    packify(project = project, quiet = TRUE)
   }
 
   descriptionFile <- file.path(project, 'DESCRIPTION')
@@ -394,9 +394,9 @@ clean <- function(project = NULL, lib.loc = libDir(project),
 #' \code{packify} in order to start using the private package library.
 #'
 #' @param project The directory in which to install the \code{.Rprofile} file.
-#'
+#' @param quiet Be chatty?
 #' @export
-packify <- function(project = NULL) {
+packify <- function(project = NULL, quiet = FALSE) {
 
   project <- getProjectDir(project)
   packratDir <- getPackratDir(project)
@@ -430,16 +430,18 @@ packify <- function(project = NULL) {
     cat(txt, file = .Rprofile, append = TRUE)
   }
 
-  msg <- "Packrat startup directives installed."
+  if (!quiet) {
+    msg <- "Packrat startup directives installed."
 
-  if (identical(project, getwd())) {
-    msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
-  } else {
-    msg <- paste(msg, "Please call \"packrat::packrat_on(project = '", project, "')\"",
-                 "to initialize packrat.")
+    if (identical(project, getwd())) {
+      msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
+    } else {
+      msg <- paste(msg, "Please call \"packrat::packrat_on(project = '", project, "')\"",
+                   "to initialize packrat.")
+    }
+
+    message(msg)
   }
-
-  message(msg)
 
   invisible()
 }

@@ -3,10 +3,12 @@
 \alias{packify}
 \title{Automatically Enter Packrat Mode on Startup}
 \usage{
-packify(project = NULL)
+packify(project = NULL, quiet = FALSE)
 }
 \arguments{
 \item{project}{The directory in which to install the \code{.Rprofile} file.}
+
+\item{quiet}{Be chatty?}
 }
 \description{
 Install/augment the \code{.Rprofile} in a project, so that all \R sessions

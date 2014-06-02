@@ -1,6 +1,6 @@
 ## Launch into a test package using packrat
 cd ~/git
-R CMD build packrat && R CMD INSTALL packrat_0.2.0.tar.gz
+R CMD build packrat && R CMD INSTALL packrat_0.2.0.99.tar.gz
 rm -rf testPkg
 mkdir testPkg
 cd testPkg
