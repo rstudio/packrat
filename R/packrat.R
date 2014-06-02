@@ -152,9 +152,13 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
   }
 
   # Update the .gitignore to ignore the packrat library
-  .git <- file.path(projDir, ".git")
-  if (file.exists(.git) && is_dir(.git)) {
+  if (isGitProject(projDir)) {
     updateGitIgnore(projDir)
+  }
+
+  # Update the svn ignore to ignore the packrat library
+  if (isSvnProject(projDir)) {
+    updateSvnIgnore(projDir)
   }
 
   message("Bootstrap complete!")
