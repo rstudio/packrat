@@ -151,6 +151,12 @@ bootstrap <- function(projDir = '.', source.packages = character()) {
     updateRBuildIgnore(projDir)
   }
 
+  # Update the .gitignore to ignore the packrat library
+  .git <- file.path(projDir, ".git")
+  if (file.exists(.git) && is_dir(.git)) {
+    updateGitIgnore(projDir)
+  }
+
   message("Bootstrap complete!")
   if (projDir == getwd()) {
     packrat_mode()
