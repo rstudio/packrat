@@ -191,6 +191,9 @@ checkPackified <- function(projDir = NULL, quiet = FALSE) {
 ##' \code{packrat_on} and \code{packrat_on} can be used to force packrat mode
 ##' on and off, respectively.
 ##'
+##' @param mode If \code{toggle}, switch packrat mode to the opposite state; if
+##'   \code{on}, force packrat mode on for \code{projDir}; if \code{off}, force
+##'   packrat mode off for \code{projDir}.
 ##' @param projDir The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
 ##' @param auto.snapshot Whether or not we should use automatic snapshotting.
@@ -199,34 +202,37 @@ checkPackified <- function(projDir = NULL, quiet = FALSE) {
 ##' @name packrat-mode
 ##' @rdname packrat-mode
 ##' @export
-packrat_on <- function(projDir = ".",
-                          auto.snapshot = TRUE,
-                          bootstrap = FALSE) {
-  projDir <- normalizePath(projDir, winslash='/')
-  setPackratModeOn(projDir, bootstrap = bootstrap, auto.snapshot = auto.snapshot)
-}
+packrat_mode <- function(mode = c("toggle", "on", "off"),
+                         projDir = NULL,
+                         bootstrap = FALSE,
+                         auto.snapshot = TRUE) {
 
-##' @name packrat-mode
-##' @rdname packrat-mode
-##' @export
-packrat_off <- function(projDir = NULL) {
-  projDir <- getProjectDir(projDir)
-  setPackratModeOff(projDir)
-}
-
-##' @name packrat-mode
-##' @rdname packrat-mode
-##' @export
-packrat_mode <- function(projDir = NULL,
-                        auto.snapshot = TRUE,
-                        bootstrap = FALSE) {
-
+  mode <- match.arg(mode)
   projDir <- getProjectDir(projDir)
 
-  if (isPackratModeOn()) {
-    packrat_off(projDir)
+  switch(mode,
+
+         toggle = togglePackratMode(projDir = projDir,
+                                    bootstrap = bootstrap,
+                                    auto.snapshot = auto.snapshot)
+
+         on = setPackratModeOn(projDir = projDir,
+                               bootstrap = bootstrap,
+                               auto.snapshot = auto.snapshot)
+
+         off = setPackratModeOff(projDir = projDir)
+
+  )
+
+}
+
+togglePackratMode <- function(projDir, bootstrap, auto.snapshot) {
+  if (isPackratModeOn(projDir = projDir)) {
+    setPackratModeOff(projDir)
   } else {
-    packrat_on(projDir, bootstrap = bootstrap, auto.snapshot = auto.snapshot)
+    setPackratModeOn(projDir = projDir,
+                     bootstrap = bootstrap,
+                     auto.snapshot = auto.snapshot)
   }
 }
 
