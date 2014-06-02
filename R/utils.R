@@ -176,8 +176,10 @@ isGitProject <- function(projDir) {
 
 isSvnProject <- function(projDir) {
   ## TODO
+  FALSE
 }
 
 updateSvnIgnore <- function(projDir) {
   ## TODO
+  FALSE
 }
