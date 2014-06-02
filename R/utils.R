@@ -169,17 +169,77 @@ stopIfNotPackified <- function(project) {
   }
 }
 
+## Expected to be used with .Rbuildignore, .Rinstignore
+updateIgnoreFile <- function(project = NULL, file, fields) {
+
+  project <- getProjectDir(project)
+
+  ## If the file doesn't exist, create and fill it
+  path <- file.path(project, file)
+  if (!file.exists(path)) {
+    cat(fields, file = file, sep = "\n")
+    return(invisible())
+  }
+
+  ## If it already exists, fill as necessary
+  content <- readLines(path)
+  for (field in fields) {
+    if (!(field %in% content)) {
+      content <- c(content, field)
+    }
+  }
+  cat(content, file = path, sep = "\n")
+  return(invisible())
+
+}
+
+updateRBuildIgnore <- function(project = NULL) {
+  updateIgnoreFile(project = project, file = ".Rbuildignore", fields = "^packrat/")
+}
+
+updateGitIgnore <- function(project = NULL) {
+  updateIgnoreFile(project = project, file = ".gitignore", fields = "packrat/lib/")
+}
+
 isGitProject <- function(project) {
   .git <- file.path(project, ".git")
   file.exists(.git) && is_dir(.git)
 }
 
 isSvnProject <- function(project) {
-  ## TODO
-  FALSE
+  .svn <- file.path(project, ".svn")
+  file.exists(.svn) && is_dir(.svn)
+}
+
+getSvnIgnores <- function(svn, dir) {
+  owd <- getwd()
+  on.exit(setwd(owd))
+  setwd(dir)
+  result <- system(paste(svn, "propget", "svn:ignore"), intern = TRUE)
+  result[result != ""]
+}
+
+setSvnIgnores <- function(svn, dir, ignores) {
+  owd <- getwd()
+  on.exit(setwd(owd))
+  setwd(dir)
+  ignores <- paste(ignores, collapse = "\n")
+  system(paste(svn, "propset", "svn:ignore", shQuote(ignores), "."), intern = TRUE)
 }
 
 updateSvnIgnore <- function(project) {
-  ## TODO
-  FALSE
+
+  ## We use propget, propset to modify the svn:ignore file
+  libraryDir <- "packrat/lib"
+
+  svn <- Sys.which("svn")
+  if (svn == "") {
+    stop("Could not locate an 'svn' executable on your PATH")
+  }
+  ignores <- getSvnIgnores(svn, project)
+  if (!(libraryDir %in% ignores)) {
+    ignores <- c(ignores, libraryDir)
+  }
+  setSvnIgnores(svn, project, ignores)
+
 }
