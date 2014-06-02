@@ -168,3 +168,16 @@ stopIfNotPackified <- function(projDir) {
     }
   }
 }
+
+isGitProject <- function(projDir) {
+  .git <- file.path(projDir, ".git")
+  file.exists(.git) && is_dir(.git)
+}
+
+isSvnProject <- function(projDir) {
+  ## TODO
+}
+
+updateSvnIgnore <- function(projDir) {
+  ## TODO
+}
