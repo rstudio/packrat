@@ -3,10 +3,6 @@ updateIgnoreFile <- function(project = NULL, file, fields) {
 
   project <- getProjectDir(project)
 
-  if (!file.exists("DESCRIPTION")) {
-    stop("This project does not appear to be an R package -- there is no 'DESCRIPTION' file.")
-  }
-
   ## If the file doesn't exist, create and fill it
   path <- file.path(project, file)
   if (!file.exists(path)) {
