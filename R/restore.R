@@ -325,6 +325,9 @@ installPkg <- function(pkgRecord, projDir, availablePkgs, repos,
       if (!identical(.libPaths()[1], lib)) {
         oldLibPaths <- .libPaths()
         on.exit(.libPaths(oldLibPaths), add = TRUE)
+        # Make sure the library actually exists, otherwise .libPaths will silently
+        # fail
+        if (!file.exists(lib)) dir.create(lib, recursive = TRUE)
         .libPaths(lib)
       }
       install_local(path = pkgSrc, reload = FALSE,
