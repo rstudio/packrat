@@ -20,11 +20,7 @@ bundle <- function(projDir = NULL,
                    ...) {
 
   projDir <- getProjectDir(projDir)
-
-  # Make sure this is actually a packrat project
-  if (!checkPackified(projDir = projDir, quiet = TRUE)) {
-    stop("The project at '", projDir, "' does not appear to be a packrat project.")
-  }
+  stopIfNotPackified(projDir)
 
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
