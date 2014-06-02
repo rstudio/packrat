@@ -6,6 +6,6 @@ mkdir testPkg
 cd testPkg
 touch foo.R bar.R baz.R
 echo "library(digest)" >> foo.R
-cp ~/git/knitr/DESCRIPTION ~/git/testPkg/DESCRIPTION
+cp ~/git/digest/DESCRIPTION ~/git/testPkg/DESCRIPTION
 R --vanilla -e "options(repos = c(CRAN = 'http://cran.rstudio.org')); library(packrat); dir.create('.git'); bootstrap(source='~/git/packrat')"
 R
