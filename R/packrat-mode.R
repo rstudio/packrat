@@ -194,9 +194,14 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##'   will be toggled.
 ##' @param project The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
+<<<<<<< HEAD
 ##' @param bootstrap Whether or not we should try to bootstrap a project directory
 ##'   that has not yet been packified.
 ##' @param auto.snapshot Whether or not we should use automatic snapshotting.
+=======
+##' @param bootstrap Bootstrap a project that has not yet been packified?
+##' @param auto.snapshot Perform automatic, asynchronous snapshots?
+>>>>>>> Update packrat_mode documentation
 ##' @param clean.search.path Detach and unload any packages loaded from non-system
 ##'   libraries before entering packrat mode?
 ##' @name packrat-mode
