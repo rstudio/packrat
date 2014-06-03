@@ -14,18 +14,10 @@ will be toggled.}
 \item{project}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
 
-<<<<<<< HEAD
-\item{bootstrap}{Whether or not we should try to bootstrap a project directory
-that has not yet been packified.}
-
-\item{auto.snapshot}{Whether or not we should use automatic snapshotting.}
-
-=======
 \item{bootstrap}{Bootstrap a project that has not yet been packified?}
 
 \item{auto.snapshot}{Perform automatic, asynchronous snapshots?}
 
->>>>>>> Update packrat_mode documentation
 \item{clean.search.path}{Detach and unload any packages loaded from non-system
 libraries before entering packrat mode?}
 }
