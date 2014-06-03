@@ -190,19 +190,15 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##' \code{packrat} mode, the \R session will use the private library generated
 ##' for the current project.
 ##'
-##' \code{packrat_mode} is used to toggle packrat mode on and off, while
-##' \code{packrat_on} and \code{packrat_on} can be used to force packrat mode
-##' on and off, respectively.
-##'
 ##' @param on Turn packrat mode on (\code{TRUE}) or off (\code{FALSE}). If omitted, packrat mode
 ##'   will be toggled.
 ##' @param project The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
-##' @param auto.snapshot Whether or not we should use automatic snapshotting.
 ##' @param bootstrap Whether or not we should try to bootstrap a project directory
 ##'   that has not yet been packified.
-##' @param clean.search.path Detach and unload any packages loaded from a user library before
-##'   entering packrat mode?
+##' @param auto.snapshot Whether or not we should use automatic snapshotting.
+##' @param clean.search.path Detach and unload any packages loaded from non-system
+##'   libraries before entering packrat mode?
 ##' @name packrat-mode
 ##' @rdname packrat-mode
 ##' @export

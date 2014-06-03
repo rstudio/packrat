@@ -14,22 +14,17 @@ will be toggled.}
 \item{project}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
 
-\item{auto.snapshot}{Whether or not we should use automatic snapshotting.}
-
 \item{bootstrap}{Whether or not we should try to bootstrap a project directory
 that has not yet been packified.}
 
-\item{clean.search.path}{Detach and unload any packages loaded from a user library before
-entering packrat mode?}
+\item{auto.snapshot}{Whether or not we should use automatic snapshotting.}
+
+\item{clean.search.path}{Detach and unload any packages loaded from non-system
+libraries before entering packrat mode?}
 }
 \description{
 Use these functions to switch \code{packrat} mode on and off. When within
 \code{packrat} mode, the \R session will use the private library generated
 for the current project.
-}
-\details{
-\code{packrat_mode} is used to toggle packrat mode on and off, while
-\code{packrat_on} and \code{packrat_on} can be used to force packrat mode
-on and off, respectively.
 }
 
