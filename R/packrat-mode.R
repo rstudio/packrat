@@ -158,23 +158,6 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
   project <- getProjectDir(project)
   packratDir <- getPackratDir(project)
 
-  if (!file.exists(packratDir)) {
-    if (!quiet) message("The packrat directory does not exist; this project has not been packified.")
-    return(FALSE)
-  }
-
-  libraryRootDir <- libraryRootDir(project)
-  if (!file.exists(libraryRootDir)) {
-    if (!quiet) message("The packrat library does not exist.")
-    return(FALSE)
-  }
-
-  srcDir <- srcDir(project)
-  if (!file.exists(srcDir)) {
-    if (!quiet) message("The packrat sources directory does not exist.")
-    return(FALSE)
-  }
-
   lockPath <- lockFilePath(project)
   if (!file.exists(lockPath)) {
     if (!quiet) message("The packrat lock file does not exist.")
