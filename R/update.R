@@ -38,7 +38,7 @@ updateInit <- function() {
   init.R[msgLine + 1] <- paste(sep = "",
                                "      message('Run \\\'source(\"",
                                bootstrapPath,
-                               "\")\\\' to bootstrap a packrat installation.\')")
+                               "\")\\\' to bootstrap this project.\')")
 
   cat(init.R, file=file.path("inst", "resources", "init.R"), sep = "\n")
 }

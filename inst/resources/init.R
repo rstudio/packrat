@@ -16,7 +16,7 @@ local({
     if (file.exists(bootstrapPath)) {
 
       ## -- packrat::bootstrapMessage -- ##
-      message('Run \'source("packrat/bootstrap.R")\' to bootstrap a packrat installation.')
+      message('Run \'source("packrat/bootstrap.R")\' to bootstrap this project.')
     }
   }
 })

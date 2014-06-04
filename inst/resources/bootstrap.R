@@ -45,10 +45,10 @@ cat(DESCRIPTION, file = packratDescPath, sep = "\n")
 message("> Attaching packrat")
 library("packrat", character.only = TRUE, lib.loc = lib)
 
-message("> Entering packrat mode")
-packrat_mode()
-
 message("> Restoring library")
 restore()
+
+message("> Entering packrat mode")
+packrat_mode()
 
 message("Packrat bootstrap successfully completed.")
