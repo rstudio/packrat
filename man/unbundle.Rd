@@ -3,7 +3,7 @@
 \alias{unbundle}
 \title{Unbundle a Packrat Project}
 \usage{
-unbundle(bundle, where, ...)
+unbundle(bundle, where, ..., restore = TRUE)
 }
 \arguments{
 \item{bundle}{Path to the bundled file.}
