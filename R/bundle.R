@@ -107,9 +107,39 @@ bundle <- function(project = NULL,
 ##' @param where The directory where we will unbundle the project.
 ##' @param ... Optional arguments passed to \code{\link{tar}}.
 ##' @export
-unbundle <- function(bundle, where, ...) {
-  where <- normalizePath(where, winslash = "/", mustWork = FALSE)
+unbundle <- function(bundle, where, ..., restore = TRUE) {
+
+  bundle <- normalizePath(bundle, winslash = "/", mustWork = TRUE)
+  if (!dir.exists(where)) {
+    dir.create(where, recursive = TRUE)
+  }
+  where <- normalizePath(where, winslash = "/", mustWork = TRUE)
+
+  ## Get the list of files in the output directory -- we diff against it
+  ## to figure out what the top-level directory name is
+  owd <- getwd()
+  on.exit(setwd(owd))
+
+  setwd(where)
+  whereFiles <- list.files()
+  message("- Untarring '", basename(bundle), "' in directory '", where, "'...")
   untar(bundle, exdir = where, ...)
-  message("The packrat project has been unbundled at:\n- \"", file, "\"")
-  invisible(file)
+  dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
+
+  if (restore) {
+    setwd(dirName)
+    if (length(dirName) != 1) {
+      stop("Couldn't infer top-level directory name; cannot perform automatic restore")
+    }
+    ## Ensure the (empty) library directory is present before restoring
+    dir.create(packrat:::libDir(getwd()), recursive = TRUE)
+    message("- Restoring project library...")
+    packrat::restore(project = getwd())
+    message("Done! The project has been unbundled and restored at:\n- \"", dirName, "\"")
+  } else {
+    message("Done! The packrat project has been unbundled at:\n- \"", dirName, "\"")
+  }
+
+  invisible(dirName)
+
 }
