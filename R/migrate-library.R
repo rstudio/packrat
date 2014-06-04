@@ -1,7 +1,7 @@
 userPkgsInSystemLibrary <- function() {
 
   systemPkgs <- as.data.frame( stringsAsFactors = FALSE,
-                               utils::installed.packages(utils::tail(.libPaths(), 1))
+                               utils::installed.packages(utils::tail(getLibPaths(), 1))
   )
   userLibs <- with(systemPkgs, {
     Package[is.na(Priority)]
@@ -20,7 +20,6 @@ checkNeedsLibraryMigration <- function() {
   if (!shouldRun) {
     return(invisible(FALSE))
   } else {
-    scriptCall <- paste("source", system.file(package = "packrat", "mac_r_userlib.sh"))
     message(paste( sep = "",
                    "WARNING: It appears you have user libraries installed in your system library.\n",
                    "Packrat relies on only 'base' and 'recommended' R packages being installed ",
@@ -48,7 +47,7 @@ windowsLibraryMigration <- function() {
 }
 
 macLibraryMigration <- function() {
-  scriptCall <- paste("bash", system.file(package = "packrat", "mac_r_userlib.sh"))
+  scriptCall <- paste("bash", instMacRUserlibFilePath())
   message(paste(sep = "",
                 "Please run the following command at a terminal to migrate your user libraries to a user library folder:\n",
                 "    ", scriptCall))

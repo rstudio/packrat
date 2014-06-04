@@ -18,7 +18,7 @@ install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
   }
 
   opts <- c(
-    paste("--library=", shQuote(.libPaths()[1]), sep = ""),
+    paste("--library=", shQuote(getLibPaths()[1]), sep = ""),
     if (keep_source) "--with-keep.source",
     "--install-tests"
   )
@@ -68,7 +68,7 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
     ext <- "tar.gz"
   }
-  with_libpaths(c(tempdir(), .libPaths()), R(cmd, path, quiet = quiet))
+  with_libpaths(c(tempdir(), getLibPaths()), R(cmd, path, quiet = quiet))
   targz <- paste0(pkg$package, "_", pkg$version, ".", ext)
 
   file.path(path, targz)
@@ -91,7 +91,7 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
 
 r_env_vars <- function() {
   c("LC_ALL" = "C",
-    "R_LIBS" = paste(.libPaths(), collapse = .Platform$path.sep),
+    "R_LIBS" = paste(getLibPaths(), collapse = .Platform$path.sep),
     "CYGWIN" = "nodosfilewarning",
     # When R CMD check runs tests, it sets R_TESTS. When the tests
     # themeselves run R CMD xxxx, as is the case with the tests in
@@ -124,8 +124,8 @@ in_dir <- with_something(setwd)
 set_libpaths <- function(paths) {
   libpath <- normalizePath(paths, mustWork = TRUE)
 
-  old <- .libPaths()
-  .libPaths(paths)
+  old <- getLibPaths()
+  setLibPaths(paths)
   invisible(old)
 }
 

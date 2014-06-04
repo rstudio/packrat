@@ -1,5 +1,5 @@
 updateInit <- function() {
-  init.R <- readLines(file.path("inst", "init.R"))
+  init.R <- readLines(file.path("inst", "resources", "init.R"))
   packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
   init.R[1] <- paste(sep = "",
                      "#### -- Packrat Autoloader (version ", packrat.version, ") -- ####")
@@ -40,12 +40,12 @@ updateInit <- function() {
                                bootstrapPath,
                                "\")\\\' to bootstrap a packrat installation.\')")
 
-  cat(init.R, file=file.path("inst", "init.R"), sep = "\n")
+  cat(init.R, file=file.path("inst", "resources", "init.R"), sep = "\n")
 }
 
 
 updateBootstrap <- function() {
-  bootstrap.R <- readLines(file.path("inst", "bootstrap.R"))
+  bootstrap.R <- readLines(file.path("inst", "resources", "bootstrap.R"))
   packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
 
   ## Sync the packrat path, messages
@@ -57,5 +57,5 @@ updateBootstrap <- function() {
   installSourceLine <- grep("## -- InstallSource -- ##", bootstrap.R)
   bootstrap.R[installSourceLine + 1] <- paste("installSource <-", shQuote(paste("InstallSource:", "source")))
 
-  cat(bootstrap.R, file = file.path("inst", "bootstrap.R"), sep = "\n")
+  cat(bootstrap.R, file = file.path("inst", "resources", "bootstrap.R"), sep = "\n")
 }

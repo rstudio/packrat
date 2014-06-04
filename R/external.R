@@ -64,7 +64,7 @@ extlib <- function(packages) {
   for (package in packages) {
     lib.loc <- .packrat_mutables$get("origLibPaths")
     if (is.null(lib.loc)) {
-      lib.loc <- .libPaths()
+      lib.loc <- getLibPaths()
     }
     library(package, character.only = TRUE, lib.loc = lib.loc)
   }

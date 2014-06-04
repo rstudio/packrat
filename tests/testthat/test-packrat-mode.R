@@ -6,8 +6,8 @@ test_that("packrat_mode successfully sets the library paths when turned on and o
   cat(getwd())
   cat("\n\n")
 
-  cat("Original .libPaths() on entry:\n")
-  cat(.libPaths(), sep = "\n")
+  cat("Original getLibPaths() on entry:\n")
+  cat(getLibPaths(), sep = "\n")
   cat("\n\n")
 
   ## Make sure packrat mode is off
@@ -16,24 +16,24 @@ test_that("packrat_mode successfully sets the library paths when turned on and o
     cat("Turning packratMode off\n")
   }
 
-  cat(".libPaths() after checking packrat mode:\n")
-  cat(.libPaths(), sep = "\n")
+  cat("getLibPaths() after checking packrat mode:\n")
+  cat(getLibPaths(), sep = "\n")
   cat("\n\n")
 
-  orig_libs <- .libPaths()
+  orig_libs <- getLibPaths()
 
   packrat_mode(on = TRUE, auto.snapshot = FALSE, bootstrap = FALSE, clean.search.path = FALSE)
 
-  cat(".libPaths() after entering packrat mode:\n")
-  cat(.libPaths(), sep = "\n")
+  cat("getLibPaths() after entering packrat mode:\n")
+  cat(getLibPaths(), sep = "\n")
   cat("\n\n")
 
   packrat_mode(on = FALSE)
 
-  cat(".libPaths() after exiting packrat mode:\n")
-  cat(.libPaths(), sep = "\n")
+  cat("getLibPaths() after exiting packrat mode:\n")
+  cat(getLibPaths(), sep = "\n")
   cat("\n\n")
 
-  expect_identical(orig_libs, .libPaths())
+  expect_identical(orig_libs, getLibPaths())
 
 })

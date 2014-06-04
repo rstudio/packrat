@@ -109,13 +109,13 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
   lockPackages <- lockInfo(project, fatal=FALSE)
 
   # Get the package records for dependencies of the app. It's necessary to
-  # include .libPaths in the list of library locations because it's possible that
+  # include setLibPaths in the list of library locations because it's possible that
   # the user installed a package that relies on a recommended package, which
   # would be used by the app but not present in the private library.
   appPackages <- getPackageRecords(sort(appDependencies(project)),
                                    available,
                                    source.packages,
-                                   lib.loc = unique(c(lib.loc, .libPaths())),
+                                   lib.loc = unique(c(lib.loc, getLibPaths())),
                                    missing.package=function(package, lib.loc) {
                                      NULL
                                    })

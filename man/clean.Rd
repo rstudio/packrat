@@ -30,7 +30,4 @@ If \code{clean} wants to remove a package but your project actually needs the
 package, add a statement such as \code{\link{require}(package-name)} to any .R
 file in your project's directory.
 }
-\seealso{
-\code{\link{appDependencies}} for an explanation of how dependencies are detected.
-}
 

@@ -243,3 +243,17 @@ updateSvnIgnore <- function(project) {
   setSvnIgnores(svn, project, ignores)
 
 }
+
+## Wrappers over setLibPaths that do some better error reporting
+setLibPaths <- function(paths) {
+  for (path in paths) {
+    if (!file.exists(path)) {
+      stop("No directory exists at path '", path, "'")
+    }
+  }
+  .libPaths(paths)
+}
+
+getLibPaths <- function(paths) {
+  .libPaths()
+}
