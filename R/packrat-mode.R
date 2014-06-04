@@ -96,7 +96,7 @@ setPackratModeOn <- function(project = NULL,
   }
 
   # Insert hooks to library modifying functions to auto.snapshot on change
-  if (auto.snapshot) {
+  if (interactive() && auto.snapshot) {
     if (file.exists(getPackratDir(project))) {
       addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
     } else {
