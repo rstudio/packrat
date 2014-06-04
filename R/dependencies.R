@@ -1,31 +1,31 @@
-#' Detect Application Dependencies
-#'
-#' Recursively detect all package dependencies for an application. This function
-#' parses all .R files in the application directory to determine what packages
-#' the application depends directly.
-#'
-#' Only direct dependencies are detected (i.e. no recursion is done to find the
-#' dependencies of the dependencies).
-#'
-#' @param project Directory containing application. Defaults to current working
-#'   directory.
-#' @return Returns a list of the names of the packages on which R code in the
-#'   application depends.
-#' @details Dependencies are determined by parsing application source code and
-#'   looking for calls to \code{library}, \code{require}, \code{::}, and
-#'   \code{:::}.
-#'
-#' @examples
-#'
-#' \dontrun{
-#'
-#' # dependencies for the app in the current working dir
-#' appDependencies()
-#'
-#' # dependencies for an app in another directory
-#' appDependencies("~/projects/shiny/app1")
-#' }
-#' @keywords internal
+# Detect Application Dependencies
+#
+# Recursively detect all package dependencies for an application. This function
+# parses all .R files in the application directory to determine what packages
+# the application depends directly.
+#
+# Only direct dependencies are detected (i.e. no recursion is done to find the
+# dependencies of the dependencies).
+#
+# @param project Directory containing application. Defaults to current working
+#   directory.
+# @return Returns a list of the names of the packages on which R code in the
+#   application depends.
+# @details Dependencies are determined by parsing application source code and
+#   looking for calls to \code{library}, \code{require}, \code{::}, and
+#   \code{:::}.
+#
+# @examples
+#
+# \dontrun{
+#
+# # dependencies for the app in the current working dir
+# appDependencies()
+#
+# # dependencies for an app in another directory
+# appDependencies("~/projects/shiny/app1")
+# }
+# @keywords internal
 appDependencies <- function(project = NULL, available.packages = NULL) {
 
   if (is.null(available.packages)) available.packages <- available.packages()
