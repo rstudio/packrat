@@ -80,9 +80,8 @@ NULL
 #'
 #' \enumerate{
 #'
-#' \item Application dependencies
-#' are computed by examining the \R code as described in
-#' \code{\link{appDependencies}}.
+#' \item Application dependencies are computed by examining the \R code
+#' throughout the project for \code{library} and \code{require} calls.
 #'
 #' \item A snapshot is taken of the version of each package currently used by
 #' the project as described in \code{\link{snapshot}}, and each package's
@@ -315,8 +314,6 @@ restore <- function(project = NULL,
 #' associated with the project directory.
 #' @param prompt \code{TRUE} to prompt before removing packages, \code{FALSE} to
 #' remove packages immediately.
-#'
-#' @seealso \code{\link{appDependencies}} for an explanation of how dependencies are detected.
 #'
 #' @export
 clean <- function(project = NULL, lib.loc = libDir(project),
