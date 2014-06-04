@@ -137,7 +137,7 @@ bootstrap <- function(project = '.', source.packages = character()) {
 
   # Copy bootstrap.R so a user can 'start from zero' with a project
   file.copy(
-    system.file(package = "packrat", "bootstrap.R"),
+    instBootstrapFilePath(),
     file.path(project, .packrat$packratFolderName, "bootstrap.R")
   )
 
@@ -326,7 +326,7 @@ clean <- function(project = NULL, lib.loc = libDir(project),
   missingPackageNames <- character(0)
   packagesInUse <- getPackageRecords(
     rootDeps, available=NULL, source.packages=NULL, recursive=TRUE,
-    lib.loc=c(lib.loc, .libPaths()),
+    lib.loc=c(lib.loc, getLibPaths()),
     missing.package = function(pkgName, lib.loc) {
       missingPackageNames <<- c(missingPackageNames, pkgName)
       return(NULL)
@@ -413,7 +413,7 @@ packify <- function(project = NULL, quiet = FALSE) {
   }
 
   .Rprofile <- file.path(project, ".Rprofile")
-  init.R <- system.file(package = "packrat", "init.R")
+  init.R <- instInitFilePath()
 
   if (!file.exists(.Rprofile)) {
     file.copy(init.R, .Rprofile)

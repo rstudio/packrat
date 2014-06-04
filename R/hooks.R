@@ -28,7 +28,7 @@ snapshotHook <- function(expr, value, ok, visible) {
       setwdCmd <- paste("setwd(", shQuote(project), ")")
       snapshotCmd <- paste("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")))")
       cleanupCmd <- paste("file.remove(", shQuote(snapshotLockPath), ")")
-      setLibsCmd <- paste(".libPaths( c(", paste(shQuote(.libPaths()), collapse = ", "), ") )")
+      setLibsCmd <- paste("setLibPaths( c(", paste(shQuote(getLibPaths()), collapse = ", "), ") )")
       fullCmd <- paste(sep = "; ",
                        setwdCmd,
                        setLibsCmd,

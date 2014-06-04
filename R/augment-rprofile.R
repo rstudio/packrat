@@ -1,12 +1,13 @@
 ## Augment the .Rprofile for a project -- if it doesn't exist, just copy
 ## from packrat; if it does, check it and add if necessary
 augmentRprofile <- function(project = NULL) {
-  project <- getProjectDir(project)
 
+  project <- getProjectDir(project)
   path <- file.path(project, ".Rprofile")
+
   if (!file.exists(path)) {
     file.copy(
-      system.file(package="packrat", "init.R"),
+      instInitFilePath(),
       path
     )
   } else {
@@ -21,7 +22,7 @@ augmentRprofile <- function(project = NULL) {
     }
 
     ## Append init.R to the .Rprofile
-    .Rprofile <- c(.Rprofile, readLines(system.file(package="packrat", "init.R")))
+    .Rprofile <- c(.Rprofile, readLines(instInitFilePath()))
     cat(.Rprofile, file = path, sep = "\n")
 
   }

@@ -116,9 +116,9 @@ migrate <- function(project = ".", ask = TRUE) {
   unlink("packrat.lock", recursive = TRUE)
 
   ## Make sure an updated version of packrat is installed in the user library
-  oldLibPaths <- .libPaths()
-  on.exit(.libPaths(oldLibPaths), add = TRUE)
-  .libPaths(libDir())
+  oldLibPaths <- getLibPaths()
+  on.exit(setLibPaths(oldLibPaths), add = TRUE)
+  setLibPaths(libDir())
 
   if (require("devtools")) {
     install_github("rstudio/packrat")

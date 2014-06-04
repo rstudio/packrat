@@ -20,9 +20,8 @@ Given a project directory, makes a new packrat project in the directory.
 
 \enumerate{
 
-\item Application dependencies
-are computed by examining the \R code as described in
-\code{\link{appDependencies}}.
+\item Application dependencies are computed by examining the \R code
+throughout the project for \code{library} and \code{require} calls.
 
 \item A snapshot is taken of the version of each package currently used by
 the project as described in \code{\link{snapshot}}, and each package's

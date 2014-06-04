@@ -8,8 +8,8 @@ hideSiteLibraries <- function() {
   assign(".Library.site", character(), envir = .BaseNamespaceEnv)
   lockBinding(".Library.site", .BaseNamespaceEnv)
 
-  ## Reset the .libPaths()
-  .libPaths(character())
+  ## Reset the getLibPaths()
+  setLibPaths(character())
 }
 
 ## Restore the site-library libraries

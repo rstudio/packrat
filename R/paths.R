@@ -101,3 +101,15 @@ packratModeFilePath <- function(project = NULL) {
   packratDir <- getPackratDir(project)
   file.path(packratDir, "packrat.mode")
 }
+
+instBootstrapFilePath <- function() {
+  file.path(system.file(package = "packrat"), "resources", "bootstrap.R")
+}
+
+instInitFilePath <- function() {
+  file.path(system.file(package = "packrat"), "resources", "init.R")
+}
+
+instMacRUserlibFilePath <- function() {
+  file.path(system.file(package = "packrat"), "resources", "mac_r_userlib.sh")
+}

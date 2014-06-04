@@ -336,13 +336,13 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       # devtools does not install to any libraries other than the default, so
       # if the library we wish to install to is not the default, set as the
       # default while we do this operation.
-      if (!identical(.libPaths()[1], lib)) {
-        oldLibPaths <- .libPaths()
-        on.exit(.libPaths(oldLibPaths), add = TRUE)
-        # Make sure the library actually exists, otherwise .libPaths will silently
+      if (!identical(getLibPaths()[1], lib)) {
+        oldLibPaths <- getLibPaths()
+        on.exit(setLibPaths(oldLibPaths), add = TRUE)
+        # Make sure the library actually exists, otherwise setLibPaths will silently
         # fail
         if (!file.exists(lib)) dir.create(lib, recursive = TRUE)
-        .libPaths(lib)
+        setLibPaths(lib)
       }
       install_local(path = pkgSrc, reload = FALSE,
                     dependencies = FALSE, quick = TRUE, quiet = TRUE)
@@ -362,7 +362,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
 
   # If this is the initial snapshot, we can optimize the installation of
   # packages from the global library to the private Packrat library
-  initialSnapshot <- !identical(.libPaths()[1], lib)
+  initialSnapshot <- !identical(getLibPaths()[1], lib)
   installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))
 
@@ -468,7 +468,7 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   # the changes on the copy.
   actions <- actions[!is.na(actions)]
   targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
-                   identical(lib, .libPaths()[1])) {
+                   identical(lib, getLibPaths()[1])) {
 
     newLibrary <- newLibraryDir(project)
     dir_copy(libraryRootDir(project), newLibrary)

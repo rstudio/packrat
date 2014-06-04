@@ -35,7 +35,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   project <- normalizePath(project, winslash='/', mustWork=TRUE)
 
   ### Step 1: Collect packages from three sources: packrat.lock, code inspection
-  ### (using lib.loc and .libPaths() to find packages/dependencies), and by
+  ### (using lib.loc and getLibPaths() to find packages/dependencies), and by
   ### enumerating the packages in lib.loc.
 
   ## Packages from the lockfile (with their version)

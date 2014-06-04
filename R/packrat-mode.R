@@ -75,19 +75,19 @@ setPackratModeOn <- function(project = NULL,
   }
 
   # Record the original library, directory, etc.
-  .packrat_mutables$set(origLibPaths = .libPaths())
+  .packrat_mutables$set(origLibPaths = getLibPaths())
   .packrat_mutables$set(project = project)
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
-    cleanSearchPath(lib.loc = .libPaths())
+    cleanSearchPath(lib.loc = getLibPaths())
   }
 
   # Hide the site libraries
   hideSiteLibraries()
 
   # Set the library
-  .libPaths(localLib)
+  setLibPaths(localLib)
 
   # Give the user some visual indication that they're starting a packrat project
   if (interactive()) {
@@ -104,7 +104,7 @@ setPackratModeOn <- function(project = NULL,
     }
   }
 
-  invisible(.libPaths())
+  invisible(getLibPaths())
 
 }
 
@@ -124,19 +124,19 @@ setPackratModeOff <- function(project = NULL) {
   #     shQuote(file.path(R.home("bin"), "R")),
   #     "--vanilla",
   #     "--slave",
-  #     "-e 'cat(.libPaths(), sep = \"\\\\n\")'"
+  #     "-e 'cat(getLibPaths(), sep = \"\\\\n\")'"
   #   )
-  #   libPaths <- system(cmd, intern = TRUE)
-  libPaths <- .packrat_mutables$get("origLibPaths")
+  #  setLibPaths <- system(cmd, intern = TRUE)
+ libPaths <- .packrat_mutables$get("origLibPaths")
   if (!is.null(libPaths)) {
-    .libPaths(libPaths)
+    setLibPaths(libPaths)
   }
 
   # Turn off packrat mode
   if (interactive()) {
     msg <- paste(collapse = "\n",
                  c("Packrat mode off. Resetting library paths to:",
-                   paste("- \"", .libPaths(), "\"", sep = "")
+                   paste("- \"", getLibPaths(), "\"", sep = "")
                  )
     )
     message(msg)
@@ -149,7 +149,7 @@ setPackratModeOff <- function(project = NULL) {
   .packrat_mutables$set(project = NULL)
   .packrat_mutables$set(origLibPaths = NULL)
 
-  invisible(.libPaths())
+  invisible(getLibPaths())
 
 }
 
