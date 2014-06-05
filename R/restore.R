@@ -374,24 +374,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
               ": missing from lockfile")
       next
     }
-    if (initialSnapshot) {
-      # If taking the initial snapshot and installing a version to the
-      # private library that matches the version in the global library,
-      # short-circuit and do a copy here.
-      if (identical(action, "add") &&
-          pkgRecord$name %in% rownames(installedPkgs) &&
-          versionMatchesDb(pkgRecord, installedPkgs)) {
-        message("Installing ", pkgRecord$name, " (", pkgRecord$version,
-                ") ... ", appendLF = FALSE)
-        file.copy(find.package(pkgRecord$name), lib, recursive = TRUE)
-        annotatePkgDesc(pkgRecord, project, lib)
-        message("OK (copied local binary)")
-        next
-      }
-    }
-    if (identical(action, "upgrade") ||
-        identical(action, "downgrade") ||
-        identical(action, "crossgrade")) {
+    if (action %in% c("upgrade", "downgrade", "crossgrade")) {
       # Changing package type or version: Remove the old one now (we'll write
       # a new one in a moment)
       message("Replacing ", pkgRecord$name, " (", action, " ",
@@ -440,7 +423,7 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
 
   # Since we print actions as we do them, there's no need to do a summary
   # print first unless we need the user to confirm.
-  if (prompt && mustConfirm) {
+  if (prompt && mustConfirm && !dry.run) {
     summarizeDiffs(actions, installedPkgs, pkgRecords,
                    'Adding these packages to your library:',
                    'Removing these packages from your library:',
