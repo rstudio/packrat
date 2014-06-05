@@ -79,4 +79,10 @@ updateSettings <- function(project = NULL) {
     updateSvnIgnore(project)
   }
 
+  # Set the repositories
+  lockFile <- readLockFile(file = lockFilePath(project))
+  options('repos' = lockFile$repos)
+
+  invisible(TRUE)
+
 }
