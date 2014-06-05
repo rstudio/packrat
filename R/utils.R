@@ -257,3 +257,41 @@ setLibPaths <- function(paths) {
 getLibPaths <- function(paths) {
   .libPaths()
 }
+
+getInstalledPkgInfo <- function(packages, installed.packages, ...) {
+  ip <- installed.packages
+  missingFromLib <- packages[!(packages %in% rownames(ip))]
+  if (length(missingFromLib)) {
+    warning("The following packages are not installed in the current library:\n- ",
+            paste(missingFromLib, sep = ", "))
+  }
+  packages <- setdiff(packages, missingFromLib)
+  getPkgInfo(packages, ip)
+}
+
+getPkgInfo <- function(packages, installed.packages) {
+
+  records <- installed.packages[packages, , drop = FALSE]
+
+  ## Convert from matrix to list
+  records <- apply(records, 1, as.list)
+
+  ## Parse the package dependency fields -- we split up the depends, imports, etc.
+  for (i in seq_along(records)) {
+    for (field in c("Depends", "Imports", "LinkingTo", "Suggests", "Enhances")) {
+      item <- records[[i]][[field]]
+      if (is.na(item)) next
+      item <- gsub("[[:space:]]*(.*?)[[:space:]]*", "\\1", item, perl = TRUE)
+      item <- unlist(strsplit(item, ",[[:space:]]*", perl = TRUE))
+
+      ## Remove version info
+      item <- gsub("\\(.*", "", item)
+      records[[i]][[field]] <- item
+    }
+  }
+  records
+}
+
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
+}
