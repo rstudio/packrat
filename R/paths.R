@@ -113,3 +113,7 @@ instInitFilePath <- function() {
 instMacRUserlibFilePath <- function() {
   file.path(system.file(package = "packrat"), "resources", "mac_r_userlib.sh")
 }
+
+packratOptionsFilePath <- function(project = NULL) {
+  file.path(getPackratDir(project), "packrat.opts")
+}
