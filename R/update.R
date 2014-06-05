@@ -59,3 +59,24 @@ updateBootstrap <- function() {
 
   cat(bootstrap.R, file = file.path("inst", "resources", "bootstrap.R"), sep = "\n")
 }
+
+updateSettings <- function(project = NULL) {
+
+  project <- getProjectDir(project)
+
+  # Make sure the packrat directory is ignored if we're in a package
+  if (file.exists(file.path(project, "DESCRIPTION"))) {
+    updateRBuildIgnore(project)
+  }
+
+  # Update the .gitignore to ignore the packrat library
+  if (isGitProject(project)) {
+    updateGitIgnore(project)
+  }
+
+  # Update the svn ignore to ignore the packrat library
+  if (isSvnProject(project)) {
+    updateSvnIgnore(project)
+  }
+
+}
