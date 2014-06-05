@@ -211,7 +211,7 @@ isSvnProject <- function(project) {
   file.exists(.svn) && is_dir(.svn)
 }
 
-getSvnIgnores <- function(svn, dir) {
+getSvnIgnore <- function(svn, dir) {
   owd <- getwd()
   on.exit(setwd(owd))
   setwd(dir)
@@ -219,7 +219,7 @@ getSvnIgnores <- function(svn, dir) {
   result[result != ""]
 }
 
-setSvnIgnores <- function(svn, dir, ignores) {
+setSvnIgnore <- function(svn, dir, ignores) {
   owd <- getwd()
   on.exit(setwd(owd))
   setwd(dir)
@@ -236,11 +236,11 @@ updateSvnIgnore <- function(project) {
   if (svn == "") {
     stop("Could not locate an 'svn' executable on your PATH")
   }
-  ignores <- getSvnIgnores(svn, project)
+  ignores <- getSvnIgnore(svn, project)
   if (!(libraryDir %in% ignores)) {
     ignores <- c(ignores, libraryDir)
   }
-  setSvnIgnores(svn, project, ignores)
+  setSvnIgnore(svn, project, ignores)
 
 }
 
