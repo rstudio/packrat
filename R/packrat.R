@@ -141,24 +141,9 @@ bootstrap <- function(project = '.', source.packages = character()) {
     file.path(project, .packrat$packratFolderName, "bootstrap.R")
   )
 
-  # Copy .Rprofile from init.R so that users are bounced into packrat mode
-  # when launching \R session in project dir
+  ## Make sure the .Rprofile, .gitignore, etc. are up to date
   augmentRprofile(project)
-
-  # Make sure the packrat directory is ignored if we're in a package
-  if (file.exists(descriptionFile)) {
-    updateRBuildIgnore(project)
-  }
-
-  # Update the .gitignore to ignore the packrat library
-  if (isGitProject(project)) {
-    updateGitIgnore(project)
-  }
-
-  # Update the svn ignore to ignore the packrat library
-  if (isSvnProject(project)) {
-    updateSvnIgnore(project)
-  }
+  updateSettings(project)
 
   message("Bootstrap complete!")
   if (project == getwd()) {
