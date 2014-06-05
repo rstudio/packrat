@@ -78,7 +78,7 @@ readLockFile <- function(file) {
     packrat_version = df[1, 'PackratVersion'],
     r_version = df[1, 'RVersion'],
     repos = repos,
-    packages = deserializePackages(tail(df, -1))
+    packages = deserializePackages(utils::tail(df, -1))
   )
 }
 
@@ -127,7 +127,7 @@ topoSort <- function(graph) {
 
   while (length(leaves) > 0) {
     leaf <- leaves[[1]]
-    leaves <- tail(leaves, -1)
+    leaves <- utils::tail(leaves, -1)
 
     sortedNames <- c(sortedNames, leaf)
 
