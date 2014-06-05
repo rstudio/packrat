@@ -3,22 +3,11 @@
 \alias{install_github}
 \title{Attempts to install a package directly from github.}
 \usage{
-install_github(repo, auth_user = NULL, auth_token = github_pat(), ...,
-  dependencies = TRUE)
+install_github(repo, ..., dependencies = TRUE)
 }
 \arguments{
 \item{repo}{Repository address in the format
 \code{[username/]repo[/subdir][@ref|#pull]}.}
-
-\item{auth_user}{Your account username if you're attempting to install
-a package hosted in a private repository (and your username is different
-to \code{username}). Currently disabled.}
-
-\item{auth_token}{To install from a private repo, generate a personal
-access token (PAT) in \url{https://github.com/settings/applications} and
-supply to this argument. This is safer than using a password because
-you can easily delete a PAT without affecting any others. Defaults to
-the \code{GITHUB_PAT} environment variable. Currently disabled.}
 
 \item{...}{Other arguments passed on to \code{install}.}
 
@@ -26,8 +15,9 @@ the \code{GITHUB_PAT} environment variable. Currently disabled.}
 build vignettes and use all functionality of the package.}
 }
 \description{
-This function is vectorised on \code{repo} so you can install multiple
-packages in a single command.
+This function is a bare-bones version of \code{devtools::install_github}.
+Tools for authentication are not available, but the main interface through
+the \code{repo} argument is preserved.
 }
 \examples{
 \dontrun{
@@ -47,5 +37,8 @@ install_github("hadley/devtools")
 install_github("hadley/private", auth_token = "abc")
 
 }
+}
+\seealso{
+Other package.installation: \code{\link{install_url}}
 }
 

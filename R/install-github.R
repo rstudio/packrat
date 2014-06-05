@@ -1,18 +1,11 @@
 #' Attempts to install a package directly from github.
 #'
-#' This function is vectorised on \code{repo} so you can install multiple
-#' packages in a single command.
+#' This function is a bare-bones version of \code{devtools::install_github}.
+#' Tools for authentication are not available, but the main interface through
+#' the \code{repo} argument is preserved.
 #'
 #' @param repo Repository address in the format
 #'   \code{[username/]repo[/subdir][@@ref|#pull]}.
-#' @param auth_user Your account username if you're attempting to install
-#'   a package hosted in a private repository (and your username is different
-#'   to \code{username}). Currently disabled.
-#' @param auth_token To install from a private repo, generate a personal
-#'   access token (PAT) in \url{https://github.com/settings/applications} and
-#'   supply to this argument. This is safer than using a password because
-#'   you can easily delete a PAT without affecting any others. Defaults to
-#'   the \code{GITHUB_PAT} environment variable. Currently disabled.
 #' @param ... Other arguments passed on to \code{install}.
 #' @param dependencies By default, installs all dependencies so that you can
 #'   build vignettes and use all functionality of the package.
@@ -37,18 +30,14 @@
 #'
 #' }
 install_github <- function(repo,
-                           auth_user = NULL,
-                           auth_token = github_pat(), ...,
+                           ...,
                            dependencies = TRUE) {
 
   invisible(vapply(repo, install_github_single, FUN.VALUE = logical(1),
-    auth_user, auth_token, ...,
-    dependencies = dependencies))
+    ..., dependencies = dependencies))
 }
 
-github_get_conn <- function(repo,
-                            auth_user = NULL,
-                            auth_token = NULL, ...) {
+github_get_conn <- function(repo, ...) {
 
   params <- github_parse_path(repo)
   username <- params$username
@@ -57,22 +46,13 @@ github_get_conn <- function(repo,
   ref <- params$ref
   if (is.null(ref)) ref <- "master"
   pull <- params$pull
+  if (!is.null(pull)) {
+    stop("packrat::install_github does not support installation from pull requests")
+  }
   subdir <- params$subdir
 
   if (!is.null(pull)) {
-    pullinfo <- github_pull_info(repo, username, pull)
-    username <- pullinfo$username
-    ref <- pullinfo$ref
-  }
-
-  if (!is.null(auth_token)) {
-    auth <- httr::authenticate(
-      user = auth_token,
-      password = "x-oauth-basic",
-      type = "basic"
-    )
-  } else {
-    auth <- list()
+    stop("cannot install from pull requests")
   }
 
   msg <- paste0("Installing github repo ",
@@ -84,17 +64,14 @@ github_get_conn <- function(repo,
     "/archive/", ref, ".zip", sep = "")
 
   list(
-    url = url, auth = auth, msg = msg, repo = repo, username = username,
-    ref = ref, pull = pull, subdir = subdir,
-    auth_user = auth_user
+    url = url, msg = msg, repo = repo, username = username,
+    ref = ref, pull = pull, subdir = subdir
   )
 }
 
-install_github_single <- function(repo,
-                                  auth_user = NULL,
-                                  auth_token = NULL, ...) {
+install_github_single <- function(repo, ...) {
 
-  conn <- github_get_conn(repo, auth_user, auth_token, ...)
+  conn <- github_get_conn(repo, ...)
   message(conn$msg)
 
   # define before_install function that captures the arguments to
@@ -135,30 +112,7 @@ install_github_single <- function(repo,
   #  URL: https://github.com/rstudio/shiny/archive/v/0/2/1.zip
   #  Output file: shiny.zip
   install_url(conn$url, subdir = conn$subdir,
-    config = conn$auth, before_install = github_before_install, ...)
-}
-
-# Retrieve the username and ref for a pull request
-## E.g., given repo = 'Kmisc', username = 'kevinushey', and
-## pull = '7', we should get
-## repo == 'Kmisc'
-## username = 'kevinushey'
-## ref = 'test-pull-request'
-github_pull_info <- function(repo, username, pull, method = "wget") {
-
-  ## Strip out the ref name by downloading the URL and 'parsing' the
-  ## HTML with regular expressions. (CAUTION: may summon Cthulhu)
-  URL <- file.path("https://github.com", username, repo, "pull", pull, fsep = "/")
-  tempfile <- tempfile()
-  download.file(URL, destfile = tempfile, method = method)
-  content <- readLines(tempfile)
-  unlink(tempfile)
-
-  rx <- paste(repo, "branch", sep = ":")
-  line <- grep(rx, content, value = TRUE)[[1]]
-  ref <- gsub("\".*", "", gsub(paste0(".*", rx, ":"), "", line))
-  list(repo = repo, username = username, ref = ref)
-
+    config = list(), before_install = github_before_install, ...)
 }
 
 # Extract the commit hash from a github bundle and append it to the
