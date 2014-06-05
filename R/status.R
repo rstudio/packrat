@@ -69,11 +69,11 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   # Packages inferred from the code
   # Don't stop execution if package missing from library; just propogate later
   # as information to user
+  inferredPkgNames <- appDependencies(project)
   inferredPkgRecords <- getPackageRecords(
-    appDependencies(project),
+    inferredPkgNames,
     missing.package = function(package, lib.loc) NULL
   )
-  inferredPkgNames <- pkgNames(flattenPackageRecords(inferredPkgRecords))
 
   # All packages mentioned in one of the three above
   allPkgNames <- sort(unique(c(
@@ -198,7 +198,8 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
         searchPackages(packratPackages, deletedButStillTracked),
         searchPackages(installedPkgRecords, deletedButStillTracked),
         "The following packages are used in your code, tracked by packrat, but no longer present in your library:",
-        c("Use packrat::restore() to restore these libraries, or "))
+        c("Use packrat::restore() to restore these libraries.")
+      )
     }
 
     # Packages that are no longer used, but still seen in the library
@@ -222,6 +223,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
             length(missingFromPackrat) ||
             length(pkgNamesUntracked) ||
             length(pkgNamesOutOfSync) ||
+            length(deletedButStillTracked) ||
             length(missingFromPackrat) ||
             length(pkgsNotNeeded))) {
       message("Up to date.")
