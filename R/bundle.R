@@ -57,7 +57,7 @@ bundle <- function(project = NULL,
   # need piece by piece
   projectFiles <- projectFiles[
     !startswith(projectFiles, .packrat$packratFolderName)
-  ]
+    ]
 
   # Make sure we add packrat
   basePackratFiles <- list_files(
@@ -106,11 +106,13 @@ bundle <- function(project = NULL,
 ##' @param bundle Path to the bundled file.
 ##' @param where The directory where we will unbundle the project.
 ##' @param ... Optional arguments passed to \code{\link{tar}}.
+##' @param restore Boolean; should we \code{\link{restore}} the library
+##'   after \code{unbundle}-ing the project?
 ##' @export
 unbundle <- function(bundle, where, ..., restore = TRUE) {
 
   bundle <- normalizePath(bundle, winslash = "/", mustWork = TRUE)
-  if (!dir.exists(where)) {
+  if (!file.exists(where) && is_dir(where)) {
     dir.create(where, recursive = TRUE)
   }
   where <- normalizePath(where, winslash = "/", mustWork = TRUE)
@@ -132,9 +134,9 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
       stop("Couldn't infer top-level directory name; cannot perform automatic restore")
     }
     ## Ensure the (empty) library directory is present before restoring
-    dir.create(packrat:::libDir(getwd()), recursive = TRUE)
+    dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")
-    packrat::restore(project = getwd())
+    restore(project = getwd())
     message("Done! The project has been unbundled and restored at:\n- \"", dirName, "\"")
   } else {
     message("Done! The packrat project has been unbundled at:\n- \"", dirName, "\"")

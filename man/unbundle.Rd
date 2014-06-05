@@ -11,6 +11,9 @@ unbundle(bundle, where, ..., restore = TRUE)
 \item{where}{The directory where we will unbundle the project.}
 
 \item{...}{Optional arguments passed to \code{\link{tar}}.}
+
+\item{restore}{Boolean; should we \code{\link{restore}} the library
+after \code{unbundle}-ing the project?}
 }
 \description{
 Unbundle a previously \code{\link{bundle}}d project.
