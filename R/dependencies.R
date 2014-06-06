@@ -47,7 +47,9 @@ appDependencies <- function(project = NULL, available.packages = NULL) {
                                               available.packages)
     sort(unique(c(descriptionDeps, childDeps)))
   } else {
-    unique(c(dirDependencies(project), 'packrat'))
+    parentDeps <- unique(c(dirDependencies(project), 'packrat'))
+    childDeps <- recursivePackageDependencies(parentDeps, available.packages)
+    sort(unique(c(parentDeps, childDeps)))
   }
 
 }
