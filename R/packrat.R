@@ -147,11 +147,8 @@ bootstrap <- function(project = '.', source.packages = character()) {
   updateSettings(project, options)
 
   message("Bootstrap complete!")
-  if (project == getwd()) {
-    packrat_mode()
-  } else {
-    message("Start a new R session at '", project, "' to enter packrat mode.")
-  }
+  setwd(project)
+  packrat_mode()
   invisible()
 }
 
