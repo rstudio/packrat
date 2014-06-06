@@ -4,10 +4,8 @@
 
 VALID_OPTIONS <- list(
   auto.snapshot = function(x) x %in% c(TRUE, FALSE),
-  git.ignore.lib = list(TRUE, FALSE),
-  git.ignore.src = list(TRUE, FALSE),
-  svn.ignore.lib = list(TRUE, FALSE),
-  svn.ignore.src = list(TRUE, FALSE)
+  vcs.ignore.lib = list(TRUE, FALSE),
+  vcs.ignore.src = list(TRUE, FALSE)
 )
 
 
@@ -15,36 +13,36 @@ initOptions <- function(project = NULL) {
   project <- getProjectDir(project)
   set_opts(
     auto.snapshot = TRUE,
-    git.ignore.lib = TRUE,
-    git.ignore.src = FALSE,
-    svn.ignore.lib = TRUE,
-    svn.ignore.src = FALSE
+    vcs.ignore.lib = TRUE,
+    vcs.ignore.src = FALSE
   )
 }
 
 ##' Get/set packrat project options
 ##'
-##' Get and set a number of options for the current packrat-managed project.
+##' Get and set options for the current packrat-managed project.
 ##'
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
 ##'   (\code{TRUE} / \code{FALSE})
-##' \item \code{git.ignore.lib}: Add the packrat private library to the git ignore? (\code{TRUE} / \code{FALSE})
-##' \item \code{git.ignore.src}: Add the packrat private sources to the git ignore? (\code{TRUE} / \code{FALSE})
-##' \item \code{svn.ignore.lib}: Add the packrat private library to the SVN ignore? (\code{TRUE} / \code{FALSE})
-##' \item \code{svn.ignore.src}: Add the packrat private sources to the SVN ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{vcs.ignore.lib}: Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{vcs.ignore.src}: Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
 ##' }
 ##' @param options A character vector of valid option names.
+##' @param simplify Boolean; \code{unlist} the returned options? Useful for when retrieving
+##'   a single option.
 ##' @param ... Entries of the form \code{key = value}, used for setting packrat project options.
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
-get_opts <- function(options = NULL) {
+get_opts <- function(options = NULL, simplify = TRUE) {
   opts <- read_opts()
   if (is.null(options)) {
     opts
   } else {
-    opts[names(opts) %in% options]
+    result <- opts[names(opts) %in% options]
+    if (simplify) unlist(result)
+    else result
   }
 }
 

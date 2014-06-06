@@ -70,12 +70,10 @@ updateSettings <- function(project = NULL, options = NULL) {
     updateRBuildIgnore(project)
   }
 
-  # Update the .gitignore to ignore the packrat library
   if (isGitProject(project)) {
     updateGitIgnore(project, options)
   }
 
-  # Update the svn ignore to ignore the packrat library
   if (isSvnProject(project)) {
     updateSvnIgnore(project, options)
   }

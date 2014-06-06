@@ -4,7 +4,7 @@ isPackratModeOn <- function(project = NULL) {
 
 setPackratModeOn <- function(project = NULL,
                              bootstrap = TRUE,
-                             auto.snapshot = TRUE,
+                             auto.snapshot = get_opts("auto.snapshot"),
                              clean.search.path = TRUE) {
 
   project <- getProjectDir(project)
@@ -187,7 +187,7 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 packrat_mode <- function(on = NULL,
                          project = NULL,
                          bootstrap = FALSE,
-                         auto.snapshot = TRUE,
+                         auto.snapshot = get_opts("auto.snapshot"),
                          clean.search.path = TRUE) {
 
   project <- getProjectDir(project)
