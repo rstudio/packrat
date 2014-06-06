@@ -148,7 +148,7 @@ bootstrap <- function(project = '.', source.packages = character()) {
 
   message("Bootstrap complete!")
   setwd(project)
-  packrat_mode()
+  packrat_mode(on = TRUE, project = project)
   invisible()
 }
 
