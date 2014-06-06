@@ -115,6 +115,9 @@ NULL
 #' @export
 bootstrap <- function(project = '.', source.packages = character()) {
 
+  ## Force packrat mode off
+  suppressMessages(packrat_mode(on = FALSE))
+
   project <- normalizePath(project, winslash='/', mustWork=TRUE)
   if (!checkPackified(project = project, quiet = TRUE)) {
     packify(project = project, quiet = TRUE)
