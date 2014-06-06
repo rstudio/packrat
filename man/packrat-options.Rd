@@ -5,15 +5,18 @@
 \alias{set_opts}
 \title{Get/set packrat project options}
 \usage{
-get_opts(options = NULL, simplify = TRUE)
+get_opts(options = NULL, simplify = TRUE, project = NULL)
 
-set_opts(...)
+set_opts(..., project = NULL)
 }
 \arguments{
 \item{options}{A character vector of valid option names.}
 
 \item{simplify}{Boolean; \code{unlist} the returned options? Useful for when retrieving
 a single option.}
+
+\item{project}{The project directory. When in packrat mode, defaults to the current project;
+otherwise, defaults to the current working directory.}
 
 \item{...}{Entries of the form \code{key = value}, used for setting packrat project options.}
 }

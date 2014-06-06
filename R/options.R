@@ -12,6 +12,7 @@ VALID_OPTIONS <- list(
 initOptions <- function(project = NULL) {
   project <- getProjectDir(project)
   set_opts(
+    project = project,
     auto.snapshot = TRUE,
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE
@@ -31,12 +32,15 @@ initOptions <- function(project = NULL) {
 ##' @param options A character vector of valid option names.
 ##' @param simplify Boolean; \code{unlist} the returned options? Useful for when retrieving
 ##'   a single option.
+##' @param project The project directory. When in packrat mode, defaults to the current project;
+##'   otherwise, defaults to the current working directory.
 ##' @param ... Entries of the form \code{key = value}, used for setting packrat project options.
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
-get_opts <- function(options = NULL, simplify = TRUE) {
-  opts <- read_opts()
+get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
+  project <- getProjectDir(project)
+  opts <- read_opts(project = project)
   if (is.null(options)) {
     opts
   } else {
@@ -49,21 +53,25 @@ get_opts <- function(options = NULL, simplify = TRUE) {
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
-set_opts <- function(...) {
-  if (!file.exists(packratOptionsFilePath())) {
-    dir.create(dirname(packratOptionsFilePath()), recursive = TRUE)
-    file.create(packratOptionsFilePath())
+set_opts <- function(..., project = NULL) {
+
+  project <- getProjectDir(project)
+  optsPath <- packratOptionsFilePath(project)
+
+  if (!file.exists(optsPath)) {
+    dir.create(dirname(optsPath), recursive = TRUE, showWarnings = FALSE)
+    file.create(optsPath)
   }
   dots <- list(...)
   validateOptions(dots)
   keys <- names(dots)
   values <- unname(unlist(dots))
-  opts <- read_opts()
+  opts <- read_opts(project = project)
   for (i in seq_along(keys)) {
     opts[[keys[[i]]]] <- values[[i]]
   }
-  write.dcf(opts, file = packratOptionsFilePath())
-  updateSettings()
+  write.dcf(opts, file = optsPath)
+  updateSettings(project)
   invisible(opts)
 }
 
@@ -89,6 +97,7 @@ validateOptions <- function(opts) {
 }
 
 read_opts <- function(project = NULL) {
+  project <- getProjectDir(project)
   path <- packratOptionsFilePath(project)
   if (!file.exists(path)) return(invisible(NULL))
   opts <- readDcf(path)

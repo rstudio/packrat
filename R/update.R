@@ -62,8 +62,11 @@ updateBootstrap <- function() {
 
 updateSettings <- function(project = NULL, options = NULL) {
 
-  if (is.null(options)) options <- get_opts()
   project <- getProjectDir(project)
+
+  if (is.null(options)) {
+    options <- get_opts(project = project)
+  }
 
   # Make sure the packrat directory is ignored if we're in a package
   if (file.exists(file.path(project, "DESCRIPTION"))) {
