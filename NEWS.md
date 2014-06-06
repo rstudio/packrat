@@ -1,5 +1,15 @@
 # Packrat 0.2.0.99 (Unreleased)
 
+- Packrat gains project-specific options. `packrat/packrat.opts` is a DCF file
+  of project-specific settings that can be queried and set through
+  `packrat::get_opts` and `packrat::set_opts`. The current valid options are:
+  - `auto.snapshot`: perform automatic, asynchronous, safe snapshots? This
+    will automatically update the lock file when a new package is installed,
+    for example.
+  - `vcs.ignore.lib`, `vcs.ignore.src`: Ignore the `packrat/[lib/src]`
+    directories in your version control system? Currently, only `git` and
+    `svn` are supported.
+
 - Packrat can now handle source package tarballs, in addition to source folders.
 
 - API functions have been appropriately `snake_case`d and function arguments
