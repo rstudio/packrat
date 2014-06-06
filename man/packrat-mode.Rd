@@ -5,7 +5,7 @@
 \title{Packrat Mode}
 \usage{
 packrat_mode(on = NULL, project = NULL, bootstrap = FALSE,
-  auto.snapshot = TRUE, clean.search.path = TRUE)
+  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE)
 }
 \arguments{
 \item{on}{Turn packrat mode on (\code{TRUE}) or off (\code{FALSE}). If omitted, packrat mode

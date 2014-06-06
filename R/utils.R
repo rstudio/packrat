@@ -195,13 +195,13 @@ updateRBuildIgnore <- function(project = NULL, options) {
 }
 
 updateGitIgnore <- function(project = NULL, options) {
-  git.options <- options[grepl("^git", names(options))]
+  git.options <- options[grepl("^vcs", names(options))]
 
   names(git.options) <- swap(
     names(git.options),
     c(
-      "git.ignore.lib" = paste0(relLibraryRootDir(), "/"),
-      "git.ignore.src" = paste0(relSrcDir(), "/")
+      "vcs.ignore.lib" = paste0(relLibraryRootDir(), "/"),
+      "vcs.ignore.src" = paste0(relSrcDir(), "/")
     )
   )
   add <- names(git.options)[sapply(git.options, isTRUE)]
@@ -242,12 +242,12 @@ setSvnIgnore <- function(svn, dir, ignores) {
 
 updateSvnIgnore <- function(project, options) {
 
-  svn.options <- options[grepl("^svn", names(options))]
+  svn.options <- options[grepl("^vcs", names(options))]
   names(svn.options) <- swap(
     names(svn.options),
     c(
-      "svn.ignore.lib" = relLibraryRootDir(),
-      "svn.ignore.src" = relSrcDir()
+      "vcs.ignore.lib" = relLibraryRootDir(),
+      "vcs.ignore.src" = relSrcDir()
     )
   )
   add <- names(svn.options)[sapply(svn.options, isTRUE)]

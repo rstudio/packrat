@@ -5,26 +5,27 @@
 \alias{set_opts}
 \title{Get/set packrat project options}
 \usage{
-get_opts(options = NULL)
+get_opts(options = NULL, simplify = TRUE)
 
 set_opts(...)
 }
 \arguments{
 \item{options}{A character vector of valid option names.}
 
+\item{simplify}{Boolean; \code{unlist} the returned options? Useful for when retrieving
+a single option.}
+
 \item{...}{Entries of the form \code{key = value}, used for setting packrat project options.}
 }
 \description{
-Get and set a number of options for the current packrat-managed project.
+Get and set options for the current packrat-managed project.
 }
 \details{
 \itemize{
 \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
   (\code{TRUE} / \code{FALSE})
-\item \code{git.ignore.lib}: Add the packrat private library to the git ignore? (\code{TRUE} / \code{FALSE})
-\item \code{git.ignore.src}: Add the packrat private sources to the git ignore? (\code{TRUE} / \code{FALSE})
-\item \code{svn.ignore.lib}: Add the packrat private library to the SVN ignore? (\code{TRUE} / \code{FALSE})
-\item \code{svn.ignore.src}: Add the packrat private sources to the SVN ignore? (\code{TRUE} / \code{FALSE})
+\item \code{vcs.ignore.lib}: Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
+\item \code{vcs.ignore.src}: Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
 }
 }
 
