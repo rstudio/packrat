@@ -211,6 +211,11 @@ updateGitIgnore <- function(project = NULL, options) {
                   paste(relOldLibraryDir(), "/", sep = "")
   ))
 
+  ## Add a comment so we can distinguish between packrat-added settings and user-added settings
+  msg <- "# Automatically added by Packrat"
+  add <- paste(add, msg)
+  remove <- paste(remove, msg)
+
   updateIgnoreFile(project = project, file = ".gitignore", add = add, remove = remove)
 }
 
