@@ -28,14 +28,16 @@ initOptions <- function(project = NULL) {
 ##'
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
-##' \item \code{git.ignore.lib}: Add the packrat private library to the git ignore?
-##' \item \code{git.ignore.src}: Add the packrat private sources to the git ignore?
-##' \item \code{svn.ignore.lib}: Add the packrat private library to the SVN ignore?
-##' \item \code{svn.ignore.src}: Add the packrat private sources to the SVN ignore?
+##'   (\code{TRUE} / \code{FALSE})
+##' \item \code{git.ignore.lib}: Add the packrat private library to the git ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{git.ignore.src}: Add the packrat private sources to the git ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{svn.ignore.lib}: Add the packrat private library to the SVN ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{svn.ignore.src}: Add the packrat private sources to the SVN ignore? (\code{TRUE} / \code{FALSE})
 ##' }
 ##' @param options A character vector of valid option names.
 ##' @param ... Entries of the form \code{key = value}, used for setting packrat project options.
-##' @rdname options
+##' @rdname packrat-options
+##' @name packrat-options
 ##' @export
 get_opts <- function(options = NULL) {
   opts <- read_opts()
@@ -46,7 +48,8 @@ get_opts <- function(options = NULL) {
   }
 }
 
-##' @rdname options
+##' @rdname packrat-options
+##' @name packrat-options
 ##' @export
 set_opts <- function(...) {
   if (!file.exists(packratOptionsFilePath())) {
