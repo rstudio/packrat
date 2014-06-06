@@ -206,7 +206,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       )
     })
 
-    type <- "Github"
+    type <- "GitHub"
   }
   if (!quiet) {
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
