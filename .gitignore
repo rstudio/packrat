@@ -1,6 +1,3 @@
 .DS_Store
 .Rproj.user
 .Rhistory
-packrat/lib/
-packrat/library.new/
-packrat/library.old/

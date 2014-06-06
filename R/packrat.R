@@ -143,7 +143,8 @@ bootstrap <- function(project = '.', source.packages = character()) {
 
   ## Make sure the .Rprofile, .gitignore, etc. are up to date
   augmentRprofile(project)
-  updateSettings(project)
+  options <- initOptions(project) ## writes out packrat.opts and returns genereated list
+  updateSettings(project, options)
 
   message("Bootstrap complete!")
   if (project == getwd()) {

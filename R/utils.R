@@ -43,8 +43,8 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
       unlink(to, recursive = TRUE)
     } else {
       stop(paste( sep = "",
-        if (is_dir(to)) "Directory" else "File",
-        " already exists at path '", to, "'."
+                  if (is_dir(to)) "Directory" else "File",
+                  " already exists at path '", to, "'."
       ))
     }
   }
@@ -170,35 +170,48 @@ stopIfNotPackified <- function(project) {
 }
 
 ## Expected to be used with .Rbuildignore, .Rinstignore
-updateIgnoreFile <- function(project = NULL, file, fields) {
+updateIgnoreFile <- function(project = NULL, file, add, remove) {
 
   project <- getProjectDir(project)
 
   ## If the file doesn't exist, create and fill it
   path <- file.path(project, file)
   if (!file.exists(path)) {
-    cat(fields, file = file, sep = "\n")
+    cat(add, file = file, sep = "\n")
     return(invisible())
   }
 
-  ## If it already exists, fill as necessary
+  ## If it already exists, add and remove as necessary
   content <- readLines(path)
-  for (field in fields) {
-    if (!(field %in% content)) {
-      content <- c(content, field)
-    }
-  }
+  content <- union(content, add)
+  content <- setdiff(content, remove)
   cat(content, file = path, sep = "\n")
   return(invisible())
 
 }
 
-updateRBuildIgnore <- function(project = NULL) {
-  updateIgnoreFile(project = project, file = ".Rbuildignore", fields = "^packrat/")
+updateRBuildIgnore <- function(project = NULL, options) {
+  updateIgnoreFile(project = project, file = ".Rbuildignore", add = "^packrat/")
 }
 
-updateGitIgnore <- function(project = NULL) {
-  updateIgnoreFile(project = project, file = ".gitignore", fields = "packrat/lib/")
+updateGitIgnore <- function(project = NULL, options) {
+  git.options <- options[grepl("^git", names(options))]
+
+  names(git.options) <- swap(
+    names(git.options),
+    c(
+      "git.ignore.lib" = paste0(relLibraryRootDir(), "/"),
+      "git.ignore.src" = paste0(relSrcDir(), "/")
+    )
+  )
+  add <- names(git.options)[sapply(git.options, isTRUE)]
+  remove <- names(git.options)[sapply(git.options, isFALSE)]
+  add <- unique(c(add,
+                  paste(relNewLibraryDir(), "/", sep = ""),
+                  paste(relOldLibraryDir(), "/", sep = "")
+  ))
+
+  updateIgnoreFile(project = project, file = ".gitignore", add = add, remove = remove)
 }
 
 isGitProject <- function(project) {
@@ -227,19 +240,33 @@ setSvnIgnore <- function(svn, dir, ignores) {
   system(paste(svn, "propset", "svn:ignore", shQuote(ignores), "."), intern = TRUE)
 }
 
-updateSvnIgnore <- function(project) {
+updateSvnIgnore <- function(project, options) {
 
-  ## We use propget, propset to modify the svn:ignore file
-  libraryDir <- "packrat/lib"
+  svn.options <- options[grepl("^svn", names(options))]
+  names(svn.options) <- swap(
+    names(svn.options),
+    c(
+      "svn.ignore.lib" = relLibraryRootDir(),
+      "svn.ignore.src" = relSrcDir()
+    )
+  )
+  add <- names(svn.options)[sapply(svn.options, isTRUE)]
+  remove <- names(svn.options)[sapply(svn.options, isFALSE)]
+
+  ## We need to explicitly exclude library.new, library.old
+  add <- unique(c(add,
+                  relNewLibraryDir(),
+                  relOldLibraryDir()
+  ))
 
   svn <- Sys.which("svn")
   if (svn == "") {
     stop("Could not locate an 'svn' executable on your PATH")
   }
   ignores <- getSvnIgnore(svn, project)
-  if (!(libraryDir %in% ignores)) {
-    ignores <- c(ignores, libraryDir)
-  }
+  ignores <- union(ignores, add)
+  ignores <- setdiff(ignores, remove)
+
   setSvnIgnore(svn, project, ignores)
 
 }
@@ -294,4 +321,22 @@ getPkgInfo <- function(packages, installed.packages) {
 
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
+}
+
+`%nin%` <- function(x, y) {
+  !(x %in% y)
+}
+
+isFALSE <- function(x) identical(x, FALSE)
+
+swap <- function(vec, from, to = NULL) {
+
+  if (is.null(to)) {
+    to <- unname(unlist(from))
+    from <- names(from)
+  }
+
+  tmp <- to[match(vec, from)]
+  tmp[is.na(tmp)] <- vec[is.na(tmp)]
+  return(tmp)
 }
