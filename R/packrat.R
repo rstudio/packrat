@@ -108,12 +108,13 @@ NULL
 #' @param source.packages List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or GitHub.
+#' @param enter Boolean, enter packrat mode for this project after finishing a bootstrap?
 #'
 #' @seealso \link{packrat} for a description of the files created by
 #'   \code{bootstrap}.
 #'
 #' @export
-bootstrap <- function(project = '.', source.packages = character()) {
+bootstrap <- function(project = '.', source.packages = character(), enter = TRUE) {
 
   ## Force packrat mode off
   suppressMessages(packrat_mode(on = FALSE))
@@ -150,8 +151,10 @@ bootstrap <- function(project = '.', source.packages = character()) {
   updateSettings(project, options)
 
   message("Bootstrap complete!")
-  setwd(project)
-  packrat_mode(on = TRUE, project = project)
+  if (enter) {
+    setwd(project)
+    packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
+  }
   invisible()
 }
 
