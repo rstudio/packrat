@@ -83,7 +83,9 @@ updateSettings <- function(project = NULL, options = NULL) {
 
   # Set the repositories
   lockFile <- readLockFile(file = lockFilePath(project))
-  options('repos' = lockFile$repos)
+  repos <- character()
+  repos["CRAN"] <- lockFile$repos
+  options('repos' = repos)
 
   invisible(TRUE)
 
