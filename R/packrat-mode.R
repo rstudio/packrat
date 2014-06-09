@@ -126,14 +126,12 @@ setPackratModeOff <- function(project = NULL) {
   # Restore .Library.site
   restoreSiteLibraries()
 
-  # Reset the library paths to what one gets in a 'clean' session
-  #   cmd <- paste(
-  #     shQuote(file.path(R.home("bin"), "R")),
-  #     "--vanilla",
-  #     "--slave",
-  #     "-e 'cat(getLibPaths(), sep = \"\\\\n\")'"
-  #   )
-  #  setLibPaths <- system(cmd, intern = TRUE)
+  # Restore .Library
+  if (Sys.info()["sysname"] == "Darwin") {
+    restoreLibrary(".Library")
+  }
+
+  # Reset the library paths
   libPaths <- .packrat_mutables$get("origLibPaths")
   if (!is.null(libPaths)) {
     setLibPaths(libPaths)
@@ -155,11 +153,6 @@ setPackratModeOff <- function(project = NULL) {
   # Default back to the current working directory for packrat function calls
   .packrat_mutables$set(project = NULL)
   .packrat_mutables$set(origLibPaths = NULL)
-
-  # Restore .Library
-  if (Sys.info()["sysname"] == "Darwin") {
-    restoreLibrary(".Library")
-  }
 
   invisible(getLibPaths())
 
