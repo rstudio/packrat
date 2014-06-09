@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-R --vanilla --slave -e "library(utils); source('R/update.R'); updateInit()"
