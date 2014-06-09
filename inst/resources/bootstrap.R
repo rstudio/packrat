@@ -9,8 +9,10 @@ local({
   message("Packrat is not installed in the local library -- ",
     "attempting to bootstrap an installation...")
 
-  ## We need utils for the following to succeed
-  do.call("library", list(package = "utils", character.only = TRUE))
+  ## We need utils for the following to succeed -- there are calls to functions
+  ## in 'restore' that are contained within utils. utils gets loaded at the
+  ## end of start-up anyhow, so this should be fine
+  library("utils", character.only = TRUE)
 
   ## Install packrat into local project library
   packratSrcPath <- list.files(full.names = TRUE,
