@@ -141,8 +141,8 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
 
   # Copy bootstrap.R so a user can 'start from zero' with a project
   file.copy(
-    instBootstrapFilePath(),
-    file.path(project, .packrat$packratFolderName, "bootstrap.R")
+    instInitFilePath(),
+    file.path(project, .packrat$packratFolderName, "init.R")
   )
 
   ## Make sure the .Rprofile, .gitignore, etc. are up to date
@@ -408,7 +408,7 @@ packify <- function(project = NULL, quiet = FALSE) {
   }
 
   .Rprofile <- file.path(project, ".Rprofile")
-  init.R <- instInitFilePath()
+  init.R <- instInitRprofileFilePath()
 
   if (!file.exists(.Rprofile)) {
     file.copy(init.R, .Rprofile)

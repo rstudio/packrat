@@ -1,17 +1,17 @@
-updateBootstrap <- function() {
-  bootstrap.R <- readLines(file.path("inst", "resources", "bootstrap.R"))
+updateInit <- function() {
+  init.R <- readLines(file.path("inst", "resources", "init.R"))
   packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
 
   ## Sync the packrat path, messages
   source("R/aaa-globals.R")
 
-  installAgentLine <- grep("## -- InstallAgent -- ##", bootstrap.R)
-  bootstrap.R[installAgentLine + 1] <- paste("  installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version)))
+  installAgentLine <- grep("## -- InstallAgent -- ##", init.R)
+  init.R[installAgentLine + 1] <- paste("  installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version)))
 
-  installSourceLine <- grep("## -- InstallSource -- ##", bootstrap.R)
-  bootstrap.R[installSourceLine + 1] <- paste("  installSource <-", shQuote(paste("InstallSource:", "source")))
+  installSourceLine <- grep("## -- InstallSource -- ##", init.R)
+  init.R[installSourceLine + 1] <- paste("  installSource <-", shQuote(paste("InstallSource:", "source")))
 
-  cat(bootstrap.R, file = file.path("inst", "resources", "bootstrap.R"), sep = "\n")
+  cat(init.R, file = file.path("inst", "resources", "init.R"), sep = "\n")
 }
 
 updateSettings <- function(project = NULL, options = NULL) {
@@ -38,7 +38,9 @@ updateSettings <- function(project = NULL, options = NULL) {
   # Set the repositories
   lockFile <- readLockFile(file = lockFilePath(project))
   repos <- character()
-  repos["CRAN"] <- lockFile$repos
+
+  ## TODO -- this will change soon, but for now we just set the first repo (should be CRAN anyhow)
+  repos["CRAN"] <- lockFile$repos[[1]]
   options('repos' = repos)
 
   invisible(TRUE)
