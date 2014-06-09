@@ -77,6 +77,8 @@ setPackratModeOn <- function(project = NULL,
   # Record the original library, directory, etc.
   .packrat_mutables$set(origLibPaths = getLibPaths())
   .packrat_mutables$set(project = project)
+  .packrat_mutables$set(.Library = .Library)
+  .packrat_mutables$set(.Library.site = .Library.site)
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
@@ -85,6 +87,11 @@ setPackratModeOn <- function(project = NULL,
 
   # Hide the site libraries
   hideSiteLibraries()
+
+  # Use the symlinked library on Mac
+  if (Sys.info()["sysname"] == "Darwin") {
+    useSymlinkedLibrary(project = project)
+  }
 
   # Set the library
   setLibPaths(localLib)
@@ -127,7 +134,7 @@ setPackratModeOff <- function(project = NULL) {
   #     "-e 'cat(getLibPaths(), sep = \"\\\\n\")'"
   #   )
   #  setLibPaths <- system(cmd, intern = TRUE)
- libPaths <- .packrat_mutables$get("origLibPaths")
+  libPaths <- .packrat_mutables$get("origLibPaths")
   if (!is.null(libPaths)) {
     setLibPaths(libPaths)
   }
@@ -148,6 +155,11 @@ setPackratModeOff <- function(project = NULL) {
   # Default back to the current working directory for packrat function calls
   .packrat_mutables$set(project = NULL)
   .packrat_mutables$set(origLibPaths = NULL)
+
+  # Restore .Library
+  if (Sys.info()["sysname"] == "Darwin") {
+    restoreLibrary(".Library")
+  }
 
   invisible(getLibPaths())
 
