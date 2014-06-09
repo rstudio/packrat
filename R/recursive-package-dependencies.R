@@ -23,8 +23,8 @@ getPackageDependencies <- function(pkgs, available.packages = available.packages
   ip <- installed.packages()
   basePkgs <- rownames(ip)[!is.na(ip[, "Priority"])]
   deps <- setdiff(deps, c("R", basePkgs))
-
-  sort(unique(deps))
+  if (is.null(deps)) NULL
+  else sort(unique(deps))
 }
 
 recursivePackageDependencies <- function(pkgs, available.packages = available.packages()) {
@@ -37,6 +37,7 @@ recursivePackageDependencies <- function(pkgs, available.packages = available.pa
     deps <<- sort(unique(c(deps, newDeps)))
     depsToCheck <- setdiff(newDeps, deps)
   }
-  sort(unique(deps))
+  if (is.null(deps)) NULL
+  else sort(unique(deps))
 
 }
