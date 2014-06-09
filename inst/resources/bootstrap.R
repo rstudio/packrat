@@ -1,54 +1,82 @@
-## Install packrat into local project library
-packratSrcPath <- list.files("packrat/src/packrat", full.names = TRUE)[1]
-if (!length(packratSrcPath)) {
-  stop("Could not find a local packrat source tarball")
-}
-lib <- file.path("packrat", "lib", R.version$platform, getRversion())
-if (!file.exists(lib)) {
-  dir.create(lib, recursive = TRUE)
-}
-lib <- normalizePath(lib, winslash = "/")
-message("> Installing packrat into project private library:")
-message("- ", shQuote(lib))
-peq <- function(x, y) paste(x, y, sep = " = ")
-installArgs <- c(
-  peq("pkgs", shQuote(packratSrcPath)),
-  peq("lib", shQuote(lib)),
-  peq("repos", "NULL"),
-  peq("type", shQuote("source"))
-)
-installCmd <- paste(sep = "",
-                    "install.packages(", paste(installArgs, collapse = ", "), ")")
+local({
 
-fullCmd <- paste(
-  shQuote(file.path(R.home("bin"), "R")),
-  "--vanilla",
-  "--slave",
-  "-e",
-  shQuote(installCmd)
-)
-system(fullCmd)
+  libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
-## Tag the installed packrat so we know it's managed by packrat
+  if (suppressWarnings(require("packrat", quietly = TRUE, lib.loc = libDir))) {
 
-## -- InstallAgent -- ##
-installAgent <- 'InstallAgent: packrat 0.2.0.99'
+    packrat:::checkPackified()
+    packrat:::setPackratModeOn()
+    packrat:::updateSettings()
+    return()
 
-## -- InstallSource -- ##
-installSource <- 'InstallSource: source'
+  }
 
-packratDescPath <- file.path(lib, "packrat", "DESCRIPTION")
-DESCRIPTION <- readLines(packratDescPath)
-DESCRIPTION <- c(DESCRIPTION, installAgent, installSource)
-cat(DESCRIPTION, file = packratDescPath, sep = "\n")
+  message("Packrat is not installed in the local library -- ",
+    "attempting to bootstrap an installation...")
 
-message("> Attaching packrat")
-library("packrat", character.only = TRUE, lib.loc = lib)
+  ## We need utils for the following to succeed
+  do.call("library", list(package = "utils", character.only = TRUE))
 
-message("> Restoring library")
-restore()
+  ## Install packrat into local project library
+  packratSrcPath <- list.files(full.names = TRUE,
+    file.path("packrat", "src", "packrat")
+  )[1]
 
-message("> Entering packrat mode")
-packrat_mode()
+  if (!length(packratSrcPath)) {
+    stop("Could not find a local packrat source tarball to install; cannot bootstrap packrat")
+  }
 
-message("Packrat bootstrap successfully completed.")
+  lib <- file.path("packrat", "lib", R.version$platform, getRversion())
+  if (!file.exists(lib)) {
+    dir.create(lib, recursive = TRUE)
+  }
+  lib <- normalizePath(lib, winslash = "/")
+
+  message("> Installing packrat into project private library:")
+  message("- ", shQuote(lib))
+
+  ## The following is performed because a regular install.packages call can fail
+  peq <- function(x, y) paste(x, y, sep = " = ")
+  installArgs <- c(
+    peq("pkgs", shQuote(packratSrcPath)),
+    peq("lib", shQuote(lib)),
+    peq("repos", "NULL"),
+    peq("type", shQuote("source"))
+  )
+  installCmd <- paste(sep = "",
+                      "install.packages(",
+                      paste(installArgs, collapse = ", "),
+                      ")")
+
+  fullCmd <- paste(
+    shQuote(file.path(R.home("bin"), "R")),
+    "--vanilla",
+    "--slave",
+    "-e",
+    shQuote(installCmd)
+  )
+  system(fullCmd)
+
+  ## Tag the installed packrat so we know it's managed by packrat
+
+  ## -- InstallAgent -- ##
+  installAgent <- 'InstallAgent: packrat 0.2.0.99'
+
+  ## -- InstallSource -- ##
+  installSource <- 'InstallSource: source'
+
+  packratDescPath <- file.path(lib, "packrat", "DESCRIPTION")
+  DESCRIPTION <- readLines(packratDescPath)
+  DESCRIPTION <- c(DESCRIPTION, installAgent, installSource)
+  cat(DESCRIPTION, file = packratDescPath, sep = "\n")
+
+  message("> Attaching packrat")
+  library("packrat", character.only = TRUE, lib.loc = lib)
+
+  message("> Restoring library")
+  restore()
+
+  message("Packrat bootstrap successfully completed. Entering packrat mode...")
+  packrat_mode()
+
+})
