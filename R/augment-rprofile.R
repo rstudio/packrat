@@ -7,7 +7,7 @@ augmentRprofile <- function(project = NULL) {
 
   if (!file.exists(path)) {
     file.copy(
-      instInitFilePath(),
+      instInitRprofileFilePath(),
       path
     )
   } else {
@@ -22,7 +22,7 @@ augmentRprofile <- function(project = NULL) {
     }
 
     ## Append init.R to the .Rprofile
-    .Rprofile <- c(.Rprofile, readLines(instInitFilePath()))
+    .Rprofile <- c(.Rprofile, readLines(instInitRprofileFilePath()))
     cat(.Rprofile, file = path, sep = "\n")
 
   }
