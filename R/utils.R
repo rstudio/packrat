@@ -286,8 +286,10 @@ setLibPaths <- function(paths) {
   .libPaths(paths)
 }
 
+## We only want to grab user libraries here -- system libraries are automatically
+## added in by R
 getLibPaths <- function(paths) {
-  .libPaths()
+  setdiff(.libPaths(), c(.Library, .Library.site))
 }
 
 getInstalledPkgInfo <- function(packages, installed.packages, ...) {
