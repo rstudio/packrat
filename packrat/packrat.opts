@@ -1,5 +1,0 @@
-git.ignore.lib: FALSE
-git.ignore.src: FALSE
-svn.ignore.lib: TRUE
-svn.ignore.src: FALSE
-auto.snapshot: TRUE
