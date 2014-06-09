@@ -155,6 +155,12 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
     setwd(project)
     packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
   }
+
+  ## Restart R if the environment provides a way to do it
+  restart <- getOption("restart")
+  if (!is.null(restart))
+    restart()
+
   invisible()
 }
 
