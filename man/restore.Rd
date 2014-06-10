@@ -4,7 +4,7 @@
 \title{Apply the most recent snapshot to the library}
 \usage{
 restore(project = NULL, overwrite.dirty = FALSE, prompt = interactive(),
-  dry.run = FALSE)
+  dry.run = FALSE, restart = !dry.run)
 }
 \arguments{
 \item{project}{The project directory. When in packrat mode, if this is \code{NULL},
@@ -21,7 +21,9 @@ changes (package removals or downgrades); \code{FALSE} to perform these
 operations without confirmation.}
 
 \item{dry.run}{If \code{TRUE}, compute the changes to your packrat state that
-  would be made if a restore was performed, without actually executing them.}
+would be made if a restore was performed, without actually executing them.}
+
+\item{restart}{If \code{TRUE}, restart the R session after restoring.}
 }
 \description{
 Applies the most recent snapshot to the project's private library.
@@ -60,6 +62,10 @@ prompting.
 
 \code{restore} works only on the private package library created by packrat;
 if you have other libraries on your path, they will be unaffected.
+
+The \code{restart} parmaeter will only result in a restart of R when the
+R environment packrat is running within makes available a restart function
+via \code{getOption("restart")}.
 }
 \seealso{
 \code{\link{snapshot}}, the command that creates the snapshots applied with
