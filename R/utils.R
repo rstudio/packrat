@@ -185,7 +185,7 @@ stopIfNotPackified <- function(project) {
 }
 
 ## Expected to be used with .Rbuildignore, .Rinstignore
-updateIgnoreFile <- function(project = NULL, file, add, remove) {
+updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
   project <- getProjectDir(project)
 
