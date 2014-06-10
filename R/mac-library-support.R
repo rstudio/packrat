@@ -15,10 +15,12 @@ symlinkSystemLibraries <- function(project = NULL) {
 
   ## Perform the symlinking
   for (pkg in rownames(sysPkgsBase)) {
-    file.symlink(
-      file.path(.Library, pkg),
-      file.path(libRdir, pkg)
-    )
+    if (!file.exists(file.path(.Library, pkg))) {
+      file.symlink(
+        file.path(.Library, pkg),
+        file.path(libRdir, pkg)
+      )
+    }
   }
 }
 
