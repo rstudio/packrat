@@ -93,7 +93,7 @@ setPackratModeOn <- function(project = NULL,
 
   # Use the symlinked library on Mac
   if (is.mac()) {
-    useSymlinkedLibrary(project = project)
+    useSymlinkedSystemLibrary(project = project)
   }
 
   # Set the library

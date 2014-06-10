@@ -1,4 +1,5 @@
-symlinkSystemLibraries <- function(project = NULL) {
+## System packages == installed packages with a non-NA priority
+symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
   ## Get the system packages
@@ -21,8 +22,7 @@ symlinkSystemLibraries <- function(project = NULL) {
   }
 }
 
-useSymlinkedLibrary <- function(project = NULL) {
+useSymlinkedSystemLibrary <- function(project = NULL) {
   project <- getProjectDir(project)
-
   replaceLibrary(".Library", normalizePath(libRdir(project = project)))
 }

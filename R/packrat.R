@@ -152,7 +152,7 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
 
   ## Symlink system libraries on mac
   if (is.mac()) {
-    symlinkSystemLibraries(project = project)
+    symlinkSystemPackages(project = project)
   }
 
   message("Bootstrap complete!")
