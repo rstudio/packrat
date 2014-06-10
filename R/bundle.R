@@ -136,7 +136,7 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
     ## Ensure the (empty) library directory is present before restoring
     dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")
-    restore(project = getwd())
+    restore(project = getwd(), restart = FALSE)
     message("Done! The project has been unbundled and restored at:\n- \"", dirName, "\"")
   } else {
     message("Done! The packrat project has been unbundled at:\n- \"", dirName, "\"")
