@@ -210,6 +210,30 @@ packrat_mode <- function(on = NULL,
 
 }
 
+##' @rdname packrat-mode
+##' @name packrat-mode
+##' @export
+on <- function(project = NULL,
+               bootstrap = FALSE,
+               auto.snapshot = get_opts("auto.snapshot"),
+               clean.search.path = TRUE) {
+
+  project <- getProjectDir(project)
+  setPackratModeOn(project = project,
+                   bootstrap = bootstrap,
+                   auto.snapshot = auto.snapshot,
+                   clean.search.path = clean.search.path)
+
+}
+
+##' @rdname packrat-mode
+##' @name packrat-mode
+##' @export
+off <- function(project = NULL) {
+  project <- getProjectDir(project)
+  setPackratModeOff(project = project)
+}
+
 togglePackratMode <- function(project, bootstrap, auto.snapshot, clean.search.path) {
   if (isPackratModeOn(project = project)) {
     setPackratModeOff(project)

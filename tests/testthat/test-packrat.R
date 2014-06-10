@@ -41,7 +41,7 @@ test_that("restore ignores dirty packages", {
 
   installTestPkg("oatmeal", "1.0.0", lib)
   expect_true(file.exists(file.path(lib, "oatmeal")))
-  restore(projRoot, prompt = FALSE)
+  restore(projRoot, prompt = FALSE, restart = FALSE)
   expect_true(file.exists(file.path(lib, "oatmeal")))
 })
 
@@ -54,7 +54,7 @@ test_that("restore installs missing packages", {
   # Remove a used package and restore
   remove.packages("bread", lib = lib)
   expect_false(file.exists(file.path(lib, "bread")))
-  restore(projRoot, prompt = FALSE)
+  restore(projRoot, prompt = FALSE, restart = FALSE)
   expect_true(file.exists(file.path(lib, "bread")))
 })
 

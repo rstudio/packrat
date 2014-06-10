@@ -360,3 +360,14 @@ swap <- function(vec, from, to = NULL) {
   tmp[is.na(tmp)] <- vec[is.na(tmp)]
   return(tmp)
 }
+
+
+attemptRestart <- function() {
+  restart <- getOption("restart")
+  if (!is.null(restart)) {
+    restart()
+    TRUE
+  } else {
+    FALSE
+  }
+}
