@@ -211,6 +211,10 @@ updateGitIgnore <- function(project = NULL, options) {
                   paste(relOldLibraryDir(), "/", sep = "")
   ))
 
+  if (is.mac()) {
+    add <- c(add, "packrat/lib-R/")
+  }
+
   ## Add a comment so we can distinguish between packrat-added settings and user-added settings
   msg <- "# Automatically added by Packrat"
   add <- paste(add, msg)
@@ -263,6 +267,10 @@ updateSvnIgnore <- function(project, options) {
                   relNewLibraryDir(),
                   relOldLibraryDir()
   ))
+
+  if (is.mac()) {
+    add <- c(add, "packrat/lib-R")
+  }
 
   svn <- Sys.which("svn")
   if (svn == "") {
