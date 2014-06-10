@@ -24,7 +24,11 @@ search_path <- function() {
   ## Get the library locations
   ## NOTE: find.package is special-cased when the first argument is
   ## of length 1 -- we rely on that behaviour here
-  pkgs$lib.loc <- unlist(lapply(pkgs$package, find.package))
+  ## normalizePath used on Windows because .Library can be stored as a
+  ## truncated path
+  pkgs$lib.loc <- normalizePath(winslash = "/",
+    unlist(lapply(pkgs$package, find.package))
+  )
 
   ## Get just the directory containing the library, not the library path itself
   pkgs$lib.dir <- dirname(pkgs$lib.loc)
