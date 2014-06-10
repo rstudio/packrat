@@ -152,3 +152,7 @@ instMacRUserlibFilePath <- function() {
 packratOptionsFilePath <- function(project = NULL) {
   file.path(getPackratDir(project), "packrat.opts")
 }
+
+libRdir <- function(project = NULL) {
+  file.path(getPackratDir(project), "lib-R")
+}
