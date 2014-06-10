@@ -211,6 +211,10 @@ updateGitIgnore <- function(project = NULL, options) {
                   paste(relOldLibraryDir(), "/", sep = "")
   ))
 
+  if (is.mac()) {
+    add <- c(add, "packrat/lib-R/")
+  }
+
   ## Add a comment so we can distinguish between packrat-added settings and user-added settings
   msg <- "# Automatically added by Packrat"
   add <- paste(add, msg)
@@ -264,6 +268,10 @@ updateSvnIgnore <- function(project, options) {
                   relOldLibraryDir()
   ))
 
+  if (is.mac()) {
+    add <- c(add, "packrat/lib-R")
+  }
+
   svn <- Sys.which("svn")
   if (svn == "") {
     stop("Could not locate an 'svn' executable on your PATH")
@@ -286,8 +294,10 @@ setLibPaths <- function(paths) {
   .libPaths(paths)
 }
 
+## We only want to grab user libraries here -- system libraries are automatically
+## added in by R
 getLibPaths <- function(paths) {
-  .libPaths()
+  setdiff(.libPaths(), c(.Library, .Library.site))
 }
 
 getInstalledPkgInfo <- function(packages, installed.packages, ...) {

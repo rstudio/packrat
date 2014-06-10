@@ -77,6 +77,8 @@ setPackratModeOn <- function(project = NULL,
   # Record the original library, directory, etc.
   .packrat_mutables$set(origLibPaths = getLibPaths())
   .packrat_mutables$set(project = project)
+  .packrat_mutables$set(.Library = .Library)
+  .packrat_mutables$set(.Library.site = .Library.site)
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
@@ -85,6 +87,11 @@ setPackratModeOn <- function(project = NULL,
 
   # Hide the site libraries
   hideSiteLibraries()
+
+  # Use the symlinked library on Mac
+  if (is.mac()) {
+    useSymlinkedLibrary(project = project)
+  }
 
   # Set the library
   setLibPaths(localLib)
@@ -119,15 +126,13 @@ setPackratModeOff <- function(project = NULL) {
   # Restore .Library.site
   restoreSiteLibraries()
 
-  # Reset the library paths to what one gets in a 'clean' session
-  #   cmd <- paste(
-  #     shQuote(file.path(R.home("bin"), "R")),
-  #     "--vanilla",
-  #     "--slave",
-  #     "-e 'cat(getLibPaths(), sep = \"\\\\n\")'"
-  #   )
-  #  setLibPaths <- system(cmd, intern = TRUE)
- libPaths <- .packrat_mutables$get("origLibPaths")
+  # Restore .Library
+  if (is.mac()) {
+    restoreLibrary(".Library")
+  }
+
+  # Reset the library paths
+  libPaths <- .packrat_mutables$get("origLibPaths")
   if (!is.null(libPaths)) {
     setLibPaths(libPaths)
   }

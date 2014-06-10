@@ -1,25 +1,42 @@
+replaceLibrary <- function(lib, value) {
+
+  ## Need to clobber in package:base, namespace:base
+  envs <- c(
+    as.environment("package:base"),
+    .BaseNamespaceEnv
+  )
+
+  for (env in envs) {
+    do.call("unlockBinding", list(lib, env))
+    assign(lib, value, envir = env)
+    lockBinding(lib, env)
+  }
+
+}
+
+
+hideLibrary <- function(lib) {
+  replaceLibrary(lib, character())
+}
+
+restoreLibrary <- function(lib) {
+
+  cachedLib <- .packrat_mutables$get(lib)
+  if (is.null(cachedLib)) {
+    warning("packrat did not properly save the library state; cannot restore")
+    return(invisible(NULL))
+  }
+
+  replaceLibrary(lib, cachedLib)
+
+}
+
 ## Remove the site-library libraries from unix-alikes
 hideSiteLibraries <- function() {
-
-  .packrat_mutables$set(.Library.site = .Library.site)
-
-  ## This is necessary for functionality in packrat, and we want to hide the NOTE
-  do.call("unlockBinding", list(".Library.site", .BaseNamespaceEnv))
-  assign(".Library.site", character(), envir = .BaseNamespaceEnv)
-  lockBinding(".Library.site", .BaseNamespaceEnv)
-
-  ## Reset the getLibPaths()
-  setLibPaths(character())
+  hideLibrary(".Library.site")
 }
 
 ## Restore the site-library libraries
 restoreSiteLibraries <- function() {
-
-  oldSiteLibs <- .packrat_mutables$get(".Library.site")
-  if (!is.null(oldSiteLibs)) {
-    do.call("unlockBinding", list(".Library.site", .BaseNamespaceEnv))
-    assign(".Library.site", oldSiteLibs, envir = .BaseNamespaceEnv)
-    lockBinding(".Library.site", .BaseNamespaceEnv)
-  }
-
+  restoreLibrary(".Library.site")
 }

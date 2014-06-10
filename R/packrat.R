@@ -147,8 +147,13 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
 
   ## Make sure the .Rprofile, .gitignore, etc. are up to date
   augmentRprofile(project)
-  options <- initOptions(project) ## writes out packrat.opts and returns genereated list
+  options <- initOptions(project) ## writes out packrat.opts and returns generated list
   updateSettings(project, options)
+
+  ## Symlink system libraries on mac
+  if (is.mac()) {
+    symlinkSystemLibraries(project = project)
+  }
 
   message("Bootstrap complete!")
 
