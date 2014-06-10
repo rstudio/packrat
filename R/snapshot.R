@@ -74,6 +74,9 @@ snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project)
     stop("An automatic snapshot is currently in progress -- cannot proceed")
   }
 
+  callHook("snapshot", TRUE)
+  on.exit(callHook("shapshot", FALSE), add = TRUE)
+
   source.packages <- getSourcePackageInfo(source.packages)
   appPackages <- snapshotImpl(project, available, lib.loc,
                               source.packages, dry.run,
