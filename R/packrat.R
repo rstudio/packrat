@@ -237,6 +237,9 @@ restore <- function(project = NULL,
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
+  callHook("restore", TRUE)
+  on.exit(callHook("restore", FALSE), add = TRUE)
+
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
   # Unfortunately, R's implementation of tar treats this warning output as
@@ -322,6 +325,9 @@ clean <- function(project = NULL, lib.loc = libDir(project),
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
+
+  callHook("clean", TRUE)
+  on.exit(callHook("clean", FALSE), add = TRUE)
 
   rootDeps <- appDependencies(project)
   missingPackageNames <- character(0)
