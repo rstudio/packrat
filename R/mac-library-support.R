@@ -10,7 +10,9 @@ symlinkSystemLibraries <- function(project = NULL) {
   libRdir <- libRdir(project = project)
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
 
-  ## Perform the symlinking
+  ## Perform the symlinking -- we symlink individual packages because we don't
+  ## want to capture any user libraries that may have been installed in the 'system'
+  ## library directory
   for (pkg in rownames(sysPkgsBase)) {
     file.symlink(
       file.path(.Library, pkg),
