@@ -1,5 +1,10 @@
 # Packrat 0.2.0.99 (Unreleased)
 
+- Isolation is now achieved using a different mechanism on OS X. Because user
+  libraries can be installed into the 'system' library on OS X, we work around
+  this by symlinking all 'base' and 'recommended' libraries into a private
+  packrat 'system' library, and using that instead.
+
 - Packrat gains project-specific options. `packrat/packrat.opts` is a DCF file
   of project-specific settings that can be queried and set through
   `packrat::get_opts` and `packrat::set_opts`. The current valid options are:
