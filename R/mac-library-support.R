@@ -7,10 +7,7 @@ symlinkSystemLibraries <- function(project = NULL) {
   sysPkgNames <- rownames(sysPkgsBase)
 
   ## Make a directory where we can symlink these libraries
-  libRdir <- file.path(
-    .packrat$packratFolderName,
-    "lib-R"
-  )
+  libRdir <- libRdir()
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
 
   ## Perform the symlinking
@@ -25,8 +22,5 @@ symlinkSystemLibraries <- function(project = NULL) {
 useSymlinkedLibrary <- function(project = NULL) {
   project <- getProjectDir(project)
 
-  replaceLibrary(".Library", normalizePath(file.path(
-    .packrat$packratFolderName,
-    relativeLibDir("lib-R")
-  )))
+  replaceLibrary(".Library", normalizePath(libRdir()))
 }
