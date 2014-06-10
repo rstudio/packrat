@@ -151,15 +151,19 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
   updateSettings(project, options)
 
   message("Bootstrap complete!")
-  if (enter) {
-    setwd(project)
-    packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
-  }
 
-  ## Restart R if the environment provides a way to do it
-  restart <- getOption("restart")
-  if (!is.null(restart))
-    restart()
+  if (enter) {
+
+    setwd(project)
+    ## Restart R if the environment provides a way to do it
+    restart <- getOption("restart")
+    if (!is.null(restart)) {
+      restart()
+    } else {
+      packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
+    }
+
+  }
 
   invisible()
 }
