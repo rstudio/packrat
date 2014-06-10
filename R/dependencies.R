@@ -36,21 +36,21 @@ appDependencies <- function(project = NULL, available.packages = NULL) {
   if (file.exists(file.path(project, "DESCRIPTION"))) {
 
     ## Make sure we get records recursively from the packages in DESCRIPTION
-    descriptionDeps <-
+    parentDeps <-
       pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
 
     ## For downstream dependencies, we don't grab their Suggests:
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
-    childDeps <- recursivePackageDependencies(descriptionDeps,
+    childDeps <- recursivePackageDependencies(parentDeps,
                                               available.packages)
-    sort(unique(c(descriptionDeps, childDeps)))
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
     childDeps <- recursivePackageDependencies(parentDeps, available.packages)
-    sort(unique(c(parentDeps, childDeps, "packrat")))
   }
+
+  sort(unique(c(parentDeps, childDeps, "packrat")))
 
 }
 
