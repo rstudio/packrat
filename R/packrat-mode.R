@@ -12,6 +12,15 @@ setPackratModeOn <- function(project = NULL,
   localLib <- libDir(project)
   dir.create(libRoot, recursive = TRUE, showWarnings = FALSE)
 
+  # Record the original library, directory, etc.
+  if (!isPackratModeOn(project = project)) {
+    .packrat_mutables$set(origLibPaths = getLibPaths())
+    .packrat_mutables$set(.Library = .Library)
+    .packrat_mutables$set(.Library.site = .Library.site)
+  }
+
+  .packrat_mutables$set(project = project)
+
   ## The item that denotes whether we're in packrat mode or not
   Sys.setenv("R_PACKRAT_MODE" = "1")
 
@@ -74,15 +83,6 @@ setPackratModeOn <- function(project = NULL,
     dir.create(localLib, recursive = TRUE)
   }
 
-  # Record the original library, directory, etc.
-  if (!isPackratModeOn(project = project)) {
-    .packrat_mutables$set(origLibPaths = getLibPaths())
-    .packrat_mutables$set(.Library = .Library)
-    .packrat_mutables$set(.Library.site = .Library.site)
-  }
-
-  .packrat_mutables$set(project = project)
-
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
     cleanSearchPath(lib.loc = getLibPaths())
@@ -121,16 +121,17 @@ setPackratModeOn <- function(project = NULL,
 setPackratModeOff <- function(project = NULL) {
 
   path <- packratModeFilePath(project)
-  Sys.unsetenv("R_PACKRAT_MODE")
-
-  # Disable hooks that were turned on before
-  removeTaskCallback("packrat.snapshotHook")
 
   # Restore .Library.site
   if (isPackratModeOn()) {
     restoreSiteLibraries()
     if (is.mac()) restoreLibrary(".Library")
   }
+
+  Sys.unsetenv("R_PACKRAT_MODE")
+
+  # Disable hooks that were turned on before
+  removeTaskCallback("packrat.snapshotHook")
 
   # Reset the library paths
   libPaths <- .packrat_mutables$get("origLibPaths")
