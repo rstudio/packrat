@@ -60,9 +60,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     noCache = TRUE
   )[, "Package"]
 
-  installedPkgRecords <- getPackageRecords(
-    installedPkgs
-  )
+  installedPkgRecords <- getPackageRecords(installedPkgs, recursive = FALSE)
   installedPkgNames <- names(installedPkgRecords)
   installedPkgVersions <- getPackageElement(installedPkgRecords, "version")
 
