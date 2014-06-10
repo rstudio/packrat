@@ -6,6 +6,8 @@ cleanSearchPath <- function(verbose = TRUE, lib.loc = getLibPaths()) {
 
   ## Don't remove anything in a packrat private library
   toCheck <- grep(.packrat$packratFolderName, searchPath$lib.dir, invert = TRUE)
+  if (!length(toCheck)) return(NULL)
+
   searchPath <- searchPath[toCheck, ]
 
   searchPath$path <- paste("package", searchPath$package, sep = ":")
