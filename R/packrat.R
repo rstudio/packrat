@@ -236,7 +236,7 @@ restore <- function(project = NULL,
   # Unfortunately, R's implementation of tar treats this warning output as
   # though it were part of the list of files in the archive.
   cygwin <- Sys.getenv("CYGWIN", unset = NA)
-  if (!is.na(cygwin) && length(grep("nodosfilewarning", cygwin)) == 0) {
+  if (Sys.info()["sysname"] == "Windows" && length(grep("nodosfilewarning", cygwin)) == 0) {
     Sys.setenv("CYGWIN" = paste(cygwin, "nodosfilewarning"))
     on.exit(Sys.setenv("CYGWIN" = cygwin), add = TRUE)
   }
