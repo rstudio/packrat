@@ -4,3 +4,4 @@
 ^internal/
 ^packrat/
 ^announce/
+^tests/testthat/packrat/
