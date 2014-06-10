@@ -9,7 +9,7 @@ symlinkSystemLibraries <- function(project = NULL) {
   ## Make a directory where we can symlink these libraries
   libRdir <- file.path(
     .packrat$packratFolderName,
-    relativeLibDir("lib-R")
+    "lib-R"
   )
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
 
