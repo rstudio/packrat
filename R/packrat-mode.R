@@ -75,10 +75,13 @@ setPackratModeOn <- function(project = NULL,
   }
 
   # Record the original library, directory, etc.
-  .packrat_mutables$set(origLibPaths = getLibPaths())
+  if (!isPackratModeOn(project = project)) {
+    .packrat_mutables$set(origLibPaths = getLibPaths())
+    .packrat_mutables$set(.Library = .Library)
+    .packrat_mutables$set(.Library.site = .Library.site)
+  }
+
   .packrat_mutables$set(project = project)
-  .packrat_mutables$set(.Library = .Library)
-  .packrat_mutables$set(.Library.site = .Library.site)
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
@@ -124,11 +127,9 @@ setPackratModeOff <- function(project = NULL) {
   removeTaskCallback("packrat.snapshotHook")
 
   # Restore .Library.site
-  restoreSiteLibraries()
-
-  # Restore .Library
-  if (is.mac()) {
-    restoreLibrary(".Library")
+  if (isPackratModeOn()) {
+    restoreSiteLibraries()
+    if (is.mac()) restoreLibrary(".Library")
   }
 
   # Reset the library paths
@@ -146,9 +147,6 @@ setPackratModeOff <- function(project = NULL) {
     )
     message(msg)
   }
-
-  # Reset the prompt
-  # options(prompt = .packrat$promptOnLoad)
 
   # Default back to the current working directory for packrat function calls
   .packrat_mutables$set(project = NULL)
