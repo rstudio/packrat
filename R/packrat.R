@@ -137,7 +137,7 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
                source.packages=source.packages, lib.loc = NULL, ignore.stale=TRUE)
 
   # Use the lockfile to copy sources and install packages to the library
-  restore(project, overwrite.dirty = TRUE)
+  restore(project, overwrite.dirty = TRUE, restart = FALSE)
 
   # Copy bootstrap.R so a user can 'start from zero' with a project
   file.copy(
@@ -155,14 +155,10 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
   if (enter) {
 
     setwd(project)
-    ## Restart R if the environment provides a way to do it
-    restart <- getOption("restart")
-    if (!is.null(restart)) {
-      restart()
-    } else {
-      packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
-    }
 
+    # Restart R if the environment is capable of it (otherwise enter packrat mode)
+    if (!attemptRestart())
+      packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
   }
 
   invisible()
@@ -206,6 +202,10 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
 #' \code{restore} works only on the private package library created by packrat;
 #' if you have other libraries on your path, they will be unaffected.
 #'
+#' The \code{restart} parmaeter will only result in a restart of R when the
+#' R environment packrat is running within makes available a restart function
+#' via \code{getOption("restart")}.
+#'
 #' @param project The project directory. When in packrat mode, if this is \code{NULL},
 #' then the directory associated with the current packrat project is used. Otherwise,
 #' the project directory specified is used.
@@ -218,6 +218,7 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
 #' operations without confirmation.
 #' @param dry.run If \code{TRUE}, compute the changes to your packrat state that
 #'   would be made if a restore was performed, without actually executing them.
+#' @param restart If \code{TRUE}, restart the R session after restoring.
 #'
 #' @seealso
 #' \code{\link{snapshot}}, the command that creates the snapshots applied with
@@ -230,7 +231,8 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
 restore <- function(project = NULL,
                     overwrite.dirty = FALSE,
                     prompt = interactive(),
-                    dry.run = FALSE) {
+                    dry.run = FALSE,
+                    restart = !dry.run) {
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)

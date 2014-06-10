@@ -71,7 +71,7 @@ local({
   library("packrat", character.only = TRUE, lib.loc = lib)
 
   message("> Restoring library")
-  restore()
+  restore(restart = FALSE)
 
   message("> Packrat bootstrap successfully completed. Entering packrat mode...")
   packrat_mode()
