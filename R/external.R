@@ -49,7 +49,7 @@ with_extlib <- function(packages, expr) {
     finally = {
       newSearch <- search()
       for (path in setdiff(newSearch, oldSearch)) {
-        try(detach(path, character.only = TRUE, unload = TRUE))
+        try(detach(path, character.only = TRUE, unload = TRUE, force = TRUE))
       }
     })
 
