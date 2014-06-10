@@ -3,7 +3,7 @@ local({
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
   if (suppressWarnings(require("packrat", quietly = TRUE, lib.loc = libDir))) {
-    return(packrat_mode(on = TRUE))
+    return(packrat::on())
   }
 
   message("Packrat is not installed in the local library -- ",
@@ -74,6 +74,6 @@ local({
   restore(restart = FALSE)
 
   message("> Packrat bootstrap successfully completed. Entering packrat mode...")
-  packrat_mode()
+  packrat::on()
 
 })
