@@ -26,9 +26,12 @@ search_path <- function() {
   ## of length 1 -- we rely on that behaviour here
   ## normalizePath used on Windows because .Library can be stored as a
   ## truncated path
-  pkgs$lib.loc <- normalizePath(winslash = "/",
-    unlist(lapply(pkgs$package, find.package))
-  )
+  ## ...but only do it on Windows, because normalizePath will resolve symlinks,
+  ## which we want to avoid here
+  pkgs$lib.loc <- unlist(lapply(pkgs$package, find.package))
+  if (is.windows()) {
+    pkgs$lib.loc <- normalizePath(pkgs$lib.loc, winslash = "/")
+  }
 
   ## Get just the directory containing the library, not the library path itself
   pkgs$lib.dir <- dirname(pkgs$lib.loc)
