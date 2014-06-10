@@ -151,7 +151,7 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
   updateSettings(project, options)
 
   ## Symlink system libraries on mac
-  if (Sys.info()["sysname"] == "Darwin") {
+  if (is.mac()) {
     symlinkSystemLibraries(project = project)
   }
 

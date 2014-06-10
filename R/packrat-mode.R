@@ -89,7 +89,7 @@ setPackratModeOn <- function(project = NULL,
   hideSiteLibraries()
 
   # Use the symlinked library on Mac
-  if (Sys.info()["sysname"] == "Darwin") {
+  if (is.mac()) {
     useSymlinkedLibrary(project = project)
   }
 
@@ -127,7 +127,7 @@ setPackratModeOff <- function(project = NULL) {
   restoreSiteLibraries()
 
   # Restore .Library
-  if (Sys.info()["sysname"] == "Darwin") {
+  if (is.mac()) {
     restoreLibrary(".Library")
   }
 
