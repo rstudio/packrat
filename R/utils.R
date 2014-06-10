@@ -5,6 +5,21 @@ silent <- function(expr) {
   result
 }
 
+forceUnload <- function(pkg) {
+
+  # force detach from search path
+  detach(pkg, character.only = TRUE, unload = TRUE, force = TRUE)
+
+  # unload DLL if there is one
+  pkgName <- gsub("package:", "", pkg, fixed = TRUE)
+  pkgDLL <- getLoadedDLLs()[[pkgName]]
+  if (!is.null(pkgDLL)) {
+    suppressWarnings(
+      library.dynam.unload(pkgName, system.file(package=pkgName))
+    )
+  }
+}
+
 list_files <- function(path = ".", pattern = NULL, all.files = FALSE,
                        full.names = FALSE, recursive = FALSE, ignore.case = FALSE,
                        include.dirs = FALSE, no.. = TRUE) {
