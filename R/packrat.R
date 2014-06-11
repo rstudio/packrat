@@ -252,8 +252,10 @@ restore <- function(project = NULL,
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
-  callHook("restore", TRUE)
-  on.exit(callHook("restore", FALSE), add = TRUE)
+  if (!dry.run) {
+    callHook("restore", TRUE)
+    on.exit(callHook("restore", FALSE), add = TRUE)
+  }
 
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
