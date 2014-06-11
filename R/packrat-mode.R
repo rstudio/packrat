@@ -95,6 +95,11 @@ setPackratModeOn <- function(project = NULL,
   # Hide the site libraries
   hideSiteLibraries()
 
+  ## Ensure the system libraries are symlinked on Mac
+  if (is.mac()) {
+    symlinkSystemPackages(project = project)
+  }
+
   # Use the symlinked library on Mac
   if (is.mac()) {
     useSymlinkedSystemLibrary(project = project)
@@ -116,11 +121,6 @@ setPackratModeOn <- function(project = NULL,
     } else {
       warning("this project has not been packified; cannot activate automatic snapshotting")
     }
-  }
-
-  ## Ensure the system libraries are symlinked on Mac
-  if (is.mac()) {
-    symlinkSystemPackages(project = project)
   }
 
   invisible(getLibPaths())
