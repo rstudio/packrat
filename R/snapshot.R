@@ -75,7 +75,7 @@ snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project)
   }
 
   callHook("snapshot", TRUE)
-  on.exit(callHook("shapshot", FALSE), add = TRUE)
+  on.exit(callHook("snapshot", FALSE), add = TRUE)
 
   source.packages <- getSourcePackageInfo(source.packages)
   appPackages <- snapshotImpl(project, available, lib.loc,
