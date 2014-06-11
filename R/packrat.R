@@ -113,7 +113,7 @@ NULL
 #'
 #' @note
 #'
-#' The \code{restart} parmaeter will only result in a restart of R when the
+#' The \code{restart} parameter will only result in a restart of R when the
 #' R environment packrat is running within makes available a restart function
 #' via \code{getOption("restart")}.
 #'
@@ -217,7 +217,7 @@ bootstrap <- function(project = '.',
 #' \code{restore} works only on the private package library created by packrat;
 #' if you have other libraries on your path, they will be unaffected.
 #'
-#' The \code{restart} parmaeter will only result in a restart of R when the
+#' The \code{restart} parameter will only result in a restart of R when the
 #' R environment packrat is running within makes available a restart function
 #' via \code{getOption("restart")}.
 #'
