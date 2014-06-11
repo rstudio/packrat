@@ -38,16 +38,6 @@ git("push --set-upstream origin master")
 setwd(bettyDir)
 git("clone", repoGitDir, ".")
 git("checkout master")
-packrat::on()
+packrat::on() # a bootstrap is forced now
 print(getNamespaceInfo("packrat", "path")) ## are we using the project local packrat?
 packrat::status()
-# The following packages are used in your code, tracked by packrat, but no longer present in your library:
-#   from   to
-# digest      0.6.4.1   NA
-# packrat   0.2.0.104   NA
-#
-# Use packrat::restore() to restore these libraries.
-packrat::restore()
-# Installing digest (0.6.4.1) ... OK (built source)
-# Installing packrat (0.2.0.104) ... OK (built source)
-# You must restart R to finish applying these changes.
