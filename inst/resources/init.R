@@ -73,7 +73,7 @@ local({
   message("> Restoring library")
   restore(restart = FALSE)
 
-  # Callers can define this hidden variable to make sure we don't enter packrat mode
+  # Callers (source-erers) can define this hidden variable to make sure we don't enter packrat mode
   if (!exists(".__DONT_ENTER_PACKRAT_MODE__.")) {
     message("> Packrat bootstrap successfully completed. Entering packrat mode...")
     packrat::on()
