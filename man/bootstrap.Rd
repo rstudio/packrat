@@ -3,7 +3,8 @@
 \alias{bootstrap}
 \title{Initialize Packrat on a new or existing \R project}
 \usage{
-bootstrap(project = ".", source.packages = character(), enter = TRUE)
+bootstrap(project = ".", source.packages = character(), enter = TRUE,
+  restart = enter)
 }
 \arguments{
 \item{project}{The directory that contains the \R project.}
@@ -13,6 +14,8 @@ directories.  Use this argument only if your project depends on packages
 that are not available on CRAN or GitHub.}
 
 \item{enter}{Boolean, enter packrat mode for this project after finishing a bootstrap?}
+
+\item{restart}{If \code{TRUE}, restart the R session after bootstrap}
 }
 \description{
 Given a project directory, makes a new packrat project in the directory.
@@ -45,6 +48,11 @@ from the private library (except for 'base' or 'recommended' \R packages,
 which are found in the system library), and functions such as \code{\link{install.packages}}
 will modify that private library. You can sync this private library with
 packrat using \code{\link{snapshot}} and \code{\link{restore}}.
+}
+\note{
+The \code{restart} parameter will only result in a restart of R when the
+R environment packrat is running within makes available a restart function
+via \code{getOption("restart")}.
 }
 \seealso{
 \link{packrat} for a description of the files created by
