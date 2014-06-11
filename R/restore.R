@@ -405,7 +405,8 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
 restoreImpl <- function(project, repos, pkgRecords, lib,
                         pkgsToIgnore=character(0),
                         prompt=interactive(),
-                        dry.run = FALSE) {
+                        dry.run = FALSE,
+                        restart = TRUE) {
   installedPkgs <-
     getPackageRecords(
       rownames(installed.packages(lib.loc = lib)),
@@ -465,7 +466,8 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   if (!dry.run) {
     playActions(pkgRecords, actions, repos, project, targetLib)
     if (restartNeeded) {
-      message("You must restart R to finish applying these changes.")
+      if (!restart || !attemptRestart())
+        message("You must restart R to finish applying these changes.")
     }
   } else {
     list(pkgRecords = pkgRecords,

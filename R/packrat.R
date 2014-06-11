@@ -309,7 +309,8 @@ restore <- function(project = NULL,
   repos <- strsplit(repos, "\\s*,\\s*")[[1]]
   restoreImpl(project, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt,
-              dry.run = dry.run)
+              dry.run = dry.run,
+              restart = restart)
 }
 
 #' Remove unused packages
