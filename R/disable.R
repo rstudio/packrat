@@ -30,6 +30,9 @@ disable <- function(project = NULL, restart = TRUE) {
   # remove packrat from the .Rprofile
   editRprofileAutoloader(project, "remove")
 
+  # turn packrat mode off
+  off(project)
+
   # restart if requested
   if (restart)
     attemptRestart()
