@@ -5,3 +5,4 @@
 ^packrat/
 ^announce/
 ^tests/testthat/packrat/
+^scenarios/
