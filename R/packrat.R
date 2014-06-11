@@ -253,8 +253,8 @@ restore <- function(project = NULL,
   stopIfNotPackified(project)
 
   if (!dry.run) {
-    callHook("restore", TRUE)
-    on.exit(callHook("restore", FALSE), add = TRUE)
+    callHook(project, "restore", TRUE)
+    on.exit(callHook(project, "restore", FALSE), add = TRUE)
   }
 
   # RTools cp.exe (invoked during installation) can warn on Windows since we
@@ -344,8 +344,8 @@ clean <- function(project = NULL, lib.loc = libDir(project),
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
-  callHook("clean", TRUE)
-  on.exit(callHook("clean", FALSE), add = TRUE)
+  callHook(project, "clean", TRUE)
+  on.exit(callHook(project, "clean", FALSE), add = TRUE)
 
   rootDeps <- appDependencies(project)
   missingPackageNames <- character(0)

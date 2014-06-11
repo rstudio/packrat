@@ -1,10 +1,11 @@
 
 # Call an action hook (indicating whether the action is running or not)
-callHook <- function(action, running) {
+callHook <- function(project, action, running) {
+  project <- normalizePath(project, winslash = '/')
   for (fun in getHooksList("packrat.onAction")) {
     if (is.character(fun))
       fun <- get(fun)
-    try(fun(action, running))
+    try(fun(project, action, running))
   }
 }
 
