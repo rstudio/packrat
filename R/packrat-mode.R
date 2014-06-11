@@ -166,14 +166,6 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
   project <- getProjectDir(project)
   packratDir <- getPackratDir(project)
 
-  # check for .Rprofile autoloader section
-  profilePath <- file.path(project, ".Rprofile")
-  if (is.null(readRprofile(profilePath)$autoloader)) {
-    if (!quiet) message("Packrat is not enabled in the .Rprofile file.")
-    return(FALSE)
-  }
-
-  # check for the lock file
   lockPath <- lockFilePath(project)
   if (!file.exists(lockPath)) {
     if (!quiet) message("The packrat lock file does not exist.")
