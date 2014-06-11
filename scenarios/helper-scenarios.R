@@ -5,3 +5,7 @@ mkdir <- function(path)
 git <- function(...) {
   system(paste("git", ..., collapse = " "))
 }
+
+normalize_path <- function(path) {
+  normalizePath(path, winslash = "/", mustWork = FALSE)
+}
