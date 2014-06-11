@@ -404,7 +404,7 @@ clean <- function(project = NULL, lib.loc = libDir(project),
   } else {
     message("Already up to date.")
   }
-  actions <- rep("remove", length(orphanRecs))
+  actions <- rep("remove", length(orphans))
   names(actions) <- orphans
   return(invisible(list(pkgRecords = orphanRecs,
                         actions = actions)))

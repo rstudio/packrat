@@ -20,7 +20,7 @@ getActionMessages <- function(action, project) {
 
 packageActionMessages <- function(action, records) {
 
-  if (!length(records)) {
+  if (!length(records$actions)) {
     message("No ", action, " actions to perform!")
     return(invisible(NULL))
   }
