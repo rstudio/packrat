@@ -80,16 +80,16 @@ snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project)
   }
 
   source.packages <- getSourcePackageInfo(source.packages)
-  appPackages <- snapshotImpl(project, available, lib.loc,
-                              source.packages, dry.run,
-                              orphan.check = orphan.check,
-                              ignore.stale = ignore.stale,
-                              prompt = prompt && !dry.run)
-
-  if (dry.run) return(invisible())
+  snapshotResult <- snapshotImpl(project, available, lib.loc,
+                                 source.packages, dry.run,
+                                 orphan.check = orphan.check,
+                                 ignore.stale = ignore.stale,
+                                 prompt = prompt && !dry.run)
+  if (dry.run) return(invisible(snapshotResult))
 
   # Check to see if any of the packages we just snapshotted are not, in fact,
   # located in the private library, and install them if necessary
+  appPackages <- snapshotResult$pkgsSnapshot
   appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
   privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
   pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
@@ -209,8 +209,9 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
       )
     }
   }
-
-  return(invisible(appPackages))
+  return(invisible(list(pkgRecords = appPackagesFlat,
+                        actions = diffs[!is.na(diffs)],
+                        pkgsSnapshot = appPackages)))
 }
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the

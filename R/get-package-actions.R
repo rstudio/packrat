@@ -1,12 +1,27 @@
-getRestoreActions <- function(project = NULL) {
+# returns a list of actions that would be performed if the given action were
+# performed on the given project
+getActions <- function(action, project) {
   project <- getProjectDir(project)
-  suppressMessages(restore(project, dry.run = TRUE))
+  if (action == "restore")
+    actionFunc <- restore
+  else if (action == "snapshot")
+    actionFunc <- snapshot
+  else if (action == "clean")
+    actionFunc <- clean
+  else
+    stop("Unknown action '", action, "'")
+  suppressMessages(actionFunc(project, dry.run = TRUE))
 }
 
-restoreActionMessages <- function(records) {
+getActionMessages <- function(action, project) {
+  records <- getActions(action, project)
+  suppressMessages(packageActionMessages(action, records))
+}
 
-  if (!length(records)) {
-    message("No restore actions to perform!")
+packageActionMessages <- function(action, records) {
+
+  if (!length(records$actions)) {
+    message("No ", action, " actions to perform!")
     return(invisible(NULL))
   }
 
@@ -50,8 +65,12 @@ restoreActionMessages <- function(records) {
     package <- names(records$actions)[[i]]
     record <- records$pkgRecords[sapply(records$pkgRecords, function(x) {
       x$name == package
-    })][[1]]
-    packrat.version <- record$version
+    })]
+    packrat.version <-
+      if (length(record) == 1)
+        record[[1]]$version
+      else
+        NA
     library.version <- installedPkgInfo[[package]][["Version"]] %||% NA
     msgs$message[[i]] <-
       switch(action,
@@ -68,7 +87,3 @@ restoreActionMessages <- function(records) {
   msgs
 }
 
-getRestoreActionMessages <- function(project = NULL) {
-  actions <- getRestoreActions(project)
-  suppressMessages(restoreActionMessages(actions))
-}
