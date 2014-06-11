@@ -10,7 +10,7 @@ pkgSrcFilename <- function(pkgRecord) {
 # repository.
 isFromCranlikeRepo <- function(pkgRecord) {
   identical(pkgRecord$source, "CRAN") ||
-  identical(pkgRecord$source, "Bioconductor")
+    identical(pkgRecord$source, "Bioconductor")
 }
 
 # Given a package record and a database of packages, check to see if
@@ -36,7 +36,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
                                   source.packages, quiet = FALSE) {
   # Skip packages for which we can't find sources
   if (is.null(pkgRecord$source) ||
-      is.na(pkgRecord$source)) {
+        is.na(pkgRecord$source)) {
     if (!quiet) {
       warning("Couldn't determine source for ", pkgRecord$name, " (",
               pkgRecord$version, ")")
@@ -109,7 +109,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     })
     type <- "local"
   } else if (isFromCranlikeRepo(pkgRecord) &&
-             pkgRecord$name %in% rownames(availablePkgs)) {
+               pkgRecord$name %in% rownames(availablePkgs)) {
     currentVersion <- availablePkgs[pkgRecord$name,"Version"]
     # Is the source for this version of the package on CRAN and/or a
     # Bioconductor repo?
@@ -294,9 +294,9 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
   # is the version desired, and (c) R is set to download binaries.
   if (isFromCranlikeRepo(pkgRecord) &&
-      pkgRecord$name %in% rownames(availablePkgs) &&
-      versionMatchesDb(pkgRecord, availablePkgs) &&
-      !identical(getOption("pkgType"), "source")) {
+        pkgRecord$name %in% rownames(availablePkgs) &&
+        versionMatchesDb(pkgRecord, availablePkgs) &&
+        !identical(getOption("pkgType"), "source")) {
     tempdir <- tempdir()
     tryCatch ({
       # install.packages emits both messages and standard output; redirect these
@@ -304,8 +304,8 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       suppressMessages(
         capture.output(
           install.packages(pkgRecord$name, lib = lib, repos = repos,
-                         available = availablePkgs, quiet = TRUE,
-                         dependencies = FALSE, verbose = FALSE)))
+                           available = availablePkgs, quiet = TRUE,
+                           dependencies = FALSE, verbose = FALSE)))
       type <- "downloaded binary"
       needsInstall <- FALSE
     }, error = function(e) {
@@ -390,7 +390,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
         removePkgs(project, names(actions[i]), lib)
       } else {
         message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
-          appendLF = FALSE)
+                appendLF = FALSE)
         removePkgs(project, pkgRecord$name, lib)
       }
       message("OK")
@@ -451,15 +451,34 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   # installing to is the default library, make a copy of the library and perform
   # the changes on the copy.
   actions <- actions[!is.na(actions)]
-  targetLib <- if (any(names(actions) %in% loadedNamespaces()) &&
-                   identical(lib, getLibPaths()[1])) {
 
+  # Assign targetLib based on whether the namespace of a package within the
+  # packrat directory is loaded -- packages that don't exist can just
+  # return "" -- this will fail the equality checks later
+  packageLoadPaths <- sapply(names(actions), function(x) {
+    tryCatch(
+
+      expr = getNamespaceInfo(x, "path"),
+
+      error = function(e) {
+        ""
+      }
+
+    )
+  })
+
+  loadedFromPrivateLibrary <- names(actions)[
+    names(actions) %in% loadedNamespaces() &
+    packageLoadPaths == libDir(project)
+  ]
+
+  if (length(loadedFromPrivateLibrary)) {
     newLibrary <- newLibraryDir(project)
     dir_copy(libraryRootDir(project), newLibrary)
     restartNeeded <- TRUE
-    file.path(newLibrary, R.version$platform, getRversion())
+    targetLib <- file.path(newLibrary, R.version$platform, getRversion())
   } else {
-    lib
+    targetLib <- lib
   }
 
   # Play the list, if there's anything to play

@@ -38,7 +38,8 @@ git("push --set-upstream origin master")
 setwd(bettyDir)
 git("clone", repoGitDir, ".")
 git("checkout master")
-packrat::on(bootstrap = TRUE)
+packrat::on()
+print(getNamespaceInfo("packrat", "path")) ## are we using the project local packrat?
 packrat::status()
 # The following packages are used in your code, tracked by packrat, but no longer present in your library:
 #   from   to
