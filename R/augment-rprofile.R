@@ -21,15 +21,9 @@ editRprofileAutoloader <- function(project, action = c("update", "remove")) {
   # resolve action argument
   action <- match.arg(action)
 
-  ## Read the .Rprofile in and see if it's been packified
+  ## Read the user part of the .Rprofile
   path <- file.path(project, ".Rprofile")
-  .Rprofile <- readLines(path)
-  packifyStart <- grep("#### -- Packrat Autoloader", .Rprofile, fixed = TRUE)
-  packifyEnd <- grep("#### -- End Packrat Autoloader -- ####", .Rprofile, fixed = TRUE)
-
-  if (length(packifyStart) && length(packifyEnd)) {
-    .Rprofile <- .Rprofile[-c(packifyStart:packifyEnd)]
-  }
+  .Rprofile <- readRprofile(path)$user
 
   ## Append init.R to the .Rprofile if needed
   if (identical(action, "update"))
@@ -37,6 +31,27 @@ editRprofileAutoloader <- function(project, action = c("update", "remove")) {
 
   ## Write the upated .Rprofile
   cat(.Rprofile, file = path, sep = "\n")
+}
 
+## Read an .Rprofile, separating the contents of the file into the packrat
+## autoloader chunk and user content
+readRprofile <- function(path) {
+
+  contents <- list()
+
+  if (file.exists(path)) {
+    .Rprofile <- readLines(path)
+    packifyStart <- grep("#### -- Packrat Autoloader", .Rprofile, fixed = TRUE)
+    packifyEnd <- grep("#### -- End Packrat Autoloader -- ####", .Rprofile, fixed = TRUE)
+
+    if (length(packifyStart) && length(packifyEnd)) {
+      contents$autoloader <- .Rprofile[c(packifyStart:packifyEnd)]
+      contents$user <- .Rprofile[-c(packifyStart:packifyEnd)]
+    } else {
+      contents$user <- .Rprofile
+    }
+  }
+
+  contents
 }
 
