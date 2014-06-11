@@ -3,7 +3,7 @@ symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
   ## Get the system packages
-  sysPkgs <- installed.packages(.Library)
+  sysPkgs <- utils::installed.packages(.Library)
   sysPkgsBase <- sysPkgs[!is.na(sysPkgs[, "Priority"]), ]
   sysPkgNames <- rownames(sysPkgsBase)
 
