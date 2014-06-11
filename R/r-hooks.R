@@ -1,4 +1,3 @@
-
 # Call an action hook (indicating whether the action is running or not)
 callHook <- function(action, running) {
   for (fun in getHooksList("packrat.onAction")) {
