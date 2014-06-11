@@ -347,8 +347,8 @@ clean <- function(project = NULL, lib.loc = libDir(project),
   stopIfNotPackified(project)
 
   if (!dry.run) {
-    callHook("clean", TRUE)
-    on.exit(callHook("clean", FALSE), add = TRUE)
+    callHook(project, "clean", TRUE)
+    on.exit(callHook(project, "clean", FALSE), add = TRUE)
   }
 
   rootDeps <- appDependencies(project)
