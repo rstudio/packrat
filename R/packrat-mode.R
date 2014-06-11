@@ -25,6 +25,10 @@ setPackratModeOn <- function(project = NULL,
 
   .packrat_mutables$set(project = project)
 
+  # Store the mutables locally -- we may need to restore them if we're unloading and
+  # reloading packrat
+  mutables <- .packrat_mutables$get()
+
   ## The item that denotes whether we're in packrat mode or not
   setPackratModeEnvironmentVar()
 
@@ -89,7 +93,15 @@ setPackratModeOn <- function(project = NULL,
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
-    cleanSearchPath(lib.loc = getLibPaths())
+    unloadedSearchPath <- cleanSearchPath(lib.loc = getLibPaths())
+    # If we unloaded packrat, reload the packrat namespace (don't need to attach)
+    # and then reassign the mutables
+    # TODO: reframe this logic since, if mutables change from version to version,
+    # this could be problematic
+    if ("packrat" %in% unloadedSearchPath$package) {
+      requireNamespace("packrat", quietly = TRUE)
+      packrat:::.packrat_mutables$set(mutables)
+    }
   }
 
   # Hide the site libraries

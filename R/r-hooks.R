@@ -1,4 +1,3 @@
-
 # Call an action hook (indicating whether the action is running or not)
 callHook <- function(project, action, running) {
   project <- normalizePath(project, winslash = '/')
