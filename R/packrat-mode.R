@@ -118,6 +118,11 @@ setPackratModeOn <- function(project = NULL,
     }
   }
 
+  ## Ensure the system libraries are symlinked on Mac
+  if (is.mac()) {
+    symlinkSystemPackages(project = project)
+  }
+
   invisible(getLibPaths())
 
 }

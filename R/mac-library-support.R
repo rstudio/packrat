@@ -31,5 +31,5 @@ symlinkSystemPackages <- function(project = NULL) {
 
 useSymlinkedSystemLibrary <- function(project = NULL) {
   project <- getProjectDir(project)
-  replaceLibrary(".Library", normalizePath(libRdir(project = project)))
+  replaceLibrary(".Library", libRdir(project = project))
 }
