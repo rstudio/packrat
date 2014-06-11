@@ -18,6 +18,12 @@ forceUnload <- function(pkg) {
       library.dynam.unload(pkgName, system.file(package=pkgName))
     )
   }
+
+  # unload the namespace if it's still loaded
+  if (pkg %in% loadedNamespaces()) {
+    unloadNamespace(pkg)
+  }
+
 }
 
 list_files <- function(path = ".", pattern = NULL, all.files = FALSE,
