@@ -94,14 +94,6 @@ setPackratModeOn <- function(project = NULL,
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
     unloadedSearchPath <- cleanSearchPath(lib.loc = getLibPaths())
-    # If we unloaded packrat, reload the packrat namespace (don't need to attach)
-    # and then reassign the mutables
-    # TODO: reframe this logic since, if mutables change from version to version,
-    # this could be problematic
-    if ("packrat" %in% unloadedSearchPath$package) {
-      requireNamespace("packrat", quietly = TRUE)
-      packrat:::.packrat_mutables$set(mutables)
-    }
   }
 
   # Hide the site libraries
@@ -119,6 +111,23 @@ setPackratModeOn <- function(project = NULL,
 
   # Set the library
   setLibPaths(localLib)
+
+  # If we unloaded packrat, reload the packrat namespace (don't need to attach)
+  # and then reassign the mutables
+  # TODO: reframe this logic since, if mutables change from version to version,
+  # this could be problematic
+  if (clean.search.path && "packrat" %in% unloadedSearchPath$package) {
+    try(unloadNamespace("packrat"))
+    if (!requireNamespace("packrat", lib.loc = localLib, quietly = TRUE)) {
+      # We are forced to bootstrap the project to install packrat locally
+      .__DONT_ENTER_PACKRAT_MODE__. <- TRUE
+      source(file.path(project, "packrat", "init.R"), local = TRUE)
+      if (!requireNamespace("packrat", quietly = TRUE)) {
+        stop("FATAL: could not install a local version of packrat")
+      }
+    }
+    packrat:::.packrat_mutables$set(mutables)
+  }
 
   # Give the user some visual indication that they're starting a packrat project
   if (interactive()) {
