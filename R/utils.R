@@ -20,8 +20,8 @@ forceUnload <- function(pkg) {
   }
 
   # unload the namespace if it's still loaded
-  if (pkg %in% loadedNamespaces()) {
-    unloadNamespace(pkg)
+  if (pkgName %in% loadedNamespaces()) {
+    unloadNamespace(pkgName)
   }
 
 }
@@ -380,4 +380,22 @@ attemptRestart <- function() {
   } else {
     FALSE
   }
+}
+
+loadedNamespacePaths <- function() {
+  loadedNamespaceNames <- loadedNamespaces()
+  paths <- unlist(lapply(loadedNamespaceNames, function(nm) {
+    if (nm == "base") return(NA)
+    ns <- asNamespace(nm)
+    if (!exists(".__NAMESPACE__.", envir = ns)) return(NA)
+    getNamespaceInfo(ns, "path")
+  }))
+  result <- data.frame(
+    namespace = loadedNamespaceNames,
+    dir = dirname(paths),
+    path = paths
+  )
+  result <- result[order(result$dir), ]
+  rownames(result) <- NULL
+  result
 }
