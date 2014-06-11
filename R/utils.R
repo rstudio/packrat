@@ -185,6 +185,8 @@ stopIfNotPackified <- function(project) {
 }
 
 ## Expected to be used with .Rbuildignore, .Rinstignore
+## .gitignore + SVN ignore have their own (similar) logical, but
+## need to handle options specially
 updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
   project <- getProjectDir(project)
@@ -192,7 +194,7 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
   ## If the file doesn't exist, create and fill it
   path <- file.path(project, file)
   if (!file.exists(path)) {
-    cat(add, file = file, sep = "\n")
+    cat(add, file = path, sep = "\n")
     return(invisible())
   }
 
@@ -215,7 +217,7 @@ updateGitIgnore <- function(project = NULL, options) {
   names(git.options) <- swap(
     names(git.options),
     c(
-      "vcs.ignore.lib" = paste0(relLibraryRootDir(), "/"),
+      "vcs.ignore.lib" = paste0(relLibraryRootDir(), "*/"),
       "vcs.ignore.src" = paste0(relSrcDir(), "/")
     )
   )
@@ -225,15 +227,6 @@ updateGitIgnore <- function(project = NULL, options) {
                   paste(relNewLibraryDir(), "/", sep = ""),
                   paste(relOldLibraryDir(), "/", sep = "")
   ))
-
-  if (is.mac()) {
-    add <- c(add, "packrat/lib-R/")
-  }
-
-  ## Add a comment so we can distinguish between packrat-added settings and user-added settings
-  msg <- "# Automatically added by Packrat"
-  add <- paste(add, msg)
-  remove <- paste(remove, msg)
 
   updateIgnoreFile(project = project, file = ".gitignore", add = add, remove = remove)
 }
