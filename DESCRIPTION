@@ -1,11 +1,7 @@
 Package: packrat
 Type: Package
 Title: Reproducible dependency management
-<<<<<<< HEAD
-Version: 0.2.0.106
-=======
-Version: 0.2.0.107
->>>>>>> feature/headless-actions
+Version: 0.2.0.108
 Date: 2013-10-28
 Author: RStudio, Inc.
 Maintainer: Kevin Ushey <kevin@rstudio.com>
