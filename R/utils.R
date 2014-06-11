@@ -223,10 +223,6 @@ updateGitIgnore <- function(project = NULL, options) {
   )
   add <- names(git.options)[sapply(git.options, isTRUE)]
   remove <- names(git.options)[sapply(git.options, isFALSE)]
-  add <- unique(c(add,
-                  paste(relNewLibraryDir(), "/", sep = ""),
-                  paste(relOldLibraryDir(), "/", sep = "")
-  ))
 
   updateIgnoreFile(project = project, file = ".gitignore", add = add, remove = remove)
 }
