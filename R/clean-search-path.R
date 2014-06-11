@@ -25,4 +25,6 @@ cleanSearchPath <- function(verbose = TRUE, lib.loc = getLibPaths()) {
   for (path in searchPathToUnload$path) {
     forceUnload(path)
   }
+
+  searchPathToUnload
 }
