@@ -375,6 +375,11 @@ swap <- function(vec, from, to = NULL) {
 attemptRestart <- function() {
   restart <- getOption("restart")
   if (!is.null(restart)) {
+    # set packrat mode environment variable here so that
+    # the host environment knows to return to packrat
+    # mode after the restart (affects how .libPaths are
+    # handled during the restart)
+    setPackratModeEnvironmentVar()
     restart()
     TRUE
   } else {
