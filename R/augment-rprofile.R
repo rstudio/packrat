@@ -11,19 +11,32 @@ augmentRprofile <- function(project = NULL) {
       path
     )
   } else {
-
-    ## Read the .Rprofile in and see if it's been packified
-    .Rprofile <- readLines(path)
-    packifyStart <- grep("#### -- Packrat Autoloader", .Rprofile, fixed = TRUE)
-    packifyEnd <- grep("#### -- End Packrat Autoloader -- ####", .Rprofile, fixed = TRUE)
-
-    if (length(packifyStart) && length(packifyEnd)) {
-      .Rprofile <- .Rprofile[-c(packifyStart:packifyEnd)]
-    }
-
-    ## Append init.R to the .Rprofile
-    .Rprofile <- c(.Rprofile, readLines(instInitRprofileFilePath()))
-    cat(.Rprofile, file = path, sep = "\n")
-
+    editProfileAutoloader(project, "update")
   }
 }
+
+# edit the .Rprofile for this project
+editRprofileAutoloader <- function(project, action = c("update", "remove")) {
+
+  # resolve action argument
+  action <- match.arg(action)
+
+  ## Read the .Rprofile in and see if it's been packified
+  path <- file.path(project, ".Rprofile")
+  .Rprofile <- readLines(path)
+  packifyStart <- grep("#### -- Packrat Autoloader", .Rprofile, fixed = TRUE)
+  packifyEnd <- grep("#### -- End Packrat Autoloader -- ####", .Rprofile, fixed = TRUE)
+
+  if (length(packifyStart) && length(packifyEnd)) {
+    .Rprofile <- .Rprofile[-c(packifyStart:packifyEnd)]
+  }
+
+  ## Append init.R to the .Rprofile if needed
+  if (identical(action, "update"))
+    .Rprofile <- c(.Rprofile, readLines(instInitRprofileFilePath()))
+
+  ## Write the upated .Rprofile
+  cat(.Rprofile, file = path, sep = "\n")
+
+}
+
