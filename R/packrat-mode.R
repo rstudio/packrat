@@ -2,6 +2,10 @@ isPackratModeOn <- function(project = NULL) {
   !is.na(Sys.getenv("R_PACKRAT_MODE", unset = NA))
 }
 
+setPackratModeEnvironmentVar <- function() {
+  Sys.setenv("R_PACKRAT_MODE" = "1")
+}
+
 setPackratModeOn <- function(project = NULL,
                              bootstrap = TRUE,
                              auto.snapshot = get_opts("auto.snapshot"),
@@ -22,7 +26,7 @@ setPackratModeOn <- function(project = NULL,
   .packrat_mutables$set(project = project)
 
   ## The item that denotes whether we're in packrat mode or not
-  Sys.setenv("R_PACKRAT_MODE" = "1")
+  setPackratModeEnvironmentVar()
 
   # Override auto.snapshot if running under RStudio, as it has its own packrat
   # file handlers
