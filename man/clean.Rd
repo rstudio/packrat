@@ -3,7 +3,8 @@
 \alias{clean}
 \title{Remove unused packages}
 \usage{
-clean(project = NULL, lib.loc = libDir(project), prompt = interactive())
+clean(project = NULL, lib.loc = libDir(project), prompt = interactive(),
+  dry.run = FALSE)
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
@@ -14,6 +15,9 @@ associated with the project directory.}
 
 \item{prompt}{\code{TRUE} to prompt before removing packages, \code{FALSE} to
 remove packages immediately.}
+
+\item{dry.run}{Computes the packages that would be removed and prints them to
+the console.}
 }
 \description{
 Remove unused packages from the given library.

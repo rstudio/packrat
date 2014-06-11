@@ -57,7 +57,11 @@ local({
   ## Tag the installed packrat so we know it's managed by packrat
 
   ## -- InstallAgent -- ##
+<<<<<<< HEAD
   installAgent <- 'InstallAgent: packrat 0.2.0.106'
+=======
+  installAgent <- 'InstallAgent: packrat 0.2.0.107'
+>>>>>>> feature/headless-actions
 
   ## -- InstallSource -- ##
   installSource <- 'InstallSource: source'
