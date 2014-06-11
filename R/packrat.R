@@ -109,12 +109,22 @@ NULL
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or GitHub.
 #' @param enter Boolean, enter packrat mode for this project after finishing a bootstrap?
+#' @param restart If \code{TRUE}, restart the R session after bootstrap
+#'
+#' @note
+#'
+#' The \code{restart} parmaeter will only result in a restart of R when the
+#' R environment packrat is running within makes available a restart function
+#' via \code{getOption("restart")}.
 #'
 #' @seealso \link{packrat} for a description of the files created by
 #'   \code{bootstrap}.
 #'
 #' @export
-bootstrap <- function(project = '.', source.packages = character(), enter = TRUE) {
+bootstrap <- function(project = '.',
+                      source.packages = character(),
+                      enter = TRUE,
+                      restart = enter) {
 
   ## Force packrat mode off
   suppressMessages(packrat_mode(on = FALSE))
@@ -162,7 +172,7 @@ bootstrap <- function(project = '.', source.packages = character(), enter = TRUE
     setwd(project)
 
     # Restart R if the environment is capable of it (otherwise enter packrat mode)
-    if (!attemptRestart())
+    if (!restart || !attemptRestart())
       packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
   }
 
