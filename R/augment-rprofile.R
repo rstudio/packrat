@@ -11,7 +11,7 @@ augmentRprofile <- function(project = NULL) {
       path
     )
   } else {
-    editProfileAutoloader(project, "update")
+    editRprofileAutoloader(project, "update")
   }
 }
 
