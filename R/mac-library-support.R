@@ -9,6 +9,13 @@ symlinkSystemPackages <- function(project = NULL) {
 
   ## Make a directory where we can symlink these libraries
   libRdir <- libRdir(project = project)
+
+  ## We bash any old symlinks that were there already and regenerate
+  ## them if necessary (this is an inexpensive process so we don't feel
+  ## too badly)
+  if (file.exists(libRdir)) {
+    unlink(libRdir, recursive = TRUE)
+  }
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
 
   ## Perform the symlinking -- we symlink individual packages because we don't
