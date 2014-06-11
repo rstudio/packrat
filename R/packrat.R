@@ -336,16 +336,20 @@ restore <- function(project = NULL,
 #' associated with the project directory.
 #' @param prompt \code{TRUE} to prompt before removing packages, \code{FALSE} to
 #' remove packages immediately.
+#' @param dry.run Computes the packages that would be removed and prints them to
+#' the console.
 #'
 #' @export
 clean <- function(project = NULL, lib.loc = libDir(project),
-                  prompt = interactive()) {
+                  prompt = interactive(), dry.run = FALSE) {
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
-  callHook("clean", TRUE)
-  on.exit(callHook("clean", FALSE), add = TRUE)
+  if (!dry.run) {
+    callHook("clean", TRUE)
+    on.exit(callHook("clean", FALSE), add = TRUE)
+  }
 
   rootDeps <- appDependencies(project)
   missingPackageNames <- character(0)
@@ -376,29 +380,34 @@ clean <- function(project = NULL, lib.loc = libDir(project),
   ## Exclude 'manipulate', 'rstudio'
   orphans <- setdiff(orphans, c("manipulate", "rstudio"))
 
-  if (length(orphans) > 0) {
-    orphanRecs <- getPackageRecords(orphans, available=NULL,
-                                    source.packages=NULL,
-                                    recursive=FALSE,
-                                    lib.loc=lib.loc)
+  orphanRecs <- getPackageRecords(orphans, available=NULL,
+                                  source.packages=NULL,
+                                  recursive=FALSE,
+                                  lib.loc=lib.loc)
 
+  if (length(orphans) > 0) {
     prettyPrint(orphanRecs,
                 'The following packages will be removed:')
 
-    if (prompt) {
-      answer <- readline('Do you want to continue? [Y/n] ')
-      answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
-      if (nzchar(answer) && tolower(answer) != 'y') {
-        return(invisible())
+    if (!dry.run) {
+      if (prompt) {
+        answer <- readline('Do you want to continue? [Y/n] ')
+        answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
+        if (nzchar(answer) && tolower(answer) != 'y') {
+          return(invisible())
+        }
       }
-    }
 
-    removePkgs(project, orphans, lib.loc)
-    message("Packages '", paste(orphans, collapse = ", "), "' have been removed from the private library.")
-    return(invisible(orphans))
+      removePkgs(project, orphans, lib.loc)
+      message("Packages '", paste(orphans, collapse = ", "), "' have been removed from the private library.")
+    }
   } else {
     message("Already up to date.")
   }
+  actions <- rep("remove", length(orphanRecs))
+  names(actions) <- orphans
+  return(invisible(list(pkgRecords = orphanRecs,
+                        actions = actions)))
 }
 
 #' Automatically Enter Packrat Mode on Startup
