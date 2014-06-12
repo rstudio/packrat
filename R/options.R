@@ -6,7 +6,7 @@ VALID_OPTIONS <- list(
   auto.snapshot = function(x) x %in% c(TRUE, FALSE),
   vcs.ignore.lib = list(TRUE, FALSE),
   vcs.ignore.src = list(TRUE, FALSE),
-  print.banner.on.startup = list(TRUE, FALSE, "console")
+  print.banner.on.startup = list(TRUE, FALSE, "auto")
 )
 
 
@@ -17,7 +17,7 @@ initOptions <- function(project = NULL) {
     auto.snapshot = TRUE,
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
-    print.banner.on.startup = "console"
+    print.banner.on.startup = "auto"
   )
 }
 
@@ -28,9 +28,15 @@ initOptions <- function(project = NULL) {
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
 ##'   (\code{TRUE} / \code{FALSE})
-##' \item \code{vcs.ignore.lib}: Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
-##' \item \code{vcs.ignore.src}: Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{vcs.ignore.lib}:
+##'   Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{vcs.ignore.src}:
+##'   Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
+##' \item \code{print.banner.on.startup}:
+##'   Print the banner on startup? Can be one of \code{TRUE} (always print),
+##'   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
 ##' }
+##'
 ##' @param options A character vector of valid option names.
 ##' @param simplify Boolean; \code{unlist} the returned options? Useful for when retrieving
 ##'   a single option.
