@@ -1,0 +1,15 @@
+\documentclass{article}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+<<>>=
+library(digest)
+library(Rcpp)
+@
+
+
+<<>>=
+@
+
+\end{document}
