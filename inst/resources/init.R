@@ -48,7 +48,7 @@ local({
     peq("type", shQuote("source"))
   )
   installCmd <- paste(sep = "",
-                      "install.packages(",
+                      "utils::install.packages(",
                       paste(installArgs, collapse = ", "),
                       ")")
 
