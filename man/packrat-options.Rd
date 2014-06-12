@@ -27,8 +27,14 @@ Get and set options for the current packrat-managed project.
 \itemize{
 \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
   (\code{TRUE} / \code{FALSE})
-\item \code{vcs.ignore.lib}: Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
-\item \code{vcs.ignore.src}: Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
+\item \code{vcs.ignore.lib}:
+  Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
+\item \code{vcs.ignore.src}:
+  Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
+\item \code{print.banner.on.startup}:
+  Print the banner on startup? Can be one of \code{TRUE} (always print),
+  \code{FALSE} (never print), and \code{'console'} (only print if session
+  started from the console).
 }
 }
 
