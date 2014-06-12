@@ -31,7 +31,7 @@ recursivePackageDependencies <- function(pkgs, available.packages = available.pa
 
   if (!length(pkgs)) return(NULL)
   deps <- getPackageDependencies(pkgs, available.packages)
-  depsToCheck <- setdiff(deps, getPackageDependencies(deps, available.packages))
+  depsToCheck <- setdiff(deps, pkgs)
   while (length(depsToCheck)) {
     newDeps <- getPackageDependencies(depsToCheck, available.packages)
     deps <- sort(unique(c(deps, newDeps)))
