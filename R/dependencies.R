@@ -97,19 +97,19 @@ fileDependencies <- function(file) {
   )
 }
 
-fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
-  if (require("knitr")) {
+fileDependencies.knitr <- fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
+  if (require("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
     tryCatch(silent(
       knitr::knit(file, output = tempfile, tangle = TRUE)
     ), error = function(e) {
-      message("Unable to knit file '", file, "'; cannot parse dependencies")
+      message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
     })
     fileDependencies.R(tempfile)
   } else {
-    warning("knitr is required to parse dependencies from .Rmd files, but is not available")
+    warning("knitr is required to parse dependencies but is not available")
     character()
   }
 }
@@ -117,13 +117,12 @@ fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
 fileDependencies.Rnw <- function(file) {
   tempfile <- tempfile()
   on.exit(unlink(tempfile))
-  tryCatch(silent(
-    Stangle(file, output = tempfile)
-  ), error = function(e) {
-    message("Unable to stangle file '", file, "'; cannot parse dependencies")
-    character()
+  tryCatch(silent({
+    utils::Stangle(file, output = tempfile)
+    fileDependencies.R(tempfile)
+  }), error = function(e) {
+    fileDependencies.knitr(file)
   })
-  fileDependencies.R(tempfile)
 }
 
 fileDependencies.R <- function(file) {
