@@ -7,8 +7,12 @@ silent <- function(expr) {
 
 forceUnload <- function(pkg) {
 
+  if (!startswith(pkg, "package:"))
+    pkg <- paste("package", pkg, sep = ":")
+
   # force detach from search path
-  detach(pkg, character.only = TRUE, unload = TRUE, force = TRUE)
+  if (pkg %in% search())
+    detach(pkg, character.only = TRUE, unload = TRUE, force = TRUE)
 
   # unload DLL if there is one
   pkgName <- gsub("package:", "", pkg, fixed = TRUE)
