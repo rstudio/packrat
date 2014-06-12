@@ -10,9 +10,10 @@ packrat_mode(on = NULL, project = NULL, bootstrap = FALSE,
   auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE)
 
 on(project = NULL, bootstrap = FALSE,
-  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE)
+  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE,
+  print.banner = TRUE)
 
-off(project = NULL)
+off(project = NULL, print.banner = TRUE)
 }
 \arguments{
 \item{on}{Turn packrat mode on (\code{TRUE}) or off (\code{FALSE}). If omitted, packrat mode
@@ -27,6 +28,10 @@ where local libraries will be used and updated.}
 
 \item{clean.search.path}{Detach and unload any packages loaded from non-system
 libraries before entering packrat mode?}
+
+\item{print.banner}{Print the packrat banner when entering / exiting packrat mode?
+The packrat banner informs you of the new packrat mode state, as well as the library
+path in use.}
 }
 \description{
 Use these functions to switch \code{packrat} mode on and off. When within
