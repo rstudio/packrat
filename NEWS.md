@@ -1,5 +1,10 @@
 # Packrat 0.2.0.99 (Unreleased)
 
+- Repositories are now stored in the lockfile as key-value pairs, and these
+  repositories are used on startup. This mechanism will allow for more
+  granular control over which repositories are valid, as well as for custom
+  (e.g. non-CRAN) repositories.
+
 - Isolation is now achieved using a different mechanism on OS X. Because user
   libraries can be installed into the 'system' library on OS X, we work around
   this by symlinking all 'base' and 'recommended' libraries into a private
