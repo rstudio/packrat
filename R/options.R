@@ -101,7 +101,14 @@ read_opts <- function(project = NULL) {
   path <- packratOptionsFilePath(project)
   if (!file.exists(path)) return(invisible(NULL))
   opts <- readDcf(path)
-  as.list(apply(opts, 2, function(x) {
-    eval(parse(text = x), envir = emptyenv())
-  }))
+  if (!length(opts)) return(list())
+  opts <- setNames(as.list(opts), colnames(opts))
+  opts[] <- lapply(opts, function(x) {
+    switch(x,
+           "TRUE" = TRUE,
+           "FALSE" = FALSE,
+           "NA" = as.logical(NA),
+           x)
+  })
+  opts
 }
