@@ -6,31 +6,39 @@ setPackratModeEnvironmentVar <- function() {
   Sys.setenv("R_PACKRAT_MODE" = "1")
 }
 
-setPackratModeOn <- function(project = NULL,
-                             bootstrap = TRUE,
-                             auto.snapshot = get_opts("auto.snapshot"),
-                             clean.search.path = TRUE) {
+beforePackratModeOn <- function(project) {
+
+  project <- getProjectDir(project)
+
+  # If someone is going from packrat mode on in project A, to packrat mode on
+  # in project B, then we only want to update the 'project' in the state --
+  # we should just carry forward the other state variables
+  if (!isPackratModeOn(project = project)) {
+    state <- list(
+      origLibPaths = getLibPaths(),
+      .Library = .Library,
+      .Library.site = .Library.site,
+      project = project
+    )
+  } else {
+    state <- .packrat_mutables$get()
+    state$project <- project
+  }
+
+  state
+
+}
+
+afterPackratModeOn <- function(project,
+                               bootstrap,
+                               auto.snapshot,
+                               clean.search.path,
+                               state) {
 
   project <- getProjectDir(project)
   libRoot <- libraryRootDir(project)
   localLib <- libDir(project)
   dir.create(libRoot, recursive = TRUE, showWarnings = FALSE)
-
-  # Record the original library, directory, etc.
-  if (!isPackratModeOn(project = project)) {
-    .packrat_mutables$set(origLibPaths = getLibPaths())
-    .packrat_mutables$set(.Library = .Library)
-    .packrat_mutables$set(.Library.site = .Library.site)
-  }
-
-  .packrat_mutables$set(project = project)
-
-  # Store the mutables locally -- we may need to restore them if we're unloading and
-  # reloading packrat
-  mutables <- .packrat_mutables$get()
-
-  ## The item that denotes whether we're in packrat mode or not
-  setPackratModeEnvironmentVar()
 
   # Override auto.snapshot if running under RStudio, as it has its own packrat
   # file handlers
@@ -126,7 +134,6 @@ setPackratModeOn <- function(project = NULL,
         stop("FATAL: could not install a local version of packrat")
       }
     }
-    packrat:::.packrat_mutables$set(mutables)
   }
 
   # Give the user some visual indication that they're starting a packrat project
@@ -144,7 +151,29 @@ setPackratModeOn <- function(project = NULL,
     }
   }
 
+  # Finally, update state in the current packrat package made available
+  # Because we may have reloaded packrat, we make sure that we update the state
+  # for whichever packrat we now have as a loaded namespace (which may not be
+  # the version of packrat executing this function call!)
+  mutables <- get(".packrat_mutables", envir = asNamespace("packrat"))
+  mutables$set(state)
+
   invisible(getLibPaths())
+
+}
+
+setPackratModeOn <- function(project = NULL,
+                             bootstrap = TRUE,
+                             auto.snapshot = get_opts("auto.snapshot"),
+                             clean.search.path = TRUE) {
+
+  state <- beforePackratModeOn(project = project)
+  setPackratModeEnvironmentVar()
+  afterPackratModeOn(project = project,
+                     bootstrap = bootstrap,
+                     auto.snapshot = auto.snapshot,
+                     clean.search.path = clean.search.path,
+                     state = state)
 
 }
 
