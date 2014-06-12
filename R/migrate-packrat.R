@@ -29,7 +29,7 @@ migrate <- function(project = ".", ask = TRUE) {
   if (file.exists("packrat.lock")) {
     lockFile <- readLockFile(file = "packrat.lock")
     if (lockFile$packrat_format != "1.1") {
-      stop("This function can only migrate from packrat format 1.1 to 1.3")
+      stop("This function can only migrate from packrat format 1.1 to 1.2")
     }
   }
 

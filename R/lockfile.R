@@ -32,17 +32,12 @@ writeLockFile <- function(file, lockinfo) {
 
   rver <- as.character(getRversion())
 
-  # Construct Repos as a key-value pair to write into the lock file
-  repos <- activeRepos(dirname(file))
-  separator <- if (is.windows()) ",\r\n" else ",\n"
-  reposString <- paste(names(repos), unname(repos), sep = "=", collapse = separator)
-
   # The first record contains metadata about the project and lockfile
   preamble <- data.frame(
     PackratFormat = .packrat$packratFormat,
     PackratVersion = as.character(packageVersion("packrat")),
     RVersion = rver,
-    Repos = reposString
+    Repos = paste(activeRepos(dirname(file)), collapse = ", ")
   )
 
   stopifnot(nrow(preamble) == 1)
@@ -70,18 +65,13 @@ writeLockFile <- function(file, lockinfo) {
 }
 
 readLockFile <- function(file) {
-
   df <- as.data.frame(readDcf(file), stringsAsFactors = FALSE)
   df <- cleanupWhitespace(df)
   names(df) <- translate(names(df), aliases)
 
   # Split the repos
   repos <- gsub("[\r\n]", " ", df[1, 'Repos'])
-  repos <- strsplit(unlist(strsplit(repos, ",\\s*", perl = TRUE)), "=", fixed = TRUE)
-  repos <- setNames(
-    sapply(repos, "[[", 2),
-    sapply(repos, "[[", 1)
-  )
+  repos <- unlist(strsplit(repos, ", *"))
 
   list(
     packrat_format = df[1, 'PackratFormat'],
