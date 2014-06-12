@@ -3,7 +3,14 @@ local({
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
   if (suppressWarnings(require("packrat", quietly = TRUE, lib.loc = libDir))) {
-    return(packrat::on(print.banner = FALSE))
+    # Check 'print.banner.on.startup' -- when NA and RStudio, don't print
+    print.banner <- get_opts("print.banner.on.startup")
+    if (print.banner == "console" && is.na(Sys.getenv("RSTUDIO", unset = NA))) {
+      print.banner <- TRUE
+    } else {
+      print.banner <- FALSE
+    }
+    return(packrat::on(print.banner = print.banner))
   }
 
   message("Packrat is not installed in the local library -- ",

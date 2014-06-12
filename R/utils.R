@@ -403,3 +403,9 @@ loadedNamespacePaths <- function() {
   rownames(result) <- NULL
   result
 }
+
+# Work around namespace:stats potentially not being loaded
+setNames <- function(object = nm, nm) {
+  names(object) <- nm
+  object
+}

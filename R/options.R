@@ -5,7 +5,8 @@
 VALID_OPTIONS <- list(
   auto.snapshot = function(x) x %in% c(TRUE, FALSE),
   vcs.ignore.lib = list(TRUE, FALSE),
-  vcs.ignore.src = list(TRUE, FALSE)
+  vcs.ignore.src = list(TRUE, FALSE),
+  print.banner.on.startup = list(TRUE, FALSE, "console")
 )
 
 
@@ -15,7 +16,8 @@ initOptions <- function(project = NULL) {
     project = project,
     auto.snapshot = TRUE,
     vcs.ignore.lib = TRUE,
-    vcs.ignore.src = FALSE
+    vcs.ignore.src = FALSE,
+    print.banner.on.startup = "console"
   )
 }
 
