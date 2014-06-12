@@ -33,7 +33,8 @@ afterPackratModeOn <- function(project,
                                bootstrap,
                                auto.snapshot,
                                clean.search.path,
-                               state) {
+                               state,
+                               print.banner) {
 
   project <- getProjectDir(project)
   libRoot <- libraryRootDir(project)
@@ -137,7 +138,7 @@ afterPackratModeOn <- function(project,
   }
 
   # Give the user some visual indication that they're starting a packrat project
-  if (interactive()) {
+  if (interactive() && print.banner) {
     msg <- paste("Packrat mode on. Using library in directory:\n- \"", libDir(project), "\"", sep = "")
     message(msg)
   }
@@ -165,7 +166,8 @@ afterPackratModeOn <- function(project,
 setPackratModeOn <- function(project = NULL,
                              bootstrap = TRUE,
                              auto.snapshot = get_opts("auto.snapshot"),
-                             clean.search.path = TRUE) {
+                             clean.search.path = TRUE,
+                             print.banner = TRUE) {
 
   state <- beforePackratModeOn(project = project)
   setPackratModeEnvironmentVar()
@@ -173,11 +175,13 @@ setPackratModeOn <- function(project = NULL,
                      bootstrap = bootstrap,
                      auto.snapshot = auto.snapshot,
                      clean.search.path = clean.search.path,
-                     state = state)
+                     state = state,
+                     print.banner = print.banner)
 
 }
 
-setPackratModeOff <- function(project = NULL) {
+setPackratModeOff <- function(project = NULL,
+                              print.banner = TRUE) {
 
   path <- packratModeFilePath(project)
 
@@ -199,7 +203,7 @@ setPackratModeOff <- function(project = NULL) {
   }
 
   # Turn off packrat mode
-  if (interactive()) {
+  if (interactive() && print.banner) {
     msg <- paste(collapse = "\n",
                  c("Packrat mode off. Resetting library paths to:",
                    paste("- \"", getLibPaths(), "\"", sep = "")
@@ -244,6 +248,9 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##' @param auto.snapshot Perform automatic, asynchronous snapshots?
 ##' @param clean.search.path Detach and unload any packages loaded from non-system
 ##'   libraries before entering packrat mode?
+##' @param print.banner Print the packrat banner when entering / exiting packrat mode?
+##'   The packrat banner informs you of the new packrat mode state, as well as the library
+##'   path in use.
 ##' @name packrat-mode
 ##' @rdname packrat-mode
 ##' @export
@@ -279,22 +286,25 @@ packrat_mode <- function(on = NULL,
 on <- function(project = NULL,
                bootstrap = FALSE,
                auto.snapshot = get_opts("auto.snapshot"),
-               clean.search.path = TRUE) {
+               clean.search.path = TRUE,
+               print.banner = TRUE) {
 
   project <- getProjectDir(project)
   setPackratModeOn(project = project,
                    bootstrap = bootstrap,
                    auto.snapshot = auto.snapshot,
-                   clean.search.path = clean.search.path)
+                   clean.search.path = clean.search.path,
+                   print.banner = print.banner)
 
 }
 
 ##' @rdname packrat-mode
 ##' @name packrat-mode
 ##' @export
-off <- function(project = NULL) {
+off <- function(project = NULL, print.banner = TRUE) {
   project <- getProjectDir(project)
-  setPackratModeOff(project = project)
+  setPackratModeOff(project = project,
+                    print.banner = print.banner)
 }
 
 togglePackratMode <- function(project, bootstrap, auto.snapshot, clean.search.path) {
