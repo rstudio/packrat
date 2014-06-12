@@ -33,8 +33,7 @@ Get and set options for the current packrat-managed project.
   Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
 \item \code{print.banner.on.startup}:
   Print the banner on startup? Can be one of \code{TRUE} (always print),
-  \code{FALSE} (never print), and \code{'console'} (only print if session
-  started from the console).
+  \code{FALSE} (never print), and \code{'auto'} (do the right thing)
 }
 }
 
