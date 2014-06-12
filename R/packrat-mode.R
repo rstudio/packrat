@@ -159,6 +159,12 @@ afterPackratModeOn <- function(project,
   mutables <- get(".packrat_mutables", envir = asNamespace("packrat"))
   mutables$set(state)
 
+  # Set the repositories
+  repos <- lockInfo(project = project, property = "repos", fatal = FALSE)
+  if (length(repos)) {
+    options(repos = repos)
+  }
+
   invisible(getLibPaths())
 
 }
