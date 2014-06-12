@@ -303,7 +303,7 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       # streams to keep our own output clean.
       suppressMessages(
         capture.output(
-          utils::install.packages(pkgRecord$name, lib = lib, repos = repos,
+          install.packages(pkgRecord$name, lib = lib, repos = repos,
                            available = availablePkgs, quiet = TRUE,
                            dependencies = FALSE, verbose = FALSE)))
       type <- "downloaded binary"

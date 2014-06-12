@@ -29,14 +29,13 @@ test_that("Topo sort works", {
 test_that("Repository is properly split by readLockFile", {
 
   lf <- readLockFile("lockfiles/lockfile-multipleRepos.txt")
-  expect_identical(
+  expect_equal(
     lf$repos,
-    c("http://cran.rstudio.com/",
-      "http://bioconductor.org/packages/3.0/bioc",
-      "http://bioconductor.org/packages/3.0/data/annotation",
-      "http://bioconductor.org/packages/3.0/data/experiment",
-      "http://bioconductor.org/packages/3.0/extra",
-      "http://cran.fhcrc.org"
+    c(CRAN = "http://cran.rstudio.org",
+      BioCsoft = "http://bioconductor.org/packages/3.0/bioc",
+      BioCann = "http://bioconductor.org/packages/3.0/data/annotation",
+      BioCexp = "http://bioconductor.org/packages/3.0/data/experiment",
+      BioCextra = "http://bioconductor.org/packages/3.0/extra"
     )
   )
 
