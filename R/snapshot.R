@@ -221,7 +221,7 @@ activeRepos <- function(project) {
   if (length(repos) > 0)
     return(strsplit(repos, '\\s*,\\s*')[[1]])
 
-  repos <- as.vector(getOption("repos"))
+  repos <- getOption("repos")
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
 
   # Check to see whether Bioconductor is installed. Bioconductor maintains a
@@ -229,7 +229,10 @@ activeRepos <- function(project) {
   # sources to Bioconducter packages.
   if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
     # Bioconductor repos may include repos already accounted for above
-    repos <- unique(c(repos, as.vector(BiocInstaller::biocinstallRepos())))
+    # unique drops names so it's unsuitable for us here
+    repos <- c(repos, BiocInstaller::biocinstallRepos())
+    repos <- repos[!duplicated(names(repos))]
   }
+
   return(repos)
 }

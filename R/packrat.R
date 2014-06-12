@@ -143,8 +143,11 @@ bootstrap <- function(project = '.',
 
   # Take a snapshot
   source.packages <- getSourcePackageInfo(source.packages)
-  snapshotImpl(project, available.packages(contrib.url(activeRepos(project))),
-               source.packages=source.packages, lib.loc = NULL, ignore.stale=TRUE)
+  snapshotImpl(project,
+               available.packages(contrib.url(activeRepos(project))),
+               source.packages = source.packages,
+               lib.loc = NULL,
+               ignore.stale = TRUE)
 
   # Use the lockfile to copy sources and install packages to the library
   restore(project, overwrite.dirty = TRUE, restart = FALSE)

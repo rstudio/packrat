@@ -92,7 +92,7 @@ afterPackratModeOn <- function(project,
 
   # Try to bootstrap the directory if there is no packrat directory
   if (bootstrap && !file.exists(getPackratDir(project))) {
-    bootstrap(project = project)
+    bootstrap(project = project, restart = FALSE)
   }
 
   # If the library directory doesn't exist, create it
