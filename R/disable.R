@@ -40,7 +40,7 @@ disable <- function(project = NULL, restart = TRUE) {
 
   # restart if requested
   if (restart)
-    attemptRestart()
+    attemptRestart(FALSE)
 
   invisible()
 }
