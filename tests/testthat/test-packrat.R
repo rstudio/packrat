@@ -110,7 +110,7 @@ test_that("clean removes libraries and sources", {
 
   # Remove the dependency on oatmeal and clean
   removeTestDependencyFile(projRoot, "oatmeal.R")
-  clean(projRoot, prompt = FALSE)
+  clean("oatmeal", project = projRoot)
 
   # bread should still be present, but we should have removed the orphaned
   # package oatmeal

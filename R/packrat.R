@@ -122,9 +122,9 @@ NULL
 #'
 #' @export
 init <- function(project = '.',
-                      source.packages = character(),
-                      enter = TRUE,
-                      restart = enter) {
+                 source.packages = character(),
+                 enter = TRUE,
+                 restart = enter) {
 
   ## Force packrat mode off
   suppressMessages(packrat_mode(on = FALSE))
@@ -331,47 +331,105 @@ restore <- function(project = NULL,
               restart = restart)
 }
 
-#' Remove unused packages
+#' Remove Packages from the Library
 #'
-#' Remove unused packages from the given library.
+#' Remove packages from the given library.
 #'
-#' Detects and removes orphaned packages. Orphaned packages are those that meet
-#' the following criteria:
-#' \itemize{
-#'   \item Installed in the library
-#'   \item Not directly used by any \R code in the project
-#'   \item Not a dependency of any non-orphaned package
-#' }
-#' If \code{clean} wants to remove a package but your project actually needs the
-#' package, add a statement such as \code{\link{require}(package-name)} to any .R
-#' file in your project's directory.
-#'
+#' @param packages A set of package names to remove from the project. When
+#'   \code{NULL}, \code{\link{unused_packages}} is used to find packages
+#'   unused in the project.
 #' @param project The project directory. Defaults to current working
 #' directory.
 #' @param lib.loc The library to clean. Defaults to the private package library
 #' associated with the project directory.
-#' @param prompt \code{TRUE} to prompt before removing packages, \code{FALSE} to
-#' remove packages immediately.
-#' @param dry.run Computes the packages that would be removed and prints them to
-#' the console.
+#' @param dry.run Perform a dry run, returning records on which packages would
+#'   have been moved by the current clean action.
+#' @param force Force package removal, even if they are still in use within the project?
 #'
+#' @examples \dontrun{
+#'
+#' # Get unused package records
+#' unused_packages()
+#'
+#' # Clean all unused packages
+#' clean()
+#'
+#' # Clean specific packages
+#' clean("foo")
+#'
+#' }
 #' @export
-clean <- function(project = NULL, lib.loc = libDir(project),
-                  prompt = interactive(), dry.run = FALSE) {
+clean <- function(packages = NULL,
+                  project = NULL,
+                  lib.loc = libDir(project),
+                  dry.run = FALSE,
+                  force = FALSE) {
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
-  if (!dry.run) {
-    callHook(project, "clean", TRUE)
-    on.exit(callHook(project, "clean", FALSE), add = TRUE)
+  callHook(project, "clean", TRUE)
+  on.exit(callHook(project, "clean", FALSE), add = TRUE)
+
+  cleanableRecords <- unused_packages(project = project, lib.loc = lib.loc)
+  cleanable <- sapply(cleanableRecords, "[[", "name")
+
+  if (is.null(packages)) {
+    packages <- cleanable
   }
 
+  pkgsUnsafeToRemove <- setdiff(packages, cleanable)
+  if (length(pkgsUnsafeToRemove) && !force && !dry.run) {
+    stop("The following packages are in use in your project and are unsafe to remove:\n- ",
+         paste(shQuote(pkgsUnsafeToRemove), collapse = ", "),
+         "\nUse clean(..., force = TRUE) to force removal")
+  }
+
+  if (dry.run) {
+
+    if (identical(packages, cleanable)) {
+      pkgRecords <- cleanableRecords
+    } else {
+      pkgRecords <- getPackageRecords(packages,
+                                      available = NULL,
+                                      source.packages = NULL,
+                                      recursive = FALSE,
+                                      lib.loc = lib.loc)
+    }
+    actions <- rep("remove", length(packages))
+    names(actions) <- packages
+    invisible(list(pkgRecords = pkgRecords,
+                   actions = actions))
+  } else {
+
+    removePkgs(project = project,
+               pkgNames = packages,
+               lib.loc = lib.loc)
+
+  }
+
+}
+
+##' Find Unused Packages in a Project
+##'
+##' Unused packages are those still contained within your project library, but
+##' are unused in your project.
+##'
+##' @param project The project directory.
+##' @param lib.loc The library to check.
+##' @export
+unused_packages <- function(project = NULL,
+                            lib.loc = libDir(project)) {
+
+  project <- getProjectDir(project)
   rootDeps <- appDependencies(project)
   missingPackageNames <- character(0)
   packagesInUse <- getPackageRecords(
-    rootDeps, available=NULL, source.packages=NULL, recursive=TRUE,
-    lib.loc=c(lib.loc, getLibPaths()),
+    rootDeps,
+    available = NULL,
+    source.packages = NULL,
+    recursive = TRUE,
+    lib.loc = lib.loc,
     missing.package = function(pkgName, lib.loc) {
       missingPackageNames <<- c(missingPackageNames, pkgName)
       return(NULL)
@@ -383,47 +441,27 @@ clean <- function(project = NULL, lib.loc = libDir(project),
     missingPackageNames,
     c("Can't detect orphaned packages because these package(s) are not installed:")
   )
+
   if (length(missingPackageNames) > 0) {
     return(invisible())
   }
 
   installedPkgNames <- row.names(installed.packages(
-    lib.loc=lib.loc, priority=c('NA', 'recommended'), noCache=TRUE))
+    lib.loc=lib.loc,
+    priority=c('NA', 'recommended'), noCache=TRUE))
 
   orphans <- setdiff(installedPkgNames,
                      pkgNames(flattenPackageRecords(packagesInUse)))
 
   ## Exclude 'manipulate', 'rstudio'
   orphans <- setdiff(orphans, c("manipulate", "rstudio"))
+  orphanRecs <- getPackageRecords(orphans,
+                                  available = NULL,
+                                  source.packages = NULL,
+                                  recursive = FALSE,
+                                  lib.loc = lib.loc)
+  orphanRecs
 
-  orphanRecs <- getPackageRecords(orphans, available=NULL,
-                                  source.packages=NULL,
-                                  recursive=FALSE,
-                                  lib.loc=lib.loc)
-
-  if (length(orphans) > 0) {
-    prettyPrint(orphanRecs,
-                'The following packages will be removed:')
-
-    if (!dry.run) {
-      if (prompt) {
-        answer <- readline('Do you want to continue? [Y/n] ')
-        answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
-        if (nzchar(answer) && tolower(answer) != 'y') {
-          return(invisible())
-        }
-      }
-
-      removePkgs(project, orphans, lib.loc)
-      message("Packages '", paste(orphans, collapse = ", "), "' have been removed from the private library.")
-    }
-  } else {
-    message("Already up to date.")
-  }
-  actions <- rep("remove", length(orphans))
-  names(actions) <- orphans
-  return(invisible(list(pkgRecords = orphanRecs,
-                        actions = actions)))
 }
 
 #' Automatically Enter Packrat Mode on Startup
