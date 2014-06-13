@@ -17,16 +17,26 @@ directory.}
 \item{lib.loc}{The library to clean. Defaults to the private package library
 associated with the project directory.}
 
+\item{dry.run}{Perform a dry run, returning records on which packages would
+have been moved by the current clean action.}
+
 \item{force}{Force package removal, even if they are still in use within the project?}
 }
 \description{
 Remove packages from the given library.
 }
 \examples{
-# Remove all unused packages in a project
-clean(unused_packages())
+\dontrun{
 
-# Remove only a few packages from a project
-clean(c("foo", "bar"))
+# Get unused package records
+unused_packages()
+
+# Clean all unused packages
+clean()
+
+# Clean specific packages
+clean("foo")
+
+}
 }
 
