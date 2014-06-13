@@ -122,9 +122,9 @@ NULL
 #'
 #' @export
 init <- function(project = '.',
-                      source.packages = character(),
-                      enter = TRUE,
-                      restart = enter) {
+                 source.packages = character(),
+                 enter = TRUE,
+                 restart = enter) {
 
   ## Force packrat mode off
   suppressMessages(packrat_mode(on = FALSE))
@@ -331,74 +331,86 @@ restore <- function(project = NULL,
               restart = restart)
 }
 
-#' Remove unused packages
+#' Remove Packages from the Library
 #'
-#' Remove unused packages from the given library.
+#' Remove packages from the given library.
 #'
-#' Detects and removes orphaned packages. Orphaned packages are those that meet
-#' the following criteria:
-#' \itemize{
-#'   \item Installed in the library
-#'   \item Not directly used by any \R code in the project
-#'   \item Not a dependency of any non-orphaned package
-#' }
-#' If \code{clean} wants to remove a package but your project actually needs the
-#' package, add a statement such as \code{\link{require}(package-name)} to any
-#' \code{.R} file in your project's directory.
-#'
-#' @param ... A set of package names to remove from the project. If missing,
-#'   we instead return a set of package records, outlining packages eligible for
-#'   removal.
+#' @param packages A set of package names to remove from the project. When
+#'   \code{NULL}, \code{\link{unused_packages}} is used to find packages
+#'   unused in the project.
 #' @param project The project directory. Defaults to current working
 #' directory.
 #' @param lib.loc The library to clean. Defaults to the private package library
 #' associated with the project directory.
-#' @param force Force package removal, even if they are used within the project?
+#' @param force Force package removal, even if they are still in use within the project?
 #'
+#' @example examples/example-clean.R
 #' @export
-clean <- function(...,
+clean <- function(packages = NULL,
                   project = NULL,
                   lib.loc = libDir(project),
+                  dry.run = FALSE,
                   force = FALSE) {
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
-  # If no arguments were passed to ..., it's a dry run
-  dry.run <- missing(...)
+  callHook(project, "clean", TRUE)
+  on.exit(callHook(project, "clean", FALSE), add = TRUE)
 
-  if (!dry.run) {
-    callHook(project, "clean", TRUE)
-    on.exit(callHook(project, "clean", FALSE), add = TRUE)
+  if (is.null(packages)) {
+    records <- unused_packages(project = project, lib.loc = lib.loc)
+    packages <- sapply(records, "[[", "name")
+  }
 
-    pkgs <- unname(unlist(...))
-    cleanable <- cleanablePackages(project = project, lib.loc = lib.loc)
+  cleanableRecords <- unused_packages(project = project, lib.loc = lib.loc)
+  cleanable <- sapply(cleanableRecords$pkgRecords, "[[", "name")
 
-    pkgsUnsafeToRemove <- setdiff(pkgs, cleanable)
-    if (length(pkgsUnsafeToRemove) && !force) {
-      stop("The following packages are in use in your project and are unsafe to remove:\n- ",
-           paste(shQuote(pkgsUnsafeToRemove), collapse = ", "),
-           "\nUse clean(..., force = TRUE) to force removal")
-    }
+  pkgsUnsafeToRemove <- setdiff(packages, cleanable)
+  if (length(pkgsUnsafeToRemove) && !force) {
+    stop("The following packages are in use in your project and are unsafe to remove:\n- ",
+         paste(shQuote(pkgsUnsafeToRemove), collapse = ", "),
+         "\nUse clean(..., force = TRUE) to force removal")
+  }
 
-    removePkgs(project = project,
-               pkgNames = pkgs,
-               lib.loc = lib.loc)
+  if (dry.run) {
+    pkgRecords <- getPackageRecords(packages,
+                                    available = NULL,
+                                    source.packages = NULL,
+                                    recursive = FALSE,
+                                    lib.loc = lib.loc)
+    actions <- rep("remove", length(packages))
+    names(actions) <- packages
+    return(invisible(list(pkgRecords = pkgRecords,
+                          actions = actions)))
   } else {
-    cleanablePackages(project = project, lib.loc = lib.loc)
+    removePkgs(project = project,
+               pkgNames = packages,
+               lib.loc = lib.loc)
   }
 
 }
 
-cleanablePackages <- function(project,
-                              lib.loc) {
+##' Find Unused Packages in a Project
+##'
+##' Unused packages are those still contained within your project library, but
+##' are unused in your project.
+##'
+##' @param project The project directory.
+##' @param lib.loc The library to check.
+##' @export
+unused_packages <- function(project = NULL,
+                            lib.loc = libDir(project)) {
 
   project <- getProjectDir(project)
   rootDeps <- appDependencies(project)
   missingPackageNames <- character(0)
   packagesInUse <- getPackageRecords(
-    rootDeps, available=NULL, source.packages=NULL, recursive=TRUE,
-    lib.loc=c(lib.loc, getLibPaths()),
+    rootDeps,
+    available = NULL,
+    source.packages = NULL,
+    recursive = TRUE,
+    lib.loc = lib.loc,
     missing.package = function(pkgName, lib.loc) {
       missingPackageNames <<- c(missingPackageNames, pkgName)
       return(NULL)
@@ -416,15 +428,22 @@ cleanablePackages <- function(project,
   }
 
   installedPkgNames <- row.names(installed.packages(
-    lib.loc=lib.loc, priority=c('NA', 'recommended'), noCache=TRUE))
+    lib.loc=lib.loc,
+    priority=c('NA', 'recommended'), noCache=TRUE))
 
   orphans <- setdiff(installedPkgNames,
                      pkgNames(flattenPackageRecords(packagesInUse)))
 
   ## Exclude 'manipulate', 'rstudio'
   orphans <- setdiff(orphans, c("manipulate", "rstudio"))
-
-  orphans
+  orphanRecs <- getPackageRecords(orphans, available=NULL,
+                                  source.packages=NULL,
+                                  recursive=FALSE,
+                                  lib.loc=lib.loc)
+  actions <- rep("remove", length(orphans))
+  names(actions) <- orphans
+  return(invisible(list(pkgRecords = orphanRecs,
+                        actions = actions)))
 
 }
 
