@@ -245,9 +245,20 @@ snapshotSources <- function(project, repos, pkgRecords) {
 
 annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
   descFile <- file.path(lib, pkgRecord$name, 'DESCRIPTION')
-  appendToDcf(descFile, data.frame(
-    InstallAgent=paste('packrat', packageVersion('packrat')),
-    InstallSource=pkgRecord$source))
+
+  # Get the records to write
+  records <- list(
+    InstallAgent = paste('packrat', packageVersion('packrat')),
+    InstallSource = pkgRecord$source,
+    InstallSourcePath = pkgRecord$source_path
+  )
+
+  # Drop any NULL elements above (this could occur for e.g. source_path, since
+  # only source packages will have a source path)
+  recordsDF <- as.data.frame(dropNull(records))
+
+  # Write it out
+  appendToDcf(descFile, recordsDF)
 }
 
 # Annotate a set of packages by name.
