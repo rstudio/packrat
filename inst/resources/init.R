@@ -2,9 +2,9 @@ local({
 
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
-  if (suppressWarnings(require("packrat", quietly = TRUE, lib.loc = libDir))) {
+  if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
     # Check 'print.banner.on.startup' -- when NA and RStudio, don't print
-    print.banner <- get_opts("print.banner.on.startup")
+    print.banner <- packrat::get_opts("print.banner.on.startup")
     if (print.banner == "auto" && is.na(Sys.getenv("RSTUDIO", unset = NA))) {
       print.banner <- TRUE
     } else {
