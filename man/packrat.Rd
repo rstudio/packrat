@@ -22,7 +22,7 @@ packages your project depends on.
 depend on, and ensures those exact versions are the ones that get installed
 wherever you go.}
 
-Use \code{\link{bootstrap}} to create a new packrat project,
+Use \code{\link{init}} to create a new packrat project,
 \code{\link{snapshot}} to record changes to your project's library, and
 \code{\link{restore}} to recreate your library the way it was the last time you
 (or anyone!) took a snapshot.
@@ -35,7 +35,7 @@ changes, and provides an easy way to share your results when you're done.
 
 
 A packrat project contains a few extra files and directories. The
-\code{\link{bootstrap}} function creates these files for you, if they don't
+\code{\link{init}} function creates these files for you, if they don't
 already exist.
 
 \describe{
@@ -65,7 +65,7 @@ repository).
 \examples{
 \dontrun{
 # Create a new packrat project from an existing directory of \\R code
-bootstrap()
+init()
 
 # Install a package and take a snapshot of the new state of the library
 install.packages("TTR")

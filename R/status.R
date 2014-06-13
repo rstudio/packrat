@@ -42,9 +42,9 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   packratPackages <- lockInfo(project, fatal=FALSE)
 
   if (length(packratPackages) == 0) {
-    bootstrapArg <- if (projectDefault) '' else deparse(project)
+    initArg <- if (projectDefault) '' else deparse(project)
     cat('This directory does not appear to be using packrat.\n',
-        'Call packrat::bootstrap(', bootstrapArg, ') to initialize packrat.',
+        'Call packrat::init(', initArg, ') to initialize packrat.',
         sep = '')
     return(invisible())
   }

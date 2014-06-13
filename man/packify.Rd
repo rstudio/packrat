@@ -17,7 +17,7 @@ project library.
 }
 \details{
 It is not normally necessary to call \code{packify} directly; these files are
-normally installed by \code{\link{bootstrap}}. \code{packify} can be used to
+normally installed by \code{\link{init}}. \code{packify} can be used to
 restore the files if they are missing (for instance, if they were not added to
 source control, or were accidentally removed).
 

@@ -22,7 +22,7 @@ test_that("packrat_mode successfully sets the library paths when turned on and o
 
   orig_libs <- getLibPaths()
 
-  packrat::on(auto.snapshot = FALSE, bootstrap = FALSE, clean.search.path = FALSE)
+  packrat::on(auto.snapshot = FALSE, init = FALSE, clean.search.path = FALSE)
 
   cat("getLibPaths() after entering packrat mode:\n")
   cat(getLibPaths(), sep = "\n")

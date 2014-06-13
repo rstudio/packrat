@@ -67,7 +67,7 @@ snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project)
 
   project <- getProjectDir(project)
 
-  # Prompt the user to bootstrap if the project has not yet been bootstrapped
+  # Prompt the user to initialize if the project has not yet been initialized
   stopIfNotPackified(project)
 
   if (file.exists(snapshotLockFilePath(project))) {
