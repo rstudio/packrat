@@ -342,9 +342,22 @@ restore <- function(project = NULL,
 #' directory.
 #' @param lib.loc The library to clean. Defaults to the private package library
 #' associated with the project directory.
+#' @param dry.run Perform a dry run, returning records on which packages would
+#'   have been moved by the current clean action.
 #' @param force Force package removal, even if they are still in use within the project?
 #'
-#' @example examples/example-clean.R
+#' @examples \dontrun{
+#'
+#' # Get unused package records
+#' unused_packages()
+#'
+#' # Clean all unused packages
+#' clean()
+#'
+#' # Clean specific packages
+#' clean("foo")
+#'
+#' }
 #' @export
 clean <- function(packages = NULL,
                   project = NULL,
