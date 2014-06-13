@@ -44,35 +44,36 @@ install_github <-function(repo,
 
   # prompt to install devtools if necessary
   if (length(find.package("devtools", lib.loc = libPaths, quiet = TRUE)) == 0) {
-    response <- readline(paste(
-      "Installing packages from GitHub requires the devtools package.\n",
-      "Do you want to install it now [Y/n]: ", sep = ""))
-    if (substr(tolower(response), 1, 1) != "n")
-      utils::install.packages("devtools", lib = libPaths)
+    if (interactive()) {
+      message("Installing packages from GitHub requires the devtools package.")
+      response <- readline("Do you want to install devtools now? [Y/n]: ")
+      if (substr(tolower(response), 1, 1) != "n")
+        utils::install.packages("devtools", lib = libPaths)
+    } else {
+      stop("packrat::install_github requires the devtools package.")
+    }
   }
 
   # if we are packfied then pre-pend our private library before installing
   if (packified)
     libPaths <- c(libDir(project), libPaths)
 
-  # name of devtools on the search path
-  devtoolsNamespace <- "package:devtools"
-
-  # function used to execute devtools::install_github
+  # execute devtools::install_github with our project library path as
+  # well as the system standard library paths
   doInstall <- function() {
-    f <- get("install_github", envir = as.environment(devtoolsNamespace))
-    with_libpaths(libPaths, {
-      f(repo, ..., dependencies = dependencies, build_vignettes = build_vignettes)
-    })
+    with_libpaths(libPaths,
+      devtools::install_github(repo, ..., dependencies = dependencies,
+                               build_vignettes = build_vignettes)
+    )
   }
 
   # if devtools is already on the search path then execute the install,
   # otherwise load devtools just for the duration of the call
-  if (devtoolsNamespace %in% search()) {
+  if ("package:devtools" %in% search()) {
     doInstall()
   } else {
     suppressMessages(require("devtools", quietly = TRUE, character.only = TRUE))
-    on.exit(forceUnload(devtoolsNamespace), add = TRUE)
+    on.exit(forceUnload("devtools"), add = TRUE)
     doInstall()
   }
 }
