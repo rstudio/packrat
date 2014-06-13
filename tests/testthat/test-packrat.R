@@ -19,9 +19,9 @@ on.exit({
 }, add = TRUE)
 setupTestRepo()
 
-test_that("bootstrap creates project structure and installs dependencies", {
+test_that("init creates project structure and installs dependencies", {
   projRoot <- cloneTestProject("sated")
-  bootstrap(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
+  init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
   lib <- libDir(projRoot)
   expect_true(file.exists(lockFilePath(projRoot)))
   expect_true(file.exists(srcDir(projRoot)))
@@ -36,7 +36,7 @@ test_that("bootstrap creates project structure and installs dependencies", {
 test_that("restore ignores dirty packages", {
   projRoot <- cloneTestProject("carbs")
   lib <- libDir(projRoot)
-  bootstrap(projRoot, source.packages = file.path("packages", "packrat"), enter = FALSE)
+  init(projRoot, source.packages = file.path("packages", "packrat"), enter = FALSE)
   expect_true(file.exists(file.path(lib, "bread")))
 
   installTestPkg("oatmeal", "1.0.0", lib)
@@ -48,7 +48,7 @@ test_that("restore ignores dirty packages", {
 test_that("restore installs missing packages", {
   projRoot <- cloneTestProject("carbs")
   lib <- libDir(projRoot)
-  bootstrap(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
+  init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
   expect_true(file.exists(file.path(lib, "bread")))
 
   # Remove a used package and restore
@@ -61,7 +61,7 @@ test_that("restore installs missing packages", {
 test_that("snapshot captures new dependencies", {
   projRoot <- cloneTestProject("healthy")
   lib <- libDir(projRoot)
-  bootstrap(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
+  init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
 
   # Simulate the addition of a dependency
   expect_false(file.exists(file.path(lib, "bread")))
@@ -88,7 +88,7 @@ test_that("dependencies in library directories are ignored", {
   makeLibrariesProject()
   projRoot <- cloneTestProject("libraries")
   lib <- libDir(projRoot)
-  bootstrap(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
+  init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
 
   # This test project has a file called library.R that depends on bread, and
   # three .R files inside library/, library.old/, and library.new/ that
@@ -101,7 +101,7 @@ test_that("clean removes libraries and sources", {
   projRoot <- cloneTestProject("smallbreakfast")
   lib <- libDir(projRoot)
   src <- srcDir(projRoot)
-  bootstrap(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
+  init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
 
   expect_true(file.exists(file.path(lib, "bread")))
   expect_true(file.exists(file.path(lib, "oatmeal")))
@@ -120,7 +120,7 @@ test_that("clean removes libraries and sources", {
   expect_false(file.exists(file.path(src, "oatmeal")))
 })
 
-test_that("bootstrap works with multiple repos", {
+test_that("init works with multiple repos", {
   repos <- getOption("repos")
   pkgType <- getOption("pkgType")
   on.exit({
@@ -130,5 +130,5 @@ test_that("bootstrap works with multiple repos", {
   options(repos=c(CRAN=getOption("repos"), custom=getOption("repos")))
 
   projRoot <- cloneTestProject("empty")
-  bootstrap(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
+  init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
 })

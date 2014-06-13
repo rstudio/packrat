@@ -1,5 +1,8 @@
 # Packrat 0.2.0.99 (Unreleased)
 
+- `packrat::bootstrap` has been renamed to `packrat::init` --
+  `packrat::bootstrap` remains as a (deprecated) alias.
+
 - Repositories are now stored in the lockfile as key-value pairs, and these
   repositories are used on startup. This mechanism will allow for more
   granular control over which repositories are valid, as well as for custom

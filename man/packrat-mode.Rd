@@ -6,10 +6,10 @@
 \alias{packrat_mode}
 \title{Packrat Mode}
 \usage{
-packrat_mode(on = NULL, project = NULL, bootstrap = FALSE,
+packrat_mode(on = NULL, project = NULL, init = FALSE,
   auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE)
 
-on(project = NULL, bootstrap = FALSE,
+on(project = NULL, init = FALSE,
   auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE,
   print.banner = TRUE)
 
@@ -22,7 +22,7 @@ will be toggled.}
 \item{project}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
 
-\item{bootstrap}{Bootstrap a project that has not yet been packified?}
+\item{init}{Initialize a project that has not yet been packified?}
 
 \item{auto.snapshot}{Perform automatic, asynchronous snapshots?}
 

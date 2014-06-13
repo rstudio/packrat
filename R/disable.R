@@ -14,7 +14,7 @@
 #' unused.
 #'
 #' To re-enable the use of packrat for a project you can call the
-#' \code{\link{bootstrap}} function.
+#' \code{\link{init}} function.
 #'
 #' The \code{restart} parameter will only result in a restart of R when the R
 #' environment packrat is running within makes available a restart function via

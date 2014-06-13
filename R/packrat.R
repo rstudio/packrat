@@ -16,7 +16,7 @@
 #' depend on, and ensures those exact versions are the ones that get installed
 #' wherever you go.}
 #'
-#' Use \code{\link{bootstrap}} to create a new packrat project,
+#' Use \code{\link{init}} to create a new packrat project,
 #' \code{\link{snapshot}} to record changes to your project's library, and
 #' \code{\link{restore}} to recreate your library the way it was the last time you
 #' (or anyone!) took a snapshot.
@@ -28,7 +28,7 @@
 #' @section Anatomy of a packrat project:
 #'
 #' A packrat project contains a few extra files and directories. The
-#' \code{\link{bootstrap}} function creates these files for you, if they don't
+#' \code{\link{init}} function creates these files for you, if they don't
 #' already exist.
 #'
 #' \describe{
@@ -56,7 +56,7 @@
 #' @examples
 #' \dontrun{
 #' # Create a new packrat project from an existing directory of \R code
-#' bootstrap()
+#' init()
 #'
 #' # Install a package and take a snapshot of the new state of the library
 #' install.packages("TTR")
@@ -76,7 +76,7 @@ NULL
 #'
 #' Given a project directory, makes a new packrat project in the directory.
 #'
-#' \code{bootstrap} works as follows:
+#' \code{init} works as follows:
 #'
 #' \enumerate{
 #'
@@ -90,12 +90,12 @@ NULL
 #' \item A private library is created in the directory.
 #'
 #' \item The snapshot is applied to the directory as described in
-#' \code{\link{restore}}. } When \code{bootstrap} is finished, all the packages
+#' \code{\link{restore}}. } When \code{init} is finished, all the packages
 #' on which the project depends are installed in a new, private library located
 #' inside the project directory.
 #'
 #' \strong{You must restart your \R session in the given project directory after
-#' running \code{bootstrap} in order for the changes to take effect!}
+#' running \code{init} in order for the changes to take effect!}
 #'
 #' When \R is started in the directory, it will use the new, private library.
 #' Calls to \code{\link{require}} and \code{\link{library}} will load packages
@@ -108,8 +108,8 @@ NULL
 #' @param source.packages List of paths to unpacked \R package source
 #'   directories.  Use this argument only if your project depends on packages
 #'   that are not available on CRAN or GitHub.
-#' @param enter Boolean, enter packrat mode for this project after finishing a bootstrap?
-#' @param restart If \code{TRUE}, restart the R session after bootstrap
+#' @param enter Boolean, enter packrat mode for this project after finishing a init?
+#' @param restart If \code{TRUE}, restart the R session after init
 #'
 #' @note
 #'
@@ -118,10 +118,10 @@ NULL
 #' via \code{getOption("restart")}.
 #'
 #' @seealso \link{packrat} for a description of the files created by
-#'   \code{bootstrap}.
+#'   \code{init}.
 #'
 #' @export
-bootstrap <- function(project = '.',
+init <- function(project = '.',
                       source.packages = character(),
                       enter = TRUE,
                       restart = enter) {
@@ -152,7 +152,7 @@ bootstrap <- function(project = '.',
   # Use the lockfile to copy sources and install packages to the library
   restore(project, overwrite.dirty = TRUE, restart = FALSE)
 
-  # Copy bootstrap.R so a user can 'start from zero' with a project
+  # Copy init.R so a user can 'start from zero' with a project
   file.copy(
     instInitFilePath(),
     file.path(project, .packrat$packratFolderName, "init.R")
@@ -180,6 +180,19 @@ bootstrap <- function(project = '.',
   }
 
   invisible()
+}
+
+#' @rdname init
+#' @export
+bootstrap <- function(project = ".",
+                      source.packages = character(),
+                      enter = TRUE,
+                      restart = enter) {
+  .Deprecated("init")
+  init(project = project,
+       source.packages = source.packages,
+       enter = enter,
+       restart = restart)
 }
 
 #' Apply the most recent snapshot to the library
@@ -420,7 +433,7 @@ clean <- function(project = NULL, lib.loc = libDir(project),
 #' project library.
 #'
 #' It is not normally necessary to call \code{packify} directly; these files are
-#' normally installed by \code{\link{bootstrap}}. \code{packify} can be used to
+#' normally installed by \code{\link{init}}. \code{packify} can be used to
 #' restore the files if they are missing (for instance, if they were not added to
 #' source control, or were accidentally removed).
 #'
@@ -488,7 +501,7 @@ lockInfo <- function(project, property='packages', fatal=TRUE) {
   lockFilePath <- lockFilePath(project)
   if (!file.exists(lockFilePath)) {
     if (fatal) {
-      stop(paste(lockFilePath, " is missing. Run packrat::bootstrap('",
+      stop(paste(lockFilePath, " is missing. Run packrat::init('",
                  project, "') to generate it.", sep = ""))
     } else {
       return(list())
