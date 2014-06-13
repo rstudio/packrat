@@ -3,21 +3,20 @@
 \alias{clean}
 \title{Remove unused packages}
 \usage{
-clean(project = NULL, lib.loc = libDir(project), prompt = interactive(),
-  dry.run = FALSE)
+clean(..., project = NULL, lib.loc = libDir(project), force = FALSE)
 }
 \arguments{
+\item{...}{A set of package names to remove from the project. If missing,
+we instead return a set of package records, outlining packages eligible for
+removal.}
+
 \item{project}{The project directory. Defaults to current working
 directory.}
 
 \item{lib.loc}{The library to clean. Defaults to the private package library
 associated with the project directory.}
 
-\item{prompt}{\code{TRUE} to prompt before removing packages, \code{FALSE} to
-remove packages immediately.}
-
-\item{dry.run}{Computes the packages that would be removed and prints them to
-the console.}
+\item{force}{Force package removal, even if they are used within the project?}
 }
 \description{
 Remove unused packages from the given library.
@@ -31,7 +30,7 @@ the following criteria:
   \item Not a dependency of any non-orphaned package
 }
 If \code{clean} wants to remove a package but your project actually needs the
-package, add a statement such as \code{\link{require}(package-name)} to any .R
-file in your project's directory.
+package, add a statement such as \code{\link{require}(package-name)} to any
+\code{.R} file in your project's directory.
 }
 
