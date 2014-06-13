@@ -358,35 +358,41 @@ clean <- function(packages = NULL,
   callHook(project, "clean", TRUE)
   on.exit(callHook(project, "clean", FALSE), add = TRUE)
 
+  cleanableRecords <- unused_packages(project = project, lib.loc = lib.loc)
+  cleanable <- sapply(cleanableRecords, "[[", "name")
+
   if (is.null(packages)) {
-    records <- unused_packages(project = project, lib.loc = lib.loc)
-    packages <- sapply(records, "[[", "name")
+    packages <- cleanable
   }
 
-  cleanableRecords <- unused_packages(project = project, lib.loc = lib.loc)
-  cleanable <- sapply(cleanableRecords$pkgRecords, "[[", "name")
-
   pkgsUnsafeToRemove <- setdiff(packages, cleanable)
-  if (length(pkgsUnsafeToRemove) && !force) {
+  if (length(pkgsUnsafeToRemove) && !force && !dry.run) {
     stop("The following packages are in use in your project and are unsafe to remove:\n- ",
          paste(shQuote(pkgsUnsafeToRemove), collapse = ", "),
          "\nUse clean(..., force = TRUE) to force removal")
   }
 
   if (dry.run) {
-    pkgRecords <- getPackageRecords(packages,
-                                    available = NULL,
-                                    source.packages = NULL,
-                                    recursive = FALSE,
-                                    lib.loc = lib.loc)
+
+    if (identical(packages, cleanable)) {
+      pkgRecords <- cleanableRecords
+    } else {
+      pkgRecords <- getPackageRecords(packages,
+                                      available = NULL,
+                                      source.packages = NULL,
+                                      recursive = FALSE,
+                                      lib.loc = lib.loc)
+    }
     actions <- rep("remove", length(packages))
     names(actions) <- packages
-    return(invisible(list(pkgRecords = pkgRecords,
-                          actions = actions)))
+    invisible(list(pkgRecords = pkgRecords,
+                   actions = actions))
   } else {
+
     removePkgs(project = project,
                pkgNames = packages,
                lib.loc = lib.loc)
+
   }
 
 }
@@ -436,14 +442,12 @@ unused_packages <- function(project = NULL,
 
   ## Exclude 'manipulate', 'rstudio'
   orphans <- setdiff(orphans, c("manipulate", "rstudio"))
-  orphanRecs <- getPackageRecords(orphans, available=NULL,
-                                  source.packages=NULL,
-                                  recursive=FALSE,
-                                  lib.loc=lib.loc)
-  actions <- rep("remove", length(orphans))
-  names(actions) <- orphans
-  return(invisible(list(pkgRecords = orphanRecs,
-                        actions = actions)))
+  orphanRecs <- getPackageRecords(orphans,
+                                  available = NULL,
+                                  source.packages = NULL,
+                                  recursive = FALSE,
+                                  lib.loc = lib.loc)
+  orphanRecs
 
 }
 
