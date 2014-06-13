@@ -9,7 +9,7 @@ Description: Packrat is a tool for managing the R packages your project depends
     on in an isolated, portable, and reproducible way.
 License: GPL-2
 Depends:
-    R (>= 2.14.1)
+    R (>= 3.0)
 Imports:
     tools,
     utils
