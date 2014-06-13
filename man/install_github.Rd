@@ -13,9 +13,10 @@ specify \code{username}, \code{subdir}, \code{ref} or \code{pull} using the
 respective parameters.}
 
 \item{...}{Other arguments passed on to
-\code{\link[devtools:install_github]{devtools::install_github}}}
+\code{\link[devtools:install_github]{devtools::install_github}}.}
 
-\item{build_vignettes}{If \code{TRUE}, will build the package's vignettes.}
+\item{build_vignettes}{If \code{TRUE}, will build the package's vignettes
+(default to \code{FALSE} for faster in)}
 
 \item{dependencies}{\code{NA} (the default) has the same behavior as
 \code{install.packages} (installs "Depends", "Imports", and "LinkingTo").
