@@ -19,10 +19,9 @@
 #'   See the documentation for
 #'   \code{\link[utils:install.packages]{install.packages}} for details on other
 #'   valid arguments.
-#' @param project The project directory. Defaults to current working directory.
 #'
 #' @note This function requires the \pkg{devtools} package and will prompt to
-#' to install it if it's not already available on the search path.
+#' to install it if it's not already available in the standard library paths.
 #' In this case, devtools will be installed into the standard user package
 #' library rather than the project private library.
 #'
@@ -30,54 +29,32 @@
 install_github <-function(repo,
                           ...,
                           build_vignettes = FALSE,
-                          dependencies = NA,
-                          project = NULL) {
+                          dependencies = NA) {
 
-  # get the default libpath (behave correctly even if we aren't packified)
-  libPaths <- NULL
-  project <- getProjectDir(project)
-  packified <- checkPackified(project, quiet = TRUE)
-  if (packified)
-    libPaths <- .packrat_mutables$get("origLibPaths")
-  if (is.null(libPaths))
-    libPaths <- .libPaths()
-
-  # prompt to install devtools if necessary
-  if (length(find.package("devtools", lib.loc = libPaths, quiet = TRUE)) == 0) {
+  # look for devtools in the original libs and prompt to install if necessary
+  origLibPaths <- .packrat_mutables$get("origLibPaths")
+  if (length(find.package("devtools", lib.loc = origLibPaths, quiet = TRUE)) == 0) {
     if (interactive()) {
       message("Installing packages from GitHub requires the devtools package.")
       response <- readline("Do you want to install devtools now? [Y/n]: ")
       if (substr(tolower(response), 1, 1) != "n")
-        utils::install.packages("devtools", lib = libPaths)
+        utils::install.packages("devtools", lib = origLibPaths)
     } else {
       stop("packrat::install_github requires the devtools package.")
     }
   }
 
-  # if we are packfied then pre-pend our private library before installing
-  if (packified)
-    libPaths <- c(libDir(project), libPaths)
-
-  # execute devtools::install_github with our project library path as
-  # well as the system standard library paths
-  doInstall <- function() {
-    with_libpaths(libPaths,
-      devtools::install_github(repo, ..., dependencies = dependencies,
-                               build_vignettes = build_vignettes)
-    )
-  }
-
-  # if devtools is already on the search path then execute the install,
-  # otherwise load devtools just for the duration of the call
-  if ("package:devtools" %in% search()) {
-    doInstall()
-  } else {
-    suppressMessages(suppressWarnings(
-      require("devtools", quietly = TRUE, character.only = TRUE)
-    ))
-    on.exit(forceUnload("devtools"), add = TRUE)
-    doInstall()
-  }
+  # execute devtools::install_github with version of devtools (and dependencies)
+  # installed in original lib paths
+  args <- list(...)
+  args$repo <- repo
+  args$build_vignettes <- build_vignettes
+  args$dependencies <- dependencies
+  with_extlib(c("httr", "devtools"), envir = environment(), {
+    f <- get("install_github", envir = as.environment("package:devtools"))
+    do.call(f, args)
+  })
+  invisible()
 }
 
 
