@@ -13,7 +13,7 @@
 ##' with_extlib("lattice", xyplot(1 ~ 1))
 ##' }
 ##' @export
-with_extlib <- function(packages, expr) {
+with_extlib <- function(packages, expr, envir = parent.frame()) {
 
   if (!is.character(packages)) {
     stop("'packages' should be a character vector of libraries", call. = FALSE)
@@ -36,7 +36,7 @@ with_extlib <- function(packages, expr) {
       }
 
       ## Evaluate the call
-      error <- try(res <- eval(call$expr), silent = TRUE)
+      error <- try(res <- eval(call$expr, envir = envir), silent = TRUE)
 
       ## Now, propagate the error / result
       if (exists("res")) {
