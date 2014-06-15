@@ -72,7 +72,9 @@ install_github <-function(repo,
   if ("package:devtools" %in% search()) {
     doInstall()
   } else {
-    suppressMessages(require("devtools", quietly = TRUE, character.only = TRUE))
+    suppressMessages(suppressWarnings(
+      require("devtools", quietly = TRUE, character.only = TRUE)
+    ))
     on.exit(forceUnload("devtools"), add = TRUE)
     doInstall()
   }
