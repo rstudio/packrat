@@ -18,9 +18,11 @@ forceUnload <- function(pkg) {
   pkgName <- gsub("package:", "", pkg, fixed = TRUE)
   pkgDLL <- getLoadedDLLs()[[pkgName]]
   if (!is.null(pkgDLL)) {
-    suppressWarnings(
-      library.dynam.unload(pkgName, system.file(package=pkgName))
-    )
+    suppressWarnings({
+      pkgDir <- system.file(package=pkgName)
+      if (nzchar(pkgDir))
+        library.dynam.unload(pkgName, pkgDir)
+    })
   }
 
   # unload the namespace if it's still loaded
