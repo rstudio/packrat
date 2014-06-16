@@ -10,7 +10,7 @@ getActions <- function(verb, project) {
     actionFunc <- clean
   else
     stop("Unknown action '", verb, "'")
-  suppressMessages(actionFunc(project, dry.run = TRUE))
+  suppressMessages(actionFunc(project = project, dry.run = TRUE))
 }
 
 getActionMessages <- function(verb, project) {
