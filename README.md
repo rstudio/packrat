@@ -28,7 +28,7 @@ Start by installing Packrat:
 
 Then, start a new R session at the base directory of your project and type:
 
-    packrat::bootstrap()
+    packrat::init()
 
 This will install Packrat, set up a private library to be used for this
 project, and then place you in `packrat mode`. While in packrat mode, calls to
