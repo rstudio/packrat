@@ -1,7 +1,7 @@
 Package: packrat
 Type: Package
 Title: Reproducible dependency management
-Version: 0.2.0.120
+Version: 0.2.0.121
 Date: 2013-10-28
 Author: RStudio, Inc.
 Maintainer: Kevin Ushey <kevin@rstudio.com>
