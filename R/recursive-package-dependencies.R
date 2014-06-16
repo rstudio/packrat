@@ -1,13 +1,26 @@
-getPackageDependencies <- function(pkgs, available.packages = available.packages()) {
+getPackageDependencies <- function(pkgs,
+                                   lib.loc,
+                                   available.packages = available.packages()) {
 
   deps <- unlist(lapply(pkgs, function(pkg) {
-
-    if (!(pkg %in% row.names(available.packages))) {
-      warning("Package '", pkg, "' not available in repository")
+    pkgDescFile <- system.file('DESCRIPTION', package = pkg,
+                               lib.loc = lib.loc)
+    if (file.exists(pkgDescFile)) {
+      # try to read dependency information from the locally installed package
+      # if it's available (dependency information in available.packages may not
+      # be accurate if there's a locally installed version with a different
+      # dependency list)
+      theseDeps <- combineDcfFields(as.data.frame(readDcf(pkgDescFile)),
+        c("Depends", "Imports", "LinkingTo"))
+    } else if (pkg %in% row.names(available.packages)) {
+      # no locally installed version but we can check dependencies in the
+      # package database
+      theseDeps <- as.list(
+        available.packages[pkg, c("Depends", "Imports", "LinkingTo")])
+    } else {
+      warning("Package '", pkg, "' not available in repository or locally")
       return(NULL)
     }
-
-    theseDeps <- as.list(available.packages[pkg, c("Depends", "Imports", "LinkingTo")])
 
     ## Split fields, remove white space, get versioning
     splitDeps <- lapply(theseDeps, function(x) {
@@ -27,13 +40,14 @@ getPackageDependencies <- function(pkgs, available.packages = available.packages
   else sort(unique(deps))
 }
 
-recursivePackageDependencies <- function(pkgs, available.packages = available.packages()) {
+recursivePackageDependencies <- function(pkgs, lib.loc,
+                                         available.packages = available.packages()) {
 
   if (!length(pkgs)) return(NULL)
-  deps <- getPackageDependencies(pkgs, available.packages)
+  deps <- getPackageDependencies(pkgs, lib.loc, available.packages)
   depsToCheck <- setdiff(deps, pkgs)
   while (length(depsToCheck)) {
-    newDeps <- getPackageDependencies(depsToCheck, available.packages)
+    newDeps <- getPackageDependencies(depsToCheck, lib.loc, available.packages)
     deps <- sort(unique(c(deps, newDeps)))
     depsToCheck <- setdiff(newDeps, deps)
   }

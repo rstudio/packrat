@@ -43,11 +43,12 @@ appDependencies <- function(project = NULL, available.packages = NULL) {
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
-    childDeps <- recursivePackageDependencies(parentDeps,
+    childDeps <- recursivePackageDependencies(parentDeps, libDir(project),
                                               available.packages)
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
-    childDeps <- recursivePackageDependencies(parentDeps, available.packages)
+    childDeps <- recursivePackageDependencies(parentDeps, libDir(project),
+                                              available.packages)
   }
 
   sort(unique(c(parentDeps, childDeps, "packrat")))
