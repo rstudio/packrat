@@ -209,7 +209,7 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
       )
     }
   }
-  return(invisible(list(pkgRecords = appPackagesFlat,
+  return(invisible(list(pkgRecords = lockPackages,
                         actions = diffs[!is.na(diffs)],
                         pkgsSnapshot = appPackages)))
 }
