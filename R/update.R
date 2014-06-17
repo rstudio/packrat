@@ -1,4 +1,6 @@
 updateInit <- function() {
+
+  # Update init.R (the file sourced from within the .Rprofile)
   init.R <- readLines(file.path("inst", "resources", "init.R"))
   packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
 
@@ -12,6 +14,12 @@ updateInit <- function() {
   init.R[installSourceLine + 1] <- paste("  installSource <-", shQuote(paste("InstallSource:", "source")))
 
   cat(init.R, file = file.path("inst", "resources", "init.R"), sep = "\n")
+
+  # Update the .Rprofile that is written out to a project directory
+  .Rprofile <- readLines(file.path("inst", "resources", "init-rprofile.R"))
+  version <- read.dcf("DESCRIPTION")[, "Version"]
+  .Rprofile[1] <- paste0("#### -- Packrat Autoloader (version ", version, ") -- ####")
+  cat(.Rprofile, file = file.path("inst", "resources", "init-rprofile.R"), sep = "\n")
 }
 
 updateSettings <- function(project = NULL, options = NULL) {
