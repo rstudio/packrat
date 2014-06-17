@@ -64,7 +64,7 @@ local({
   ## Tag the installed packrat so we know it's managed by packrat
 
   ## -- InstallAgent -- ##
-  installAgent <- 'InstallAgent: packrat 0.2.0.120'
+  installAgent <- 'InstallAgent: packrat 0.2.0.123'
 
   ## -- InstallSource -- ##
   installSource <- 'InstallSource: source'

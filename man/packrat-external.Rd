@@ -5,7 +5,7 @@
 \alias{with_extlib}
 \title{Managing External Libraries}
 \usage{
-with_extlib(packages, expr)
+with_extlib(packages, expr, envir = parent.frame())
 
 extlib(packages)
 }
