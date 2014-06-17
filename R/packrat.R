@@ -127,12 +127,26 @@ init <- function(project = '.',
                  restart = enter) {
 
   ## Get the initial directory structure, so we can rewind if necessary
-  project <- normalizePath(project, winslash='/', mustWork=TRUE)
-  initDirStructure <- list.files(project,
-                                 all.files = TRUE,
-                                 full.names = TRUE,
-                                 recursive = TRUE,
-                                 include.dirs = TRUE)
+  project <- normalizePath(project,
+                           winslash = '/',
+                           mustWork = TRUE)
+
+  ## A set of files that packrat might generate as part of init
+  prFiles <- c(
+    file.path(project, ".gitignore"),
+    file.path(project, ".Rprofile"),
+    file.path(project, "packrat"),
+    file.path(project, "packrat", "lib"),
+    file.path(project, "packrat", "lib-R"),
+    file.path(project, "packrat", "src"),
+    file.path(project, "packrat", "packrat.lock"),
+    file.path(project, "packrat", "packrat.opts")
+  )
+
+  priorStructure <- setNames(
+    file.exists(prFiles),
+    prFiles
+  )
 
   tryCatch(
 
@@ -197,14 +211,15 @@ init <- function(project = '.',
     error = function(e) {
 
       # Undo any changes to the directory that did not exist previously
-      newDirStructure <- list.files(project,
-                                    all.files = TRUE,
-                                    full.names = TRUE,
-                                    recursive = TRUE,
-                                    include.dirs = TRUE)
+      for (i in seq_along(priorStructure)) {
+        file <- names(priorStructure)[[i]]
+        fileExistedBefore <- priorStructure[[i]]
+        fileExistsNow <- file.exists(file)
+        if (!fileExistedBefore && fileExistsNow) {
+          unlink(file, recursive = TRUE)
+        }
+      }
 
-      toRemove <- setdiff(newDirStructure, initDirStructure)
-      unlink(toRemove, recursive = TRUE)
       stop(e)
 
     }
