@@ -3,8 +3,7 @@
 \alias{install_github}
 \title{Install a package from GitHub}
 \usage{
-install_github(repo, ..., build_vignettes = FALSE, dependencies = NA,
-  project = NULL)
+install_github(repo, ..., build_vignettes = FALSE, dependencies = NA)
 }
 \arguments{
 \item{repo}{Repository address in the format
@@ -19,12 +18,10 @@ respective parameters.}
 (default to \code{FALSE} for faster in)}
 
 \item{dependencies}{\code{NA} (the default) has the same behavior as
-\code{install.packages} (installs "Depends", "Imports", and "LinkingTo").
-See the documentation for
-\code{\link[utils:install.packages]{install.packages}} for details on other
-valid arguments.}
-
-\item{project}{The project directory. Defaults to current working directory.}
+  \code{install.packages} (installs "Depends", "Imports", and "LinkingTo").
+  See the documentation for
+  \code{\link[utils:install.packages]{install.packages}} for details on other
+  valid arguments.}
 }
 \description{
 Use the \code{\link[devtools:install_github]{devtools::install_github}}
@@ -35,7 +32,7 @@ private library.
 }
 \note{
 This function requires the \pkg{devtools} package and will prompt to
-to install it if it's not already available on the search path.
+to install it if it's not already available in the standard library paths.
 In this case, devtools will be installed into the standard user package
 library rather than the project private library.
 }
