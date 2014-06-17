@@ -13,6 +13,13 @@ local({
     return(packrat::on(print.banner = print.banner))
   }
 
+  Sys.setenv("R_PACKRAT_NEEDS_BOOTSTRAP" = "1")
+
+  # Let RStudio handle initialization separately
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
+    return(invisible(NULL))
+  }
+
   message("Packrat is not installed in the local library -- ",
     "attempting to bootstrap an installation...")
 
@@ -85,5 +92,7 @@ local({
     message("> Packrat bootstrap successfully completed. Entering packrat mode...")
     packrat::on()
   }
+
+  Sys.unsetenv("R_PACKRAT_NEEDS_BOOTSTRAP")
 
 })
