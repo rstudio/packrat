@@ -13,13 +13,6 @@ local({
     return(packrat::on(print.banner = print.banner))
   }
 
-  Sys.setenv("R_PACKRAT_NEEDS_BOOTSTRAP" = "1")
-
-  # Let RStudio handle initialization separately
-  if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
-    return(invisible(NULL))
-  }
-
   message("Packrat is not installed in the local library -- ",
     "attempting to bootstrap an installation...")
 
@@ -81,6 +74,13 @@ local({
   DESCRIPTION <- c(DESCRIPTION, installAgent, installSource)
   cat(DESCRIPTION, file = packratDescPath, sep = "\n")
 
+  # If the environment allows us to restart, do so with a call to restore
+  restart <- getOption("restart")
+  if (!is.null(restart)) {
+    restart("packrat::restore(restart = FALSE)")
+  }
+
+  # Otherwise, continue on as normal
   message("> Attaching packrat")
   library("packrat", character.only = TRUE, lib.loc = lib)
 
@@ -88,6 +88,7 @@ local({
   restore(restart = FALSE)
 
   # Callers (source-erers) can define this hidden variable to make sure we don't enter packrat mode
+  # Primarily useful for testing
   if (!exists(".__DONT_ENTER_PACKRAT_MODE__.")) {
     message("> Packrat bootstrap successfully completed. Entering packrat mode...")
     packrat::on()

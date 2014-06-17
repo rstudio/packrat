@@ -373,7 +373,7 @@ swap <- function(vec, from, to = NULL) {
 }
 
 
-attemptRestart <- function(restore.packrat.mode = TRUE) {
+attemptRestart <- function(..., restore.packrat.mode = TRUE) {
   restart <- getOption("restart")
   if (!is.null(restart)) {
     # set packrat mode environment variable here so that
@@ -383,7 +383,7 @@ attemptRestart <- function(restore.packrat.mode = TRUE) {
     if (restore.packrat.mode) {
       setPackratModeEnvironmentVar()
     }
-    restart()
+    restart(...)
     TRUE
   } else {
     FALSE
