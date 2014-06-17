@@ -157,7 +157,8 @@ libRdir <- function(project = NULL) {
   file.path(getPackratDir(project), "lib-R")
 }
 
-prettyLibDir <- function(project) {
+prettyLibDir <- function(project = NULL) {
+  project <- getPackratDir(project)
   homeDir <- path.expand("~/")
   if (substring(project, 1, nchar(homeDir)) == homeDir)
     project <- gsub(homeDir, "~/", project, fixed = TRUE)
