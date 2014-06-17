@@ -18,84 +18,181 @@
 #   , gh_subdir = 'pkg'
 # )
 
+# Checks whether a package was installed from source and is
+# within the packrat ecosystem
+hasSourcePathInDescription <- function(pkgNames, lib.loc) {
+
+  pkgNames[unlist(lapply(pkgNames, function(pkg) {
+
+    # Get the package location in the library path
+    loc <- find.package(pkg, lib.loc, quiet = TRUE)
+
+    # If there was no package, FALSE
+    if (!length(loc)) return(FALSE)
+
+    # If there's no DESCRIPTION (not sure how this could happen), warn + FALSE
+    if (!file.exists(file.path(loc, "DESCRIPTION"))) {
+      warning("Package '", pkg, "' was found at library location '", loc, "' but has no DESCRIPTION")
+      return(FALSE)
+    }
+
+    # Read the DESCRIPTION and look for Packrat fields
+    dcf <- readDcf(file.path(loc, "DESCRIPTION"))
+    "InstallSourcePath" %in% colnames(dcf)
+
+  }))]
+
+}
+
+# Returns package records for a package that was installed from source by
+# packrat (and is within the packrat ecosystem)
+getPackageRecordsInstalledFromSource <- function(pkgs, lib.loc) {
+  lapply(pkgs, function(pkg) {
+    loc <- find.package(pkg, lib.loc)
+    dcf <- as.data.frame(readDcf(file.path(loc, "DESCRIPTION")), stringsAsFactors = FALSE)
+    deps <- combineDcfFields(dcf, c("Depends", "Imports", "LinkingTo"))
+    deps <- deps[deps != "R"]
+    db <- NULL
+    record <- structure(list(
+      name = pkg,
+      source = 'source',
+      version = dcf$Version,
+      source_path = dcf$InstallSourcePath
+    ), class=c('packageRecord', 'source'))
+  })
+}
+
+# Get package records for those manually specified with source.packages
+getPackageRecordsManuallySpecified <- function(pkgNames,
+                                               source.packages) {
+
+  # Only look at packages within source.packages
+  pkgNames <- pkgNames[pkgNames %in% rownames(source.packages)]
+
+  lapply(pkgNames, function(pkgName) {
+    source_path <- as.character(source.packages[pkgName,"path"])
+    version <- as.character(source.packages[pkgName,"version"])
+
+    ## If it ends with tar.gz, pull the DESCRIPTION file out
+    if (endswith(source_path, "tar.gz")) {
+      tempdir <- file.path(tempdir(), paste("packrat", pkgName, version, sep = "-"))
+      dir.create(tempdir, recursive = TRUE)
+      untar(source_path, exdir = tempdir)
+      sourceDesc <- as.data.frame(
+        readDcf(file.path(tempdir, pkgName, "DESCRIPTION"))
+      )
+    } else {
+      # Read the dependency information directly from the DESCRIPTION file
+      sourceDesc <- as.data.frame(
+        readDcf(file.path(source.packages[pkgName,"path"], "DESCRIPTION")))
+    }
+    deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
+    deps <- deps[deps != "R"]
+    db <- NULL
+    record <- structure(list(
+      name = pkgName,
+      source = 'source',
+      version = version,
+      source_path = source_path
+    ), class=c('packageRecord', 'source'))
+  })
+
+}
+
+getPackageRecordsExternalSource <- function(pkgNames,
+                                            available,
+                                            lib.loc,
+                                            missing.package) {
+
+  lapply(pkgNames, function(pkgName) {
+    # This package is from an external source (CRAN-like repo or github);
+    # attempt to get its description from the installed package database.
+    pkgDescFile <- system.file('DESCRIPTION',
+                               package=pkgName,
+                               lib.loc = lib.loc)
+    if (nchar(pkgDescFile) == 0) {
+      if (pkgName %in% rownames(available)) {
+        pkg <- available[pkgName,]
+        df <- data.frame(
+          Package = pkg[["Package"]],
+          Version = pkg[["Version"]],
+          Repository = "CRAN")
+      } else {
+        return(missing.package(pkgName, lib.loc))
+      }
+    } else {
+      df <- as.data.frame(readDcf(pkgDescFile))
+    }
+    inferPackageRecord(df)
+  })
+
+}
+
 # Returns a package records for the given packages
-getPackageRecords <- function(pkgNames, available=NULL, source.packages=NULL,
-                              recursive=TRUE, lib.loc=NULL,
-                              missing.package=function(package, lib.loc) {
+getPackageRecords <- function(pkgNames,
+                              available=NULL,
+                              source.packages=NULL,
+                              recursive=TRUE,
+                              lib.loc=NULL,
+                              missing.package = function(package, lib.loc) {
                                 stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
                               }) {
-  records <- lapply(pkgNames, function(pkgName) {
-    if (!is.null(source.packages) &&
-        pkgName %in% rownames(source.packages)) {
-      # This package was a manually specified source package; use the
-      # description file from there
-      source_path <- as.character(source.packages[pkgName,"path"])
-      version <- as.character(source.packages[pkgName,"version"])
 
-      ## If it ends with tar.gz, pull the DESCRIPTION file out
-      if (endswith(source_path, "tar.gz")) {
-        tempdir <- file.path(tempdir(), paste("packrat", pkgName, version, sep = "-"))
-        dir.create(tempdir, recursive = TRUE)
-        untar(source_path, exdir = tempdir)
-        sourceDesc <- as.data.frame(
-          readDcf(file.path(tempdir, pkgName, "DESCRIPTION"))
-        )
-      } else {
-        # Read the dependency information directly from the DESCRIPTION file
-        sourceDesc <- as.data.frame(
-          readDcf(file.path(source.packages[pkgName,"path"], "DESCRIPTION")))
-      }
-      deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
-      deps <- deps[deps != "R"]
-      db <- NULL
-      record <- structure(list(
-        name = pkgName,
-        source = 'source',
-        version = version,
-        source_path = source_path
-      ), class=c('packageRecord', 'source'))
-    } else {
-      # This package is from an external source (CRAN-like repo or github);
-      # attempt to get its description from the installed package database.
-      pkgDescFile <- system.file('DESCRIPTION', package=pkgName,
-                                 lib.loc = lib.loc)
-      if (nchar(pkgDescFile) == 0) {
-        if (pkgName %in% rownames(available)) {
-          # The package's DESCRIPTION doesn't exist locally--get its version and
-          # dependency information from the repo, and use the database of
-          # available packages to compute its dependencies
-          pkg <- available[pkgName,]
-          df <- data.frame(
-            Package = pkg[["Package"]],
-            Version = pkg[["Version"]],
-            Repository = "CRAN")
-          db <- available
-        } else {
-          return(missing.package(pkgName, lib.loc))
-        }
-      } else {
-        # This package's DESCRIPTION exists locally--read it, and use the database
-        # of installed packages to compute its dependencies.
-        df <- as.data.frame(readDcf(pkgDescFile))
-        db <- installed.packages(lib.loc = lib.loc)
-      }
-      record <- inferPackageRecord(df)
-    }
-    if (isTRUE(recursive && !is.null(record))) {
-      if (!is.null(db)) {
-        deps <- tools::package_dependencies(
-          record$name, db,
-          c("Depends", "Imports", "LinkingTo"),
-          recursive=FALSE
-        )[[record$name]]
-      }
+  # First, get the package records for packages installed from source
+  pkgsInstalledFromSource <- hasSourcePathInDescription(pkgNames, lib.loc = lib.loc)
+  srcPkgRecords <- getPackageRecordsInstalledFromSource(pkgsInstalledFromSource,
+                                                        lib.loc = lib.loc)
+
+  pkgNames <- setdiff(pkgNames, pkgsInstalledFromSource)
+
+  # Next, get the packge records for packages manually specified in source.packages
+  manualSrcPkgRecords <- getPackageRecordsManuallySpecified(
+    pkgNames,
+    source.packages
+  )
+
+  pkgNames <- setdiff(pkgNames, sapply(manualSrcPkgRecords, "[[", "name"))
+
+  # Finally, get the package records for packages that are now presumedly from
+  # an external source
+  externalPkgRecords <- getPackageRecordsExternalSource(pkgNames,
+                                                        available = available,
+                                                        lib.loc = lib.loc,
+                                                        missing.package = missing.package)
+
+  pkgNames <- setdiff(pkgNames, sapply(externalPkgRecords, "[[", "name"))
+
+  # Collect the records together
+  allRecords <- c(
+    srcPkgRecords,
+    manualSrcPkgRecords,
+    externalPkgRecords
+  )
+
+  # Remove any null records
+  allRecords <- dropNull(allRecords)
+
+  # Now get recursive package dependencies if necessary
+  if (recursive) {
+    allRecords <- lapply(allRecords, function(record) {
+      deps <- tools::package_dependencies(
+        record$name,
+        available,
+        c("Depends", "Imports", "LinkingTo"),
+        recursive = FALSE
+      )[[record$name]]
       record$depends <- getPackageRecords(
-        deps, available, source.packages, TRUE, lib.loc=lib.loc,
-        missing.package=missing.package)
-    }
-    return(record)
-  })
-  return(records[!sapply(records, is.null)])
+        deps,
+        available,
+        source.packages,
+        TRUE,
+        lib.loc = lib.loc,
+        missing.package = missing.package)
+      record
+    })
+  }
+
+  allRecords
 }
 
 # Reads a description file and attempts to infer where the package came from.
@@ -106,7 +203,7 @@ inferPackageRecord <- function(df) {
   ver <- as.character(df$Version)
 
   if (!is.null(df$Repository) &&
-      identical(as.character(df$Repository), 'CRAN')) {
+        identical(as.character(df$Repository), 'CRAN')) {
     # It's CRAN!
     return(structure(list(
       name = name,
@@ -143,7 +240,7 @@ inferPackageRecord <- function(df) {
       version = ver
     ), class=c('packageRecord', 'source')))
   } else if ((identical(name, "manipulate") || identical(name, "rstudio")) &&
-             identical(as.character(df$Author), "RStudio")) {
+               identical(as.character(df$Author), "RStudio")) {
     # The 'manipulate' and 'rstudio' packages are auto-installed by RStudio
     # into the package library; ignore them so they won't appear orphaned.
     return(NULL)
