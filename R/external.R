@@ -7,6 +7,7 @@
 ##' @param packages A set of library names (as a character vector) to load for
 ##'   the duration of evaluation of \code{expr}.
 ##' @param expr An \R expression.
+##' @param envir An environment in which the expression is evaluated.
 ##' @name packrat-external
 ##' @rdname packrat-external
 ##' @examples \dontrun{
@@ -26,7 +27,6 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
     tryCatch({
       ## Record the search path, then load the libraries
       oldSearch <- search()
-
       ## This will be NULL when not in packrat mode -- but then this implies
       ## we should use the user library anyway, so this is fine
       origLibPaths <- .packrat_mutables$get("origLibPaths")

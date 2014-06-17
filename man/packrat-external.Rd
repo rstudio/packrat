@@ -14,6 +14,8 @@ extlib(packages)
 the duration of evaluation of \code{expr}.}
 
 \item{expr}{An \R expression.}
+
+\item{envir}{An environment in which the expression is evaluated.}
 }
 \description{
 These functions provide a mechanism for (temporarily) using packages outside of the
