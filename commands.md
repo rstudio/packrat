@@ -16,11 +16,8 @@ use most often. You can find more detailed documentation by typing
 For more background on how these commands fit into the packrat workflow, see
 [the walkthrough](walkthrough.html).
 
-    packrat::init()
-
-Initializes the current working directory as a Packrat project. This creates
-the supporting files and directories listed below in "Anatomy of a Packrat
-project", including a private library and snapshot.
+- `packrat::init()`: Initializes the current working directory as a Packrat
+  project.
 
 When you want to manage the state of your private library, you can use the
 Packrat functions:
