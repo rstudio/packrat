@@ -3,60 +3,97 @@ layout: home
 title: Packrat by example
 ---
 
-This tutorial will walk you through some of the most common tasks you'll want to do with packrat, and explain the fundamental concepts behind the package on the way.
+This tutorial will walk you through some of the most common tasks you'll want
+to do with packrat, and explain the fundamental concepts behind the package on
+the way.
 
 ## First things first
 
-You're getting ready to start a new project, so you create a new directory that will eventually contain all the .R scripts, CSV data, and other files that are needed for this particular project.
+You're getting ready to start a new project, so you create a new directory that
+will eventually contain all the .R scripts, CSV data, and other files that are
+needed for this particular project.
 
-You know you're going to need to make use of several R packages over the course of this project. So before you write your first line of code, set up the project directory to use packrat (an operation we call **bootstrap**):
+You know you're going to need to make use of several R packages over the course
+of this project. So before you write your first line of code, set up the
+project directory to use Packrat with `packrat::init`:
 
-    > packrat::bootstrap("~/projects/babynames")
+    > packrat::init("~/projects/babynames")
     Adding these packages to packrat:
-                _      
-        packrat   0.1.0
+                _         
+        packrat   0.2.0.123
 
-    Fetching sources for packrat (0.1.0) ... OK (Github)
-    Snapshot written to /home/jmcphers/projects/babynames/packrat.lock 
-    Installing packrat (0.1.0) ... OK (copied local binary)
-    Packrat startup directives installed. Please quit and restart your R session.
+    Fetching sources for packrat (0.2.0.123) ... OK (GitHub)
+    Snapshot written to '/Users/kevin/projects/babynames/packrat/packrat.lock'
+    Installing packrat (0.2.0.123) ... OK (built source)
+    init complete!
+    Packrat mode on. Using library in directory:
+    - "~/projects/babynames/packrat/lib" 
 
-(Tip: If the current working directory is the project directory, you can omit the path.)
+(Tip: If the current working directory is the project directory, you can omit
+the path.)
 
-If `bootstrap` completes successfully, you'll see a message telling you to restart R. Do that, making sure that you're starting in the project directory ([see instructions](starting.html)); in fact, you're going to need to start in the project directory every time from now on for packrat to work.
+After initializing the project, you will be placed into packrat mode in the
+project directory. You're ready to go!
 
-Now that you've restarted, you're no longer in an ordinary R project; you're in a packrat project. The main difference is that **a packrat project has its own private package library**. Any packages you install from inside a packrat project are only available to that project; and packages you install outside of the project are not available to the project. (except...)
+You're no longer in an ordinary R project; you're in a Packrat project. The
+main difference is that **a packrat project has its own private package
+library**. Any packages you install from inside a packrat project are only
+available to that project; and packages you install outside of the project are
+not available to the project.
 
-This is what we mean by "isolation" and it's Very Good Thing, as it means that upgrading a package for one project won't break a totally different project that just happens to reside on the same machine, even if that package contained incompatible changes.
+This is what we mean by "isolation" and it's Very Good Thing, as it means that
+upgrading a package for one project won't break a totally different project
+that just happens to reside on the same machine, even if that package contained
+incompatible changes.
 
-A packrat project contains a few extra files and directories. The `bootstrap()` function creates these files for you, if they don't already exist.
+A packrat project contains a few extra files and directories. The `init()`
+function creates these files for you, if they don't already exist.
 
-* **`library/`:** Private package library for this project.
-* **`packrat.lock`:** Lists the precise package versions that were used to satisfy dependencies, including dependencies of dependencies. (This file should never be edited by hand!)
-* **`packrat.sources/`:** Source packages of all the dependencies that packrat has been made aware of.
-* **`.Rprofile` and `.Renviron`:** Directs R to use the private package library (when it is started from the project directory).
+* **`packrat/packrat.lock`:** Lists the precise package versions that were used
+  to satisfy dependencies, including dependencies of dependencies. (This file
+  should never be edited by hand!)
+* **`packrat/packrat.opts`:** Project-specific packrat options. These can be
+  queried and set with `get_opts` and `set_opts`; see `?"packrat-options"` for
+  more information.
+* **`packrat/lib/`:** Private package library for this project.
+* **`packrat/src/`:** Source packages of all the dependencies that packrat has
+  been made aware of.
+* **`.Rprofile`:** Directs R to use the private package library (when it is
+  started from the project directory).
 
 ## Adding, removing, and updating packages
 
-Adding a package in a packrat project is easy. The first step is to start R inside your packrat project, and install the package however you normally do; usually that means either the `install.packages()` function or the "Install Packages" button in your favorite R IDE. Let's do this now, with the `reshape2` package.
+Adding a package in a Packrat project is easy. The first step is to start R
+inside your Packrat project, and install the package however you normally do;
+usually that means either the `install.packages()` function or the "Install
+Packages" button in your favorite R IDE. Let's do this now, with the `reshape2`
+package.
 
     > install.packages("reshape2")
 
-If you completed the previous steps correctly, you just installed the `reshape2` package from CRAN into your project's private package library. Let's see if packrat notices the new package we installed.
+If you completed the previous steps correctly, you just installed the
+`reshape2` package from CRAN into your project's private package library. Let's
+see if packrat notices the new package we installed.
 
     > packrat::status()
     The following packages are installed but not needed:
-                 _      
-        plyr       1.8  
-        reshape2   1.2.2
-        stringr    0.6.2
+                 _       
+        plyr       1.8.1 
+        Rcpp       0.11.2
+        reshape2   1.4   
+        stringr    0.6.2 
+
     Use packrat::clean() to remove them. Or, if they are actually needed
     by your project, add `library(packagename)` calls to a .R file
     somewhere in your project.
 
-Not only does it detect `reshape2`, but the packages that `reshape2` itself depends on as well.
+Not only does it detect `reshape2`, but the packages that `reshape2` itself
+depends on as well.
 
-But notice these packages are "installed but not needed". That's because packrat only considers packages that appear in `library()` or `require()` calls in your \*.R script files to be used by the project. Let's satisfy packrat by creating a `babynames.R` file, and put this single line in it:
+But notice these packages are "installed but not needed". That's because
+packrat only considers packages that appear in `library()` or `require()` calls
+in your \*.R script files to be used by the project. Let's satisfy packrat by
+creating a `babynames.R` file, and put this single line in it:
 
     library(reshape2)
 
@@ -64,12 +101,13 @@ Now let's check the status again.
 
     > packrat::status()
 
-    The following packages have been updated in your library, but have not
-    been recorded in packrat:
+    The following packages have been updated in your library, but have not been recorded in packrat:
                    library   packrat
-        plyr           1.8        NA
-        reshape2     1.2.2        NA
+        plyr         1.8.1        NA
+        Rcpp        0.11.2        NA
+        reshape2       1.4        NA
         stringr      0.6.2        NA
+
     Use packrat::snapshot() to record these packages in packrat.
 
 That's better. Let's do what it says and call `snapshot()`.
@@ -77,98 +115,128 @@ That's better. Let's do what it says and call `snapshot()`.
     > packrat::snapshot()
 
     Adding these packages to packrat:
-                 _        
-        lattice    0.20-24
-        plyr       1.8    
-        reshape2   1.2.2  
-        stringr    0.6.2  
+                 _       
+        plyr       1.8.1 
+        Rcpp       0.11.2
+        reshape2   1.4   
+        stringr    0.6.2 
 
-    Fetching sources for lattice (0.20-24) ... OK (CRAN current)
-    Fetching sources for plyr (1.8) ... OK (CRAN current)
+    Fetching sources for plyr (1.8.1) ... OK (CRAN current)
+    Fetching sources for Rcpp (0.11.2) ... OK (CRAN current)
+    Fetching sources for reshape2 (1.4) ... OK (CRAN current)
     Fetching sources for stringr (0.6.2) ... OK (CRAN current)
-    Fetching sources for reshape2 (1.2.2) ... OK (CRAN current)
-    Snapshot written to /home/jmcphers/projects/babynames/packrat.lock 
-    Installing lattice... OK (built source)
+    Snapshot written to '/Users/kevin/projects/babynames/packrat/packrat.lock'
 
-When packrat takes a snapshot, it looks in the project's private package library for packages that have been added, modified, or removed since the last time `snapshot` was called. For packages that were added or modified, packrat attempts to go find the uncompiled _source package_ from CRAN, Bioconductor, or GitHub (caveat: only for packages that were installed using `devtools` version 1.4 or later), and save them in the `packrat.sources` project subdirectory. It also records metadata about each package in a `packrat.lock` file.
+When packrat takes a snapshot, it looks in the project's private package
+library for packages that have been added, modified, or removed since the last
+time `snapshot` was called. For packages that were added or modified, packrat
+attempts to go find the uncompiled _source package_ from CRAN, BioConductor, or
+GitHub (caveat: only for packages that were installed using `devtools` version
+1.4 or later), and save them in the `packrat/src` project subdirectory. It
+also records metadata about each package in the `packrat.lock` file.
 
-Because we save source packages for all of your dependencies, packrat makes your project more **reproducible**. When someone else wants to run your project--even if that someone else is you, years in the future, dusting off some old backups--they won't need to try to figure out what versions of what packages you were running, and where you got them.
+Because we save source packages for all of your dependencies, packrat makes
+your project more **reproducible**. When someone else wants to run your
+project--even if that someone else is you, years in the future, dusting off
+some old backups--they won't need to try to figure out what versions of what
+packages you were running, and where you got them.
 
 ## Restoring snapshots
 
-Once your project has a snapshot, you can easily install the packages from that snapshot into your private library at any time.
+Once your project has a snapshot, you can easily install the packages from that
+snapshot into your private library at any time.
 
-You'll need to do this, for example, when copying the project to a new computer, especially to one with a different operating system. Let's simulate this by exiting R and then deleting the `library` subdirectory in your project. Then launch R from your project directory again.
+You'll need to do this, for example, when copying the project to a new
+computer, especially to one with a different operating system. Let's simulate
+this by exiting R and then deleting the `library` subdirectory in your project.
+Then launch R from your project directory again.
 
-As R starts, you should be greeted with a message like this:
+Packrat automates the whole process for you -- upon restarting R in this
+directory, you should see the following output:
 
-    Creating private package library at
-    /home/jmcphers/projects/babynames/library/x86_64-pc-linux-gnu/3.0.2
-    Packrat needs to install the packages this project depends on. Run
-    initPackrat() to get started.
-
-Go ahead and run `initPackrat()` as it directs. `initPackrat` is responsible for installing the packrat package itself into the private package library, and then calling `packrat::restore()` to install the rest of the snapshotted packages.
-
-    > initPackrat()
-    Initializing packrat... OK
-    Installing lattice (0.20-24) ... OK (built source)
-    Installing plyr (1.8) ... OK (built source)
+    Packrat is not installed in the local library -- attempting to bootstrap an installation...
+    > Installing packrat into project private library:
+    - '/Users/kevin/projects/babynames/packrat/lib/x86_64-apple-darwin13.1.0/3.2.0'
+    * installing *source* package ‘packrat’ ...
+    ** R
+    ** inst
+    ** preparing package for lazy loading
+    ** help
+    *** installing help indices
+    ** building package indices
+    ** testing if installed package can be loaded
+    * DONE (packrat)
+    > Attaching packrat
+    > Restoring library
+    Installing plyr (1.8.1) ... OK (built source)
+    Installing Rcpp (0.11.2) ... OK (built source)
+    Installing reshape2 (1.4) ... OK (built source)
     Installing stringr (0.6.2) ... OK (built source)
-    Installing reshape2 (1.2.2) ... OK (built source)
+    > Packrat bootstrap successfully completed. Entering packrat mode...
+    Packrat mode on. Using library in directory:
+    - "~/projects/babynames/packrat/lib"
 
-All of the packages in the snapshot have now been installed in your project's newly created private package library.
+
+All of the packages in the snapshot have now been installed in your project's
+newly created private package library.
 
     > packrat::status()
     Up to date.
 
-Another reason to restore from the packrat snapshot is if you remove a package that you later realize you still needed, or if one of your collaborators makes their own changes to the snapshot. In these cases, you can call `packrat::restore()` (as `initPackrat()` is only designed for cases where even packrat itself is not installed).
+Another reason to restore from the packrat snapshot is if you remove a package
+that you later realize you still needed, or if one of your collaborators makes
+their own changes to the snapshot. In these cases, you can call
+`packrat::restore()`.
 
 Let's remove the plyr package, and use `packrat::restore()` to bring it back.
 
     > remove.packages("plyr")
-    Removing package from
-    ‘/home/jmcphers/projects/babynames/library/x86_64-pc-linux-gnu/3.0.2’
+    Removing package from ‘/Users/kevin/projects/babynames/packrat/lib/x86_64-apple-darwin13.1.0/3.2.0’
     (as ‘lib’ is unspecified)
-    Changes made to this project's private library may need to be snapshotted.
-    Run packrat::status() to see differences since the last snapshot.
 
     > packrat::status()
 
-    The following packages are missing from your library, or are out of date:
-               packrat   library
-        plyr       1.8        NA
-    Use packrat::restore() to install/remove the appropriate packages.
+    The following packages are used in your code, tracked by packrat, but no longer present in your library:
+                from   to
+        plyr   1.8.1   NA
+
+    Use packrat::restore() to restore these libraries.
 
     > packrat::restore()
-    Installing plyr (1.8) ... OK (built source)
+    Installing plyr (1.8.1) ... OK (built source)
+
+<!--
 
 ## Collaboration (Git, SVN)
 
-Packrat is designed to work with your favorite source control system. When you use Packrat with source control, you can be sure you and your collaborators are all working with the same set of packages at the same versions. For this example we'll use Git, but the same principles apply to other source control systems.
+Packrat is designed to work with your favorite source control system. When you
+use Packrat with source control, you can be sure you and your collaborators are
+all working with the same set of packages at the same versions. For this
+example we'll use Git, but the same principles apply to other source control
+systems.
 
-When you add a Packrat project directory to source control, you'll add its support files too. These store the packages and snapshots needed to recreate the private package library. If your project is already under source control, you just need to add the new support files:
+When using Git, Packrat will automatically update the project's local `.gitignore` file to ignore the project local library; if you want to assert more fine-grained control, you can control whether your project library and / or sources are ignored by Git with the options:
 
+    > packrat::set_opts(vcs.ignore.lib = TRUE)
+    > packrat::set_opts(vcs.ignore.src = FALSE)
 
-    $ git add packrat.lock
-    $ git add packrat.sources/
-    $ git add .Rprofile
-    $ git add .Renviron
-    $ git commit -m "Add Packrat"
+Whenever you run `packrat::snapshot()`, Packrat will make changes to the
+`packrat.lock` file and sources in the `packrat/src/` directory. You'll
+want to include these changes with your commit. The snapshot that you take can
+then be applied by your collaborators so that their private libraries match
+yours.
 
-You can also commit the library itself, but it isn't necessary; as you saw above, Packrat can recreate the library. 
-
-Whenever you run `packrat::snapshot()`, Packrat will make changes to the `packrat.lock` file and sources in the `packrat.sources/` directory. You'll want to include these changes with your commit. The snapshot that you take can then be applied by your collaborators so that their private libraries match yours.
-
-Let's say you've just added another dependency to your project. As before, you run `packrat::snapshot()` to store this change:
+Let's say you've just added another dependency to your project. As before, you
+run `packrat::snapshot()` to store this change:
 
     > packrat::snapshot()
 
     Adding these packages to packrat:
-                 _        
-        chartreuse    1.07
+               _      
+        digest   0.6.4
 
-    Fetching sources for chartreuse (1.07) ... OK (CRAN current)
-    Snapshot written to /home/jmcphers/projects/babynames/packrat.lock 
+    Fetching sources for digest (0.6.4) ... OK (CRAN current)
+    Snapshot written to '/Users/kevin/projects/babynames/packrat/packrat.lock'
 
 Next, you check Git to see what's changed:
 
@@ -246,4 +314,4 @@ The best way to deal with this output is to *do the actions in the order suggest
 
 If you'd swapped the order of the first steps--that is, forced a snapshot as your first operation--you'd overwrite the snapshot your collaborator took, losing their changes.
 
-
+-->

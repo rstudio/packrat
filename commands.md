@@ -9,34 +9,46 @@ pre {
 }
 </style>
 
-The following is a list of the R functions in the packrat package that you'll use most often. You can find more detailed documentation by typing `help(package="packrat")` at the R console.
+The following is a list of the R functions in the packrat package that you'll
+use most often. You can find more detailed documentation by typing
+`help(package="packrat")` at the R console.
 
-For more background on how these commands fit into the packrat workflow, see [the walkthrough](walkthrough.html).
+For more background on how these commands fit into the packrat workflow, see
+[the walkthrough](walkthrough.html).
 
-    bootstrap(projDir = ".")
+    packrat::init()
 
-Initializes a regular R project directory as a packrat project. This creates the supporting files and directories listed below in "Anatomy of a packrat project", including a private library and snapshot. **You must restart your R session after running `bootstrap()` in order to use packrat.**
+Initializes the current working directory as a Packrat project. This creates
+the supporting files and directories listed below in "Anatomy of a Packrat
+project", including a private library and snapshot.
 
-    status(projDir = '.')
+When you want to manage the state of your private library, you can use the
+Packrat functions:
 
-Shows the differences between the project's packrat snapshot, its private package library, and its R scripts.
+- `packrat::snapshot()`: Save the current state of your library.
+- `packrat::restore()`: Restore the library state saved in the most recent
+  snapshot.
+- `packrat::clean()`: Remove unused packages from your library.
 
-These differences are created when you use the normal R package management commands like `install.packages()`, `update.packages()`, and `remove.packages()`. To bring these differences into packrat, you can use `snapshot()`.
+Share a Packrat project with `bundle` and `unbundle`:
 
-Differences can also arise if one of your collaborators adds or removes packages from the packrat snapshot. In this case, you simply need to tell packrat to update your private package library using `restore()`.
+- `packrat::bundle()`: Bundle a packrat project, for easy sharing.
+- `packrat::unbundle()`: Unbundle a packrat project, generating a project
+  directory with libraries restored.
 
-    snapshot(projDir = ".")
+Navigate projects and set/get options with:
 
-Stores the state of the private library (each package and its exact version) in packrat. 
+- `packrat::on()`, `packrat::off()`: Toggle packrat mode on and off, for navigating
+  between projects within a single R session.
+- `packrat::get_opts`, `packrat::set_opts`: Get/set project-specific settings.
 
-You'll need to call this after making changes to the private library as described above. Snapshotting your library makes it possible to restore to the snapshot later, and if you're sharing a project with someone else using a version control system, packrat can use the snapshot to mirror your library changes on your collaborator's library. 
+There are also utility functions for using and managing packages in the
+external / user library, and can be useful for leveraging packages in the user
+library that you might not want as project-specific dependencies, e.g.
+`devtools`, `knitr`, `roxygen2`:
 
-    restore(projDir = ".")
+- `packrat::extlib()`: Load an external package.
+- `packrat::with_extlib()`: With an external package, evaluate an expression. The
+  external package is loaded only for the duration of the evaluated
+  expression.
 
-Adds, removes, and changes packages installed in the private library so that they match the state of the most recent snapshot.
-
-You'll need to call this after copying a project onto a new machine, or if you're using version control (see section below) and someone else added a package that you don't have installed yet.
-
-    clean(projDir = ".")
-
-Removes any packages in the private library that aren't being referenced from .R files in the project.
