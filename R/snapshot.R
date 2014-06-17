@@ -1,7 +1,8 @@
 #' Capture and store the packages and versions in use
 #'
-#' Finds the packages in use by the R code in the project, and stores a list
+#' Finds the packages in use in the project, and stores a list
 #' of those packages, their sources, and their current versions in packrat.
+#'
 #' @param project The project directory. Defaults to current working
 #'   directory.
 #' @param available A database of available packages, as returned by
@@ -13,13 +14,6 @@
 #' @param source.packages A character vector of directories containing R
 #'   package sources. It is only necessary to supply this parameter when using a
 #'   package for which sources exist on neither CRAN or GitHub.
-#' @param orphan.check \code{TRUE} to check for orphaned packages; \code{FALSE}
-#'   to skip the check. Packrat only considers packages used by your code and
-#'   packages which are dependencies of packages used by your code. Any other
-#'   package in the private library is considered an orphan.  If the packages
-#'   are truly orphans, they can be removed with \code{\link{clean}}; if they
-#'   are not, you can make packrat aware that your project needs them by adding
-#'   a \code{require} statement to any R file.
 #' @param ignore.stale Stale packages are packages that are different from the
 #'   last snapshot, but were installed by packrat. Typically, packages become
 #'   stale when a new snapshot is available, but you haven't applied it yet with
@@ -41,6 +35,7 @@
 #' are working with a version control system, your collaborators can sync the
 #' changes to these files and then use \code{\link{restore}} to apply your
 #' snapshot.
+#'
 #' @seealso
 #' \code{\link{restore}} to apply a snapshot.
 #' \code{\link{status}} to view the differences between the most recent snapshot
@@ -61,7 +56,7 @@
 #' }
 #' @export
 snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project),
-                     source.packages = NULL, orphan.check = TRUE,
+                     source.packages = NULL,
                      ignore.stale = FALSE, dry.run = FALSE,
                      prompt = interactive()) {
 
@@ -82,7 +77,6 @@ snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project)
   source.packages <- getSourcePackageInfo(source.packages)
   snapshotResult <- snapshotImpl(project, available, lib.loc,
                                  source.packages, dry.run,
-                                 orphan.check = orphan.check,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run)
   if (dry.run) return(invisible(snapshotResult))
@@ -105,42 +99,56 @@ snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project)
 
 }
 
-snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
-                         source.packages = NULL, dry.run = FALSE,
-                         orphan.check = FALSE, ignore.stale = FALSE,
+snapshotImpl <- function(project,
+                         available = NULL,
+                         lib.loc = libDir(project),
+                         source.packages = NULL,
+                         dry.run = FALSE,
+                         ignore.stale = FALSE,
                          prompt = interactive(),
                          auto.snapshot = FALSE,
                          verbose = TRUE) {
-  lockPackages <- lockInfo(project, fatal=FALSE)
 
-  # Get the package records for dependencies of the app. It's necessary to
-  # include setLibPaths in the list of library locations because it's possible that
-  # the user installed a package that relies on a recommended package, which
-  # would be used by the app but not present in the private library.
-  appPackages <- getPackageRecords(sort(appDependencies(project)),
-                                   available,
-                                   source.packages,
-                                   lib.loc = unique(c(lib.loc, getLibPaths())),
-                                   missing.package=function(package, lib.loc) {
-                                     NULL
-                                   })
-  appPackagesFlat <- flattenPackageRecords(appPackages, sourcePath = TRUE)
+  # When snapshotting, we take the union of:
+  #
+  # 1. Inferred dependencies (packages that appear to be in use in your code), and
+  # 2. The current state of your private library.
+  #
+  # When packages are inferred from the code, the version taken is the most
+  # current available in the current set of repositories.
+  libPkgs <- list.files(libDir(project))
+  inferredPkgs <- sort(appDependencies(project))
 
-  allLibPkgs <- row.names(installed.packages(lib.loc = lib.loc, noCache = TRUE))
+  inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
-  orphans <- setdiff(allLibPkgs, pkgNames(appPackagesFlat))
+  # Packages currently available in the library should have package records
+  # available, so we don't overload the missing.package argument of
+  # getPackageRecords and let it fail if something goes wrong
+  libPkgRecords <- getPackageRecords(libPkgs,
+                                     available = available,
+                                     source.packages = source.packages,
+                                     lib.loc = lib.loc)
 
-  if (orphan.check && verbose) {
-    on.exit({
-      prettyPrint(
-        getPackageRecords(orphans, NULL, source.packages = source.packages,
-                          recursive = FALSE, lib.loc = lib.loc),
-        '--\nThe following packages are orphaned (they are in your private library\nbut are not referenced from your R code).',
-        'You can remove them using packrat::clean(), or include them in packrat\nby adding a library or require call to your R code, and running\nsnapshot again.')
-    })
-  }
+  # Inferred packages _must_ be found either on CRAN, GitHub, or as part
+  # of the source.packages
+  inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
+                                          available = available,
+                                          source.packages = source.packages)
 
-  diffs <- diff(lockPackages, appPackages)
+  allRecords <- c(
+    libPkgRecords,
+    inferredPkgRecords
+  )
+
+  allRecordsFlat <- c(
+    flattenPackageRecords(libPkgRecords, depInfo = TRUE, sourcePath = TRUE),
+    flattenPackageRecords(inferredPkgRecords, depInfo = TRUE, sourcePath = TRUE)
+  )
+
+  # Compare the new records we wish to write against the current lockfile
+  # (last snapshot)
+  lockPackages <- lockInfo(project, fatal = FALSE)
+  diffs <- diff(lockPackages, allRecords)
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% diffs)
 
   if (!ignore.stale) {
@@ -163,7 +171,7 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
   }
 
   if (verbose) {
-    summarizeDiffs(diffs, lockPackages, appPackages,
+    summarizeDiffs(diffs, lockPackages, allRecords,
                    'Adding these packages to packrat:',
                    'Removing these packages from packrat:',
                    'Upgrading these packages already present in packrat:',
@@ -174,7 +182,7 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
   if (all(is.na(diffs))) {
     if (!verbose) message("Already up to date.")
     if (is.null(lib.loc) ||
-          all(installedByPackrat(pkgNames(appPackagesFlat), lib.loc, FALSE))) {
+          all(installedByPackrat(pkgNames(allRecordsFlat), lib.loc, FALSE))) {
       # If none of the packages/versions differ, and all of the packages in the
       # private library were installed by packrat, then we can short-circuit.
       # If the package/versions differ, we obviously need to continue, so we can
@@ -186,7 +194,7 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
   }
 
   ## For use by automatic snapshotting -- only perform the automatic snapshot
-  ## if it's a 'safe' action
+  ## if it's a 'safe' action; ie, escape early if we would have prompted
   if (mustConfirm && auto.snapshot) return(invisible())
 
   if (prompt && mustConfirm) {
@@ -198,10 +206,10 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
   }
 
   if (!dry.run) {
-    snapshotSources(project, activeRepos(project), appPackagesFlat)
+    snapshotSources(project, activeRepos(project), allRecordsFlat)
     writeLockFile(
       lockFilePath(project),
-      appPackages
+      allRecords
     )
     if (verbose) {
       message('Snapshot written to ',
@@ -209,9 +217,9 @@ snapshotImpl <- function(project, available = NULL, lib.loc = libDir(project),
       )
     }
   }
-  return(invisible(list(pkgRecords = lockPackages,
+  return(invisible(list(pkgRecords = allRecordsFlat,
                         actions = diffs[!is.na(diffs)],
-                        pkgsSnapshot = appPackages)))
+                        pkgsSnapshot = allRecords)))
 }
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the

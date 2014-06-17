@@ -4,8 +4,8 @@
 \title{Capture and store the packages and versions in use}
 \usage{
 snapshot(project = NULL, available = NULL, lib.loc = libDir(project),
-  source.packages = NULL, orphan.check = TRUE, ignore.stale = FALSE,
-  dry.run = FALSE, prompt = interactive())
+  source.packages = NULL, ignore.stale = FALSE, dry.run = FALSE,
+  prompt = interactive())
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
@@ -22,14 +22,6 @@ associated with the given directory.}
 \item{source.packages}{A character vector of directories containing R
 package sources. It is only necessary to supply this parameter when using a
 package for which sources exist on neither CRAN or GitHub.}
-
-\item{orphan.check}{\code{TRUE} to check for orphaned packages; \code{FALSE}
-to skip the check. Packrat only considers packages used by your code and
-packages which are dependencies of packages used by your code. Any other
-package in the private library is considered an orphan.  If the packages
-are truly orphans, they can be removed with \code{\link{clean}}; if they
-are not, you can make packrat aware that your project needs them by adding
-a \code{require} statement to any R file.}
 
 \item{ignore.stale}{Stale packages are packages that are different from the
 last snapshot, but were installed by packrat. Typically, packages become
@@ -50,7 +42,7 @@ if a snapshot were performed, and prints them to the console.}
   being present in the last snapshot.}
 }
 \description{
-Finds the packages in use by the R code in the project, and stores a list
+Finds the packages in use in the project, and stores a list
 of those packages, their sources, and their current versions in packrat.
 }
 \note{

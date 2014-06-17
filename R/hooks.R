@@ -51,7 +51,6 @@ buildSnapshotHookCall <- function(project) {
 
   snapshotArgs <- paste(sep = ", ",
                         peq("project", shQuote(project)),
-                        peq("orphan.check", "FALSE"),
                         peq("auto.snapshot", "TRUE"),
                         peq("verbose", "FALSE")
   )
