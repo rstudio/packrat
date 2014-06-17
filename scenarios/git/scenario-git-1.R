@@ -38,6 +38,6 @@ git("push --set-upstream origin master")
 setwd(bettyDir)
 git("clone", repoGitDir, ".")
 git("checkout master")
-packrat::on() # a init is forced now
+packrat::on() # an init is forced now
 print(getNamespaceInfo("packrat", "path")) ## are we using the project local packrat?
 packrat::status()
