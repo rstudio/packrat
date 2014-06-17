@@ -24,11 +24,41 @@ local({
   ## Install packrat into local project library
   packratSrcPath <- list.files(full.names = TRUE,
     file.path("packrat", "src", "packrat")
-  )[1]
+  )
 
   if (!length(packratSrcPath)) {
-    stop("Could not find a local packrat source tarball to install; cannot bootstrap packrat")
+
+    message("> No source tarball of packrat available locally")
+
+    ## There are no packrat sources available -- try using a version of
+    ## packrat installed in the user library to bootstrap
+    if (requireNamespace("packrat", quietly = TRUE) && packageVersion("packrat") >= "0.2.0.99") {
+      message("> Using user-library packrat (",
+              packageVersion("packrat"),
+              ") to bootstrap this project")
+    } else if (requireNamespace("devtools", quietly = TRUE)) {
+      message("> Attempting to use devtools::install_github to install ",
+              "a temporary version of packrat")
+      library(stats) ## for setNames
+      devtools::install_github("rstudio/packrat")
+    } else {
+      stop("Unable to locate a suitable version of packrat for bootstrapping this project.")
+    }
+
+    # Restore the project, unload the temporary packrat, and load the private packrat
+    packrat::restore(prompt = FALSE, restart = TRUE)
+    unloadNamespace("packrat")
+    requireNamespace("packrat", lib.loc = libDir, quietly = TRUE)
+    return(packrat::on())
+
   }
+
+  if (length(packratSrcPath) > 1) {
+    warning("Multiple versions of packrat available in the source directory;",
+            "using packrat source:\n- ", shQuote(packratSrcPath))
+    packratSrcPath <- packratSrcPath[[1]]
+  }
+
 
   lib <- file.path("packrat", "lib", R.version$platform, getRversion())
   if (!file.exists(lib)) {
