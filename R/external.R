@@ -39,7 +39,7 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
       error <- try(res <- eval(call$expr, envir = envir), silent = TRUE)
 
       ## Now, propagate the error / result
-      if (exists("res")) {
+      if (exists("res", envir = environment(), inherits = FALSE)) {
         res
       } else {
         stop(attr(error, "condition")$message, call. = FALSE)
