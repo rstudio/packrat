@@ -164,3 +164,8 @@ prettyLibDir <- function(project = NULL) {
     project <- gsub(homeDir, "~/", project, fixed = TRUE)
   file.path(project, .packrat$packratFolderName, "lib")
 }
+
+userLib <- function() {
+  unlist(strsplit(Sys.getenv("R_LIBS_USER"),
+                  .Platform$path.sep))[1L]
+}
