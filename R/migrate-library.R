@@ -18,7 +18,8 @@ checkDirtySystemLibrary <- function() {
 checkNeedsLibraryMigration <- function() {
 
   ## We'll silently create the user library if necessary
-  if (!file.exists(userLib()))
+  userLib <- userLib()
+  if (!file.exists(userLib))
     dir.create(userLib, recursive = TRUE)
 
   shouldRun <- checkDirtySystemLibrary() && is.windows()
@@ -32,8 +33,6 @@ checkNeedsLibraryMigration <- function() {
       "in the system library.\n\nPlease delete and reinstall the following packages:\n- ",
       paste(pkgsToMigrate, collapse = ", ")
     ))
-    userLib <- unlist(strsplit(Sys.getenv("R_LIBS_USER"),
-                               .Platform$path.sep))[1L]
 
     if (!file.exists(userLib)) {
       dir.create(userLib, recursive = TRUE)
