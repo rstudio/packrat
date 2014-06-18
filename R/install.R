@@ -531,7 +531,9 @@ system_check <- function(cmd, args = character(), env = character(),
 
   status <- attr(result, "status")
   if (!is.null(status) && !(status == 0)) {
-    stopMsg <- paste0("Command failed (", status, ")\n\nThe command failed with output:\n", paste(result, collapse = "\n"))
+    stopMsg <- paste0("Command failed (", status, ")",
+      "\n\nThe command failed with output:\n",
+      paste(result, collapse = "\n"))
     stop(stopMsg, call. = FALSE)
   }
 
