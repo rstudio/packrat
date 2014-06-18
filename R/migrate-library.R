@@ -39,7 +39,7 @@ checkNeedsLibraryMigration <- function() {
       dir.create(userLib, recursive = TRUE)
     }
 
-    message("You can perform this action by calling 'packrat::migrate_windows()'.")
+    # message("You can perform this action by calling 'packrat::migrate_windows()'.")
     pkgsToMigrate
   }
 
