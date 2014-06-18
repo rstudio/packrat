@@ -20,7 +20,7 @@ local({
   message("Packrat is not installed in the local library -- ",
     "attempting to bootstrap an installation...")
 
-  Sys.setenv("R_PACKRAT_NEEDS_BOOTSTRAP")
+  Sys.setenv("R_PACKRAT_NEEDS_BOOTSTRAP" = "1")
 
   ## We need utils for the following to succeed -- there are calls to functions
   ## in 'restore' that are contained within utils. utils gets loaded at the
