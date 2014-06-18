@@ -217,7 +217,7 @@ snapshotImpl <- function(project,
       )
     }
   }
-  return(invisible(list(pkgRecords = allRecordsFlat,
+  return(invisible(list(pkgRecords = lockPackages,
                         actions = diffs[!is.na(diffs)],
                         pkgsSnapshot = allRecords)))
 }
