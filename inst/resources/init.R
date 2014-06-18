@@ -16,6 +16,8 @@ local({
   message("Packrat is not installed in the local library -- ",
     "attempting to bootstrap an installation...")
 
+  Sys.setenv("R_PACKRAT_NEEDS_BOOTSTRAP")
+
   ## We need utils for the following to succeed -- there are calls to functions
   ## in 'restore' that are contained within utils. utils gets loaded at the
   ## end of start-up anyhow, so this should be fine
@@ -26,6 +28,7 @@ local({
     file.path("packrat", "src", "packrat")
   )
 
+  ## No packrat tarballs available locally -- try some other means of installation
   if (!length(packratSrcPath)) {
 
     message("> No source tarball of packrat available locally")
@@ -36,23 +39,43 @@ local({
       message("> Using user-library packrat (",
               packageVersion("packrat"),
               ") to bootstrap this project")
-    } else if (requireNamespace("devtools", quietly = TRUE)) {
+    }
+
+    ## Couldn't find a user-local packrat -- try finding and using devtools
+    ## to install
+    else if (requireNamespace("devtools", quietly = TRUE)) {
       message("> Attempting to use devtools::install_github to install ",
               "a temporary version of packrat")
       library(stats) ## for setNames
       devtools::install_github("rstudio/packrat")
-    } else {
-      stop("Unable to locate a suitable version of packrat for bootstrapping this project.")
+    }
+
+    ## Try downloading packrat from CRAN if available
+    else if ("packrat" %in% rownames(available.packages())) {
+      message("> Installing packrat from CRAN")
+      install.packages("packrat")
+    }
+
+    ## Fail -- couldn't find an appropriate means of installing packrat
+    else {
+      stop("Could not automatically bootstrap packrat -- try running ",
+           "\"'install.packages('devtools'); devtools::install_github('rstudio/packrat')\"",
+           "and restarting R to bootstrap packrat.")
     }
 
     # Restore the project, unload the temporary packrat, and load the private packrat
     packrat::restore(prompt = FALSE, restart = TRUE)
+
+    ## This code path only reached if we didn't restart earlier
     unloadNamespace("packrat")
     requireNamespace("packrat", lib.loc = libDir, quietly = TRUE)
     return(packrat::on())
 
   }
 
+  ## Multiple packrat tarballs available locally -- try to choose one
+  ## TODO: read lock file and infer most appropriate from there; low priority because
+  ## after bootstrapping packrat a restore should do the right thing
   if (length(packratSrcPath) > 1) {
     warning("Multiple versions of packrat available in the source directory;",
             "using packrat source:\n- ", shQuote(packratSrcPath))
@@ -92,6 +115,9 @@ local({
   system(fullCmd)
 
   ## Tag the installed packrat so we know it's managed by packrat
+  ## TODO: should this be taking information from the lockfile? this is a bit awkward
+  ## because we're taking an un-annotated packrat source tarball and simply assuming it's now
+  ## an 'installed from source' version
 
   ## -- InstallAgent -- ##
   installAgent <- 'InstallAgent: packrat 0.2.0.124'
