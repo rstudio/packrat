@@ -1,5 +1,14 @@
 local({
 
+  ## Escape hatch to allow RStudio to handle initialization
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
+    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
+    setHook("rstudio.sessionInit", function() {
+      source("packrat/init.R")
+    })
+    return(invisible(NULL))
+  }
+
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
   if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
@@ -19,8 +28,6 @@ local({
 
   message("Packrat is not installed in the local library -- ",
     "attempting to bootstrap an installation...")
-
-  Sys.setenv("R_PACKRAT_NEEDS_BOOTSTRAP" = "1")
 
   ## We need utils for the following to succeed -- there are calls to functions
   ## in 'restore' that are contained within utils. utils gets loaded at the
@@ -154,6 +161,6 @@ local({
     packrat::on()
   }
 
-  Sys.unsetenv("R_PACKRAT_NEEDS_BOOTSTRAP")
+  Sys.unsetenv("RSTUDIO_PACKRAT_BOOTSTRAP")
 
 })
