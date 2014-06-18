@@ -523,18 +523,16 @@ system_check <- function(cmd, args = character(), env = character(),
     message()
   }
 
-  result <- suppressWarnings(with_envvar(env,
-                                         system(full, intern = quiet, ignore.stderr = quiet, ...)
+  # Capture any output from the system command, in case we wish to report it later
+  result <- suppressWarnings(with_envvar(
+    env,
+    system(paste(full, "2>&1"), intern = TRUE, ...)
   ))
 
-  if (quiet) {
-    status <- attr(result, "status") %||% 0
-  } else {
-    status <- result
-  }
-
-  if (!identical(as.character(status), "0")) {
-    stop("Command failed (", status, ")", call. = FALSE)
+  status <- attr(result, "status")
+  if (!is.null(status) && !(status == 0)) {
+    stopMsg <- paste0("Command failed (", status, ")\n\nThe command failed with output:\n", paste(result, collapse = "\n"))
+    stop(stopMsg, call. = FALSE)
   }
 
   invisible(TRUE)
