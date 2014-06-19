@@ -32,9 +32,10 @@ getPackageDependencies <- function(pkgs,
 
   }))
 
-  ## Don't worry about R, base, recommended packages
+  ## Exclude base packages only -- recommended packages are available on CRAN
   ip <- installed.packages()
-  basePkgs <- rownames(ip)[!is.na(ip[, "Priority"])]
+  priority <- ip[, "Priority"]
+  basePkgs <- rownames(ip)[priority %in% "base"]
   deps <- setdiff(deps, c("R", basePkgs))
   if (is.null(deps)) NULL
   else sort(unique(deps))
