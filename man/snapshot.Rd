@@ -3,18 +3,15 @@
 \alias{snapshot}
 \title{Capture and store the packages and versions in use}
 \usage{
-snapshot(project = NULL, available = NULL, lib.loc = libDir(project),
-  source.packages = NULL, ignore.stale = FALSE, dry.run = FALSE,
-  prompt = interactive())
+snapshot(project = NULL, available = available.packages(),
+  lib.loc = libDir(project), source.packages = NULL, ignore.stale = FALSE,
+  dry.run = FALSE, prompt = interactive())
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
 directory.}
 
-\item{available}{A database of available packages, as returned by
-\code{\link{available.packages}}. It is only necessary to supply this
-parameter if the state being snapshotted includes packages not installed
-locally, which is rare.}
+\item{available}{A database of available packages.}
 
 \item{lib.loc}{The library to snapshot. Defaults to the private library
 associated with the given directory.}

@@ -5,10 +5,7 @@
 #'
 #' @param project The project directory. Defaults to current working
 #'   directory.
-#' @param available A database of available packages, as returned by
-#'   \code{\link{available.packages}}. It is only necessary to supply this
-#'   parameter if the state being snapshotted includes packages not installed
-#'   locally, which is rare.
+#' @param available A database of available packages.
 #' @param lib.loc The library to snapshot. Defaults to the private library
 #'   associated with the given directory.
 #' @param source.packages A character vector of directories containing R
@@ -55,8 +52,8 @@
 #' ))
 #' }
 #' @export
-snapshot <- function(project = NULL, available = NULL, lib.loc = libDir(project),
-                     source.packages = NULL,
+snapshot <- function(project = NULL, available = available.packages(),
+                     lib.loc = libDir(project), source.packages = NULL,
                      ignore.stale = FALSE, dry.run = FALSE,
                      prompt = interactive()) {
 
