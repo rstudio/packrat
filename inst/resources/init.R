@@ -23,7 +23,12 @@ local({
     } else {
       print.banner <- FALSE
     }
-    return(packrat::on(print.banner = print.banner))
+
+    # Cache the available packages for faster packrat status readouts
+    result <- packrat::on(print.banner = print.banner)
+    packrat:::cacheAvailablePackages()
+    return(result)
+
   }
 
   message("Packrat is not installed in the local library -- ",
