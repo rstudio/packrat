@@ -165,6 +165,9 @@ afterPackratModeOn <- function(project,
     options(repos = repos)
   }
 
+  # Update settings
+  updateSettings(project = project)
+
   invisible(getLibPaths())
 
 }
