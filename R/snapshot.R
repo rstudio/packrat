@@ -97,7 +97,7 @@ snapshot <- function(project = NULL, available = available.packages(),
 }
 
 snapshotImpl <- function(project,
-                         available = NULL,
+                         available = available.packages(),
                          lib.loc = libDir(project),
                          source.packages = NULL,
                          dry.run = FALSE,
