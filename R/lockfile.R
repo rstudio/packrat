@@ -48,8 +48,7 @@ writeLockFile <- function(file, lockinfo) {
   stopifnot(nrow(preamble) == 1)
 
   # Remaining records are about the packages
-  packages <- lockinfo
-  # packages <- flattenPackageRecords(lockinfo, depInfo=TRUE, sourcePath=TRUE)
+  packages <- flattenPackageRecords(lockinfo, depInfo=TRUE, sourcePath=TRUE)
   fieldNames <- collectFieldNames(packages)
   packageInfo <- lapply(fieldNames, function(fieldName) {
     values <- data.frame(vapply(packages, function(pkg) {
