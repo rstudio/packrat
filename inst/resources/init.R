@@ -1,15 +1,5 @@
 local({
 
-  ## Escape hatch to allow RStudio to handle initialization
-  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
-      is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
-    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
-    setHook("rstudio.sessionInit", function() {
-      source("packrat/init.R")
-    })
-    return(invisible(NULL))
-  }
-
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
   if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
@@ -25,6 +15,16 @@ local({
       print.banner <- FALSE
     }
     return(packrat::on(print.banner = print.banner))
+  }
+
+  ## Escape hatch to allow RStudio to handle initialization
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
+        is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
+    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
+    setHook("rstudio.sessionInit", function() {
+      source("packrat/init.R")
+    })
+    return(invisible(NULL))
   }
 
   message("Packrat is not installed in the local library -- ",
