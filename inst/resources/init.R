@@ -1,7 +1,8 @@
 local({
 
   ## Escape hatch to allow RStudio to handle initialization
-  if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
+      is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
     Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
     setHook("rstudio.sessionInit", function() {
       source("packrat/init.R")
