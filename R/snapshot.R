@@ -206,7 +206,7 @@ snapshotImpl <- function(project,
     snapshotSources(project, activeRepos(project), allRecordsFlat)
     writeLockFile(
       lockFilePath(project),
-      allRecords
+      allRecordsFlat
     )
     if (verbose) {
       message('Snapshot written to ',
