@@ -14,7 +14,12 @@ local({
     } else {
       print.banner <- FALSE
     }
-    return(packrat::on(print.banner = print.banner))
+
+    # Cache the available packages for faster packrat status readouts
+    result <- packrat::on(print.banner = print.banner)
+    packrat:::cacheAvailablePackages()
+    return(result)
+
   }
 
   message("Packrat is not installed in the local library -- ",
@@ -124,7 +129,7 @@ local({
   ## an 'installed from source' version
 
   ## -- InstallAgent -- ##
-  installAgent <- 'InstallAgent: packrat 0.2.0.124'
+  installAgent <- 'InstallAgent: packrat 0.2.0.126'
 
   ## -- InstallSource -- ##
   installSource <- 'InstallSource: source'
