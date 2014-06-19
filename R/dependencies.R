@@ -108,7 +108,8 @@ yamlDeps <- function(yaml) {
   yaml <- paste(yaml, collapse = "\n")
   c(
     "rmarkdown",
-    "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml))]
+    "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml, perl = TRUE))],
+    "rticles"[any(grepl("rticles::", yaml, perl = TRUE))]
   )
 }
 
