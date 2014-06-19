@@ -49,8 +49,8 @@ recursivePackageDependencies <- function(pkgs, lib.loc,
   depsToCheck <- setdiff(deps, pkgs)
   while (length(depsToCheck)) {
     newDeps <- getPackageDependencies(depsToCheck, lib.loc, available.packages)
-    deps <- sort(unique(c(deps, newDeps)))
     depsToCheck <- setdiff(newDeps, deps)
+    deps <- sort(unique(c(deps, newDeps)))
   }
   if (is.null(deps)) NULL
   else sort(unique(deps))
