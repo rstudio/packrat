@@ -3,7 +3,7 @@
 ## Testing a package using a source package tarball
 PACKAGE_NAME="shinyPkg"
 cd ~/git
-R CMD build packrat && R CMD INSTALL packrat_0.2.0.100.tar.gz
+R CMD INSTALL packrat
 rm -rf ${PACKAGE_NAME}
 mkdir ${PACKAGE_NAME}
 cd ${PACKAGE_NAME}
