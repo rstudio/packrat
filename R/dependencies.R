@@ -98,7 +98,32 @@ fileDependencies <- function(file) {
   )
 }
 
-fileDependencies.knitr <- fileDependencies.Rmd <- fileDependencies.Rpres <- function(file) {
+hasYamlFrontMatter <- function(content) {
+  lines <- grep("^---\\s*$", content, perl = TRUE)
+  1 %in% lines && length(lines) >= 2
+}
+
+yamlDeps <- function(yaml) {
+  # Collapse with newlines -- makes regex parsing easier
+  yaml <- paste(yaml, collapse = "\n")
+  c(
+    "rmarkdown",
+    "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml))]
+  )
+}
+
+fileDependencies.Rmd <- function(file) {
+
+  # We need to check for and parse YAML frontmatter if necessary
+  yamlDeps <- NULL
+  content <- readLines(file)
+  if (hasYamlFrontMatter(content)) {
+    tripleDashes <- grep("^---\\s*$", content, perl = TRUE)
+    start <- tripleDashes[[1]]
+    end <- tripleDashes[[2]]
+    yamlDeps <- yamlDeps(content[(start + 1):(end - 1)])
+  }
+
   if (require("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
@@ -108,11 +133,19 @@ fileDependencies.knitr <- fileDependencies.Rmd <- fileDependencies.Rpres <- func
       message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
     })
-    fileDependencies.R(tempfile)
+    c(yamlDeps, fileDependencies.R(tempfile))
   } else {
     warning("knitr is required to parse dependencies but is not available")
-    character()
+    yamlDeps
   }
+}
+
+fileDependencies.knitr <- function(...) {
+  fileDependencies.Rmd(...)
+}
+
+fileDependencies.Rpres <- function(...) {
+  fileDependencies.Rmd(...)
 }
 
 fileDependencies.Rnw <- function(file) {
