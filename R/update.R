@@ -44,12 +44,10 @@ updateSettings <- function(project = NULL, options = NULL) {
   }
 
   # Set the repositories
-  lockFile <- readLockFile(file = lockFilePath(project))
-  repos <- character()
-
-  ## TODO -- this will change soon, but for now we just set the first repo (should be CRAN anyhow)
-  repos["CRAN"] <- lockFile$repos[[1]]
-  options('repos' = repos)
+  if (file.exists(lockFilePath(project))) {
+    lockFile <- readLockFile(file = lockFilePath(project))
+    options('repos' = lockFile$repos)
+  }
 
   invisible(TRUE)
 
