@@ -90,8 +90,8 @@ afterPackratModeOn <- function(project,
     unlink(oldLibDir, recursive = TRUE)
   }
 
-  # Try to initialize the project if there is no packrat directory
-  if (init && !file.exists(getPackratDir(project))) {
+  # Try to initialize the project if there is no lockfile
+  if (init && !file.exists(lockFilePath(project = project))) {
     init(project = project, restart = FALSE)
   }
 
