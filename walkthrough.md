@@ -20,11 +20,11 @@ project directory to use Packrat with `packrat::init`:
     > packrat::init("~/projects/babynames")
     Adding these packages to packrat:
                 _         
-        packrat   0.2.0.123
+        packrat   0.2.0.128
 
-    Fetching sources for packrat (0.2.0.123) ... OK (GitHub)
+    Fetching sources for packrat (0.2.0.128) ... OK (GitHub)
     Snapshot written to '/Users/kevin/projects/babynames/packrat/packrat.lock'
-    Installing packrat (0.2.0.123) ... OK (built source)
+    Installing packrat (0.2.0.128) ... OK (built source)
     init complete!
     Packrat mode on. Using library in directory:
     - "~/projects/babynames/packrat/lib" 
@@ -73,44 +73,7 @@ package.
 
 If you completed the previous steps correctly, you just installed the
 `reshape2` package from CRAN into your project's private package library. Let's
-see if packrat notices the new package we installed.
-
-    > packrat::status()
-    The following packages are installed but not needed:
-                 _       
-        plyr       1.8.1 
-        Rcpp       0.11.2
-        reshape2   1.4   
-        stringr    0.6.2 
-
-    Use packrat::clean() to remove them. Or, if they are actually needed
-    by your project, add `library(packagename)` calls to a .R file
-    somewhere in your project.
-
-Not only does it detect `reshape2`, but the packages that `reshape2` itself
-depends on as well.
-
-But notice these packages are "installed but not needed". That's because
-packrat only considers packages that appear in `library()` or `require()` calls
-in your \*.R script files to be used by the project. Let's satisfy packrat by
-creating a `babynames.R` file, and put this single line in it:
-
-    library(reshape2)
-
-Now let's check the status again.
-
-    > packrat::status()
-
-    The following packages have been updated in your library, but have not been recorded in packrat:
-                   library   packrat
-        plyr         1.8.1        NA
-        Rcpp        0.11.2        NA
-        reshape2       1.4        NA
-        stringr      0.6.2        NA
-
-    Use packrat::snapshot() to record these packages in packrat.
-
-That's better. Let's do what it says and call `snapshot()`.
+take a snapshot to save the changes in Packrat:
 
     > packrat::snapshot()
 
@@ -126,6 +89,10 @@ That's better. Let's do what it says and call `snapshot()`.
     Fetching sources for reshape2 (1.4) ... OK (CRAN current)
     Fetching sources for stringr (0.6.2) ... OK (CRAN current)
     Snapshot written to '/Users/kevin/projects/babynames/packrat/packrat.lock'
+
+If you have automatic snapshots turned on, Packrat will record package upgrades
+and additions in the background, so you don't even need to remember to call
+`::snapshot()` manually unless you're performing a less common action.
 
 When packrat takes a snapshot, it looks in the project's private package
 library for packages that have been added, modified, or removed since the last
@@ -204,4 +171,43 @@ Let's remove the plyr package, and use `packrat::restore()` to bring it back.
 
     > packrat::restore()
     Installing plyr (1.8.1) ... OK (built source)
+
+## Cleaning up
+
+Package libraries can grow over time to include many packages that were needed
+at one time but are no longer used. Packrat can analyze your code and try to
+determine which packages you're using so you can keep your library tidy. Let's
+take a look at `::status()` again:
+
+    > packrat::status()
+    The following packages are installed but not needed:
+                 _       
+        plyr       1.8.1 
+        Rcpp       0.11.2
+        reshape2   1.4   
+        stringr    0.6.2 
+
+    Use packrat::clean() to remove them. Or, if they are actually needed
+    by your project, add `library(packagename)` calls to a .R file
+    somewhere in your project.
+
+Notice these packages are "installed but not needed". Packrat attempts to
+ascertain which packages your project needs by analyzing the \*.R script files
+in your project and looking for calls like `library()` and `require()`. 
+
+Our sample project doesn't have any R code yet, so Packrat isn't aware that we
+need any packages. Let's add some code that depends on the packages. Create a
+.R file in your project directory with the following contents and save it:
+
+    library(reshape2)
+
+Now let's take another look at `::status()`:
+
+    > packrat::status()
+    Up to date.
+
+Of course, if we were actually finished with the packages, we'd have used
+`packrat::clean()` to remove them.
+
+
 
