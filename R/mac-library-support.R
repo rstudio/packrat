@@ -4,7 +4,11 @@ symlinkSystemPackages <- function(project = NULL) {
 
   ## Get the system packages
   sysPkgs <- utils::installed.packages(.Library)
-  sysPkgsBase <- sysPkgs[!is.na(sysPkgs[, "Priority"]), ]
+
+  ## Only symlink 'base' packages -- recommended packages are available on CRAN,
+  ## and although R is distributed with certain versions of base packages, these
+  ## can be updated (and we want access to repos) for these
+  sysPkgsBase <- sysPkgs[sysPkgs[, "Priority"] %in% "base", ]
   sysPkgNames <- rownames(sysPkgsBase)
 
   ## Make a directory where we can symlink these libraries
