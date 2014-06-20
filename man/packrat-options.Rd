@@ -34,6 +34,8 @@ Get and set options for the current packrat-managed project.
 \item \code{print.banner.on.startup}:
   Print the banner on startup? Can be one of \code{TRUE} (always print),
   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
+\item \code{external.packages}:
+  Packages which should be loaded from the user library upon entering packrat mode.
 }
 }
 

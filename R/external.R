@@ -69,3 +69,9 @@ extlib <- function(packages) {
     library(package, character.only = TRUE, lib.loc = lib.loc)
   }
 }
+
+loadExternalPackages <- function() {
+  pkgs <- get_opts("external.packages")
+  pkgs <- pkgs[ !is.null(pkgs) & !is.na(pkgs) & nchar(pkgs) ]
+  for (pkg in pkgs) extlib(pkg)
+}
