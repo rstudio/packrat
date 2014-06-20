@@ -52,8 +52,8 @@ Share a Packrat project with `bundle` and `unbundle`:
   directory with libraries restored.
 
 Navigate projects and set/get options with:
-- `packrat::packrat_mode()`: Toggle packrat mode on and off, for navigating
-  between projects within a single R session.
+- `packrat::on()`, `packrat::off()`: Toggle packrat mode on and off, for
+  navigating between projects within a single R session.
 - `packrat::get_opts`, `packrat::set_opts`: Get/set project-specific settings.
 
 There are also utility functions for using and managing packages in the
