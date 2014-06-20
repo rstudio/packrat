@@ -15,6 +15,7 @@
 ##'
 ##' @param project The project directory.
 ##' @param ask Boolean, ask before removing the \code{.Renviron} file?
+##' @export
 migrate <- function(project = ".", ask = TRUE) {
 
   owd <- getwd()
