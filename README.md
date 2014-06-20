@@ -18,6 +18,9 @@ Use packrat to make your R projects more:
 See the [project page](http://rstudio.github.io/packrat/) for more information,
 or join the discussion at
 [packrat-discuss](https://groups.google.com/forum/#!forum/packrat-discuss).
+Read the [release
+notes](https://github.com/rstudio/packrat/blob/master/NEWS.md) to learn what's
+new in Packrat.
 
 # Quick-start Guide
 
