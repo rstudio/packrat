@@ -11,7 +11,7 @@ readLockFilePackages <- function(file) {
       name = x$Package,
       source = x$Source,
       version = x$Version,
-      requires = unlist(strsplit(x$Requires, ",[[:space:]]*", perl = TRUE))
+      requires = as.character(unlist(strsplit(as.character(x$Requires), ",[[:space:]]*", perl = TRUE)))
     )
   })
   names(result) <- lock[, "Package"]
