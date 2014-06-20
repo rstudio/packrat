@@ -97,7 +97,17 @@ snapshotImpl <- function(project,
   #
   # When packages are inferred from the code, the version taken is the most
   # current available in the current set of repositories.
-  libPkgs <- list.files(libDir(project))
+
+  ## If we are using packrat alongside an R package, then we should
+  ## ignore the package itself
+  if (file.exists(file.path(project, "DESCRIPTION"))) {
+    ignore <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
+  } else {
+    ignore <- NULL
+  }
+
+
+  libPkgs <- setdiff(list.files(libDir(project)), ignore)
   inferredPkgs <- sort(appDependencies(project))
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
