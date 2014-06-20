@@ -76,6 +76,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   inferredPkgNames <- appDependencies(project)
   inferredPkgRecords <- getPackageRecords(
     inferredPkgNames,
+    lib.loc = lib.loc,
     missing.package = function(package, lib.loc) NULL
   )
 
