@@ -78,22 +78,6 @@ snapshot <- function(project = NULL, available = available.packages(),
                                  prompt = prompt && !dry.run)
   if (dry.run) return(invisible(snapshotResult))
 
-  # Check to see if any of the packages we just snapshotted are not, in fact,
-  # located in the private library, and install them if necessary
-  appPackages <- snapshotResult$pkgsSnapshot
-  appPackageNames <- pkgNames(flattenPackageRecords(appPackages))
-  privatelyInstalled <- rownames(installed.packages(lib.loc, noCache=TRUE))
-  pkgsToInstall <- appPackageNames[!(appPackageNames %in% privatelyInstalled)]
-  for (pkgToInstall in pkgsToInstall) {
-    message("Installing ", pkgToInstall, "... ", appendLF = FALSE)
-    type <- installPkg(searchPackages(appPackages, pkgToInstall)[[1]],
-                       project, NULL, activeRepos(project), lib.loc)
-    message("OK (", type, ")")
-  }
-  for (pkgRecord in flattenPackageRecords(appPackages)) {
-    annotatePkgDesc(pkgRecord, project=project, lib=lib.loc)
-  }
-
 }
 
 snapshotImpl <- function(project,
