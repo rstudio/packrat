@@ -2,6 +2,10 @@ getPackageDependencies <- function(pkgs,
                                    lib.loc,
                                    available.packages = available.packages()) {
 
+  if (isPackratModeOn()) {
+    lockPkgs <- readLockFilePackages(file = lockFilePath())
+  }
+
   deps <- unlist(lapply(pkgs, function(pkg) {
     pkgDescFile <- system.file('DESCRIPTION', package = pkg,
                                lib.loc = lib.loc)
@@ -12,6 +16,10 @@ getPackageDependencies <- function(pkgs,
       # dependency list)
       theseDeps <- combineDcfFields(as.data.frame(readDcf(pkgDescFile)),
         c("Depends", "Imports", "LinkingTo"))
+    } else if (isPackratModeOn() && pkg %in% names(lockPkgs)) {
+      # if packrat mode is on, we'll also try reading dependencies from the lock file
+      theseDeps <- lockPkgs[[pkg]]$requires
+
     } else if (pkg %in% row.names(available.packages)) {
       # no locally installed version but we can check dependencies in the
       # package database
