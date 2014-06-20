@@ -72,6 +72,8 @@ extlib <- function(packages) {
 
 loadExternalPackages <- function() {
   pkgs <- get_opts("external.packages")
-  pkgs <- pkgs[ !is.null(pkgs) & !is.na(pkgs) & nchar(pkgs) ]
-  for (pkg in pkgs) extlib(pkg)
+  if (length(pkgs)) {
+    pkgs <- pkgs[ !is.null(pkgs) & !is.na(pkgs) & nchar(pkgs) ]
+    for (pkg in pkgs) extlib(pkg)
+  }
 }
