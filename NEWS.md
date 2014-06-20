@@ -1,4 +1,26 @@
-# Packrat 0.2.0.99 (Unreleased)
+# Packrat 0.2.0.99+ (Unreleased)
+
+- `.Rmd` files are now parsed for YAML dependencies (for
+  [`rmarkdown`](http://rmarkdown.rstudio.com/) dependencies)
+
+- Recommended packages (e.g. `lattice`) are now only taken as Packrat
+  dependencies if explicitly installed by the user -- for example, if you want
+  to include `lattice` (which is distributed with R, but updated on CRAN) in
+  Packrat, you must explicitly call `install.packages("lattice")` to get that
+  package into the private library.
+
+- `packrat::snapshot()` now takes `available.packages()` as a default argument
+  to `available`, assisting in dependency inference for packages inferred yet
+  not installed.
+
+- `packrat::snapshot()` now takes the state of the library, along with
+  dependencies inferred in the code, as 'truth' -- any packages installed or
+  inferred will now be entered into the lockfile on a `packrat::snapshot()`
+  call (with caveats for 'recommended' packages, e.g. `lattice`)
+
+- `packrat::snapshot()` no longer installs missing packages.
+
+- Failed `packrat::init`s now clean up any files / directories generated.
 
 - `packrat::bootstrap` has been renamed to `packrat::init` --
   `packrat::bootstrap` remains as a (deprecated) alias.
