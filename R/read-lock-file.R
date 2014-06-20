@@ -1,0 +1,19 @@
+# Read only package entries in the lock file, and do not expand package dependencies
+# Useful when a package + its requirements is of interest, and expansion of
+# sub-dependencies is unnecessary
+readLockFilePackages <- function(file) {
+
+  lock <- readDcf(file)[-1, ] # Drop the first row as it contains lockfile-specific info
+  result <- apply(lock, 1, function(x) {
+    x <- as.list(x)
+    list(
+      name = x$Package,
+      source = x$Source,
+      version = x$Version,
+      requires = unlist(strsplit(x$Requires, ",[[:space:]]*", perl = TRUE))
+    )
+  })
+  names(result) <- lock[, "Package"]
+  result
+
+}
