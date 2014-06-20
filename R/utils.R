@@ -111,7 +111,7 @@ pkgDescriptionDependencies <- function(file) {
   fields <- c("Depends", "Imports", "Suggests", "LinkingTo")
 
   if (!file.exists(file)) stop("no file '", file, "'")
-  DESCRIPTION <- readDcf("DESCRIPTION")
+  DESCRIPTION <- readDcf(file)
   requirements <- DESCRIPTION[1, fields[fields %in% colnames(DESCRIPTION)]]
 
   ## Remove whitespace
