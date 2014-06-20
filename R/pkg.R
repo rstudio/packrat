@@ -175,12 +175,9 @@ getPackageRecords <- function(pkgNames,
   # Now get recursive package dependencies if necessary
   if (recursive) {
     allRecords <- lapply(allRecords, function(record) {
-      deps <- tools::package_dependencies(
-        record$name,
-        available,
-        c("Depends", "Imports", "LinkingTo"),
-        recursive = FALSE
-      )[[record$name]]
+      deps <- getPackageDependencies(pkgs = record$name,
+                                     lib.loc = lib.loc,
+                                     available.packages = available)
       record$depends <- getPackageRecords(
         deps,
         available,
