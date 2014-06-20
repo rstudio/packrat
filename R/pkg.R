@@ -242,7 +242,18 @@ inferPackageRecord <- function(df) {
     # into the package library; ignore them so they won't appear orphaned.
     return(NULL)
   } else {
-    warning("Couldn't figure out the origin of package ", name)
+
+    # Don't warn if this is an R package being managed by packrat
+    if (file.exists("DESCRIPTION")) {
+      pkgName <- unname(readDcf("DESCRIPTION")[, "Package"])
+    } else {
+      pkgName <- NULL
+    }
+
+    if (!identical(pkgName, name)) {
+      warning("Couldn't figure out the origin of package ", name)
+    }
+
     return(structure(list(
       name = name,
       source = 'unknown',

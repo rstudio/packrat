@@ -60,6 +60,13 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     noCache = TRUE
   )[, "Package"]
 
+  ## If we are using packrat alongside an R package, then we should
+  ## ignore the package itself
+  if (file.exists(file.path(project, "DESCRIPTION"))) {
+    pkgName <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
+    installedPkgs <- installedPkgs[installedPkgs != pkgName]
+  }
+
   installedPkgRecords <- flattenPackageRecords(
     getPackageRecords(installedPkgs,
                       recursive = TRUE,
