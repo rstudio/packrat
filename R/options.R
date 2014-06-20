@@ -7,7 +7,9 @@ VALID_OPTIONS <- list(
   vcs.ignore.lib = list(TRUE, FALSE),
   vcs.ignore.src = list(TRUE, FALSE),
   print.banner.on.startup = list(TRUE, FALSE, "auto"),
-  external.libraries = function(x) is.character(x)
+  external.packages = function(x) {
+    is.null(x) || is.character(x)
+  }
 )
 
 
@@ -19,7 +21,7 @@ initOptions <- function(project = NULL) {
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
     print.banner.on.startup = "auto",
-    external.libraries = ""
+    external.packages = ""
   )
 }
 
@@ -37,6 +39,8 @@ initOptions <- function(project = NULL) {
 ##' \item \code{print.banner.on.startup}:
 ##'   Print the banner on startup? Can be one of \code{TRUE} (always print),
 ##'   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
+##' \item \code{external.packages}:
+##'   Packages which should be loaded from the user library upon entering packrat mode.
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
@@ -55,7 +59,7 @@ get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
     opts
   } else {
     result <- opts[names(opts) %in% options]
-    if (simplify) unlist(result)
+    if (simplify) unlist(unname(result))
     else result
   }
 }
@@ -75,12 +79,12 @@ set_opts <- function(..., project = NULL) {
   dots <- list(...)
   validateOptions(dots)
   keys <- names(dots)
-  values <- unname(unlist(dots))
+  values <- dots
   opts <- read_opts(project = project)
   for (i in seq_along(keys)) {
-    opts[[keys[[i]]]] <- values[[i]]
+    opts[[keys[[i]]]] <- paste(values[[i]], collapse = ", ")
   }
-  write.dcf(opts, file = optsPath)
+  write.dcf(opts, file = optsPath, indent = 4, width = 72)
   updateSettings(project)
   invisible(opts)
 }
@@ -118,7 +122,8 @@ read_opts <- function(project = NULL) {
            "TRUE" = TRUE,
            "FALSE" = FALSE,
            "NA" = as.logical(NA),
-           x)
+           unlist(strsplit(x, ",[[:space:]]*", perl = TRUE))
+    )
   })
   opts
 }

@@ -168,6 +168,8 @@ afterPackratModeOn <- function(project,
   # Update settings
   updateSettings(project = project)
 
+  if (interactive()) loadExternalPackages()
+
   invisible(getLibPaths())
 
 }
