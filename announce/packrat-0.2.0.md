@@ -61,8 +61,9 @@ the following:
 3. Start an R session in this folder,
 4. Run the following script:
 
-    if (!require("devtools")) install.packages("devtools")
-    devtools::install_github("rstudio/packrat") packrat::migrate()
+        if (!require("devtools")) install.packages("devtools")
+        devtools::install_github("rstudio/packrat")
+        packrat::migrate()
 
 After this, you can restart your R session, and you should be good to go!
 
