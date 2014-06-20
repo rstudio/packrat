@@ -60,7 +60,7 @@ buildSnapshotHookCall <- function(project) {
   setwdCmd <- paste0("setwd(", shQuote(project), ")")
   reposCmd <- paste0("options('repos' = ", repos, ")")
   setLibsCmd <- paste0(".libPaths(c(", paste(shQuote(getLibPaths()), collapse = ", "), "))")
-  snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")))")
+  snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")), silent = TRUE)")
   cleanupCmd <- paste0("file.remove(", shQuote(snapshotLockPath), ")")
 
   c(
