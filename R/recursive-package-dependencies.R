@@ -40,11 +40,22 @@ getPackageDependencies <- function(pkgs,
 
   }))
 
-  ## Exclude base packages only -- recommended packages are available on CRAN
-  ip <- installed.packages()
-  priority <- ip[, "Priority"]
-  basePkgs <- rownames(ip)[priority %in% "base"]
+  ## Exclude base packages
+  installedPkgsSystemLib <- as.data.frame(installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
+
+  # The first library path is implicitly the user library
+  installedPkgsLocalLib <- as.data.frame(installed.packages(lib.loc = .libPaths()[1]), stringsAsFactors = FALSE)
+
+  basePkgs <- with(installedPkgsSystemLib, Package[Priority %in% "base"])
   deps <- setdiff(deps, c("R", basePkgs))
+
+  ## Exclude recommended packages if there is no package installed locally
+  ## this places an implicit dependency on the system-installed version of a package
+  recommendedPkgsInSystemLib <- with(installedPkgsSystemLib, Package[Priority %in% "recommended"])
+  recommendedPkgsInLocalLib <- with(installedPkgsLocalLib, Package[Priority %in% "recommended"])
+  toExclude <- setdiff(recommendedPkgsInSystemLib, recommendedPkgsInLocalLib)
+  deps <- setdiff(deps, toExclude)
+
   if (is.null(deps)) NULL
   else sort(unique(deps))
 }
