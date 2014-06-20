@@ -3,7 +3,8 @@
 # sub-dependencies is unnecessary
 readLockFilePackages <- function(file) {
 
-  lock <- readDcf(file)[-1, ] # Drop the first row as it contains lockfile-specific info
+  # Drop the first row as it contains lockfile-specific info
+  lock <- readDcf(file)[-1, , drop = FALSE]
   result <- apply(lock, 1, function(x) {
     x <- as.list(x)
     list(
