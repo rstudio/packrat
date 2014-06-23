@@ -546,15 +546,19 @@ packify <- function(project = NULL, quiet = FALSE) {
     dir.create(srcDir)
   }
 
+  ## Copy over the packrat autoloader
+
   .Rprofile <- file.path(project, ".Rprofile")
-  init.R <- instInitRprofileFilePath()
+  autoloaderPath <- instInitRprofileFilePath()
 
   if (!file.exists(.Rprofile)) {
-    file.copy(init.R, .Rprofile)
+
+    file.copy(autoloaderPath, .Rprofile)
+
   } else {
 
     content <- readLines(.Rprofile)
-    autoloader <- readLines(init.R)
+    autoloader <- readLines(autoloaderPath)
 
     # Remove the old autoloader
     start <- min(grep("#### -- Packrat Autoloader", content))
@@ -568,6 +572,12 @@ packify <- function(project = NULL, quiet = FALSE) {
     cat(content, file = .Rprofile, sep = "\n")
 
   }
+
+  ## Copy in packrat/init.R
+  file.copy(
+    instInitFilePath(),
+    file.path(project, .packrat$packratFolderName, "init.R")
+  )
 
   msg <- "Packrat startup directives installed."
   if (identical(project, getwd())) {
