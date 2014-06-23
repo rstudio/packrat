@@ -39,7 +39,9 @@ Get and set options for the current packrat-managed project.
   (defaults to \code{"auto"})
 \item \code{external.packages}:
   Packages which should be loaded from the user library upon entering packrat mode.
-  (defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
+  This can be useful for very large packages which you don't want duplicated across
+  multiple projects, e.g. Bioconductor annotation packages.
+  (EXPERIMENTAL; currently defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
 }
 }
 
