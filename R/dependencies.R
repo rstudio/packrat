@@ -125,6 +125,13 @@ fileDependencies.Rmd <- function(file) {
     yamlDeps <- yamlDeps(content[(start + 1):(end - 1)])
   }
 
+  deps <- yamlDeps
+
+  # Escape hatch for empty .Rmd files
+  if (!length(content) || identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")) {
+    return(deps)
+  }
+
   if (require("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
@@ -134,10 +141,10 @@ fileDependencies.Rmd <- function(file) {
       message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
     })
-    c(yamlDeps, fileDependencies.R(tempfile))
+    c(deps, fileDependencies.R(tempfile))
   } else {
     warning("knitr is required to parse dependencies but is not available")
-    yamlDeps
+    deps
   }
 }
 
