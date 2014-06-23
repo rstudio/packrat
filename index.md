@@ -73,6 +73,7 @@ tools needed for your operating system.
 <!-- * If you skipped the screencast above, it's a good idea to go back and watch it. -->
 * We highly recommend following our **[walkthrough guide](walkthrough.html)**.
 * Then check out some of the **[most common commands](commands.html)**.
+* If you're using RStudio, read the **[guide to using Packrat with RStudio](rstudio.html)**.
 * We also have a short list of **[limitations and caveats](limitations.html)** you should be aware of.
 
 ## Need help?
