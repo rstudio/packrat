@@ -84,6 +84,9 @@ set_opts <- function(..., project = NULL) {
   for (i in seq_along(keys)) {
     opts[[keys[[i]]]] <- paste(values[[i]], collapse = ", ")
   }
+  opts[] <- lapply(opts, function(x) {
+    if (!length(x)) "" else x
+  })
   write.dcf(opts, file = optsPath, indent = 4, width = 72)
   updateSettings(project)
   invisible(opts)
