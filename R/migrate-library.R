@@ -99,7 +99,10 @@ migrate_windows <- function() {
     if (!require("BiocInstaller")) {
       source("http://bioconductor.org/biocLite.R\")' to install BiocLite")
     }
-    biocLite(biocPkgs, lib.loc = userLib)
+    if (require("BiocInstaller")) {
+      BiocInstaller::biocLite(biocPkgs, lib.loc = userLib)
+    }
+
   }
 
   ## Install packages from CRAN
@@ -117,7 +120,7 @@ migrate_windows <- function() {
   notInstalled <- setdiff(pkgsToMigrate, list.files(userLib()))
   if (length(notInstalled)) {
     message("The following packages could not be installed (try restarting your R session and reinstalling them):\n- ",
-            paste(shQuote(notInstalled, collapse = ", ")))
+            paste(shQuote(notInstalled), collapse = ", "))
   }
 
   invisible(list(
