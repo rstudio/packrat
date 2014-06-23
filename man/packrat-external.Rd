@@ -2,12 +2,18 @@
 \name{packrat-external}
 \alias{extlib}
 \alias{packrat-external}
+\alias{packrat_lib}
+\alias{user_lib}
 \alias{with_extlib}
 \title{Managing External Libraries}
 \usage{
 with_extlib(packages, expr, envir = parent.frame())
 
 extlib(packages)
+
+user_lib()
+
+packrat_lib()
 }
 \arguments{
 \item{packages}{A set of library names (as a character vector) to load for

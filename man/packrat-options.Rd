@@ -26,16 +26,20 @@ Get and set options for the current packrat-managed project.
 \details{
 \itemize{
 \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
-  (\code{TRUE} / \code{FALSE})
+  (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 \item \code{vcs.ignore.lib}:
-  Add the packrat private library to your version control system ignore? (\code{TRUE} / \code{FALSE})
+  Add the packrat private library to your version control system ignore?
+  (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 \item \code{vcs.ignore.src}:
-  Add the packrat private sources to your version control system ignore? (\code{TRUE} / \code{FALSE})
+  Add the packrat private sources to your version control system ignore?
+  (\code{TRUE} / \code{FALSE}; defaults to \code{FALSE})
 \item \code{print.banner.on.startup}:
   Print the banner on startup? Can be one of \code{TRUE} (always print),
   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
+  (defaults to \code{"auto"})
 \item \code{external.packages}:
   Packages which should be loaded from the user library upon entering packrat mode.
+  (defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
 }
 }
 
