@@ -6,3 +6,4 @@
 ^announce/
 ^tests/testthat/packrat/
 ^scenarios/
+^configure.R$
