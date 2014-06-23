@@ -4,7 +4,7 @@
 ##' packrat private library.
 ##'
 ##'
-##' @param packages A set of library names (as a character vector) to load for
+##' @param packages A set of package names (as a character vector) to load for
 ##'   the duration of evaluation of \code{expr}.
 ##' @param expr An \R expression.
 ##' @param envir An environment in which the expression is evaluated.

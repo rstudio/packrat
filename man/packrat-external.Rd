@@ -16,7 +16,7 @@ user_lib()
 packrat_lib()
 }
 \arguments{
-\item{packages}{A set of library names (as a character vector) to load for
+\item{packages}{A set of package names (as a character vector) to load for
 the duration of evaluation of \code{expr}.}
 
 \item{expr}{An \R expression.}
