@@ -174,6 +174,8 @@ user_lib <- function() {
   normalizePath(libraries, winslash = "/")
 }
 
+userLib <- user_lib
+
 ##' @rdname packrat-external
 ##' @name packrat-external
 ##' @export
