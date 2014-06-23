@@ -80,7 +80,10 @@ dirDependencies <- function(dir) {
 
   })
 
-  unique(pkgs)
+  ## Exclude recommended packages if there is no package installed locally
+  ## this places an implicit dependency on the system-installed version of a package
+  dropSystemPackages(pkgs)
+
 }
 
 # detect all package dependencies for a source file (parses the file and then
