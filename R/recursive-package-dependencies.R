@@ -30,11 +30,13 @@ getPackageDependencies <- function(pkgs,
       return(NULL)
     }
 
-    ## Split fields, remove white space, get versioning
+    ## Split fields, remove white space
     splitDeps <- lapply(theseDeps, function(x) {
       if (is.na(x)) return(NULL)
       splat <- unlist(strsplit(x, ",[[:space:]]*"))
-      gsub("[[:space:]].*", "", splat)
+      ## Remove versioning information as this function only returns package names
+      splat <- gsub("\\(.*", "", splat, perl = TRUE)
+      gsub("[[:space:]].*", "", splat, perl = TRUE)
     })
     unlist(splitDeps, use.names = FALSE)
 
