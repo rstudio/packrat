@@ -42,24 +42,36 @@ getPackageDependencies <- function(pkgs,
 
   }))
 
-  ## Exclude base packages
+  deps <- dropSystemPackages(deps)
+
+  if (is.null(deps)) NULL
+  else sort(unique(deps))
+}
+
+excludeBasePackages <- function(packages) {
+
   installedPkgsSystemLib <- as.data.frame(installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
-
-  # The first library path is implicitly the user library
-  installedPkgsLocalLib <- as.data.frame(installed.packages(lib.loc = .libPaths()[1]), stringsAsFactors = FALSE)
-
   basePkgs <- with(installedPkgsSystemLib, Package[Priority %in% "base"])
-  deps <- setdiff(deps, c("R", basePkgs))
+  setdiff(packages, c("R", basePkgs))
+
+}
+
+excludeRecommendedPackages <- function(packages) {
+
+  installedPkgsSystemLib <- as.data.frame(installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
+  installedPkgsLocalLib <- as.data.frame(installed.packages(lib.loc = .libPaths()[1]), stringsAsFactors = FALSE)
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
   recommendedPkgsInSystemLib <- with(installedPkgsSystemLib, Package[Priority %in% "recommended"])
   recommendedPkgsInLocalLib <- with(installedPkgsLocalLib, Package[Priority %in% "recommended"])
   toExclude <- setdiff(recommendedPkgsInSystemLib, recommendedPkgsInLocalLib)
-  deps <- setdiff(deps, toExclude)
+  setdiff(packages, toExclude)
 
-  if (is.null(deps)) NULL
-  else sort(unique(deps))
+}
+
+dropSystemPackages <- function(packages) {
+  excludeBasePackages(excludeRecommendedPackages(packages))
 }
 
 recursivePackageDependencies <- function(pkgs, lib.loc,
