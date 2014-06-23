@@ -155,9 +155,9 @@ init <- function(project = '.',
       ## Force packrat mode off
       suppressMessages(packrat_mode(on = FALSE))
 
-      if (!checkPackified(project = project, quiet = TRUE)) {
-        packify(project = project, quiet = TRUE)
-      }
+      ## We always re-packify so that the current version of packrat present can
+      ## insert the appropriate auto-loaders
+      packify(project = project, quiet = TRUE)
 
       descriptionFile <- file.path(project, 'DESCRIPTION')
 
@@ -552,27 +552,34 @@ packify <- function(project = NULL, quiet = FALSE) {
   if (!file.exists(.Rprofile)) {
     file.copy(init.R, .Rprofile)
   } else {
-    # Check and see if we've already packified
-    txt <- readLines(.Rprofile)
-    if (any(grepl("#### -- Packrat Autoloader", txt, fixed = TRUE))) {
-      message("This project has already been packified!")
-      return(invisible())
-    }
-    cat(txt, file = .Rprofile, append = TRUE)
-  }
 
-  if (!quiet) {
-    msg <- "Packrat startup directives installed."
+    content <- readLines(.Rprofile)
+    autoloader <- readLines(init.R)
 
-    if (identical(project, getwd())) {
-      msg <- paste(msg, "Please call \"packrat::packrat_on()\" to initialize packrat.")
+    # Remove the old autoloader
+    start <- min(grep("#### -- Packrat Autoloader", content))
+    end <- max(grep("### -- End Packrat Autoloader -- ####", content))
+    content <- content[-c(start:end)]
+    if (length(content)) {
+      content <- c(content, "", autoloader)
     } else {
-      msg <- paste(msg, "Please call \"packrat::packrat_on(project = '", project, "')\"",
-                   "to initialize packrat.")
+      content <- autoloader
     }
+    cat(content, file = .Rprofile, sep = "\n")
 
-    message(msg)
   }
+
+  msg <- "Packrat startup directives installed."
+  if (identical(project, getwd())) {
+    if (!attemptRestart(restore.packrat.mode = TRUE)) {
+      msg <- paste(msg, "Please call \"packrat::on()\" to initialize packrat.")
+    }
+  } else {
+    msg <- paste(msg, "Please call \"packrat::on(project = '", project, "')\"",
+                 "to initialize packrat.")
+  }
+
+  if (!quiet) message(msg)
 
   invisible()
 }
