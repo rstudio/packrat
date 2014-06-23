@@ -165,7 +165,19 @@ prettyLibDir <- function(project = NULL) {
   file.path(project, .packrat$packratFolderName, "lib")
 }
 
-userLib <- function() {
-  unlist(strsplit(Sys.getenv("R_LIBS_USER"),
-                  .Platform$path.sep))[1L]
+
+##' @rdname packrat-external
+##' @name packrat-external
+##' @export
+user_lib <- function() {
+  libraries <- unlist(strsplit(Sys.getenv("R_LIBS_USER"), .Platform$path.sep, fixed = TRUE))
+  normalizePath(libraries, winslash = "/")
+}
+
+##' @rdname packrat-external
+##' @name packrat-external
+##' @export
+packrat_lib <- function() {
+  project <- getProjectDir()
+  libDir(project)
 }
