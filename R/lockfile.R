@@ -34,7 +34,9 @@ writeLockFile <- function(file, lockinfo) {
 
   # Construct Repos as a key-value pair to write into the lock file
   repos <- activeRepos(dirname(file))
-  separator <- if (is.windows()) ",\r\n" else ",\n"
+
+  # Windows automatically transforms \n to \r\n on write through write.dcf
+  separator <- ",\n"
   reposString <- paste(names(repos), unname(repos), sep = "=", collapse = separator)
 
   # The first record contains metadata about the project and lockfile
