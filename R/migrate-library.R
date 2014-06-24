@@ -46,12 +46,16 @@ checkNeedsLibraryMigration <- function() {
 
 migrate_windows <- function() {
 
+  ## Clean up the search path and unload everything possible
+  cleanSearchPath()
   pkgsToMigrate <- userPkgsInSystemLibrary()
 
   if (!length(pkgsToMigrate)) {
     message("No migration is necessary.")
     return(invisible(NULL))
   }
+
+  message("Beginning migration process...")
 
   ## Set up the library
   systemLib <- normalizePath(.Library, winslash = "/", mustWork = TRUE)
@@ -74,13 +78,13 @@ migrate_windows <- function() {
   })]
 
   unknownPkgs <- setdiff(pkgsToMigrate, c(githubPkgs, cranPkgs, biocPkgs))
-  if (length(unknownPkgs)) {
-    warning("unable to determine source for the following packages; they will need to be reinstalled manually:\n- ",
-            paste(shQuote(unknownPkgs), collapse = ", "))
-  }
+
+  # Ignore RStudio packages
+  unknownPkgs <- setdiff(unknownPkgs, c("manipulate", "rstudio"))
 
   ## Install packages from GitHub
   if (length(githubPkgs)) {
+    message("> Installing GitHub packages")
     if (!require("devtools")) {
       install.packages("devtools", lib = userLib())
     }
@@ -96,37 +100,70 @@ migrate_windows <- function() {
 
   ## Install packages from BioC
   if (length(biocPkgs)) {
-    if (!require("BiocInstaller")) {
-      source("http://bioconductor.org/biocLite.R\")' to install BiocLite")
-    }
-    if (require("BiocInstaller")) {
-      BiocInstaller::biocLite(biocPkgs, lib.loc = userLib)
-    }
-
+    message("> Installing BioC packages")
+    try(unloadNamespace("BiocInstaller"), silent = TRUE)
+    source("http://bioconductor.org/biocLite.R")
+    BiocInstaller::biocLite(biocPkgs, lib.loc = userLib)
   }
 
   ## Install packages from CRAN
   if (length(cranPkgs)) {
+    message("> Installing CRAN packages")
     ## Check that we're not reinstalling packages that might have been added as dependencies
     alreadyInstalled <- list.files(userLib())
     needsInstall <- cranPkgs[!(cranPkgs %in% alreadyInstalled)]
+
+    ## Unload namespaces so we can install
+    try(lapply(needsInstall, forceUnload), silent = TRUE)
+
+    ## Vectorized so install.packages can infer an installation order
     install.packages(needsInstall, lib = userLib)
   }
 
-  ## Clean out the library
-  remove.packages(pkgsToMigrate, lib = .Library)
+  ## Let the user know about what's been migrated, what's not
+  successes <- list.files(userLib())
+  failures <- setdiff(pkgsToMigrate, successes)
 
-  message("Library migration complete.")
-  notInstalled <- setdiff(pkgsToMigrate, list.files(userLib()))
-  if (length(notInstalled)) {
-    message("The following packages could not be installed (try restarting your R session and reinstalling them):\n- ",
-            paste(shQuote(notInstalled), collapse = ", "))
-  }
-
-  invisible(list(
+  result <- list(
     cran = cranPkgs,
     bioc = biocPkgs,
     github = githubPkgs,
-    missing = notInstalled
-  ))
+    missing = setdiff(failures, c("rstudio", "manipulate"))
+  )
+
+  if (length(successes)) {
+    message("The following packages were successfully migrated:\n- ",
+            paste(shQuote(successes), collapse = ", "),
+            "\n\n")
+  }
+
+  if (length(failures)) {
+    message("The following packages were NOT successfully migrated and will ",
+            "need to be reinstalled manually:\n- ",
+            paste(shQuote(failures), collapse = ", "),
+            "\n\n")
+  }
+
+  ## Clean out the system library
+  if (interactive()) {
+    prettyPkgs <- paste(collapse = "\n",
+      strwrap(paste(shQuote(pkgsToMigrate), collapse = ", "), 78)
+    )
+    message("The following packages will be removed from the system library:")
+    message(prettyPkgs)
+    response <- readline("Do you want to continue? [Y/n]: ")
+    if (tolower(substring(response, 1, 1)) == "y") {
+      remove.packages(pkgsToMigrate, lib = .Library)
+      message("System library successfully cleaned of user packages.")
+    } else {
+      message("System library cleanup aborted.")
+      return(result)
+    }
+  } else {
+    remove.packages(pkgsToMigrate, lib = .Library)
+  }
+
+  message("Library migration complete!")
+  result
+
 }
