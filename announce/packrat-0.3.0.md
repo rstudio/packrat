@@ -1,3 +1,38 @@
+We're very excited to announce Packrat 0.3.0! A number of bug and API
+refinements have made their way into this release. Some noteworthy additions
+in this release:
+
+1. Automatic snapshots that automatically update your lockfile when
+   non-destructive changes occur to your library (e.g. after an
+   `install.packages` call, we can automatically update the lockfile to record
+   any new packages),
+2. Packrat integration with the latest release of
+   [RStudio](http://www.rstudio.com/products/rstudio/download/) will make
+   using Packrat with your projects easier than ever,
+3. Packrat projects now gain project-specific options, allowing you to control
+   a number of features -- please see `?"packrat-options"` for more details;
+   with current new options:
+   - auto.snapshot: Control whether automatic, asynchronous snapshots are
+     performed,
+   - vcs.ignore.lib: Ignore the `packrat/lib/` folder with version control
+     systems?
+   - vcs.ignore.src: Ignore the `packrat/src/` folder with version control
+     systems?
+   - print.banner.on.startup: Print the packrat banner on startup?
+   - external.packages: Load packages from the user library on initialization?
+     Useful for e.g. large Bioconductor annotation packages which you may not
+     want to duplicate across projects.
+4. Packrat does its best to ensure explicit R session restarts commissioned by
+   the user are not required, and leverages RStudio to handle restarts when
+   necessary,
+5. Packrat has gained (provisional) support for R package development,
+   although work here is still ongoing.
+
+With the added RStudio integration, keeping your projects isolated and
+reproducible should be easier than ever.
+
+A full set of NEWS items follows:
+
 # Packrat 0.3.0
 
 - The `packrat/bootstrap.R` script has been renamed to `packrat/init.R`.
@@ -89,60 +124,3 @@
   user libraries away from the system library, to provide the library separation
   that Packrat requires.
 
-# Packrat 0.2.0
-
-There has been a change in the directory structure for packrat project files.
-If you'd like to migrate a 'packrat 0.1.0' project to the new format, please do
-the following:
-
-1. Navigate to your packrat project directory,
-2. Remove the project `.Rprofile` file,
-3. Start an R session in this folder,
-4. Run the following R code:
-
-    if (!require("devtools")) install.packages("devtools")
-    devtools::install_github("rstudio/packrat") packrat::migrate()
-
-After this, you can restart your R session, and you should be good to go!
-
-- **`packrat_mode`** allows you to seamlessly step in and out of packrat mode,
-  for when you would would like to manage or use external projects while
-  working with a packrat project. In addition, once you have entered packrat
-  mode, the project directory is remembered for all later calls to packrat
-  functions, e.g. `snapshot`, `clean`, `restore`, and so on -- so calling these
-  functions without arguments will use the project directory, even if you have
-  navigated outside of the project or to a project sub-directory.
-
-- The packrat project files have been migrated into a single `packrat/` folder
-  -- this keeps pollution in the base directory of your project down. The
-  remappings are:
-    - `packrat.sources` -> `packrat/src`,
-    - `library` -> `packrat/lib`,
-    - `packrat.lock` -> `packrat/packrat.lock`, and
-    - the `.Renviron` has been removed.
-
-- **`bundle`** and **`unbundle`** allow you to zip up your project as a tarball
-  for easy sharing,
-
-- **`with_extlib`** and **`extlib`** allow you to (temporarily) load and use
-  packages within the user library; this can be useful if you want to leverage
-  another package (for example, `devtools::install_github`) while avoiding
-  dependencies on `devtools` itself,
-
-- A number of bugs relating to `status()` output have been fixed and tweaked,
-  to give better information to the user.
-
-- Projects in packrat mode will have automatic, asynchronous snapshots for safe
-  actions: with automatic snapshots on, packrat will automatically upgrade
-  packages that are out of date, or add packages that are new to the lock file
-  (e.g. when seen by an `install.packages()` call). Downgrades, removals and
-  'crossgrades' will be ignored and will require you to take an appropriate
-  action (guided by the information provided by `status()`).
-
-- Packrat will warn you if you have user libraries in the system library path.
-  In addition, packrat supplies a script for OS X users, to assist in migrating
-  user packages from the system library to a separate user library. (By
-  default, R versions compiled for Mac OS X install all packages into the
-  system library; for packrat to function correctly we require that user and
-  system libraries be separate -- this script should help facilitate the
-  process. If you have any problems with migration, please let us know!)
