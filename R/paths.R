@@ -171,7 +171,7 @@ prettyLibDir <- function(project = NULL) {
 ##' @export
 user_lib <- function() {
   libraries <- unlist(strsplit(Sys.getenv("R_LIBS_USER"), .Platform$path.sep, fixed = TRUE))
-  normalizePath(libraries, winslash = "/")
+  normalizePath(libraries, winslash = "/", mustWork = FALSE)
 }
 
 userLib <- user_lib
