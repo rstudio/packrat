@@ -1,7 +1,22 @@
 # Packrat 0.2.0.99+ (Unreleased)
 
+- `packrat::user_lib()` and `packrat::packrat_lib()` can be used to query the
+  locations for the user library and packrat library, respectively.
+
+- `packrat::install_github()` works as a dependency-free
+  `devtools::install_github()`, and ensures Packrat projects using GitHub
+  packages do not have an implicit dependency on `devtools`.
+
+- `packrat::disable()` can be used to disable Packrat on a project -- it
+  removes the autoloader from the `.Rprofile` and turns off Packrat mode. (If
+  you want to fully clean out the packrat library / sources, you will have to
+  delete the `packrat/` subdirectory explicitly)
+
+- `packrat::packrat_mode()` has been refactored into two separate functions:
+  `packrat::on()` and `packrat::off()`.
+
 - `.Rmd` files are now parsed for YAML dependencies (for
-  [`rmarkdown`](http://rmarkdown.rstudio.com/) dependencies)
+  [`rmarkdown`](http://rmarkdown.rstudio.com/) dependencies).
 
 - Recommended packages (e.g. `lattice`) are now only taken as Packrat
   dependencies if explicitly installed by the user -- for example, if you want
@@ -37,13 +52,8 @@
 
 - Packrat gains project-specific options. `packrat/packrat.opts` is a DCF file
   of project-specific settings that can be queried and set through
-  `packrat::get_opts` and `packrat::set_opts`. The current valid options are:
-  - `auto.snapshot`: perform automatic, asynchronous, safe snapshots? This
-    will automatically update the lock file when a new package is installed,
-    for example.
-  - `vcs.ignore.lib`, `vcs.ignore.src`: Ignore the `packrat/[lib/src]`
-    directories in your version control system? Currently, only `git` and
-    `svn` are supported.
+  `packrat::get_opts` and `packrat::set_opts`. Please see `?"packrat-options"`
+  for more information.
 
 - Packrat can now handle source package tarballs, in addition to source folders.
 
