@@ -92,10 +92,10 @@ control system, RStudio will prompt you to bring your library in sync.
 
 When your library differs from Packrat, RStudio will try to guess the
 appropriate action to bring them back in sync.  Notice that in the two cases we
-just covered, the states were identical: a package is installed locally but not
-in Packrat. RStudio tries to infer whether the appropriate action is a snapshot
-(i.e. update Packrat to match the library) or restore (i.e. update the library
-to match Packrat). 
+just covered, the states were identical: a package is present in Packrat, but
+not the library. RStudio tries to infer whether the appropriate action is a
+snapshot (i.e. update Packrat to match the library) or restore (i.e. update the
+library to match Packrat). 
 
 In some cases, however, it won't be possible for RStudio to guess. Let's
 imagine that you ignored your colleague's changes and added a package of your
