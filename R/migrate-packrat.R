@@ -84,7 +84,7 @@ migrate <- function(project = ".", ask = TRUE) {
   formatLine <- grep("PackratFormat:", lockFile)
   lockFile[formatLine] <- paste("PackratFormat:", .packrat$packratFormat)
   cat(lockFile, file = lockFilePath(), sep = "\n")
-  message("- packrat.lock succesffuly copied and updated to version ", .packrat$packratFormat)
+  message("- packrat.lock successfully copied and updated to version ", .packrat$packratFormat)
 
   ## Remove the .Renviron file
   if (file.exists(".Renviron")) {
@@ -109,7 +109,7 @@ migrate <- function(project = ".", ask = TRUE) {
 
   }
 
-  ## Now, update it with new packrat
+  ## Add the autoloader
   augmentRprofile(getwd())
   message("- .Rprofile successfully augmented")
 
@@ -119,6 +119,19 @@ migrate <- function(project = ".", ask = TRUE) {
     file.path(.packrat$packratFolderName, "init.R")
   )
   message("- packrat/init.R successfully updated")
+
+  ## Update the repositories field in the lockfile
+  lf <- readDcf(
+    lockFilePath()
+  )
+  repos <- getOption("repos")
+  lf[1, "Repos"] <- paste(
+    names(repos),
+    repos,
+    sep = "=",
+    collapse = ",\n"
+  )
+  write.dcf(lf, lockFilePath())
 
   ## Initialize packrat options
   initOptions()
