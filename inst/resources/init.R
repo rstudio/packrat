@@ -5,7 +5,7 @@ local({
   if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
 
     # Check if we need to migrate the library (mainly for Windows)
-    packrat:::checkNeedsLibraryMigration()
+    packrat:::checkNeedsMigration()
 
     # Check 'print.banner.on.startup' -- when NA and RStudio, don't print
     print.banner <- packrat::get_opts("print.banner.on.startup")

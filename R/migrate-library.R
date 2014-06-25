@@ -167,3 +167,28 @@ migrate_windows <- function() {
   result
 
 }
+
+checkNeedsPackratMigration <- function(project = NULL) {
+
+  # These files should no longer exist in the base project directory
+  if (file.exists("packrat.sources") ||
+      file.exists("packrat.lock")) {
+
+    message("WARNING: This project needs to be migrated to the latest ",
+            "version of packrat.")
+    response <- readline("Would you like to migrate? [Y/n]: ")
+    if (tolower(substring(response, 1, 1)) == "y") {
+      migrate()
+    } else {
+      message("Migration process aborted -- please restore an old version of ",
+              "packrat to continue.")
+    }
+
+  }
+
+}
+
+checkNeedsMigration <- function() {
+  checkNeedsLibraryMigration()
+  checkNeedsPackratMigration()
+}
