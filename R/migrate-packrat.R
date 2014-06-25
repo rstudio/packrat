@@ -28,8 +28,10 @@ migrate <- function(project = ".", ask = TRUE) {
   }
 
   if (file.exists("packrat.lock")) {
-    lockFile <- readLockFile(file = "packrat.lock")
-    if (lockFile$packrat_format != "1.1") {
+    lockFile <- readLines("packrat.lock")
+    packrat_format <- grep("^PackratFormat:", lockFile, value = TRUE)
+    packrat_format <- gsub("^PackratFormat:[[:space:]]*", "", packrat_format)
+    if (packrat_format != "1.1") {
       stop("This function can only migrate from packrat format 1.1 to 1.3")
     }
   }
