@@ -111,6 +111,12 @@ migrate <- function(project = ".", ask = TRUE) {
   augmentRprofile(getwd())
   message("- .Rprofile successfully augmented")
 
+  ## Add in the init.R script
+  file.copy(
+    system.file(package = "packrat", "resources", "init.R"),
+    file.path(.packrat$packratFolderName, "init.R")
+  )
+
   ## Clean up the old packrat directories
   unlink("packrat.sources", recursive = TRUE)
   unlink("library", recursive = TRUE)
