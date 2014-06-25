@@ -117,6 +117,9 @@ migrate <- function(project = ".", ask = TRUE) {
     file.path(.packrat$packratFolderName, "init.R")
   )
 
+  ## Initialize packrat options
+  initOptions()
+
   ## Clean up the old packrat directories
   unlink("packrat.sources", recursive = TRUE)
   unlink("library", recursive = TRUE)
