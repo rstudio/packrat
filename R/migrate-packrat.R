@@ -82,7 +82,7 @@ migrate <- function(project = ".", ask = TRUE) {
   formatLine <- grep("PackratFormat:", lockFile)
   lockFile[formatLine] <- paste("PackratFormat:", .packrat$packratFormat)
   cat(lockFile, file = lockFilePath(), sep = "\n")
-  message("- packrat.lock succesffuly copied and updated to version 1.2")
+  message("- packrat.lock succesffuly copied and updated to version ", .packrat$packratFormat)
 
   ## Remove the .Renviron file
   if (file.exists(".Renviron")) {
@@ -116,9 +116,11 @@ migrate <- function(project = ".", ask = TRUE) {
     system.file(package = "packrat", "resources", "init.R"),
     file.path(.packrat$packratFolderName, "init.R")
   )
+  message("- packrat/init.R successfully updated")
 
   ## Initialize packrat options
   initOptions()
+  message("- packrat/packrat.opts successfully initialized")
 
   ## Clean up the old packrat directories
   unlink("packrat.sources", recursive = TRUE)

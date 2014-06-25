@@ -3,7 +3,7 @@
 ## Testing a package using a source package tarball
 PACKAGE_NAME="digestPkg"
 cd ~/git
-R CMD install packrat
+R CMD INSTALL packrat
 rm -rf ${PACKAGE_NAME}
 mkdir ${PACKAGE_NAME}
 cd ${PACKAGE_NAME}

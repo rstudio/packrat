@@ -547,7 +547,6 @@ packify <- function(project = NULL, quiet = FALSE) {
   }
 
   ## Copy over the packrat autoloader
-
   .Rprofile <- file.path(project, ".Rprofile")
   autoloaderPath <- instInitRprofileFilePath()
 
