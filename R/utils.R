@@ -426,3 +426,7 @@ surround <- function(x, with = "'") {
   if (!length(x)) return(character())
   paste0(with, as.character(x), with)
 }
+
+write_dcf <- function(x, file = "") {
+  write.dcf(x = x, file = file, indent = 4, width = 72)
+}

@@ -93,7 +93,7 @@ set_opts <- function(..., project = NULL) {
   opts[] <- lapply(opts, function(x) {
     if (!length(x)) "" else x
   })
-  write.dcf(opts, file = optsPath, indent = 4, width = 72)
+  write_dcf(opts, file = optsPath)
   updateSettings(project)
   invisible(opts)
 }

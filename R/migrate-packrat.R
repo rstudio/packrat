@@ -131,7 +131,7 @@ migrate <- function(project = ".", ask = TRUE) {
     sep = "=",
     collapse = ",\n"
   )
-  write.dcf(lf, lockFilePath())
+  write_dcf(lf, lockFilePath())
 
   ## Initialize packrat options
   initOptions()
