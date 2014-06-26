@@ -57,7 +57,8 @@ getPackageRecordsInstalledFromSource <- function(pkgs, lib.loc) {
       name = pkg,
       source = 'source',
       version = dcf$Version,
-      source_path = dcf$InstallSourcePath
+      source_path = dcf$InstallSourcePath,
+      hash = hash(file.path(loc, "DESCRIPTION"))
     ), class=c('packageRecord', 'source'))
   })
 }
@@ -73,19 +74,17 @@ getPackageRecordsManuallySpecified <- function(pkgNames,
     source_path <- as.character(source.packages[pkgName,"path"])
     version <- as.character(source.packages[pkgName,"version"])
 
-    ## If it ends with tar.gz, pull the DESCRIPTION file out
     if (endswith(source_path, "tar.gz")) {
+      ## Untar tarballs and get path to DESCRIPTION
       tempdir <- file.path(tempdir(), paste("packrat", pkgName, version, sep = "-"))
       dir.create(tempdir, recursive = TRUE)
       untar(source_path, exdir = tempdir)
-      sourceDesc <- as.data.frame(
-        readDcf(file.path(tempdir, pkgName, "DESCRIPTION"))
-      )
+      descPath <- file.path(tempdir, pkgName, "DESCRIPTION")
     } else {
       # Read the dependency information directly from the DESCRIPTION file
-      sourceDesc <- as.data.frame(
-        readDcf(file.path(source.packages[pkgName,"path"], "DESCRIPTION")))
+      descPath <- file.path(source.packages[pkgName, "path"], "DESCRIPTION")
     }
+    sourceDesc <- as.data.frame(readDcf(descPath))
     deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
     deps <- deps[deps != "R"]
     db <- NULL
@@ -93,7 +92,8 @@ getPackageRecordsManuallySpecified <- function(pkgNames,
       name = pkgName,
       source = 'source',
       version = version,
-      source_path = source_path
+      source_path = source_path,
+      hash = hash(descPath)
     ), class=c('packageRecord', 'source'))
   })
 
@@ -108,7 +108,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
     # This package is from an external source (CRAN-like repo or github);
     # attempt to get its description from the installed package database.
     pkgDescFile <- system.file('DESCRIPTION',
-                               package=pkgName,
+                               package = pkgName,
                                lib.loc = lib.loc)
     if (nchar(pkgDescFile) == 0) {
       if (pkgName %in% rownames(available)) {
@@ -116,14 +116,18 @@ getPackageRecordsExternalSource <- function(pkgNames,
         df <- data.frame(
           Package = pkg[["Package"]],
           Version = pkg[["Version"]],
-          Repository = "CRAN")
+          Repository = "CRAN",
+          hash = hash(pkgDescFile)
+        )
       } else {
         return(missing.package(pkgName, lib.loc))
       }
     } else {
       df <- as.data.frame(readDcf(pkgDescFile))
     }
-    inferPackageRecord(df)
+    result <- inferPackageRecord(df)
+    result$hash <- hash(pkgDescFile)
+    result
   })
 
 }
@@ -414,8 +418,8 @@ diff <- function(packageRecordsA, packageRecordsB) {
       pkgA <- searchPackages(packageRecordsA, pkgName)[[1]]
       pkgB <- searchPackages(packageRecordsB, pkgName)[[1]]
 
-      if (identical(strip(c('depends', 'source_path'), pkgA),
-                    strip(c('depends', 'source_path'), pkgB)))
+      if (identical(strip(c('depends', 'source_path', 'hash'), pkgA),
+                    strip(c('depends', 'source_path', 'hash'), pkgB)))
         return(NA)
       verComp <- compareVersion(pkgA$version, pkgB$version)
       if (verComp < 0)

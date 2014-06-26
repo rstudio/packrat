@@ -115,9 +115,12 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {
       # Get the source package
-      fileLoc <- download.packages(pkgRecord$name, destdir = pkgSrcDir,
-                                   available = availablePkgs, repos = repos,
-                                   type = "source", quiet = TRUE)
+      fileLoc <- download.packages(pkgRecord$name,
+                                   destdir = pkgSrcDir,
+                                   available = availablePkgs,
+                                   repos = repos,
+                                   type = "source",
+                                   quiet = TRUE)
       # If the file wasn't saved to the destination directory (which can happen
       # if the repo is local--see documentation in download.packages), copy it
       # there now
@@ -295,16 +298,34 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
 
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
-installPkg <- function(pkgRecord, project, availablePkgs, repos,
-                       lib = libDir(project)) {
+installPkg <- function(pkgRecord,
+                       project,
+                       availablePkgs,
+                       repos,
+                       lib = libDir(project),
+                       cache) {
+
   pkgSrc <- NULL
   type <- "built source"
   needsInstall <- TRUE
 
   # Generally we want to install from sources, but we will download a pre-
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
-  # is the version desired, and (c) R is set to download binaries.
-  if (isFromCranlikeRepo(pkgRecord) &&
+  # is the version desired, and (c) R is set to download binaries. We also
+  # just copy a symlink from the cache if possible.
+  if (length(pkgRecord$hash) &&
+      isCacheable(pkgRecord$name) &&
+      pkgRecord$hash %in% cache) {
+
+    # This package has already been installed in the cache; just symlink
+    # to that
+    file.symlink(
+      file.path(cacheLibDir(pkgRecord$hash)),
+      file.path(libDir(project), pkgRecord$name)
+    )
+    type <- "symlinked cache"
+    needsInstall <- FALSE
+  } else if (isFromCranlikeRepo(pkgRecord) &&
         pkgRecord$name %in% rownames(availablePkgs) &&
         versionMatchesDb(pkgRecord, availablePkgs) &&
         !identical(getOption("pkgType"), "source")) {
@@ -334,8 +355,11 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
     # If the source file is missing, try to download it. (Could happen in the
     # case where the packrat lockfile is present but cached sources are
     # missing.)
-    getSourceForPkgRecord(pkgRecord, srcDir(project),
-                          availablePkgs, repos, quiet = TRUE)
+    getSourceForPkgRecord(pkgRecord,
+                          srcDir(project),
+                          availablePkgs,
+                          repos,
+                          quiet = TRUE)
     if (!file.exists(pkgSrc)) {
       stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
            ": sources missing at ", pkgSrc)
@@ -370,6 +394,9 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   # Get the list of available packages and the latest version of those packages
   # from the repositories, and the local install list for comparison
   availablePkgs <- available.packages(contrib.url(repos))
+
+  # Get the set of hashes for cached packages
+  cache <- list.files(cacheLibDir())
 
   # If this is the initial snapshot, we can optimize the installation of
   # packages from the global library to the private Packrat library
@@ -407,7 +434,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
       message("OK")
       next
     }
-    type <- installPkg(pkgRecord, project, availablePkgs, repos, lib)
+    type <- installPkg(pkgRecord, project, availablePkgs, repos, lib, cache)
     message("OK (", type, ")")
   }
   invisible()
@@ -443,7 +470,7 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
                    'Downgrading these packages in your library:',
                    'Modifying these packages in your library:')
 
-    answer <- readline('Do you want to continue? [Y/n] ')
+    answer <- readline('Do you want to continue? [Y/n]: ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
     if (nzchar(answer) && tolower(answer) != 'y') {
       return(invisible())
@@ -495,6 +522,7 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   # Play the list, if there's anything to play
   if (!dry.run) {
     playActions(pkgRecords, actions, repos, project, targetLib)
+    moveInstalledPackagesToCache(project)
     if (restartNeeded) {
       if (!restart || !attemptRestart())
         message("You must restart R to finish applying these changes.")

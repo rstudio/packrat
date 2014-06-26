@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+## Clean out the cache
+rm -rf ~/.packrat
+
 ## Testing a package using a source package tarball
 PACKAGE_NAME="shinyPkg"
 cd ~/git

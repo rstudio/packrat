@@ -371,7 +371,6 @@ restore <- function(project = NULL,
   # Install each package from CRAN or github, from binaries when available and
   # then from sources.
   repos <- lockInfo(project, 'repos')
-  repos <- strsplit(repos, "\\s*,\\s*")[[1]]
   restoreImpl(project, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt,
               dry.run = dry.run,

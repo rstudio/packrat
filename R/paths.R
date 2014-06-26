@@ -183,3 +183,16 @@ packrat_lib <- function() {
   project <- getProjectDir()
   libDir(project)
 }
+
+cacheDir <- function() {
+  Sys.getenv("R_PACKRAT_CACHE_DIR",
+             unset = path.expand("~/.packrat"))
+}
+
+packratCacheVersion <- function() {
+  "v1"
+}
+
+cacheLibDir <- function(...) {
+  file.path(cacheDir(), packratCacheVersion(), "library")
+}
