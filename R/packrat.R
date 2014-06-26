@@ -167,6 +167,10 @@ init <- function(project = '.',
         package <- description$Package
       }
 
+      ## Make sure the .Rprofile, .gitignore, etc. are up to date
+      augmentRprofile(project)
+      options <- initOptions(project) ## writes out packrat.opts and returns generated list
+
       # Take a snapshot
       source.packages <- getSourcePackageInfo(source.packages)
       snapshotImpl(project,
@@ -184,9 +188,6 @@ init <- function(project = '.',
         file.path(project, .packrat$packratFolderName, "init.R")
       )
 
-      ## Make sure the .Rprofile, .gitignore, etc. are up to date
-      augmentRprofile(project)
-      options <- initOptions(project) ## writes out packrat.opts and returns generated list
       updateSettings(project, options)
 
       ## Symlink system libraries on mac
