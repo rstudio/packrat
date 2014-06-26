@@ -116,8 +116,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
         df <- data.frame(
           Package = pkg[["Package"]],
           Version = pkg[["Version"]],
-          Repository = "CRAN",
-          hash = hash(pkgDescFile)
+          Repository = "CRAN"
         )
       } else {
         return(missing.package(pkgName, lib.loc))
@@ -126,7 +125,8 @@ getPackageRecordsExternalSource <- function(pkgNames,
       df <- as.data.frame(readDcf(pkgDescFile))
     }
     result <- inferPackageRecord(df)
-    result$hash <- hash(pkgDescFile)
+    if (nzchar(pkgDescFile))
+      result$hash <- hash(pkgDescFile)
     result
   })
 
