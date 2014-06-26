@@ -216,10 +216,6 @@ snapshotImpl <- function(project,
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
 activeRepos <- function(project) {
-  repos <- lockInfo(project, 'repos', fatal = FALSE)
-  if (length(repos) > 0)
-    return(strsplit(repos, '\\s*,\\s*')[[1]])
-
   repos <- getOption("repos")
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
 
