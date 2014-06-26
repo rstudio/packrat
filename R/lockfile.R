@@ -66,7 +66,7 @@ writeLockFile <- function(file, lockinfo) {
 
   df <- rbind2(preamble, packageInfoDf)
   names(df) <- translate(names(df), r_aliases)
-  write.dcf(df, file, indent = 2, width = 72)
+  write_dcf(df, file)
 
   invisible()
 }

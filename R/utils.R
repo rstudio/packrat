@@ -421,3 +421,7 @@ setNames <- function(object = nm, nm) {
 dropNull <- function(x) {
   x[unlist(lapply(x, Negate(is.null)))]
 }
+
+write_dcf <- function(x, file = "") {
+  write.dcf(x = x, file = file, indent = 4, width = 72)
+}

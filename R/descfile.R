@@ -11,7 +11,7 @@ ends_with_newline <- function(path) {
 appendToDcf <- function(path, records) {
   if (!ends_with_newline(path))
     cat('\n', sep='', file=path, append=TRUE)
-  write.dcf(records, path, append = TRUE)
+  write_dcf(records, path, append = TRUE)
 }
 
 # Combines one or more comma-delimited fields from a data frame read from a

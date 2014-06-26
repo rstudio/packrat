@@ -260,8 +260,18 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
   # only source packages will have a source path)
   recordsDF <- as.data.frame(dropNull(records))
 
+  # Read in the DCF file
+  content <- as.data.frame(readDcf(descFile))
+  stopifnot(nrow(content) == 1)
+
+  # Replace the records
+  for (i in seq_along(records)) {
+    name <- names(records)[i]
+    content[name] <- records[name]
+  }
+
   # Write it out
-  appendToDcf(descFile, recordsDF)
+  write_dcf(content, descFile)
 }
 
 # Annotate a set of packages by name.
