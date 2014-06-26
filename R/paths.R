@@ -194,5 +194,5 @@ packratCacheVersion <- function() {
 }
 
 cacheLibDir <- function(...) {
-  file.path(cacheDir(), packratCacheVersion(), "library")
+  file.path(cacheDir(), packratCacheVersion(), "library", ...)
 }
