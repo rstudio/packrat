@@ -30,7 +30,6 @@ beforePackratModeOn <- function(project) {
 }
 
 afterPackratModeOn <- function(project,
-                               init,
                                auto.snapshot,
                                clean.search.path,
                                state,
@@ -88,11 +87,6 @@ afterPackratModeOn <- function(project,
   oldLibDir <- oldLibraryDir(project)
   if (file.exists(oldLibDir)) {
     unlink(oldLibDir, recursive = TRUE)
-  }
-
-  # Try to initialize the project if there is no lockfile
-  if (init && !file.exists(lockFilePath(project = project))) {
-    init(project = project, restart = FALSE)
   }
 
   # If the library directory doesn't exist, create it
@@ -175,7 +169,6 @@ afterPackratModeOn <- function(project,
 }
 
 setPackratModeOn <- function(project = NULL,
-                             init = TRUE,
                              auto.snapshot = get_opts("auto.snapshot"),
                              clean.search.path = TRUE,
                              print.banner = TRUE) {
@@ -183,7 +176,6 @@ setPackratModeOn <- function(project = NULL,
   state <- beforePackratModeOn(project = project)
   setPackratModeEnvironmentVar()
   afterPackratModeOn(project = project,
-                     init = init,
                      auto.snapshot = auto.snapshot,
                      clean.search.path = clean.search.path,
                      state = state,
@@ -255,7 +247,6 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##'   will be toggled.
 ##' @param project The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
-##' @param init Initialize a project that has not yet been packified?
 ##' @param auto.snapshot Perform automatic, asynchronous snapshots?
 ##' @param clean.search.path Detach and unload any packages loaded from non-system
 ##'   libraries before entering packrat mode?
@@ -267,7 +258,6 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##' @export
 packrat_mode <- function(on = NULL,
                          project = NULL,
-                         init = FALSE,
                          auto.snapshot = get_opts("auto.snapshot"),
                          clean.search.path = TRUE) {
 
@@ -275,12 +265,10 @@ packrat_mode <- function(on = NULL,
 
   if (is.null(on)) {
     togglePackratMode(project = project,
-                      init = init,
                       auto.snapshot = auto.snapshot,
                       clean.search.path = clean.search.path)
   } else if (identical(on, TRUE)) {
     setPackratModeOn(project = project,
-                     init = init,
                      auto.snapshot = auto.snapshot,
                      clean.search.path = clean.search.path)
   } else if (identical(on, FALSE)) {
@@ -295,14 +283,17 @@ packrat_mode <- function(on = NULL,
 ##' @name packrat-mode
 ##' @export
 on <- function(project = NULL,
-               init = FALSE,
                auto.snapshot = get_opts("auto.snapshot"),
                clean.search.path = TRUE,
                print.banner = TRUE) {
 
   project <- getProjectDir(project)
+
+  # If there is no lockfile already, perform an init
+  if (!file.exists(lockFilePath(project = project))) {
+    return(init(project = project, restart = FALSE))
+  }
   setPackratModeOn(project = project,
-                   init = init,
                    auto.snapshot = auto.snapshot,
                    clean.search.path = clean.search.path,
                    print.banner = print.banner)
@@ -318,12 +309,11 @@ off <- function(project = NULL, print.banner = TRUE) {
                     print.banner = print.banner)
 }
 
-togglePackratMode <- function(project, init, auto.snapshot, clean.search.path) {
+togglePackratMode <- function(project, auto.snapshot, clean.search.path) {
   if (isPackratModeOn(project = project)) {
     setPackratModeOff(project)
   } else {
     setPackratModeOn(project = project,
-                     init = init,
                      auto.snapshot = auto.snapshot,
                      clean.search.path)
   }
