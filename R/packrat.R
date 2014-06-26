@@ -153,7 +153,8 @@ init <- function(project = '.',
     expr = {
 
       ## Force packrat mode off
-      suppressMessages(packrat_mode(on = FALSE))
+      if (isPackratModeOn())
+        off()
 
       ## We always re-packify so that the current version of packrat present can
       ## insert the appropriate auto-loaders
