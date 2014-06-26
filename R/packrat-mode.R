@@ -291,7 +291,7 @@ on <- function(project = NULL,
 
   # If there is no lockfile already, perform an init
   if (!file.exists(lockFilePath(project = project))) {
-    return(init(project = project, restart = FALSE))
+    return(init(project = project))
   }
   setPackratModeOn(project = project,
                    auto.snapshot = auto.snapshot,
