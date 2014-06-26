@@ -80,6 +80,10 @@ buildSnapshotHookCall <- function(project) {
 }
 
 snapshotHookImpl <- function(debug = FALSE) {
+
+  if (!isPackratModeOn()) return(invisible(TRUE))
+  if (!debug && !isTRUE(get_opts("auto.snapshot")))
+    return(invisible(TRUE))
   project <- getProjectDir()
   packratDir <- getPackratDir(project)
 
