@@ -42,6 +42,10 @@ Get and set options for the current packrat-managed project.
   This can be useful for very large packages which you don't want duplicated across
   multiple projects, e.g. Bioconductor annotation packages.
   (EXPERIMENTAL; currently defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
+\item \code{use.cache}:
+  Install packages into a global cache, which is then shared across projects? The
+  directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
+  (EXPERIMENTAL; defaults to \code{TRUE})
 }
 }
 

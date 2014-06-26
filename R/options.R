@@ -9,7 +9,8 @@ VALID_OPTIONS <- list(
   print.banner.on.startup = list(TRUE, FALSE, "auto"),
   external.packages = function(x) {
     is.null(x) || is.character(x)
-  }
+  },
+  use.cache = list(TRUE, FALSE)
 )
 
 
@@ -21,7 +22,8 @@ initOptions <- function(project = NULL) {
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
     print.banner.on.startup = "auto",
-    external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")
+    external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES"),
+    use.cache = TRUE
   )
 }
 
@@ -47,6 +49,10 @@ initOptions <- function(project = NULL) {
 ##'   This can be useful for very large packages which you don't want duplicated across
 ##'   multiple projects, e.g. Bioconductor annotation packages.
 ##'   (EXPERIMENTAL; currently defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
+##' \item \code{use.cache}:
+##'   Install packages into a global cache, which is then shared across projects? The
+##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
+##'   (EXPERIMENTAL; defaults to \code{TRUE})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.

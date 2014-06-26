@@ -3,6 +3,10 @@ isCacheable <- function(package) {
   TRUE
 }
 
+isUsingCache <- function(project) {
+  isTRUE(get_opts("use.cache", project = project))
+}
+
 # We assume 'path' is the path to a DESCRIPTION file
 hash <- function(path) {
   DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
@@ -22,6 +26,14 @@ normalizeForHash <- function(item) {
 }
 
 moveInstalledPackagesToCache <- function(project = NULL) {
+  project <- getProjectDir(project)
+
+  # Windows does not have symlinks, so just make this a no-op
+  if (is.windows()) return(invisible())
+
+  if (!isUsingCache(project)) return(invisible())
+
+  # Only do this is we're actually using the packrat cache
 
   if (!file.exists(cacheLibDir()))
     dir.create(cacheLibDir(), recursive = TRUE)
