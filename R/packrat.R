@@ -194,7 +194,7 @@ init <- function(project = '.',
         symlinkSystemPackages(project = project)
       }
 
-      message("Bootstrap complete!")
+      message("Initialization complete!")
 
       if (enter) {
 
