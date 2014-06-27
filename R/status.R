@@ -30,6 +30,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
+  stopIfAutoSnapshotting(project)
 
   projectDefault <- identical(project, '.')
   project <- normalizePath(project, winslash='/', mustWork=TRUE)

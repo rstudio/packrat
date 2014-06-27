@@ -314,6 +314,7 @@ restore <- function(project = NULL,
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
+  stopIfAutoSnapshotting(project)
 
   if (!dry.run) {
     callHook(project, "restore", TRUE)

@@ -123,6 +123,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
           repo,
           "src",
           "contrib",
+          pkgRecord$name,
           pkgSrcFile
         )
         dest <- file.path(pkgSrcDir, pkgSrcFile)
@@ -147,6 +148,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
                                   "src",
                                   "contrib",
                                   "Archive",
+                                  pkgRecord$name,
                                   pkgSrcFile)
           download(archiveUrl, file.path(pkgSrcDir, pkgSrcFile),
                    mode = "wb", quiet = TRUE)

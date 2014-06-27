@@ -61,10 +61,7 @@ snapshot <- function(project = NULL, available = available.packages(),
 
   # Prompt the user to initialize if the project has not yet been initialized
   stopIfNotPackified(project)
-
-  if (file.exists(snapshotLockFilePath(project))) {
-    stop("An automatic snapshot is currently in progress -- cannot proceed")
-  }
+  stopIfAutoSnapshotting(project)
 
   if (!dry.run) {
     callHook(project, "snapshot", TRUE)
@@ -78,6 +75,13 @@ snapshot <- function(project = NULL, available = available.packages(),
                                  prompt = prompt && !dry.run)
   if (dry.run) return(invisible(snapshotResult))
 
+}
+
+stopIfAutoSnapshotting <- function(project = NULL) {
+  if (file.exists(snapshotLockFilePath(project = project))) {
+    stop("An automatic snapshot is currently in progress -- cannot proceed",
+         call. = FALSE)
+  }
 }
 
 snapshotImpl <- function(project,
