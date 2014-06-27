@@ -123,7 +123,6 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
           repo,
           "src",
           "contrib",
-          pkgRecord$name,
           pkgSrcFile
         )
         dest <- file.path(pkgSrcDir, pkgSrcFile)
