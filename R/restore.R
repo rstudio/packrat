@@ -34,6 +34,7 @@ versionMatchesDb <- function(pkgRecord, db) {
 # the source directory root given by sourceDir.
 getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
                                   source.packages, quiet = FALSE) {
+
   # Skip packages for which we can't find sources
   if (is.null(pkgRecord$source) ||
         is.na(pkgRecord$source)) {
@@ -75,7 +76,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
 
     local({
 
-      if (file.exists(file.path(pkgRecord$source_path, "DESCRIPTION"))) {
+      if (length(pkgRecord$source_path) && file.exists(file.path(pkgRecord$source_path, "DESCRIPTION"))) {
         ## If the path supplied is the directory of a source package,
         ## build it
 
@@ -114,16 +115,26 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     # Is the source for this version of the package on CRAN and/or a
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {
+
       # Get the source package
-      fileLoc <- download.packages(pkgRecord$name, destdir = pkgSrcDir,
-                                   available = availablePkgs, repos = repos,
-                                   type = "source", quiet = TRUE)
-      # If the file wasn't saved to the destination directory (which can happen
-      # if the repo is local--see documentation in download.packages), copy it
-      # there now
-      if (!identical(fileLoc[1,2], file.path(pkgSrcDir, pkgSrcFile))) {
-        file.copy(fileLoc[1,2], pkgSrcDir)
+      success <- FALSE
+      for (repo in getOption("repos")) {
+        loc <- file.path(
+          repo,
+          "src",
+          "contrib",
+          pkgSrcFile
+        )
+        dest <- file.path(pkgSrcDir, pkgSrcFile)
+        result <- download(url = loc, destfile = dest, quiet = TRUE, mode = "wb")
+        if (result == 0) {
+          success <- TRUE
+          break
+        }
       }
+      if (!success)
+        stop("Unable to download package source from any of the available repositories!")
+
       type <- paste(type, "current")
     } else {
       # The version requested is not the version on CRAN; it may be an
@@ -132,11 +143,13 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
       foundVersion <- FALSE
       for (repo in repos) {
         tryCatch({
-          archiveUrl <- file.path(repo, "src/contrib/Archive",
-                                  pkgRecord$name,
+          archiveUrl <- file.path(repo,
+                                  "src",
+                                  "contrib",
+                                  "Archive",
                                   pkgSrcFile)
-          download.file(archiveUrl, file.path(pkgSrcDir, pkgSrcFile),
-                        mode = "wb", quiet = TRUE)
+          download(archiveUrl, file.path(pkgSrcDir, pkgSrcFile),
+                   mode = "wb", quiet = TRUE)
           foundVersion <- TRUE
           type <- paste(type, "archived")
           break
