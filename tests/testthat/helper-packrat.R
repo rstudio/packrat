@@ -13,6 +13,7 @@ cloneTestProject <- function(projectName) {
 # "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
 # Not run from tests.
 rebuildTestRepo <- function(testroot) {
+  testroot <- normalizePath(testroot)
   wd <- getwd()
   on.exit(setwd(wd))
   src <- file.path(testroot, "packages")
@@ -26,8 +27,7 @@ rebuildTestRepo <- function(testroot) {
     tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
                      sep = "")
     tar(tarball, pkg, compression = "gzip", tar = "internal")
-    dir.create(file.path(target, pkg))
-    file.rename(file.path(src, tarball), file.path(target, pkg, tarball))
+    file.rename(file.path(src, tarball), file.path(target, tarball))
   }
   tools::write_PACKAGES(target, subdirs = TRUE)
 }
@@ -44,7 +44,7 @@ setupTestRepo <- function() {
 # Installs a test package from source. Necessary because install.packages
 # fails under R CMD CHECK.
 installTestPkg <- function(pkg, ver, lib) {
-  pkgSrc <- file.path("repo", "src", "contrib", pkg,
+  pkgSrc <- file.path("repo", "src", "contrib",
                       paste(pkg, "_", ver, ".tar.gz", sep = ""))
   install_local(path = pkgSrc, reload = FALSE,
                 args = paste("-l", lib), dependencies = FALSE,

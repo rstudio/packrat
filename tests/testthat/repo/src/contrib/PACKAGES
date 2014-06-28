@@ -1,37 +1,32 @@
 Package: bread
 Version: 1.0.0
 License: GPL
-MD5sum: 67d84e36d4ef234bed8662c268ac8a0a
+MD5sum: 65372330d10625a07ae36cdd23b141c1
 NeedsCompilation: no
-Path: ./bread
 
 Package: breakfast
 Version: 1.0.0
 Depends: oatmeal, toast
 License: GPL
-MD5sum: 9d20db306fb493f02677537bd99ec223
+MD5sum: 8dd0ed767d86efe6a95f482bbc9515e3
 NeedsCompilation: no
-Path: ./breakfast
 
 Package: oatmeal
 Version: 1.0.0
 License: GPL
-MD5sum: 90e8ff14f86231364c346b289778aa8b
+MD5sum: ba848f45234578b9bc9f380fa91ea562
 NeedsCompilation: no
-Path: ./oatmeal
 
 Package: packrat
 Version: 0.0.0
 License: GPL
-MD5sum: 7f16d8965dc99e8612cdf61c1aa4a6b8
+MD5sum: 9c164cd0386cf1b956c923596fafa519
 NeedsCompilation: no
-Path: ./packrat
 
 Package: toast
 Version: 1.0.0
 Depends: bread
 License: GPL
-MD5sum: 94983eced5faba874146ebaf8f317627
+MD5sum: 84b9ce0fe7ed93855666dc025d32198a
 NeedsCompilation: no
-Path: ./toast
 
