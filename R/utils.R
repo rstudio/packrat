@@ -421,3 +421,11 @@ setNames <- function(object = nm, nm) {
 dropNull <- function(x) {
   x[unlist(lapply(x, Negate(is.null)))]
 }
+
+sQuote <- function(x) {
+  paste0("'", x, "'")
+}
+
+dQuote <- function(x) {
+  paste0("\"", x, "\"")
+}

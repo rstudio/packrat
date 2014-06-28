@@ -50,18 +50,18 @@ buildSnapshotHookCall <- function(project) {
   peq <- function(x, y) paste(x, y, sep = " = ")
 
   snapshotArgs <- paste(sep = ", ",
-                        peq("project", shQuote(project)),
+                        peq("project", sQuote(project)),
                         peq("auto.snapshot", "TRUE"),
                         peq("verbose", "FALSE")
   )
 
-  repos <- paste(deparse(getOption('repos'), width.cutoff = 500), collapse = ' ')
+  repos <- gsub("\"", "'", paste(deparse(getOption('repos'), width.cutoff = 500), collapse = ' '))
 
-  setwdCmd <- paste0("setwd(", shQuote(project), ")")
+  setwdCmd <- paste0("setwd(", sQuote(project), ")")
   reposCmd <- paste0("options('repos' = ", repos, ")")
-  setLibsCmd <- paste0(".libPaths(c(", paste(shQuote(getLibPaths()), collapse = ", "), "))")
+  setLibsCmd <- paste0(".libPaths(c(", paste(sQuote(getLibPaths()), collapse = ", "), "))")
   snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")), silent = TRUE)")
-  cleanupCmd <- paste0("file.remove(", shQuote(snapshotLockPath), ")")
+  cleanupCmd <- paste0("file.remove(", sQuote(snapshotLockPath), ")")
 
   c(
     setwdCmd,
@@ -72,6 +72,8 @@ buildSnapshotHookCall <- function(project) {
     "invisible()"
   )
 }
+
+
 
 snapshotHookImpl <- function() {
   project <- getProjectDir()
@@ -91,7 +93,7 @@ snapshotHookImpl <- function() {
   file.create(snapshotLockPath)
   r_path <- file.path(R.home("bin"), "R")
 
-  cmd <- paste(shQuote(r_path), "--vanilla", "--slave", "-e", shQuote(fullCmd))
+  cmd <- paste(dQuote(r_path), "--vanilla", "--slave", "-e", dQuote(fullCmd))
   res <- system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
   invisible(TRUE)
 }
