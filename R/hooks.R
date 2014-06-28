@@ -73,9 +73,7 @@ buildSnapshotHookCall <- function(project) {
   )
 }
 
-
-
-snapshotHookImpl <- function() {
+snapshotHookImpl <- function(debug = FALSE) {
   project <- getProjectDir()
   packratDir <- getPackratDir(project)
 
@@ -86,14 +84,22 @@ snapshotHookImpl <- function() {
   ## This file needs to be checked, and deleted, by the async process
   if (file.exists(snapshotLockPath)) {
     ## we assume another process is currently performing an async snapshot
-    return(FALSE)
+    if (debug)
+      cat("Automatic snapshot already in process; exiting")
+    return(TRUE)
   }
 
   fullCmd <- paste(buildSnapshotHookCall(project), collapse = "; ")
   file.create(snapshotLockPath)
   r_path <- file.path(R.home("bin"), "R")
-
-  cmd <- paste(dQuote(r_path), "--vanilla", "--slave", "-e", dQuote(fullCmd))
-  res <- system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
+  args <- paste("--vanilla", "--slave", "-e", dQuote(fullCmd))
+  if (debug) {
+    cat("Performing an automatic snapshot")
+    cat(paste(dQuote(r_path), args), "\n")
+    result <- system2(r_path, args, stdout = TRUE, stderr = TRUE)
+    print(result)
+  } else {
+    result <- system2(r_path, args, stdout = FALSE, stderr = FALSE, wait = FALSE)
+  }
   invisible(TRUE)
 }
