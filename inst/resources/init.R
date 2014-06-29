@@ -140,10 +140,10 @@ local({
     ## an 'installed from source' version
 
     ## -- InstallAgent -- ##
-  installAgent <- 'InstallAgent: packrat 0.3.0'
+    installAgent <- 'InstallAgent: packrat 0.3.0'
 
     ## -- InstallSource -- ##
-  installSource <- 'InstallSource: source'
+    installSource <- 'InstallSource: source'
 
     packratDescPath <- file.path(lib, "packrat", "DESCRIPTION")
     DESCRIPTION <- readLines(packratDescPath)
