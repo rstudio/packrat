@@ -422,10 +422,7 @@ dropNull <- function(x) {
   x[unlist(lapply(x, Negate(is.null)))]
 }
 
-sQuote <- function(x) {
-  paste0("'", x, "'")
-}
-
-dQuote <- function(x) {
-  paste0("\"", x, "\"")
+surround <- function(x, with = "'") {
+  if (!length(x)) return(character())
+  paste0(with, as.character(x), with)
 }

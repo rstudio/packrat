@@ -50,18 +50,24 @@ buildSnapshotHookCall <- function(project) {
   peq <- function(x, y) paste(x, y, sep = " = ")
 
   snapshotArgs <- paste(sep = ", ",
-                        peq("project", sQuote(project)),
+                        peq("project", surround(project, with = "'")),
                         peq("auto.snapshot", "TRUE"),
                         peq("verbose", "FALSE")
   )
 
   repos <- gsub("\"", "'", paste(deparse(getOption('repos'), width.cutoff = 500), collapse = ' '))
 
-  setwdCmd <- paste0("setwd(", sQuote(project), ")")
+  setwdCmd <- paste0("setwd(", surround(project, with = "'"), ")")
   reposCmd <- paste0("options('repos' = ", repos, ")")
-  setLibsCmd <- paste0(".libPaths(c(", paste(sQuote(getLibPaths()), collapse = ", "), "))")
+  setLibsCmd <- paste0(".libPaths(c(",
+                       paste(surround(getLibPaths(), with = "'"), collapse = ", "),
+                       "))")
   snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")), silent = TRUE)")
-  cleanupCmd <- paste0("file.remove(", sQuote(snapshotLockPath), ")")
+  cleanupCmd <- paste0("if (file.exists(",
+                       surround(snapshotLockPath, with = "'"),
+                       ")) file.remove(",
+                       surround(snapshotLockPath, with = "'"),
+                       ")")
 
   c(
     setwdCmd,
@@ -85,18 +91,19 @@ snapshotHookImpl <- function(debug = FALSE) {
   if (file.exists(snapshotLockPath)) {
     ## we assume another process is currently performing an async snapshot
     if (debug)
-      cat("Automatic snapshot already in process; exiting")
+      cat("Automatic snapshot already in process; exiting\n")
     return(TRUE)
   }
 
   fullCmd <- paste(buildSnapshotHookCall(project), collapse = "; ")
-  file.create(snapshotLockPath)
+  file.create(snapshotLockPath, recursive = TRUE)
   r_path <- file.path(R.home("bin"), "R")
-  args <- paste("--vanilla", "--slave", "-e", dQuote(fullCmd))
+  args <- paste("--vanilla", "--slave", "-e", surround(fullCmd, with = "\""))
   if (debug) {
-    cat("Performing an automatic snapshot")
-    cat(paste(dQuote(r_path), args), "\n")
+    cat("Performing an automatic snapshot:\n\n")
+    cat(paste(surround(r_path, with = "\""), args), "\n")
     result <- system2(r_path, args, stdout = TRUE, stderr = TRUE)
+    cat("Captured result:\n")
     print(result)
   } else {
     result <- system2(r_path, args, stdout = FALSE, stderr = FALSE, wait = FALSE)

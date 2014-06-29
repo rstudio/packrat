@@ -107,19 +107,18 @@ local({
     message("> Installing packrat into project private library:")
     message("- ", shQuote(lib))
 
-    sQuote <- function(x)
-      paste("'", x, "'", sep = "")
-
-    dQuote <- function(x)
-      paste("\"", x, "\"")
+    surround <- function(x, with) {
+      if (!length(x)) return(character())
+      paste0(with, x, with)
+    }
 
     ## The following is performed because a regular install.packages call can fail
     peq <- function(x, y) paste(x, y, sep = " = ")
     installArgs <- c(
-      peq("pkgs", sQuote(packratSrcPath)),
-      peq("lib", sQuote(lib)),
+      peq("pkgs", surround(packratSrcPath, with = "'")),
+      peq("lib", surround(lib, with = "'")),
       peq("repos", "NULL"),
-      peq("type", sQuote("source"))
+      peq("type", surround("source", with = "'"))
     )
     installCmd <- paste(sep = "",
                         "utils::install.packages(",
@@ -127,11 +126,11 @@ local({
                         ")")
 
     fullCmd <- paste(
-      dQuote(file.path(R.home("bin"), "R")),
+      surround(file.path(R.home("bin"), "R"), with = "\""),
       "--vanilla",
       "--slave",
       "-e",
-      dQuote(installCmd)
+      surround(installCmd, with = "\"")
     )
     system(fullCmd)
 
