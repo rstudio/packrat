@@ -480,20 +480,15 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   # Assign targetLib based on whether the namespace of a package within the
   # packrat directory is loaded -- packages that don't exist can just
   # return "" -- this will fail the equality checks later
+  loadedNamespaces <- loadedNamespaces()
   packageLoadPaths <- sapply(names(actions), function(x) {
-    tryCatch(
-
-      expr = getNamespaceInfo(x, "path"),
-
-      error = function(e) {
-        ""
-      }
-
-    )
+    if (x %in% loadedNamespaces)
+      getNamespaceInfo(x, "path")
+    else
+      ""
   })
 
   loadedFromPrivateLibrary <- names(actions)[
-    names(actions) %in% loadedNamespaces() &
     packageLoadPaths == libDir(project)
   ]
 
