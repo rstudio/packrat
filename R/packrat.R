@@ -580,18 +580,6 @@ packify <- function(project = NULL, quiet = FALSE) {
     file.path(project, .packrat$packratFolderName, "init.R")
   )
 
-  msg <- "Packrat startup directives installed."
-  if (identical(project, getwd())) {
-    if (!attemptRestart(restore.packrat.mode = TRUE)) {
-      msg <- paste(msg, "Please call \"packrat::on()\" to initialize packrat.")
-    }
-  } else {
-    msg <- paste(msg, "Please call \"packrat::on(project = '", project, "')\"",
-                 "to initialize packrat.")
-  }
-
-  if (!quiet) message(msg)
-
   invisible()
 }
 
