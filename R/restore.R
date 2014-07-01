@@ -327,11 +327,12 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       # install.packages emits both messages and standard output; redirect these
       # streams to keep our own output clean.
 
-      # on windows, we need to make sure the namespace is unloaded before install
+      # on windows, we need to detach the package before installation
       if (is.windows() &&
-          pkgRecord %in% loadedNamespaces() &&
-          !identical(pkgRecord$name, "packrat"))
-        try(forceUnload(pkgRecord$name), silent = TRUE)
+          paste0("package:", pkgRecord$name) %in% search()) {
+        detach(paste0("package:", pkgRecord$name))
+        on.exit(library(pkgRecord$name), add = TRUE)
+      }
 
       suppressMessages(
         capture.output(
@@ -377,11 +378,12 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
         setLibPaths(lib)
       }
 
-      # on windows, we need to make sure the namespace is unloaded before install
+      # on windows, we need to detach the package before installation
       if (is.windows() &&
-          pkgRecord %in% loadedNamespaces() &&
-          !identical(pkgRecord$name, "packrat"))
-        try(forceUnload(pkgRecord$name), silent = TRUE)
+            paste0("package:", pkgRecord$name) %in% search()) {
+        detach(paste0("package:", pkgRecord$name))
+        on.exit(library(pkgRecord$name), add = TRUE)
+      }
 
       install_local(path = pkgSrc, reload = FALSE,
                     dependencies = FALSE, quick = TRUE, quiet = TRUE)
