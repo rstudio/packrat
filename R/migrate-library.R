@@ -7,6 +7,12 @@ userPkgsInSystemLibrary <- function() {
   userLibs <- with(systemPkgs, {
     Package[is.na(Priority)]
   })
+
+  ## Translations is a system package installed with CRAN R
+  ## that we should exclude -- it is not given a priority,
+  ## strangely enough
+  userLibs <- setdiff(userLibs, "translations")
+
   userLibs
 }
 
