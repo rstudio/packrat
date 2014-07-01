@@ -24,7 +24,7 @@ local({
     if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
           is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
       Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
-      setHook("rstudio.sessionInit", function() {
+      setHook("rstudio.sessionInit", function(...) {
         source("packrat/init.R")
       })
       return(invisible(NULL))
