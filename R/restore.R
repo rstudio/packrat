@@ -326,6 +326,11 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
     tryCatch ({
       # install.packages emits both messages and standard output; redirect these
       # streams to keep our own output clean.
+
+      # on windows, we need to make sure the namespace is unloaded before install
+      if (is.windows() && pkgRecord %in% loadedNamespaces())
+        forceUnload(pkgRecord$name)
+
       suppressMessages(
         capture.output(
           utils::install.packages(pkgRecord$name, lib = lib, repos = repos,

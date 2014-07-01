@@ -135,6 +135,17 @@ fileDependencies.Rmd <- function(file) {
     return(deps)
   }
 
+  ## Unload knitr if needed only for the duration of this function call
+  ## This prevents errors with e.g. `packrat::restore` performed after
+  ## a `fileDependencies.Rmd` call on Windows, where having knitr loaded
+  ## would prevent an installation of knitr to succeed
+  knitrIsLoaded <- "knitr" %in% loadedNamespaces()
+  on.exit({
+    if (!knitrIsLoaded && "knitr" %in% loadedNamespaces()) {
+      try(unloadNamespace("knitr"), silent = TRUE)
+    }
+  })
+
   if (require("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
