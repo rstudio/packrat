@@ -330,8 +330,9 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       # on windows, we need to detach the package before installation
       if (is.windows() &&
           paste0("package:", pkgRecord$name) %in% search()) {
-        detach(paste0("package:", pkgRecord$name))
-        on.exit(library(pkgRecord$name), add = TRUE)
+        pkg <- paste0("package:", pkgRecord$name)
+        detach(pkg, character.only = TRUE)
+        on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
       suppressMessages(
@@ -381,8 +382,9 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       # on windows, we need to detach the package before installation
       if (is.windows() &&
             paste0("package:", pkgRecord$name) %in% search()) {
-        detach(paste0("package:", pkgRecord$name))
-        on.exit(library(pkgRecord$name), add = TRUE)
+        pkg <- paste0("package:", pkgRecord$name)
+        detach(pkg, character.only = TRUE)
+        on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
       install_local(path = pkgSrc, reload = FALSE,
