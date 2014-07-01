@@ -328,8 +328,10 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
       # streams to keep our own output clean.
 
       # on windows, we need to make sure the namespace is unloaded before install
-      if (is.windows() && pkgRecord %in% loadedNamespaces())
-        forceUnload(pkgRecord$name)
+      if (is.windows() &&
+          pkgRecord %in% loadedNamespaces() &&
+          !identical(pkgRecord$name, "packrat"))
+        try(forceUnload(pkgRecord$name), silent = TRUE)
 
       suppressMessages(
         capture.output(
@@ -374,6 +376,13 @@ installPkg <- function(pkgRecord, project, availablePkgs, repos,
         if (!file.exists(lib)) dir.create(lib, recursive = TRUE)
         setLibPaths(lib)
       }
+
+      # on windows, we need to make sure the namespace is unloaded before install
+      if (is.windows() &&
+          pkgRecord %in% loadedNamespaces() &&
+          !identical(pkgRecord$name, "packrat"))
+        try(forceUnload(pkgRecord$name), silent = TRUE)
+
       install_local(path = pkgSrc, reload = FALSE,
                     dependencies = FALSE, quick = TRUE, quiet = TRUE)
     })
