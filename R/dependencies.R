@@ -225,6 +225,19 @@ expressionDependencies <- function(e) {
     return(unlist(lapply(e, expressionDependencies)))
   }
 
+  ## traverse a call to find `::`, `:::`, `library`, `require` calls
+  if (is.call(e)) {
+    parent <- e
+    child <- e[[1L]]
+    while (is.call(child)) {
+      parent <- e[[1L]]
+      child <- parent[[1L]]
+    }
+    if (as.character(child) %in% c("::", ":::", "library", "require")) {
+      return(as.character(parent[[2L]]))
+    }
+  }
+
   # base case: a call
   fname <- as.character(e[[1L]])
   # a refclass method call, so return
