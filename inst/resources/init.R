@@ -3,7 +3,7 @@ local({
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
   if (is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA)) &&
-      suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
+        suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
 
     # Check if we need to migrate the library (mainly for Windows)
     packrat:::checkNeedsMigration()
@@ -151,18 +151,20 @@ local({
     DESCRIPTION <- c(DESCRIPTION, installAgent, installSource)
     cat(DESCRIPTION, file = packratDescPath, sep = "\n")
 
-    # If the environment allows us to restart, do so with a call to restore
-    restart <- getOption("restart")
-    if (!is.null(restart)) {
-      restart("packrat::restore(restart = FALSE)")
-    }
-
     # Otherwise, continue on as normal
     message("> Attaching packrat")
     library("packrat", character.only = TRUE, lib.loc = lib)
 
     message("> Restoring library")
     restore(restart = FALSE)
+
+    # If the environment allows us to restart, do so with a call to restore
+    restart <- getOption("restart")
+    if (!is.null(restart)) {
+      message("> Packrat bootstrap successfully completed. ",
+              "Restarting R and entering packrat mode...")
+      return(restart())
+    }
 
     # Callers (source-erers) can define this hidden variable to make sure we don't enter packrat mode
     # Primarily useful for testing
