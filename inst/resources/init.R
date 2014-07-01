@@ -2,7 +2,8 @@ local({
 
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
-  if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
+  if (is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA)) &&
+      suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
 
     # Check if we need to migrate the library (mainly for Windows)
     packrat:::checkNeedsMigration()
