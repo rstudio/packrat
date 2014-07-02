@@ -17,7 +17,7 @@ initOptions <- function(project = NULL) {
   project <- getProjectDir(project)
   set_opts(
     project = project,
-    auto.snapshot = TRUE,
+    auto.snapshot = FALSE,
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
     print.banner.on.startup = "auto",
