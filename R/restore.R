@@ -254,7 +254,8 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
   records <- list(
     InstallAgent = paste('packrat', packageVersion('packrat')),
     InstallSource = pkgRecord$source,
-    InstallSourcePath = pkgRecord$source_path
+    InstallSourcePath = pkgRecord$source_path,
+    Hash = hash(descFile)
   )
 
   # Drop any NULL elements above (this could occur for e.g. source_path, since

@@ -106,6 +106,8 @@ snapshotImpl <- function(project,
     ignore <- NULL
   }
 
+  ## rstudio, manipulate needs ignoring
+  ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
   inferredPkgs <- sort(appDependencies(project))

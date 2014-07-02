@@ -60,6 +60,9 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     noCache = TRUE
   )[, "Package"]
 
+  ## Ignore 'rstudio', 'manipulate'
+  installedPkgs <- setdiff(installedPkgs, c('rstudio', 'manipulate'))
+
   ## If we are using packrat alongside an R package, then we should
   ## ignore the package itself
   if (file.exists(file.path(project, "DESCRIPTION"))) {
