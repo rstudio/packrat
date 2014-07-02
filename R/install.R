@@ -516,26 +516,19 @@ rtools_needed <- function() {
 
 system_check <- function(cmd, args = character(), env = character(),
                          quiet = FALSE, ...) {
-  full <- paste(shQuote(cmd), " ", paste(args, collapse = ", "), sep = "")
+  full <- paste(shQuote(cmd), paste(args, collapse = ", "))
 
   if (!quiet) {
     message(wrap_command(full))
     message()
   }
 
-  # Capture any output from the system command, in case we wish to report it later
-  # TODO: we cannot capture output with 2>&1 on Windows, so need alternative mechanism
-  if (is.windows()) {
-    result <- suppressWarnings(with_envvar(
-      env,
-      system(full, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE)
-    ))
-  } else {
-    result <- suppressWarnings(with_envvar(
-      env,
-      system(paste(full, "2>&1"), intern = TRUE, ...)
-    ))
-  }
+  # Use system2 instead of system as we can then handle redirection
+  # on Windows
+  result <- suppressWarnings(with_envvar(
+    env,
+    system2(cmd, args, stdout = TRUE, stderr = TRUE)
+  ))
 
   status <- attr(result, "status")
   if (!is.null(status) && !(status == 0)) {

@@ -115,12 +115,13 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {
       # Get the source package
-      fileLoc <- download.packages(pkgRecord$name,
-                                   destdir = pkgSrcDir,
-                                   available = availablePkgs,
-                                   repos = repos,
-                                   type = "source",
-                                   quiet = TRUE)
+      fileLoc <- download.packages(pkgRecord$name, destdir = pkgSrcDir,
+                                   available = availablePkgs, repos = repos,
+                                   type = "source", quiet = TRUE)
+      if (!nrow(fileLoc))
+        warning("Failed to download current version of ", pkgRecord$name,
+                "(", pkgRecord$version, ")")
+
       # If the file wasn't saved to the destination directory (which can happen
       # if the repo is local--see documentation in download.packages), copy it
       # there now
@@ -343,6 +344,15 @@ installPkg <- function(pkgRecord,
     tryCatch ({
       # install.packages emits both messages and standard output; redirect these
       # streams to keep our own output clean.
+
+      # on windows, we need to detach the package before installation
+      if (is.windows() &&
+          paste0("package:", pkgRecord$name) %in% search()) {
+        pkg <- paste0("package:", pkgRecord$name)
+        detach(pkg, character.only = TRUE)
+        on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
+      }
+
       suppressMessages(
         capture.output(
           utils::install.packages(pkgRecord$name, lib = lib, repos = repos,
@@ -389,6 +399,15 @@ installPkg <- function(pkgRecord,
         if (!file.exists(lib)) dir.create(lib, recursive = TRUE)
         setLibPaths(lib)
       }
+
+      # on windows, we need to detach the package before installation
+      if (is.windows() &&
+            paste0("package:", pkgRecord$name) %in% search()) {
+        pkg <- paste0("package:", pkgRecord$name)
+        detach(pkg, character.only = TRUE)
+        on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
+      }
+
       install_local(path = pkgSrc, reload = FALSE,
                     dependencies = FALSE, quick = TRUE, quiet = TRUE)
     })
@@ -503,20 +522,15 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   # Assign targetLib based on whether the namespace of a package within the
   # packrat directory is loaded -- packages that don't exist can just
   # return "" -- this will fail the equality checks later
+  loadedNamespaces <- loadedNamespaces()
   packageLoadPaths <- sapply(names(actions), function(x) {
-    tryCatch(
-
-      expr = getNamespaceInfo(x, "path"),
-
-      error = function(e) {
-        ""
-      }
-
-    )
+    if (x %in% loadedNamespaces)
+      getNamespaceInfo(x, "path")
+    else
+      ""
   })
 
   loadedFromPrivateLibrary <- names(actions)[
-    names(actions) %in% loadedNamespaces() &
     packageLoadPaths == libDir(project)
   ]
 

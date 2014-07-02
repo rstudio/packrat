@@ -132,3 +132,14 @@ test_that("init works with multiple repos", {
   projRoot <- cloneTestProject("empty")
   init(enter = FALSE, projRoot, source.packages = file.path("packages", "packrat"))
 })
+
+test_that("fileDependencies.R picks up '::', ':::' dependencies", {
+  file <- tempfile()
+  cat("library('baz')\nlibrary('bat')\nstringr::foo(1)\nKmisc::enumerate(2)\nfunction() {{plyr::bar(plyr::baz(1, 2))}}\n", file = file)
+  on.exit(unlink(file))
+  deps <- fileDependencies.R(file)
+  expect_identical(
+    intersect(deps, c("baz", "bat", "stringr", "Kmisc", "plyr")),
+    union(deps, c("baz", "bat", "stringr", "Kmisc", "plyr"))
+  )
+})

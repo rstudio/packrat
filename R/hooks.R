@@ -50,18 +50,24 @@ buildSnapshotHookCall <- function(project) {
   peq <- function(x, y) paste(x, y, sep = " = ")
 
   snapshotArgs <- paste(sep = ", ",
-                        peq("project", shQuote(project)),
+                        peq("project", surround(project, with = "'")),
                         peq("auto.snapshot", "TRUE"),
                         peq("verbose", "FALSE")
   )
 
-  repos <- paste(deparse(getOption('repos'), width.cutoff = 500), collapse = ' ')
+  repos <- gsub("\"", "'", paste(deparse(getOption('repos'), width.cutoff = 500), collapse = ' '))
 
-  setwdCmd <- paste0("setwd(", shQuote(project), ")")
+  setwdCmd <- paste0("setwd(", surround(project, with = "'"), ")")
   reposCmd <- paste0("options('repos' = ", repos, ")")
-  setLibsCmd <- paste0(".libPaths(c(", paste(shQuote(getLibPaths()), collapse = ", "), "))")
+  setLibsCmd <- paste0(".libPaths(c(",
+                       paste(surround(getLibPaths(), with = "'"), collapse = ", "),
+                       "))")
   snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")), silent = TRUE)")
-  cleanupCmd <- paste0("file.remove(", shQuote(snapshotLockPath), ")")
+  cleanupCmd <- paste0("if (file.exists(",
+                       surround(snapshotLockPath, with = "'"),
+                       ")) file.remove(",
+                       surround(snapshotLockPath, with = "'"),
+                       ")")
 
   c(
     setwdCmd,
@@ -73,10 +79,11 @@ buildSnapshotHookCall <- function(project) {
   )
 }
 
-snapshotHookImpl <- function() {
+snapshotHookImpl <- function(debug = FALSE) {
 
   if (!isPackratModeOn()) return(invisible(TRUE))
-  if (!isTRUE(get_opts("auto.snapshot"))) return(invisible(TRUE))
+  if (!debug && !isTRUE(get_opts("auto.snapshot")))
+    return(invisible(TRUE))
   project <- getProjectDir()
   packratDir <- getPackratDir(project)
 
@@ -87,14 +94,23 @@ snapshotHookImpl <- function() {
   ## This file needs to be checked, and deleted, by the async process
   if (file.exists(snapshotLockPath)) {
     ## we assume another process is currently performing an async snapshot
-    return(FALSE)
+    if (debug)
+      cat("Automatic snapshot already in process; exiting\n")
+    return(TRUE)
   }
 
   fullCmd <- paste(buildSnapshotHookCall(project), collapse = "; ")
-  file.create(snapshotLockPath)
+  file.create(snapshotLockPath, recursive = TRUE)
   r_path <- file.path(R.home("bin"), "R")
-
-  cmd <- paste(shQuote(r_path), "--vanilla", "--slave", "-e", shQuote(fullCmd))
-  res <- system(cmd, wait = FALSE, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE)
+  args <- paste("--vanilla", "--slave", "-e", surround(fullCmd, with = "\""))
+  if (debug) {
+    cat("Performing an automatic snapshot:\n\n")
+    cat(paste(surround(r_path, with = "\""), args), "\n")
+    result <- system2(r_path, args, stdout = TRUE, stderr = TRUE)
+    cat("Captured result:\n")
+    print(result)
+  } else {
+    result <- system2(r_path, args, stdout = FALSE, stderr = FALSE, wait = FALSE)
+  }
   invisible(TRUE)
 }

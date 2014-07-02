@@ -202,6 +202,13 @@ snapshotImpl <- function(project,
       lockFilePath(project),
       allRecords
     )
+    for (record in allRecordsFlat) {
+      name <- record$name
+      path <- file.path(libDir(project), name, "DESCRIPTION")
+      if (file.exists(path)) {
+        annotatePkgDesc(record, project, libDir(project))
+      }
+    }
     moveInstalledPackagesToCache(project)
     if (verbose) {
       message('Snapshot written to ',

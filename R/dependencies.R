@@ -135,6 +135,17 @@ fileDependencies.Rmd <- function(file) {
     return(deps)
   }
 
+  ## Unload knitr if needed only for the duration of this function call
+  ## This prevents errors with e.g. `packrat::restore` performed after
+  ## a `fileDependencies.Rmd` call on Windows, where having knitr loaded
+  ## would prevent an installation of knitr to succeed
+  knitrIsLoaded <- "knitr" %in% loadedNamespaces()
+  on.exit({
+    if (!knitrIsLoaded && "knitr" %in% loadedNamespaces()) {
+      try(unloadNamespace("knitr"), silent = TRUE)
+    }
+  })
+
   if (require("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
@@ -212,6 +223,19 @@ expressionDependencies <- function(e) {
   # recursive case: expression (= list of calls)
   if (is.expression(e)) {
     return(unlist(lapply(e, expressionDependencies)))
+  }
+
+  ## traverse a call to find `::`, `:::`, `library`, `require` calls
+  if (is.call(e)) {
+    parent <- e
+    child <- e[[1L]]
+    while (is.call(child)) {
+      parent <- e[[1L]]
+      child <- parent[[1L]]
+    }
+    if (as.character(child) %in% c("::", ":::", "library", "require")) {
+      return(as.character(parent[[2L]]))
+    }
   }
 
   # base case: a call
