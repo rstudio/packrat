@@ -28,9 +28,6 @@ normalizeForHash <- function(item) {
 moveInstalledPackagesToCache <- function(project = NULL) {
   project <- getProjectDir(project)
 
-  # Windows does not have symlinks, so just make this a no-op
-  if (is.windows()) return(invisible())
-
   if (!isUsingCache(project)) return(invisible())
 
   # Only do this is we're actually using the packrat cache
