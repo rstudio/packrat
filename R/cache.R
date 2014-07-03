@@ -62,7 +62,7 @@ moveInstalledPackagesToCache <- function(project = NULL) {
 
     ## replace the local package with a symlink
     if (!is.symlink(package)) unlink(package, recursive = TRUE)
-    file.symlink(normalizePath(cacheLibDir(hash)), package)
+    symlink(normalizePath(cacheLibDir(hash)), package)
   }
 
 }

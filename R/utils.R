@@ -432,3 +432,8 @@ write_dcf <- function(x, file = "", append = FALSE, indent = 4,
   write.dcf(x = x, file = file, append = append, indent = indent,
             width = width, keep.white = keep.white, ...)
 }
+
+symlink <- function(from, to) {
+  if (is.windows()) Sys.junction(from, to)
+  else file.symlink(from, to)
+}

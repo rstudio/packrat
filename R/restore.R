@@ -331,7 +331,7 @@ installPkg <- function(pkgRecord,
 
     # This package has already been installed in the cache; just symlink
     # to that
-    file.symlink(
+    symlink(
       file.path(cacheLibDir(pkgRecord$hash)),
       file.path(libDir(project), pkgRecord$name)
     )
