@@ -66,3 +66,19 @@ library that you might not want as project-specific dependencies, e.g.
   external package is loaded only for the duration of the evaluated
   expression.
 
+# Workflows
+
+Packrat supports a set of common analytic workflows:
+
+1. Track-as-you-go: initialize packrat with your project, and use it to manage
+   your project library while you develop your analysis. As you install and
+   remove packages, you can use `packrat::snapshot()` and `packrat::restore()`
+   to maintain the R packages in your project. For collaboration, you can
+   either use your favourite version control system, or use `packrat::bundle()`
+   to generate a bundled version of your project that collaborators can use
+   with `packrat::unbundle()`.
+
+2. When-you're-done: take an existing or complete analysis (preferably
+   collected within one directory), and call `packrat::init()` to immediately
+   obtain R package sources for all packages used in your project, and snapshot
+   that state so it can hence be preserved across time.
