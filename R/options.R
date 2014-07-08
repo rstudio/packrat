@@ -18,7 +18,7 @@ initOptions <- function(project = NULL) {
   project <- getProjectDir(project)
   set_opts(
     project = project,
-    auto.snapshot = FALSE,
+    auto.snapshot = TRUE,
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
     print.banner.on.startup = "auto",
@@ -48,11 +48,11 @@ initOptions <- function(project = NULL) {
 ##'   Packages which should be loaded from the user library upon entering packrat mode.
 ##'   This can be useful for very large packages which you don't want duplicated across
 ##'   multiple projects, e.g. Bioconductor annotation packages.
-##'   (EXPERIMENTAL; currently defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
+##'   (EXPERIMENTAL; defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
 ##' \item \code{use.cache}:
 ##'   Install packages into a global cache, which is then shared across projects? The
 ##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
-##'   (EXPERIMENTAL; defaults to \code{TRUE})
+##'   (EXPERIMENTAL; defaults to \code{FALSE})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
