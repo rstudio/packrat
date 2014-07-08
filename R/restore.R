@@ -332,7 +332,7 @@ installPkg <- function(pkgRecord,
     # This package has already been installed in the cache; just symlink
     # to that
     symlink(
-      file.path(cacheLibDir(pkgRecord$hash)),
+      file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash)),
       file.path(libDir(project), pkgRecord$name)
     )
     type <- "symlinked cache"
@@ -426,7 +426,8 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   availablePkgs <- available.packages(contrib.url(repos))
 
   # Get the set of hashes for cached packages
-  cache <- list.files(cacheLibDir())
+  cachedPkgs <- list.files(cacheLibDir(), full.names = TRUE)
+  cache <- unlist(lapply(cachedPkgs, list.files))
 
   # If this is the initial snapshot, we can optimize the installation of
   # packages from the global library to the private Packrat library

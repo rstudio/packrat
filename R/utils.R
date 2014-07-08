@@ -76,7 +76,7 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
     }
   }
 
-  success <- dir.create(to)
+  success <- dir.create(to, recursive = TRUE)
   if (!success) stop("Couldn't create directory '", to, "'.")
 
   # Get relative file paths
