@@ -106,6 +106,8 @@ snapshotImpl <- function(project,
     ignore <- NULL
   }
 
+  ## rstudio, manipulate needs ignoring
+  ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
   inferredPkgs <- sort(appDependencies(project))
@@ -189,7 +191,7 @@ snapshotImpl <- function(project,
   if (mustConfirm && auto.snapshot) return(invisible())
 
   if (prompt && mustConfirm) {
-    answer <- readline('Do you want to continue? [Y/n] ')
+    answer <- readline('Do you want to continue? [Y/n]: ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
     if (nzchar(answer) && tolower(answer) != 'y') {
       return(invisible())
@@ -209,12 +211,14 @@ snapshotImpl <- function(project,
         annotatePkgDesc(record, project, libDir(project))
       }
     }
+    moveInstalledPackagesToCache(project)
     if (verbose) {
       message('Snapshot written to ',
               shQuote(normalizePath(lockFilePath(project), winslash = '/'))
       )
     }
   }
+
   return(invisible(list(pkgRecords = lockPackages,
                         actions = diffs[!is.na(diffs)],
                         pkgsSnapshot = allRecords)))

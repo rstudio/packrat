@@ -22,7 +22,7 @@ symlinkSystemPackages <- function(project = NULL) {
   ## want to capture any user libraries that may have been installed in the 'system'
   ## library directory
   for (pkg in rownames(sysPkgsBase)) {
-    file.symlink(
+    symlink(
       file.path(.Library, pkg),
       file.path(libRdir, pkg)
     )
