@@ -325,7 +325,8 @@ installPkg <- function(pkgRecord,
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
   # is the version desired, and (c) R is set to download binaries. We also
   # just copy a symlink from the cache if possible.
-  if (length(pkgRecord$hash) &&
+  if (isUsingCache(project) &&
+      length(pkgRecord$hash) &&
       isCacheable(pkgRecord$name) &&
       pkgRecord$hash %in% cache) {
 
