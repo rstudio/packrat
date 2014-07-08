@@ -50,7 +50,13 @@ download <- function(url, ...) {
       # Needed for https. Will get warning if setInternet2(FALSE) already run
       # and internet routines are used. But the warnings don't seem to matter.
       suppressWarnings(seti2(TRUE))
-      download.file(url, ...)
+
+      # download.file will complain about file size with something like:
+      #       Warning message:
+      #         In download.file(url, ...) : downloaded length 19457 != reported length 200
+      # because apparently it compares the length with the status code returned (?)
+      # so we supress that
+      suppressWarnings(download.file(url, ...))
 
     } else {
       # If non-Windows, check for curl/wget/lynx, then call download.file with
