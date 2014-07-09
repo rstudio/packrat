@@ -8,9 +8,6 @@
 #' @param available A database of available packages.
 #' @param lib.loc The library to snapshot. Defaults to the private library
 #'   associated with the given directory.
-#' @param source.packages A character vector of directories containing R
-#'   package sources. It is only necessary to supply this parameter when using a
-#'   package for which sources exist on neither CRAN or GitHub.
 #' @param ignore.stale Stale packages are packages that are different from the
 #'   last snapshot, but were installed by packrat. Typically, packages become
 #'   stale when a new snapshot is available, but you haven't applied it yet with
@@ -45,16 +42,13 @@
 #' # See what changes would be included in a snapshot
 #' snapshot(dry.run = TRUE)
 #'
-#' # Take a snapshot of a project that includes a custom package
-#' snapshot(source.packages = c(
-#'   "~/R/MyCustomPackage",
-#'   "~/R/MyOtherPackage_0.1.0.tar.gz"
-#' ))
 #' }
 #' @export
-snapshot <- function(project = NULL, available = available.packages(),
-                     lib.loc = libDir(project), source.packages = NULL,
-                     ignore.stale = FALSE, dry.run = FALSE,
+snapshot <- function(project = NULL,
+                     available = available.packages(),
+                     lib.loc = libDir(project),
+                     ignore.stale = FALSE,
+                     dry.run = FALSE,
                      prompt = interactive()) {
 
   project <- getProjectDir(project)
@@ -71,11 +65,13 @@ snapshot <- function(project = NULL, available = available.packages(),
     on.exit(callHook(project, "snapshot", FALSE), add = TRUE)
   }
 
-  source.packages <- getSourcePackageInfo(source.packages)
-  snapshotResult <- snapshotImpl(project, available, lib.loc,
-                                 source.packages, dry.run,
+  snapshotResult <- snapshotImpl(project,
+                                 available,
+                                 lib.loc,
+                                 dry.run,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run)
+
   if (dry.run) return(invisible(snapshotResult))
 
 }
@@ -83,7 +79,6 @@ snapshot <- function(project = NULL, available = available.packages(),
 snapshotImpl <- function(project,
                          available = available.packages(),
                          lib.loc = libDir(project),
-                         source.packages = NULL,
                          dry.run = FALSE,
                          ignore.stale = FALSE,
                          prompt = interactive(),
@@ -118,15 +113,15 @@ snapshotImpl <- function(project,
   # available, so we don't overload the missing.package argument of
   # getPackageRecords and let it fail if something goes wrong
   libPkgRecords <- getPackageRecords(libPkgs,
+                                     project = project,
                                      available = available,
-                                     source.packages = source.packages,
                                      lib.loc = lib.loc)
 
   # Inferred packages _must_ be found either on CRAN, GitHub, or as part
   # of the source.packages
   inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
-                                          available = available,
-                                          source.packages = source.packages)
+                                          project = project,
+                                          available = available)
 
   allRecords <- c(
     libPkgRecords,
@@ -150,7 +145,9 @@ snapshotImpl <- function(project,
     stale <- names(diffs)[!is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)]
     if (length(stale) > 0 && verbose) {
       prettyPrint(
-        getPackageRecords(stale, NULL, source.packages = source.packages,
+        getPackageRecords(stale,
+                          project = project,
+                          NULL,
                           recursive = FALSE, lib.loc = lib.loc),
         'The following packages are stale:',
         c('These packages must be updated by calling packrat::restore() before\n',

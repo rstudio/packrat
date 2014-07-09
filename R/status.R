@@ -72,6 +72,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
 
   installedPkgRecords <- flattenPackageRecords(
     getPackageRecords(installedPkgs,
+                      project = project,
                       recursive = TRUE,
                       lib.loc = lib.loc,
                       missing.package = function(...) NULL
@@ -86,6 +87,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   inferredPkgNames <- appDependencies(project)
   inferredPkgRecords <- getPackageRecords(
     inferredPkgNames,
+    project = project,
     lib.loc = lib.loc,
     missing.package = function(package, lib.loc) NULL
   )

@@ -1,0 +1,59 @@
+findPackageDirectoriesAndTarballs <- function(dir) {
+  dirs <- list.dirs(dir, recursive = FALSE)
+  hasDesc <- unlist(lapply(dirs, function(dir) {
+    file.exists(file.path(dir, "DESCRIPTION"))
+  }))
+  dirs[hasDesc]
+}
+
+##' Install a Package from a Local Repository
+##'
+##' This function can be used to install a package from a local 'repository'; i.e.,
+##' a directory containing package tarballs and sources.
+##'
+##' @param pkgs A character vector of package names.
+##' @param lib The library in which the package should be installed.
+##' @param repos The local repositories to search for the package names specified.
+##' @param ... Optional arguments passed to \code{install}.
+##' @export
+install_local <- function(pkgs, lib = .libPaths()[1], repos = get_opts("local.repos") %||% ".", ...) {
+  for (pkg in pkgs) {
+    install_local_single(pkg, lib = lib, repos = repos, ...)
+  }
+}
+
+findLocalRepoForPkg <- function(pkg, repos = get_opts("local.repos")) {
+
+  # Search through the local repositories for a suitable package
+  hasPackage <- unlist(lapply(repos, function(repo) {
+    file.exists(file.path(repo, pkg))
+  }))
+  names(hasPackage) <- repos
+  numFound <- sum(hasPackage)
+  if (numFound == 0)
+    stop("No package '", pkg, "' found in local repositories specified")
+
+  if (numFound > 1)
+    warning("Package '", pkg, "' found in multiple local repositories:\n- ",
+            paste(shQuote(file.path(repos[hasPackage], pkg)), collapse = ", "))
+
+  repos[hasPackage][1]
+
+}
+
+install_local_single <- function(pkg, lib = .libPaths()[1], repos = get_opts("local.repos") %||% ".", ...) {
+
+  repoToUse <- findLocalRepoForPkg(pkg, repos)
+  path <- file.path(repoToUse, pkg)
+  with_libpaths(lib, install_local_path(path = path, ...))
+
+  ## Annotate the package DESCRIPTION after installation
+  DESCRIPTION_path <- file.path(lib, pkg, "DESCRIPTION")
+  if (!file.exists(DESCRIPTION_path)) stop("Could not locate path for installed package '", pkg, "'!")
+  DESCRIPTION <- as.data.frame(readDcf(DESCRIPTION_path))
+  DESCRIPTION$InstallAgent <- paste("packrat", packageVersion("packrat"))
+  DESCRIPTION$InstallSource <- "source"
+  DESCRIPTION$InstallSourcePath <- file.path(repoToUse, pkg)
+  write_dcf(DESCRIPTION, file = DESCRIPTION_path)
+
+}

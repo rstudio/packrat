@@ -30,7 +30,7 @@ install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
   R(paste("CMD INSTALL ", shQuote(built_path), " ", opts, sep = ""),
     quiet = quiet)
 
-  if (reload) reload(pkg, quiet = quiet)
+  # if (reload) reload(pkg, quiet = quiet)
   invisible(TRUE)
 }
 
@@ -137,14 +137,14 @@ with_envvar <- function(new, code, action = "replace") {
   force(code)
 }
 
-install_local <- function(path, subdir = NULL, ...) {
-  invisible(lapply(path, install_local_single, subdir = subdir, ...))
+install_local_path <- function(path, subdir = NULL, ...) {
+  invisible(lapply(path, install_local_path_single, subdir = subdir, ...))
 }
 
-install_local_single <- function(path, subdir = NULL, before_install = NULL, ..., quiet = FALSE) {
+install_local_path_single <- function(path, subdir = NULL, before_install = NULL, ..., quiet = FALSE) {
   stopifnot(file.exists(path))
   if (!quiet) {
-    message("Installing package from ", path)
+    message("Installing package from '", path, "'")
   }
 
   if (!file.info(path)$isdir) {
@@ -593,4 +593,3 @@ set_path <- function(path) {
 add_path <- function(path, after = Inf) {
   set_path(append(get_path(), path, after))
 }
-

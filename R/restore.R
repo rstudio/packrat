@@ -32,8 +32,12 @@ versionMatchesDb <- function(pkgRecord, db) {
 
 # Given a package record, fetch the sources for the package and place them in
 # the source directory root given by sourceDir.
-getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
-                                  source.packages, quiet = FALSE) {
+getSourceForPkgRecord <- function(pkgRecord,
+                                  sourceDir,
+                                  availablePkgs,
+                                  repos,
+                                  quiet = FALSE) {
+
   # Skip packages for which we can't find sources
   if (is.null(pkgRecord$source) ||
         is.na(pkgRecord$source)) {
@@ -48,9 +52,7 @@ getSourceForPkgRecord <- function(pkgRecord, sourceDir, availablePkgs, repos,
   if (identical(pkgRecord$source, "unknown") && !quiet) {
     stop("No sources available for package ", pkgRecord$name, ". Packrat can ",
          "find sources for packages on CRAN-like repositories and packages ",
-         "installed using devtools::install_github. For other package types, ",
-         "supply the path to the package's source using the argument ",
-         "source.packages = c('~/path/to/package1', 'path/to/package2', ...)")
+         "installed using devtools::install_github. TODO: local repo")
   }
 
   # Create the directory in which to place this package's sources
@@ -410,8 +412,8 @@ installPkg <- function(pkgRecord,
         on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
-      install_local(path = pkgSrc, reload = FALSE,
-                    dependencies = FALSE, quick = TRUE, quiet = TRUE)
+      install_local_path(path = pkgSrc, reload = FALSE,
+                         dependencies = FALSE, quick = TRUE, quiet = TRUE)
     })
   }
 
@@ -477,10 +479,12 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
                         prompt=interactive(),
                         dry.run = FALSE,
                         restart = TRUE) {
-  installedPkgs <-
-    getPackageRecords(
+  installedPkgs <- getPackageRecords(
       rownames(installed.packages(lib.loc = lib)),
-      recursive = FALSE, lib.loc = lib)
+      project = project,
+      recursive = FALSE,
+      lib.loc = lib
+    )
   actions <- diff(installedPkgs, pkgRecords)
   actions[names(actions) %in% pkgsToIgnore] <- NA
   restartNeeded <- FALSE

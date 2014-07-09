@@ -4,8 +4,8 @@
 \title{Capture and store the packages and versions in use}
 \usage{
 snapshot(project = NULL, available = available.packages(),
-  lib.loc = libDir(project), source.packages = NULL, ignore.stale = FALSE,
-  dry.run = FALSE, prompt = interactive())
+  lib.loc = libDir(project), ignore.stale = FALSE, dry.run = FALSE,
+  prompt = interactive())
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
@@ -15,10 +15,6 @@ directory.}
 
 \item{lib.loc}{The library to snapshot. Defaults to the private library
 associated with the given directory.}
-
-\item{source.packages}{A character vector of directories containing R
-package sources. It is only necessary to supply this parameter when using a
-package for which sources exist on neither CRAN or GitHub.}
 
 \item{ignore.stale}{Stale packages are packages that are different from the
 last snapshot, but were installed by packrat. Typically, packages become
@@ -57,11 +53,6 @@ snapshot()
 # See what changes would be included in a snapshot
 snapshot(dry.run = TRUE)
 
-# Take a snapshot of a project that includes a custom package
-snapshot(source.packages = c(
-  "~/R/MyCustomPackage",
-  "~/R/MyOtherPackage_0.1.0.tar.gz"
-))
 }
 }
 \seealso{

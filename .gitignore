@@ -3,3 +3,4 @@
 .Rhistory
 tests/testthat/packrat/
 packrat-scenario*/
+packrat/lib*/

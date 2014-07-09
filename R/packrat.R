@@ -105,11 +105,10 @@ NULL
 #' packrat using \code{\link{snapshot}} and \code{\link{restore}}.
 #'
 #' @param project The directory that contains the \R project.
-#' @param source.packages List of paths to unpacked \R package source
-#'   directories.  Use this argument only if your project depends on packages
-#'   that are not available on CRAN or GitHub.
+#' @param options An \R \code{list} of options, as specified in
+#'   \code{\link{packrat-options}}.
 #' @param enter Boolean, enter packrat mode for this project after finishing a init?
-#' @param restart If \code{TRUE}, restart the R session after init
+#' @param restart If \code{TRUE}, restart the R session after init.
 #'
 #' @note
 #'
@@ -122,9 +121,18 @@ NULL
 #'
 #' @export
 init <- function(project = '.',
-                 source.packages = character(),
+                 options = NULL,
                  enter = TRUE,
                  restart = enter) {
+
+  opts <- default_opts()
+  if (!is.null(options)) {
+    for (i in seq_along(options)) {
+      name <- names(options)[[i]]
+      value <- options[[i]]
+      opts[[name]] <- options[[name]]
+    }
+  }
 
   ## Get the initial directory structure, so we can rewind if necessary
   project <- normalizePath(project,
@@ -169,13 +177,11 @@ init <- function(project = '.',
 
       ## Make sure the .Rprofile, .gitignore, etc. are up to date
       augmentRprofile(project)
-      options <- initOptions(project) ## writes out packrat.opts and returns generated list
+      options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
 
       # Take a snapshot
-      source.packages <- getSourcePackageInfo(source.packages)
       snapshotImpl(project,
                    available.packages(contrib.url(activeRepos(project))),
-                   source.packages = source.packages,
                    lib.loc = NULL,
                    ignore.stale = TRUE)
 
@@ -228,19 +234,6 @@ init <- function(project = '.',
 
   )
 
-}
-
-#' @rdname init
-#' @export
-bootstrap <- function(project = ".",
-                      source.packages = character(),
-                      enter = TRUE,
-                      restart = enter) {
-  .Deprecated("init")
-  init(project = project,
-       source.packages = source.packages,
-       enter = enter,
-       restart = restart)
 }
 
 #' Apply the most recent snapshot to the library
@@ -438,8 +431,8 @@ clean <- function(packages = NULL,
       pkgRecords <- cleanableRecords
     } else {
       pkgRecords <- getPackageRecords(packages,
+                                      project = project,
                                       available = NULL,
-                                      source.packages = NULL,
                                       recursive = FALSE,
                                       lib.loc = lib.loc)
     }
@@ -473,8 +466,8 @@ unused_packages <- function(project = NULL,
   missingPackageNames <- character(0)
   packagesInUse <- getPackageRecords(
     rootDeps,
+    project = project,
     available = NULL,
-    source.packages = NULL,
     recursive = TRUE,
     lib.loc = lib.loc,
     missing.package = function(pkgName, lib.loc) {
@@ -503,8 +496,8 @@ unused_packages <- function(project = NULL,
   ## Exclude 'manipulate', 'rstudio'
   orphans <- setdiff(orphans, c("manipulate", "rstudio"))
   orphanRecs <- getPackageRecords(orphans,
+                                  project = project,
                                   available = NULL,
-                                  source.packages = NULL,
                                   recursive = FALSE,
                                   lib.loc = lib.loc)
   orphanRecs

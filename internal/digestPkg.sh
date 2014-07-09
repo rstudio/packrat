@@ -10,5 +10,5 @@ cd ${PACKAGE_NAME}
 touch foo.R bar.R baz.R
 echo "library(digest)" >> foo.R
 cp ~/git/packrat/internal/digestPkg.Rproj ~/git/${PACKAGE_NAME}/
-R --vanilla -e "options(repos = c(CRAN = 'http://cran.rstudio.org')); library(packrat); dir.create('.git'); bootstrap(source=c('~/git/packrat'))"
+R --vanilla -e "options(repos = c(CRAN = 'http://cran.rstudio.org')); library(packrat); dir.create('.git'); init(options = list(local.repos = '~/git'))"
 R

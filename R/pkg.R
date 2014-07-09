@@ -52,7 +52,6 @@ getPackageRecordsInstalledFromSource <- function(pkgs, lib.loc) {
     dcf <- as.data.frame(readDcf(file.path(loc, "DESCRIPTION")), stringsAsFactors = FALSE)
     deps <- combineDcfFields(dcf, c("Depends", "Imports", "LinkingTo"))
     deps <- deps[deps != "R"]
-    db <- NULL
     record <- structure(list(
       name = pkg,
       source = 'source',
@@ -64,39 +63,26 @@ getPackageRecordsInstalledFromSource <- function(pkgs, lib.loc) {
 }
 
 # Get package records for those manually specified with source.packages
-getPackageRecordsManuallySpecified <- function(pkgNames,
-                                               source.packages) {
-
-  # Only look at packages within source.packages
-  pkgNames <- pkgNames[pkgNames %in% rownames(source.packages)]
-
+getPackageRecordsLocalRepos <- function(pkgNames, repos) {
   lapply(pkgNames, function(pkgName) {
-    source_path <- as.character(source.packages[pkgName,"path"])
-    version <- as.character(source.packages[pkgName,"version"])
-
-    if (endswith(source_path, "tar.gz")) {
-      ## Untar tarballs and get path to DESCRIPTION
-      tempdir <- file.path(tempdir(), paste("packrat", pkgName, version, sep = "-"))
-      dir.create(tempdir, recursive = TRUE)
-      untar(source_path, exdir = tempdir)
-      descPath <- file.path(tempdir, pkgName, "DESCRIPTION")
-    } else {
-      # Read the dependency information directly from the DESCRIPTION file
-      descPath <- file.path(source.packages[pkgName, "path"], "DESCRIPTION")
-    }
-    sourceDesc <- as.data.frame(readDcf(descPath))
-    deps <- combineDcfFields(sourceDesc, c("Depends", "Imports", "LinkingTo"))
-    deps <- deps[deps != "R"]
-    db <- NULL
-    record <- structure(list(
-      name = pkgName,
-      source = 'source',
-      version = version,
-      source_path = source_path,
-      hash = hash(descPath)
-    ), class=c('packageRecord', 'source'))
+    getPackageRecordsLocalReposImpl(pkgName, repos)
   })
 
+}
+
+getPackageRecordsLocalReposImpl <- function(pkg, repos) {
+  repoToUse <- findLocalRepoForPkg(pkg, repos)
+  path <- file.path(repoToUse, pkg)
+  dcf <- as.data.frame(readDcf(file.path(path, "DESCRIPTION")), stringsAsFactors = FALSE)
+  deps <- combineDcfFields(dcf, c("Depends", "Imports", "LinkingTo"))
+  deps <- deps[deps != "R"]
+  record <- structure(list(
+    name = pkg,
+    source = 'source',
+    version = dcf$Version,
+    source_path = file.path(repoToUse, pkg),
+    hash = hash(file.path(repoToUse, pkg, "DESCRIPTION"))
+  ), class=c('packageRecord', 'source'))
 }
 
 getPackageRecordsExternalSource <- function(pkgNames,
@@ -134,13 +120,16 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames,
-                              available=NULL,
-                              source.packages=NULL,
-                              recursive=TRUE,
-                              lib.loc=NULL,
+                              project = NULL,
+                              available = NULL,
+                              recursive = TRUE,
+                              lib.loc = NULL,
                               missing.package = function(package, lib.loc) {
                                 stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
                               }) {
+
+  project <- getProjectDir(project)
+  local.repos <- get_opts("local.repos", project = project)
 
   # First, get the package records for packages installed from source
   pkgsInstalledFromSource <- hasSourcePathInDescription(pkgNames, lib.loc = lib.loc)
@@ -149,22 +138,29 @@ getPackageRecords <- function(pkgNames,
 
   pkgNames <- setdiff(pkgNames, pkgsInstalledFromSource)
 
-  # Next, get the packge records for packages manually specified in source.packages
-  manualSrcPkgRecords <- getPackageRecordsManuallySpecified(
-    pkgNames,
-    source.packages
+  # Next, get the package records for packages that are now presumedly from
+  # an external source
+  externalPkgRecords <- suppressWarnings(
+    getPackageRecordsExternalSource(pkgNames,
+                                    available = available,
+                                    lib.loc = lib.loc,
+                                    missing.package = function(...) NULL)
   )
 
+  # Drop unknowns
+  externalPkgRecords <- externalPkgRecords[unlist(lapply(externalPkgRecords, function(x) {
+    x$source != "unknown"
+  }))]
+  pkgNames <- setdiff(pkgNames, sapply(externalPkgRecords, "[[", "name"))
+
+  # Finally, get the package records for packages manually specified in source.packages
+  manualSrcPkgRecords <- getPackageRecordsLocalRepos(pkgNames, local.repos)
   pkgNames <- setdiff(pkgNames, sapply(manualSrcPkgRecords, "[[", "name"))
 
-  # Finally, get the package records for packages that are now presumedly from
-  # an external source
-  externalPkgRecords <- getPackageRecordsExternalSource(pkgNames,
-                                                        available = available,
-                                                        lib.loc = lib.loc,
-                                                        missing.package = missing.package)
-
-  pkgNames <- setdiff(pkgNames, sapply(externalPkgRecords, "[[", "name"))
+  # If there's anything leftover, fail
+  if (length(pkgNames))
+    stop("Unable to retrieve package records for the following pacakges:\n- ",
+         paste(shQuote(pkgNames), collapse = ", "))
 
   # Collect the records together
   allRecords <- c(
@@ -184,8 +180,8 @@ getPackageRecords <- function(pkgNames,
                                      available.packages = available)
       record$depends <- getPackageRecords(
         deps,
+        project = project,
         available,
-        source.packages,
         TRUE,
         lib.loc = lib.loc,
         missing.package = missing.package)

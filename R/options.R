@@ -4,27 +4,35 @@
 
 VALID_OPTIONS <- list(
   auto.snapshot = function(x) x %in% c(TRUE, FALSE),
+  use.cache = list(TRUE, FALSE),
+  print.banner.on.startup = list(TRUE, FALSE, "auto"),
   vcs.ignore.lib = list(TRUE, FALSE),
   vcs.ignore.src = list(TRUE, FALSE),
-  print.banner.on.startup = list(TRUE, FALSE, "auto"),
   external.packages = function(x) {
     is.null(x) || is.character(x)
   },
-  use.cache = list(TRUE, FALSE)
+  local.repos = function(x) {
+    is.null(x) || is.character(x)
+  }
 )
 
-
-initOptions <- function(project = NULL) {
-  project <- getProjectDir(project)
-  set_opts(
-    project = project,
+default_opts <- function() {
+  list(
     auto.snapshot = FALSE,
+    use.cache = FALSE,
+    print.banner.on.startup = "auto",
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
-    print.banner.on.startup = "auto",
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
-    use.cache = FALSE
+    local.repos = ""
   )
+}
+
+
+initOptions <- function(project = NULL, options = default_opts()) {
+  project <- getProjectDir(project)
+  opts <- c(project = project, options)
+  do.call(set_opts, opts)
 }
 
 ##' Get/set packrat project options
@@ -34,25 +42,28 @@ initOptions <- function(project = NULL) {
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##' \item \code{use.cache}:
+##'   Install packages into a global cache, which is then shared across projects? The
+##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
+##'   (EXPERIMENTAL; defaults to \code{FALSE})
+##' \item \code{print.banner.on.startup}:
+##'   Print the banner on startup? Can be one of \code{TRUE} (always print),
+##'   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
+##'   (defaults to \code{"auto"})
 ##' \item \code{vcs.ignore.lib}:
 ##'   Add the packrat private library to your version control system ignore?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 ##' \item \code{vcs.ignore.src}:
 ##'   Add the packrat private sources to your version control system ignore?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{FALSE})
-##' \item \code{print.banner.on.startup}:
-##'   Print the banner on startup? Can be one of \code{TRUE} (always print),
-##'   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
-##'   (defaults to \code{"auto"})
 ##' \item \code{external.packages}:
 ##'   Packages which should be loaded from the user library upon entering packrat mode.
 ##'   This can be useful for very large packages which you don't want duplicated across
 ##'   multiple projects, e.g. Bioconductor annotation packages.
 ##'   (EXPERIMENTAL; defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
-##' \item \code{use.cache}:
-##'   Install packages into a global cache, which is then shared across projects? The
-##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
-##'   (EXPERIMENTAL; defaults to \code{FALSE})
+##' \item \code{local.repos}:
+##'   Local 'repositories'; i.e., directories containing package sources either as
+##'   folders or as package tarballs. (Character vector; empty by default)
 ##' }
 ##'
 ##' @param options A character vector of valid option names.

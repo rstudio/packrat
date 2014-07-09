@@ -134,7 +134,7 @@ migrate <- function(project = ".", ask = TRUE) {
   write_dcf(lf, lockFilePath())
 
   ## Initialize packrat options
-  initOptions()
+  initOptions(project = project)
   message("- packrat/packrat.opts successfully initialized")
 
   ## Clean up the old packrat directories
