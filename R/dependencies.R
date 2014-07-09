@@ -51,13 +51,7 @@ appDependencies <- function(project = NULL, available.packages = NULL) {
                                               available.packages)
   }
 
-  deps <- sort(unique(c(parentDeps, childDeps, "packrat")))
-
-  ## Ignore any R packages specified within 'external.packages', as these
-  ## have become 'implicit' dependencies
-  deps <- setdiff(deps, get_opts("external.packages"))
-
-  deps
+  sort(unique(c(parentDeps, childDeps, "packrat")))
 
 }
 
