@@ -479,13 +479,16 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
                         prompt=interactive(),
                         dry.run = FALSE,
                         restart = TRUE) {
-  installedPkgs <- getPackageRecords(
-      rownames(installed.packages(lib.loc = lib)),
+
+  installedPkgs <- rownames(installed.packages(lib.loc = lib))
+  installedPkgs <- setdiff(installedPkgs, c("manipulate", "rstudio"))
+  installedPkgRecords <- getPackageRecords(
+      installedPkgs,
       project = project,
       recursive = FALSE,
       lib.loc = lib
     )
-  actions <- diff(installedPkgs, pkgRecords)
+  actions <- diff(installedPkgRecords, pkgRecords)
   actions[names(actions) %in% pkgsToIgnore] <- NA
   restartNeeded <- FALSE
 
@@ -499,7 +502,7 @@ restoreImpl <- function(project, repos, pkgRecords, lib,
   # Since we print actions as we do them, there's no need to do a summary
   # print first unless we need the user to confirm.
   if (prompt && mustConfirm && !dry.run) {
-    summarizeDiffs(actions, installedPkgs, pkgRecords,
+    summarizeDiffs(actions, installedPkgRecords, pkgRecords,
                    'Adding these packages to your library:',
                    'Removing these packages from your library:',
                    'Upgrading these packages in your library:',
