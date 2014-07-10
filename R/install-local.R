@@ -23,7 +23,7 @@ install_local <- function(pkgs, lib = .libPaths()[1], repos = get_opts("local.re
 }
 
 findLocalRepoForPkg <- function(pkg, repos = get_opts("local.repos")) {
-
+  if (!length(repos)) return(character())
   # Search through the local repositories for a suitable package
   hasPackage <- unlist(lapply(repos, function(repo) {
     file.exists(file.path(repo, pkg))
@@ -46,14 +46,5 @@ install_local_single <- function(pkg, lib = .libPaths()[1], repos = get_opts("lo
   repoToUse <- findLocalRepoForPkg(pkg, repos)
   path <- file.path(repoToUse, pkg)
   with_libpaths(lib, install_local_path(path = path, ...))
-
-  ## Annotate the package DESCRIPTION after installation
-  DESCRIPTION_path <- file.path(lib, pkg, "DESCRIPTION")
-  if (!file.exists(DESCRIPTION_path)) stop("Could not locate path for installed package '", pkg, "'!")
-  DESCRIPTION <- as.data.frame(readDcf(DESCRIPTION_path))
-  DESCRIPTION$InstallAgent <- paste("packrat", packageVersion("packrat"))
-  DESCRIPTION$InstallSource <- "source"
-  DESCRIPTION$InstallSourcePath <- file.path(repoToUse, pkg)
-  write_dcf(DESCRIPTION, file = DESCRIPTION_path)
 
 }
