@@ -5,7 +5,8 @@
 \alias{set_opts}
 \title{Get/set packrat project options}
 \usage{
-get_opts(options = NULL, simplify = TRUE, project = NULL)
+get_opts(options = NULL, simplify = TRUE, project = NULL,
+  split.fields = TRUE)
 
 set_opts(..., project = NULL)
 }
@@ -17,6 +18,8 @@ a single option.}
 
 \item{project}{The project directory. When in packrat mode, defaults to the current project;
 otherwise, defaults to the current working directory.}
+
+\item{split.fields}{Split comma-delimited fields?}
 
 \item{...}{Entries of the form \code{key = value}, used for setting packrat project options.}
 }

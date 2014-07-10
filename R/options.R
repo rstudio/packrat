@@ -70,13 +70,14 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   a single option.
 ##' @param project The project directory. When in packrat mode, defaults to the current project;
 ##'   otherwise, defaults to the current working directory.
+##' @param split.fields Split comma-delimited fields?
 ##' @param ... Entries of the form \code{key = value}, used for setting packrat project options.
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
-get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
+get_opts <- function(options = NULL, simplify = TRUE, project = NULL, split.fields = TRUE) {
   project <- getProjectDir(project)
-  opts <- read_opts(project = project)
+  opts <- read_opts(project = project, split.fields = split.fields)
   if (is.null(options)) {
     opts
   } else {
@@ -147,7 +148,7 @@ validateOptions <- function(opts) {
   }
 }
 
-read_opts <- function(project = NULL) {
+read_opts <- function(project = NULL, split.fields = TRUE) {
   project <- getProjectDir(project)
   path <- packratOptionsFilePath(project)
   if (!file.exists(path)) return(invisible(NULL))
@@ -159,7 +160,8 @@ read_opts <- function(project = NULL) {
            "TRUE" = TRUE,
            "FALSE" = FALSE,
            "NA" = as.logical(NA),
-           scan(text = x, what = character(), sep = ",", strip.white = TRUE, quiet = TRUE)
+           if (split.fields) scan(text = x, what = character(), sep = ",", strip.white = TRUE, quiet = TRUE)
+           else x
     )
   })
   opts
