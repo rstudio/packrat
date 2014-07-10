@@ -16,7 +16,9 @@ findPackageDirectoriesAndTarballs <- function(dir) {
 ##' @param repos The local repositories to search for the package names specified.
 ##' @param ... Optional arguments passed to \code{install}.
 ##' @export
-install_local <- function(pkgs, lib = .libPaths()[1], repos = get_opts("local.repos") %||% ".", ...) {
+install_local <- function(pkgs,
+                          lib = .libPaths()[1],
+                          repos = get_opts("local.repos") %||% ".", ...) {
   for (pkg in pkgs) {
     install_local_single(pkg, lib = lib, repos = repos, ...)
   }
@@ -41,7 +43,10 @@ findLocalRepoForPkg <- function(pkg, repos = get_opts("local.repos")) {
 
 }
 
-install_local_single <- function(pkg, lib = .libPaths()[1], repos = get_opts("local.repos") %||% ".", ...) {
+install_local_single <- function(pkg,
+                                 lib = .libPaths()[1],
+                                 repos = get_opts("local.repos") %||% ".",
+                                 ...) {
 
   repoToUse <- findLocalRepoForPkg(pkg, repos)
   path <- file.path(repoToUse, pkg)

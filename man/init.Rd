@@ -52,6 +52,14 @@ The \code{restart} parameter will only result in a restart of R when the
 R environment packrat is running within makes available a restart function
 via \code{getOption("restart")}.
 }
+\examples{
+\dontrun{
+
+## initialize a project using a local repository of packages
+packrat::init(options = list(local.repos = "~/projects/R"))
+
+}
+}
 \seealso{
 \link{packrat} for a description of the files created by
   \code{init}.

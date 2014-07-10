@@ -118,7 +118,12 @@ NULL
 #'
 #' @seealso \link{packrat} for a description of the files created by
 #'   \code{init}.
+#' @examples \dontrun{
 #'
+#' ## initialize a project using a local repository of packages
+#' packrat::init(options = list(local.repos = "~/projects/R"))
+#'
+#' }
 #' @export
 init <- function(project = '.',
                  options = NULL,

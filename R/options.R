@@ -75,6 +75,13 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
+##' @examples \dontrun{
+##' ## use 'devtools' and 'knitr' from the user library
+##' packrat::set_opts(external.packages = c("devtools", "knitr"))
+##'
+##' ## set local repository
+##' packrat::set_opts(local.repos = c("~/projects/R"))
+##' }
 get_opts <- function(options = NULL, simplify = TRUE, project = NULL, split.fields = TRUE) {
   project <- getProjectDir(project)
   opts <- read_opts(project = project, split.fields = split.fields)

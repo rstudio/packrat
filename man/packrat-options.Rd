@@ -54,4 +54,13 @@ Get and set options for the current packrat-managed project.
   folders or as package tarballs. (Character vector; empty by default)
 }
 }
+\examples{
+\dontrun{
+## use 'devtools' and 'knitr' from the user library
+packrat::set_opts(external.packages = c("devtools", "knitr"))
+
+## set local repository
+packrat::set_opts(local.repos = c("~/projects/R"))
+}
+}
 
