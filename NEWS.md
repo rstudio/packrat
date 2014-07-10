@@ -1,3 +1,32 @@
+# Packrat 0.3.0.99 (Unreleased)
+
+- The `source.packages` argument for `init` and `snapshot` has now been
+  removed. In lieu, projects can now specify local repositories -- packages
+  will be looked up in these directories when attempting to use a source
+  package.
+
+- Added `install_local` for installing packages from local repositories. For
+  example, `install_local("abc")` will attempt to find and install a package
+  named `abc` from the local repositories as specified within `packrat.opts`.
+
+- Added option `use.cache`, for creating a persistent global cache of
+  installed packages which can be easily symlinked and reused across multiple
+  projects. When active, this will force installation of one version of a
+  package only once -- thereafter, any projects requiring that package can
+  symlink to the installed version in the cache.
+
+- Use junction points on Windows to enable caching of packages.
+
+- Added `opts` as an object for conveniently getting / setting specific
+  options. For example, calling `opts$auto.snapshot()` returns the current
+  value for the `auto.snapshot` option, while `opts$auto.snapshot(TRUE)` sets
+  `auto.snapshot` on.
+
+- Fixed spurious `download.file` warnings on Windows.
+
+- Errors when installing packages on Windows are now captured and reported to
+  the user.
+
 # Packrat 0.3.0
 
 - The `packrat/bootstrap.R` script has been renamed to `packrat/init.R`.
