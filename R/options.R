@@ -120,7 +120,7 @@ set_opts <- function(..., project = NULL) {
     opts[[keys[[i]]]] <- paste(values[[i]], collapse = ", ")
   }
   opts[] <- lapply(opts, function(x) {
-    if (!length(x)) "" else x
+    if (!length(x)) "" else paste(x, collapse = ", ")
   })
   write_dcf(opts, file = optsPath)
   updateSettings(project)
