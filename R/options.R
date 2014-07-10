@@ -28,7 +28,6 @@ default_opts <- function() {
   )
 }
 
-
 initOptions <- function(project = NULL, options = default_opts()) {
   project <- getProjectDir(project)
   opts <- c(project = project, options)
@@ -160,7 +159,7 @@ read_opts <- function(project = NULL) {
            "TRUE" = TRUE,
            "FALSE" = FALSE,
            "NA" = as.logical(NA),
-           unlist(strsplit(x, ",[[:space:]]*", perl = TRUE))
+           scan(text = x, what = character(), sep = ",", strip.white = TRUE, quiet = TRUE)
     )
   })
   opts
