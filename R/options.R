@@ -87,6 +87,18 @@ get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
   }
 }
 
+make_setter <- function(name) {
+  force(name)
+  return( function(x) {
+    if (missing(x)) return(get_opts(name))
+    else do.call(set_opts, setNames(list(x), name))
+  })
+}
+
+opts <- setNames(lapply(names(VALID_OPTIONS), function(x) {
+  make_setter(x)
+}), names(VALID_OPTIONS))
+
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
