@@ -19,7 +19,7 @@ hash <- function(path) {
   if ("GithubSHA1" %in% names(DESCRIPTION))
     return(DESCRIPTION$GithubSHA1)
 
-  fields <- c("Package", "Version", "Depends", "Imports", "Suggests", "LinkingTo")
+  fields <- c("Package", "Version", "Depends", "Imports", "Suggests", "LinkingTo", "Built")
   sub <- DESCRIPTION[names(DESCRIPTION) %in% fields]
 
   # Handle LinkingTo specially -- we need to discover what version of packages in LinkingTo
