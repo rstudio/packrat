@@ -72,6 +72,8 @@ getPackageRecordsLocalRepos <- function(pkgNames, repos) {
 
 getPackageRecordsLocalReposImpl <- function(pkg, repos) {
   repoToUse <- findLocalRepoForPkg(pkg, repos)
+  if (!length(repoToUse))
+    return(NULL)
   path <- file.path(repoToUse, pkg)
   dcf <- as.data.frame(readDcf(file.path(path, "DESCRIPTION")), stringsAsFactors = FALSE)
   deps <- combineDcfFields(dcf, c("Depends", "Imports", "LinkingTo"))
