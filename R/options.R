@@ -18,7 +18,7 @@ VALID_OPTIONS <- list(
 
 default_opts <- function() {
   list(
-    auto.snapshot = FALSE,
+    auto.snapshot = TRUE,
     use.cache = FALSE,
     print.banner.on.startup = "auto",
     vcs.ignore.lib = TRUE,
