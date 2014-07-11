@@ -184,12 +184,13 @@ packrat_lib <- function() {
   libDir(project)
 }
 
-cacheDir <- function() {
+## A location where 'global' packrat data is stored, e.g. the library cache
+appDataDir <- function() {
   Sys.getenv("R_PACKRAT_CACHE_DIR",
-             unset = defaultCacheDir())
+             unset = defaultAppDataDir())
 }
 
-defaultCacheDir <- function() {
+defaultAppDataDir <- function() {
 
   # borrowed and modified from shinyapps
 
@@ -200,22 +201,22 @@ defaultCacheDir <- function() {
 
   # determine application config dir (platform specific)
   if (is.windows())
-    cacheDirBase <- Sys.getenv("APPDATA")
+    appDataDirBase <- Sys.getenv("APPDATA")
   else if (is.mac())
-    cacheDirBase <- file.path(homeDir, "Library/Application Support")
+    appDataDirBase <- file.path(homeDir, "Library/Application Support")
   else
-    cacheDirBase <- Sys.getenv("XDG_CONFIG_HOME", file.path(homeDir, ".config"))
+    appDataDirBase <- Sys.getenv("XDG_CONFIG_HOME", file.path(homeDir, ".config"))
 
   # normalize path
-  cacheDir <- normalizePath(file.path(cacheDirBase, "packrat"),
+  appDataDir <- normalizePath(file.path(appDataDirBase, "packrat"),
                             mustWork = FALSE)
 
   # ensure that it exists
-  if (!file.exists(cacheDir))
-    dir.create(cacheDir, recursive = TRUE)
+  if (!file.exists(appDataDir))
+    dir.create(appDataDir, recursive = TRUE)
 
   # return it
-  cacheDir
+  appDataDir
 
 }
 
@@ -224,5 +225,5 @@ packratCacheVersion <- function() {
 }
 
 cacheLibDir <- function(...) {
-  file.path(cacheDir(), packratCacheVersion(), "library", ...)
+  file.path(appDataDir(), packratCacheVersion(), "library", ...)
 }
