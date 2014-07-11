@@ -186,7 +186,37 @@ packrat_lib <- function() {
 
 cacheDir <- function() {
   Sys.getenv("R_PACKRAT_CACHE_DIR",
-             unset = path.expand("~/.packrat"))
+             unset = defaultCacheDir())
+}
+
+defaultCacheDir <- function() {
+
+  # borrowed and modified from shinyapps
+
+  # get the home directory from the operating system (in case
+  # the user has redefined the meaning of ~) but fault back
+  # to ~ if there is no HOME variable defined
+  homeDir <- Sys.getenv("HOME", unset = "~")
+
+  # determine application config dir (platform specific)
+  if (is.windows())
+    cacheDirBase <- Sys.getenv("APPDATA")
+  else if (is.mac())
+    cacheDirBase <- file.path(homeDir, "Library/Application Support")
+  else
+    cacheDirBase <- Sys.getenv("XDG_CONFIG_HOME", file.path(homeDir, ".config"))
+
+  # normalize path
+  cacheDir <- normalizePath(file.path(cacheDirBase, "packrat"),
+                            mustWork = FALSE)
+
+  # ensure that it exists
+  if (!file.exists(cacheDir))
+    dir.create(cacheDir, recursive = TRUE)
+
+  # return it
+  cacheDir
+
 }
 
 packratCacheVersion <- function() {
