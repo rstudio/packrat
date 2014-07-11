@@ -117,11 +117,13 @@ snapshotImpl <- function(project,
                                      available = available,
                                      lib.loc = lib.loc)
 
-  # Inferred packages _must_ be found either on CRAN, GitHub, or as part
-  # of the source.packages
+  # For inferred packages (ie. packages within the code), we try to construct
+  # records first from the lockfile, and then from other sources if possible
+  # (CRAN, GitHub, source repository)
   inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
                                           project = project,
-                                          available = available)
+                                          available = available,
+                                          check.lockfile = TRUE)
 
   allRecords <- c(
     libPkgRecords,

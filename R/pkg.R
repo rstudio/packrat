@@ -120,6 +120,17 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
 }
 
+getPackageRecordsLockfile <- function(pkgNames, project) {
+  if (file.exists(lockFilePath(project))) {
+    result <- readLockFile(lockFilePath(project))$packages
+    result[unlist(lapply(result, function(x) {
+      x$name %in% pkgNames
+    }))]
+  } else {
+    list()
+  }
+}
+
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames,
                               project = NULL,
@@ -128,10 +139,18 @@ getPackageRecords <- function(pkgNames,
                               lib.loc = NULL,
                               missing.package = function(package, lib.loc) {
                                 stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
-                              }) {
+                              },
+                              check.lockfile = FALSE) {
 
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
+
+  if (check.lockfile) {
+    lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
+    pkgNames <- setdiff(pkgNames, sapply(lockfilePkgRecords, "[[", "name"))
+  } else {
+    lockfilePkgRecords <- list()
+  }
 
   # First, get the package records for packages installed from source
   pkgsInstalledFromSource <- hasSourcePathInDescription(pkgNames, lib.loc = lib.loc)
@@ -166,6 +185,7 @@ getPackageRecords <- function(pkgNames,
 
   # Collect the records together
   allRecords <- c(
+    lockfilePkgRecords,
     srcPkgRecords,
     manualSrcPkgRecords,
     externalPkgRecords
@@ -180,13 +200,18 @@ getPackageRecords <- function(pkgNames,
       deps <- getPackageDependencies(pkgs = record$name,
                                      lib.loc = lib.loc,
                                      available.packages = available)
-      record$depends <- getPackageRecords(
-        deps,
-        project = project,
-        available,
-        TRUE,
-        lib.loc = lib.loc,
-        missing.package = missing.package)
+      if (!is.null(deps)) {
+        record$depends <- getPackageRecords(
+          deps,
+          project = project,
+          available,
+          TRUE,
+          lib.loc = lib.loc,
+          missing.package = missing.package,
+          check.lockfile = check.lockfile
+        )
+      }
+
       record
     })
   }
