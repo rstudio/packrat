@@ -143,3 +143,41 @@ test_that("fileDependencies.R picks up '::', ':::' dependencies", {
     union(deps, c("baz", "bat", "stringr", "Kmisc", "plyr"))
   )
 })
+
+test_that("init, disable handle projects that have been initted / disabled sensibly", {
+
+  projRoot <- cloneTestProject("sated")
+  init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+  list.files(projRoot, all.files = TRUE, recursive = TRUE)
+  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
+  disable(projRoot)
+  expect_false(file.exists(file.path(projRoot, ".Rprofile")))
+
+  unlink(projRoot, recursive = TRUE)
+
+  projRoot <- cloneTestProject("sated")
+  text <- "## Some comments\n## That should be preserved\n"
+  cat(text, file = file.path(projRoot, ".Rprofile"))
+  packrat::init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+  list.files(projRoot, all.files = TRUE, recursive = TRUE)
+  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
+  content <- readLines(file.path(projRoot, ".Rprofile"))
+  expect_true(grepl(text, paste(content, collapse = "\n")))
+  packrat::disable(projRoot, restart = FALSE)
+  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
+  if (file.exists(file.path(projRoot, ".Rprofile")))
+    content <- readLines(file.path(projRoot, ".Rprofile"))
+  expect_true(grepl(text, paste(content, collapse = "\n")))
+
+  unlink(projRoot, recursive = TRUE)
+
+  ## Empty .Rprofile
+  projRoot <- cloneTestProject("sated")
+  file.create(file.path(projRoot, ".Rprofile"))
+  packrat::init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
+  content <- readLines(file.path(projRoot, ".Rprofile"))
+  packrat::disable(projRoot, restart = FALSE)
+  expect_false(file.exists(file.path(projRoot, ".Rprofile")))
+
+})

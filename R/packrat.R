@@ -214,7 +214,7 @@ init <- function(project = '.',
 
         # Restart R if the environment is capable of it (otherwise enter packrat mode)
         if (!restart || !attemptRestart())
-          packrat_mode(on = TRUE, project = project, clean.search.path = TRUE)
+          on(project = project, clean.search.path = TRUE)
       }
 
       invisible()
