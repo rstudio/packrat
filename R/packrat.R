@@ -558,10 +558,29 @@ packify <- function(project = NULL, quiet = FALSE) {
     content <- readLines(.Rprofile)
     autoloader <- readLines(autoloaderPath)
 
+    # if there is no content just overwrite the old file
+    if (!length(content) || identical(unique(content), "")) {
+      return(file.copy(autoloaderPath, .Rprofile, overwrite = TRUE))
+    }
+
     # Remove the old autoloader
-    start <- min(grep("#### -- Packrat Autoloader", content))
-    end <- max(grep("### -- End Packrat Autoloader -- ####", content))
-    content <- content[-c(start:end)]
+    starts <- grep("#### -- Packrat Autoloader", content)
+    if (length(starts)) {
+      start <- min(starts)
+    } else {
+      start <- NULL
+    }
+
+    ends <- grep("### -- End Packrat Autoloader -- ####", content)
+    if (length(ends)) {
+      end <- max(ends)
+    } else {
+      end <- NULL
+    }
+
+    if (length(start) && length(end) && end > start)
+      content <- content[-c(start:end)]
+
     if (length(content)) {
       content <- c(content, "", autoloader)
     } else {
