@@ -102,10 +102,6 @@ make_setter <- function(name) {
   })
 }
 
-opts <- setNames(lapply(names(VALID_OPTIONS), function(x) {
-  make_setter(x)
-}), names(VALID_OPTIONS))
-
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
@@ -127,12 +123,22 @@ set_opts <- function(..., project = NULL) {
     opts[[keys[[i]]]] <- paste(values[[i]], collapse = ", ")
   }
   opts[] <- lapply(opts, function(x) {
-    if (!length(x)) "" else paste(x, collapse = ", ")
+    if (!length(x)) {
+      ""
+    } else {
+      paste(x, collapse = ", ")
+    }
   })
   write_dcf(opts, file = optsPath)
   updateSettings(project)
   invisible(opts)
 }
+
+##' @export
+##' @noRd
+opts <- setNames(lapply(names(VALID_OPTIONS), function(x) {
+  make_setter(x)
+}), names(VALID_OPTIONS))
 
 validateOptions <- function(opts) {
   for (i in seq_along(opts)) {
