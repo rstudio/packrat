@@ -56,6 +56,19 @@ Navigate projects and set/get options with:
   navigating between projects within a single R session.
 - `packrat::get_opts`, `packrat::set_opts`: Get/set project-specific settings.
 
+Manage local repositories:
+- `packrat::set_opts(local.repos = ...)` can be used to specify *local
+  repositories*; that is, paths containing package sources.
+- `packrat::install_local()` installs packages available in a local
+  repository.
+
+For example, suppose I have a local version of the package
+[`digest`](http://cran.r-project.org/web/packages/digest/index.html) 
+located within `~/git/R`. To install this package, you can use:
+
+    packrat::set_opts(local.repos = "~/git/R")
+    packrat::install_local("digest")
+
 There are also utility functions for using and managing packages in the
 external / user library, and can be useful for leveraging packages in the user
 library that you might not want as project-specific dependencies, e.g.
