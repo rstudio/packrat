@@ -46,36 +46,44 @@ Packrat project-specific options can be accessed and set with:
 
 - `packrat::get_opts()`: Get project options for the current packrat project.
 - `packrat::set_opts()`: Set project options for the current packrat project.
-- `packrat::opts$<option>()`: Get / set a project option `<option>`
+- `packrat::opts$<option>()`: Get / set a project option `<option>`.
 
 The current set of available options is:
 
-`auto.snapshot`: Perform automatic, asynchronous snapshots when running interactively?
+#### auto.snapshot
+
+Perform automatic, asynchronous snapshots when running interactively?
   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 
-`use.cache`:
+#### use.cache
+
   Install packages into a global cache, which is then shared across projects? The
   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
 
-`print.banner.on.startup`:
+#### print.banner.on.startup
+
   Print the banner on startup? Can be one of \code{TRUE} (always print),
   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
   (defaults to \code{"auto"})
 
-`vcs.ignore.lib`:
+#### vcs.ignore.lib
+
   Add the packrat private library to your version control system ignore?
   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 
-`vcs.ignore.src`:
+#### vcs.ignore.src
+
   Add the packrat private sources to your version control system ignore?
   (\code{TRUE} / \code{FALSE}; defaults to \code{FALSE})
 
-`external.packages`:
+#### external.packages
+
   Packages which should be loaded from the user library upon entering packrat mode.
   This can be useful for very large packages which you don't want duplicated across
   multiple projects, e.g. Bioconductor annotation packages.
 
-`local.repos`:
+#### local.repos
+
   Local 'repositories'; i.e., directories containing package sources either as
   folders or as package tarballs. (Character vector; empty by default)
 
