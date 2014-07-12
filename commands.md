@@ -52,29 +52,29 @@ The current set of available options is:
 
 #### auto.snapshot
 
-Perform automatic, asynchronous snapshots when running interactively?
-  (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+  Perform automatic, asynchronous snapshots when running interactively?
+  (`TRUE` / `FALSE`; defaults to `TRUE`)
 
 #### use.cache
 
-  Install packages into a global cache, which is then shared across projects? The
-  directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
+  Install packages into a global cache, which is then shared across projects?
+  When not specified, the directory to use is read through
+  `Sys.getenv("R_PACKRAT_CACHE_DIR")`.
 
 #### print.banner.on.startup
 
-  Print the banner on startup? Can be one of \code{TRUE} (always print),
-  \code{FALSE} (never print), and \code{'auto'} (do the right thing)
-  (defaults to \code{"auto"})
+  Print the banner on startup? Can be one of `TRUE` (always print),
+  `FALSE` (never print), and 'auto` (do the right thing).
 
 #### vcs.ignore.lib
 
   Add the packrat private library to your version control system ignore?
-  (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+  (`TRUE` / `FALSE`; defaults to `TRUE`)
 
 #### vcs.ignore.src
 
   Add the packrat private sources to your version control system ignore?
-  (\code{TRUE} / \code{FALSE}; defaults to \code{FALSE})
+  (`TRUE` / `FALSE`; defaults to `FALSE`)
 
 #### external.packages
 
