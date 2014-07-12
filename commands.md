@@ -58,8 +58,8 @@ The current set of available options is:
 #### use.cache
 
   Install packages into a global cache, which is then shared across projects?
-  When not specified, the directory to use is read through
-  `Sys.getenv("R_PACKRAT_CACHE_DIR")`.
+  By default, an OS-specific application data directory is used, but this can
+  be overridden with the `R_PACKRAT_CACHE_DIR` environment variable.
 
 #### print.banner.on.startup
 
