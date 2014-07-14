@@ -205,6 +205,8 @@ write_opts <- function(options, project = NULL) {
   if (!is.list(options))
     stop("Expecting options as an R list of values")
   labels <- names(options)
+  if ("external.packages" %in% names(options))
+    options$external.packages <- unlist(strsplit(options$external.packages, "\\s*,\\s*", perl = TRUE))
   sep <- ifelse(
     unlist(lapply(options, length)) > 1,
     ":\n",
