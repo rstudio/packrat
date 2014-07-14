@@ -119,7 +119,10 @@ set_opts <- function(..., project = NULL) {
   values <- dots
   opts <- read_opts(project = project)
   for (i in seq_along(keys)) {
-    opts[[keys[[i]]]] <- values[[i]]
+    if (is.null(values[[i]]))
+      opts[keys[[i]]] <- list(NULL)
+    else
+      opts[[keys[[i]]]] <- values[[i]]
   }
   write_opts(opts, project = project)
   updateSettings(project)
