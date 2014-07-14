@@ -70,7 +70,8 @@ install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
   R(paste("CMD INSTALL ", shQuote(built_path), " ", opts, sep = ""),
     quiet = quiet)
 
-  if (reload) reload(pkg, quiet = quiet)
+  if (reload) reload(pkg$package, quiet = quiet)
+
   invisible(TRUE)
 }
 

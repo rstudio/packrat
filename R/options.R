@@ -70,7 +70,6 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   a single option.
 ##' @param project The project directory. When in packrat mode, defaults to the current project;
 ##'   otherwise, defaults to the current working directory.
-##' @param split.fields Split comma-delimited fields?
 ##' @param ... Entries of the form \code{key = value}, used for setting packrat project options.
 ##' @rdname packrat-options
 ##' @name packrat-options
@@ -82,9 +81,9 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' ## set local repository
 ##' packrat::set_opts(local.repos = c("~/projects/R"))
 ##' }
-get_opts <- function(options = NULL, simplify = TRUE, project = NULL, split.fields = TRUE) {
+get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
   project <- getProjectDir(project)
-  opts <- read_opts(project = project, split.fields = split.fields)
+  opts <- read_opts(project = project)
   if (is.null(options)) {
     opts
   } else {
@@ -120,16 +119,9 @@ set_opts <- function(..., project = NULL) {
   values <- dots
   opts <- read_opts(project = project)
   for (i in seq_along(keys)) {
-    opts[[keys[[i]]]] <- paste(values[[i]], collapse = ", ")
+    opts[[keys[[i]]]] <- values[[i]]
   }
-  opts[] <- lapply(opts, function(x) {
-    if (!length(x)) {
-      ""
-    } else {
-      paste(x, collapse = ", ")
-    }
-  })
-  write_dcf(opts, file = optsPath)
+  write_opts(opts, project = project)
   updateSettings(project)
   invisible(opts)
 }
@@ -161,21 +153,68 @@ validateOptions <- function(opts) {
   }
 }
 
-read_opts <- function(project = NULL, split.fields = TRUE) {
+## Read an options file with fields unparsed
+readOptsFile <- function(path) {
+  content <- readLines(path)
+  namesRegex <- "^[[:alnum:]\\_\\.]*:"
+  namesIndices <- grep(namesRegex, content, perl = TRUE)
+  if (!length(namesIndices)) return(list())
+  contentIndices <- mapply(seq, namesIndices, c(namesIndices[-1] - 1, length(content)), SIMPLIFY = FALSE)
+  if (!length(contentIndices)) return(list())
+  result <- lapply(contentIndices, function(x) {
+    if (length(x) == 1) {
+      result <- sub(".*:\\s*", "", content[[x]], perl = TRUE)
+    } else {
+      first <- sub(".*:\\s*", "", content[[x[1]]])
+      if (first == "") first <- NULL
+      rest <- gsub("^\\s*", "", content[x[2:length(x)]], perl = TRUE)
+      result <- c(first, rest)
+    }
+    result[result != ""]
+  })
+  names(result) <- unlist(lapply(strsplit(content[namesIndices], ":", fixed = TRUE), `[[`, 1))
+  result
+}
+
+## Read and parse an options file
+read_opts <- function(project = NULL) {
   project <- getProjectDir(project)
   path <- packratOptionsFilePath(project)
   if (!file.exists(path)) return(invisible(NULL))
-  opts <- readDcf(path)
+  opts <- readOptsFile(path)
   if (!length(opts)) return(list())
-  opts <- setNames(as.list(opts), colnames(opts))
   opts[] <- lapply(opts, function(x) {
-    switch(x,
-           "TRUE" = TRUE,
-           "FALSE" = FALSE,
-           "NA" = as.logical(NA),
-           if (split.fields) scan(text = x, what = character(), sep = ",", strip.white = TRUE, quiet = TRUE)
-           else x
-    )
+    if (identical(x, "TRUE")) {
+      return(TRUE)
+    } else if (identical(x, "FALSE")) {
+      return(FALSE)
+    } else if (identical(x, "NA")) {
+      return(NA)
+    } else {
+      x
+    }
   })
   opts
+}
+
+write_opts <- function(options, project = NULL) {
+  project <- getProjectDir(project)
+  if (!is.list(options))
+    stop("Expecting options as an R list of values")
+  labels <- names(options)
+  sep <- ifelse(
+    unlist(lapply(options, length)) > 1,
+    ":\n",
+    ": "
+  )
+  options[] <- lapply(options, function(x) {
+    if (length(x) == 0) ""
+    else if (length(x) == 1) as.character(x)
+    else paste("    ", x, sep = "", collapse = "\n")
+  })
+  output <- character(length(labels))
+  for (i in seq_along(labels)) {
+    output[[i]] <- paste(labels[[i]], options[[i]], sep = sep[[i]])
+  }
+  cat(output, file = packratOptionsFilePath(project), sep = "\n")
 }
