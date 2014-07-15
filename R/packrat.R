@@ -143,6 +143,7 @@ init <- function(project = '.',
   project <- normalizePath(project,
                            winslash = '/',
                            mustWork = TRUE)
+  message("Initializing packrat project in directory:\n- ", surround(project, "\""))
 
   ## A set of files that packrat might generate as part of init
   prFiles <- c(
@@ -188,7 +189,8 @@ init <- function(project = '.',
       snapshotImpl(project,
                    available.packages(contrib.url(activeRepos(project))),
                    lib.loc = NULL,
-                   ignore.stale = TRUE)
+                   ignore.stale = TRUE,
+                   fallback.ok = TRUE)
 
       # Use the lockfile to copy sources and install packages to the library
       restore(project, overwrite.dirty = TRUE, restart = FALSE)

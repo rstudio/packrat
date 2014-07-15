@@ -83,7 +83,8 @@ snapshotImpl <- function(project,
                          ignore.stale = FALSE,
                          prompt = interactive(),
                          auto.snapshot = FALSE,
-                         verbose = TRUE) {
+                         verbose = TRUE,
+                         fallback.ok = FALSE) {
 
   # When snapshotting, we take the union of:
   #
@@ -123,7 +124,8 @@ snapshotImpl <- function(project,
   inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
                                           project = project,
                                           available = available,
-                                          check.lockfile = TRUE)
+                                          check.lockfile = TRUE,
+                                          fallback.ok = fallback.ok)
 
   allRecords <- c(
     libPkgRecords,

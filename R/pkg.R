@@ -90,15 +90,24 @@ getPackageRecordsLocalReposImpl <- function(pkg, repos) {
 getPackageRecordsExternalSource <- function(pkgNames,
                                             available,
                                             lib.loc,
-                                            missing.package) {
+                                            missing.package,
+                                            fallback.ok = FALSE) {
 
   lapply(pkgNames, function(pkgName) {
-    # This package is from an external source (CRAN-like repo or github);
-    # attempt to get its description from the installed package database.
+
     pkgDescFile <- system.file('DESCRIPTION',
                                package = pkgName,
                                lib.loc = lib.loc)
-    if (nchar(pkgDescFile) == 0) {
+
+    # First, try inferring the package source from the DESCRIPTION file -- if it's unknown
+    # we might fall back to something in available.packages
+    if (nzchar(pkgDescFile)) {
+      df <- as.data.frame(readDcf(pkgDescFile))
+      result <- suppressWarnings(inferPackageRecord(df))
+    }
+
+    # If this failed, try falling back to something of the same name in 'available'
+    if (!nzchar(pkgDescFile) || (result$source == "unknown" && fallback.ok)) {
       if (pkgName %in% rownames(available)) {
         pkg <- available[pkgName,]
         df <- data.frame(
@@ -109,9 +118,9 @@ getPackageRecordsExternalSource <- function(pkgNames,
       } else {
         return(missing.package(pkgName, lib.loc))
       }
-    } else {
-      df <- as.data.frame(readDcf(pkgDescFile))
     }
+
+    # Now, we have either collected a package record from source, or an external repo
     result <- inferPackageRecord(df)
     if (nzchar(pkgDescFile))
       result$hash <- hash(pkgDescFile)
@@ -140,7 +149,8 @@ getPackageRecords <- function(pkgNames,
                               missing.package = function(package, lib.loc) {
                                 stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
                               },
-                              check.lockfile = FALSE) {
+                              check.lockfile = FALSE,
+                              fallback.ok = FALSE) {
 
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
@@ -178,17 +188,32 @@ getPackageRecords <- function(pkgNames,
   manualSrcPkgRecords <- getPackageRecordsLocalRepos(pkgNames, local.repos)
   pkgNames <- setdiff(pkgNames, sapply(manualSrcPkgRecords, "[[", "name"))
 
+  # If there's leftovers (for example, packages installed from source that cannot be located
+  # in any of the local repositories), but it's a package we can find on CRAN, fallback to it
+  if (length(pkgNames) && fallback.ok) {
+    fallbackPkgRecords <- getPackageRecordsExternalSource(pkgNames,
+                                                          available = available,
+                                                          lib.loc = lib.loc,
+                                                          missing.package = function(...) NULL,
+                                                          fallback.ok = fallback.ok)
+  } else {
+    fallbackPkgRecords <- list()
+  }
+  pkgNames <- setdiff(pkgNames, sapply(fallbackPkgRecords, "[[", "name"))
+
   # If there's anything leftover, fail
   if (length(pkgNames))
     stop("Unable to retrieve package records for the following pacakges:\n- ",
-         paste(shQuote(pkgNames), collapse = ", "))
+         paste(shQuote(pkgNames), collapse = ", "),
+         call. = FALSE)
 
   # Collect the records together
   allRecords <- c(
     lockfilePkgRecords,
     srcPkgRecords,
     manualSrcPkgRecords,
-    externalPkgRecords
+    externalPkgRecords,
+    fallbackPkgRecords
   )
 
   # Remove any null records
