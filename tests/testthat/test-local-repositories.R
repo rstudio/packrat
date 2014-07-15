@@ -13,7 +13,9 @@ test_that("init fails when package not found in any repo", {
   projRoot <- cloneTestProject("sated")
   repos <- getOption("repos")
   options(repos = c(CRAN = paste0("file:///", normalizePath("repo-empty"))))
-  expect_error(init(enter = FALSE, projRoot))
+  ## we expect a warning signalling that the package 'breakfast' is not found
+  ## in a repo or locally
+  expect_error(suppressWarnings(init(enter = FALSE, projRoot)))
   options(repos = repos)
 })
 

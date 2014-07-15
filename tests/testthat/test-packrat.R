@@ -181,3 +181,25 @@ test_that("init, disable handle projects that have been initted / disabled sensi
   expect_false(file.exists(file.path(projRoot, ".Rprofile")))
 
 })
+
+test_that("status does not fail", {
+
+  projRoot <- cloneTestProject("sated")
+  init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+
+  status(projRoot)
+  unlink(file.path(projRoot, "packrat/lib/x86_64-apple-darwin13.3.0/3.2.0/bread"), recursive = TRUE)
+  status(projRoot)
+  unlink(file.path(projRoot, "packrat/lib/x86_64-apple-darwin13.3.0/3.2.0/breakfast"), recursive = TRUE)
+  status(projRoot)
+
+  # Try removing an item from the lockfile
+  lf <- readLines(lockFilePath(projRoot))
+  blanks <- which(lf == "")
+  breakfastStart <- grep("Package:\\s*breakfast", lf)
+  breakfastEnd <- sort(blanks[blanks > breakfastStart])[1]
+  lf <- lf[-c(breakfastStart:breakfastEnd)]
+  cat(lf, file = lockFilePath(projRoot), sep = "\n")
+  status(projRoot)
+
+})

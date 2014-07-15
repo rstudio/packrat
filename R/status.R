@@ -70,10 +70,11 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     installedPkgs <- installedPkgs[installedPkgs != pkgName]
   }
 
+  # Recursive should be false here -- we collect records _only_ for packages which are installed
   installedPkgRecords <- flattenPackageRecords(
     getPackageRecords(installedPkgs,
                       project = project,
-                      recursive = TRUE,
+                      recursive = FALSE,
                       lib.loc = lib.loc,
                       missing.package = function(...) NULL
     )
@@ -89,6 +90,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     inferredPkgNames,
     project = project,
     lib.loc = lib.loc,
+    available = available.packages(contrib.url(activeRepos(project))),
     missing.package = function(package, lib.loc) NULL
   )
 
@@ -156,8 +158,8 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
       prettyPrintNames(
         pkgNamesUntracked,
         c("The following packages are referenced in your code, but are not present\n",
-          "in your library nor in packrat:"),
-        c("You will need to install these packages manually, then use\n",
+          "in your library nor in packrat:\n"),
+        c("\nYou will need to install these packages manually, then use\n",
           "packrat::snapshot() to record these packages in packrat.")
       )
     }
