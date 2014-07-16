@@ -63,15 +63,15 @@ getPackageRecordsInstalledFromSource <- function(pkgs, lib.loc) {
 }
 
 # Get package records for those manually specified with source.packages
-getPackageRecordsLocalRepos <- function(pkgNames, repos) {
+getPackageRecordsLocalRepos <- function(pkgNames, repos, fatal = TRUE) {
   lapply(pkgNames, function(pkgName) {
-    getPackageRecordsLocalReposImpl(pkgName, repos)
+    getPackageRecordsLocalReposImpl(pkgName, repos, fatal = fatal)
   })
 
 }
 
-getPackageRecordsLocalReposImpl <- function(pkg, repos) {
-  repoToUse <- findLocalRepoForPkg(pkg, repos)
+getPackageRecordsLocalReposImpl <- function(pkg, repos, fatal = TRUE) {
+  repoToUse <- findLocalRepoForPkg(pkg, repos, fatal = fatal)
   if (!length(repoToUse))
     return(NULL)
   path <- file.path(repoToUse, pkg)
@@ -185,7 +185,7 @@ getPackageRecords <- function(pkgNames,
   pkgNames <- setdiff(pkgNames, sapply(externalPkgRecords, "[[", "name"))
 
   # Finally, get the package records for packages manually specified in source.packages
-  manualSrcPkgRecords <- getPackageRecordsLocalRepos(pkgNames, local.repos)
+  manualSrcPkgRecords <- getPackageRecordsLocalRepos(pkgNames, local.repos, fatal = !fallback.ok)
   pkgNames <- setdiff(pkgNames, sapply(manualSrcPkgRecords, "[[", "name"))
 
   # If there's leftovers (for example, packages installed from source that cannot be located
@@ -196,6 +196,7 @@ getPackageRecords <- function(pkgNames,
                                                           lib.loc = lib.loc,
                                                           missing.package = function(...) NULL,
                                                           fallback.ok = fallback.ok)
+    ## TODO: Message or warning when this happens?
   } else {
     fallbackPkgRecords <- list()
   }
@@ -233,7 +234,8 @@ getPackageRecords <- function(pkgNames,
           TRUE,
           lib.loc = lib.loc,
           missing.package = missing.package,
-          check.lockfile = check.lockfile
+          check.lockfile = check.lockfile,
+          fallback.ok = fallback.ok
         )
       }
 
