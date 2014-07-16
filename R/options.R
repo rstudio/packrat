@@ -82,8 +82,17 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' packrat::set_opts(local.repos = c("~/projects/R"))
 ##' }
 get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
+
   project <- getProjectDir(project)
-  opts <- read_opts(project = project)
+
+  cachedOptions <- get("options", envir = .packrat)
+  if (is.null(cachedOptions)) {
+    opts <- read_opts(project = project)
+    assign("options", opts, envir = .packrat)
+  } else {
+    opts <- get("options", envir = .packrat)
+  }
+
   if (is.null(options)) {
     opts
   } else {
@@ -210,6 +219,10 @@ write_opts <- function(options, project = NULL) {
     options$external.packages <-
       as.character(unlist(strsplit(oep, "\\s*,\\s*", perl = TRUE)))
   }
+
+  # Update the in-memory options cache
+  assign("options", options, envir = .packrat)
+
   sep <- ifelse(
     unlist(lapply(options, length)) > 1,
     ":\n",

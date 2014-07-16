@@ -2,7 +2,7 @@
 .packrat <- new.env(parent = emptyenv())
 .packrat$packratFolderName <- "packrat"
 .packrat$packratFormat <- "1.4"
-
+.packrat$options <- NULL
 
 ## Mutable values that might be modified by the user (code borrowed from knitr)
 # merge elements of y into x with the same names
