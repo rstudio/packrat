@@ -203,7 +203,7 @@ getPackageRecords <- function(pkgNames,
 
   # If there's anything leftover, fail
   if (length(pkgNames))
-    stop("Unable to retrieve package records for the following pacakges:\n- ",
+    stop("Unable to retrieve package records for the following packages:\n- ",
          paste(shQuote(pkgNames), collapse = ", "),
          call. = FALSE)
 
