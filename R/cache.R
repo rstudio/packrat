@@ -13,6 +13,8 @@ hash <- function(path) {
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
 
+  pkgName <- basename(dirname(path))
+
   DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
 
   # If we already have a GitHub SHA1, just use that
@@ -34,9 +36,24 @@ hash <- function(path) {
   # (or, even worse, is actually a different version!)
   linkingToField <- sub[["LinkingTo"]]
   linkingToPkgs <- gsub("\\s*\\(.*", "", linkingToField)
+  linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
+
   linkingToHashes <- lapply(linkingToPkgs, function(x) {
-    hash(system.file("DESCRIPTION", package = x))
+    DESCRIPTION <- system.file("DESCRIPTION", package = x)
+    if (!file.exists(DESCRIPTION)) return(NULL) ## warn later
+    else hash(DESCRIPTION)
   })
+
+  missingLinkingToPkgs <- linkingToPkgs[vapply(linkingToHashes, is.null, logical(1))]
+  if (length(missingLinkingToPkgs)) {
+    warning("The following packages specified in the LinkingTo field for package '",
+            pkgName,
+            "' are unavailable:\n- ",
+            paste(shQuote(missingLinkingToPkgs), collapse = ", "),
+            "\nThese packages are required to be installed when attempting to hash this package for caching.",
+            call. = FALSE)
+  }
+  linkingToHashes <- dropNull(linkingToHashes)
 
   # Normalize for hashing and add in the linkingTo hashes as well
   ready <- normalizeForHash(sub)
