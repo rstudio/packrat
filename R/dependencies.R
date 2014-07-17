@@ -233,8 +233,21 @@ expressionDependencies <- function(e) {
       parent <- e[[1L]]
       child <- parent[[1L]]
     }
-    if (as.character(child) %in% c("::", ":::", "library", "require")) {
+    if (as.character(child) %in% c("::", ":::")) {
       return(as.character(parent[[2L]]))
+    } else if (as.character(child) %in% c("library", "require")) {
+      # Match arguments
+      call <- eval(call("match.call", child, quote(parent)))
+
+      # If character.only is TRUE and 'package' is a symbol, don't return that
+      # symbol
+      pkg <- call[["package"]]
+      co <- call[["character.only"]]
+      if (isTRUE(co) && is.symbol(pkg)) {
+        return()
+      } else {
+        return(as.character(pkg))
+      }
     }
   }
 
