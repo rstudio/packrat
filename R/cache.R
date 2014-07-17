@@ -34,7 +34,7 @@ hash <- function(path) {
   # TODO: It would really be best if, on installation, we recorded what version of LinkingTo
   # packages were actually linked to, in case that package is not available in the library
   # (or, even worse, is actually a different version!)
-  linkingToField <- sub[["LinkingTo"]]
+  linkingToField <- unlist(strsplit(as.character(sub[["LinkingTo"]]), "\\s*,\\s*"))
   linkingToPkgs <- gsub("\\s*\\(.*", "", linkingToField)
   linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
 
