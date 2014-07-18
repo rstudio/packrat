@@ -38,6 +38,8 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'
 ##' Get and set options for the current packrat-managed project.
 ##'
+##' @section Valid Options:
+##'
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
@@ -80,6 +82,12 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'
 ##' ## set local repository
 ##' packrat::set_opts(local.repos = c("~/projects/R"))
+##'
+##' ## get the set of 'external packages'
+##' packrat::opts$external.packages()
+##'
+##' ## set the external packages
+##' packrat::opts$external.packages(c("devtools", "knitr"))
 ##' }
 get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
 
@@ -138,8 +146,9 @@ set_opts <- function(..., project = NULL) {
   invisible(opts)
 }
 
+##' @rdname packrat-options
+##' @format NULL
 ##' @export
-##' @noRd
 opts <- setNames(lapply(names(VALID_OPTIONS), function(x) {
   make_setter(x)
 }), names(VALID_OPTIONS))
@@ -213,6 +222,22 @@ write_opts <- function(options, project = NULL) {
   project <- getProjectDir(project)
   if (!is.list(options))
     stop("Expecting options as an R list of values")
+
+  # Fill options that are left out
+  defaultOpts <- default_opts()
+  missingOptionNames <- setdiff(names(defaultOpts), names(options))
+  for (optionName in missingOptionNames) {
+    opt <- defaultOpts[[optionName]]
+    if (is.null(opt)) {
+      options[optionName] <- list(NULL)
+    } else {
+      options[[optionName]] <- opt
+    }
+  }
+
+  # Preserve order
+  options <- options[names(VALID_OPTIONS)]
+
   labels <- names(options)
   if ("external.packages" %in% names(options)) {
     oep <- as.character(options$external.packages)
