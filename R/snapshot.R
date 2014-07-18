@@ -189,7 +189,7 @@ snapshotImpl <- function(project,
 
   ## For use by automatic snapshotting -- only perform the automatic snapshot
   ## if it's a 'safe' action; ie, escape early if we would have prompted
-  if (mustConfirm && auto.snapshot) return(invisible())
+  if (mustConfirm && isTRUE(auto.snapshot)) return(invisible())
 
   if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n]: ')

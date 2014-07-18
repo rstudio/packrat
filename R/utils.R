@@ -21,7 +21,7 @@ forceUnload <- function(pkg) {
     suppressWarnings({
       pkgDir <- system.file(package=pkgName)
       if (nzchar(pkgDir))
-        library.dynam.unload(pkgName, pkgDir)
+        try(library.dynam.unload(pkgName, pkgDir), silent = TRUE)
     })
   }
 
