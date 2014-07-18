@@ -157,10 +157,15 @@ libRdir <- function(project = NULL) {
   file.path(getPackratDir(project), "lib-R")
 }
 
+startsWithBytes <- function(x, y) {
+  Encoding(x) <- Encoding(y) <- "bytes"
+  return(substring(x, 1, nchar(y, type = "bytes")) == x)
+}
+
 prettyLibDir <- function(project = NULL) {
   project <- getProjectDir(project)
   homeDir <- path.expand("~/")
-  if (substring(project, 1, nchar(homeDir)) == homeDir)
+  if (startsWithBytes(project, homeDir))
     project <- gsub(homeDir, "~/", project, fixed = TRUE)
   file.path(project, .packrat$packratFolderName, "lib")
 }
