@@ -50,7 +50,11 @@ checkNeedsLibraryMigration <- function() {
 
 }
 
-migrate_windows <- function() {
+migrate_packages <- function() {
+
+  ## Exit packrat mode if it's on
+  if (isPackratModeOn())
+    packrat::off(print.banner = FALSE)
 
   ## Clean up the search path and unload everything possible
   cleanSearchPath()
@@ -59,9 +63,18 @@ migrate_windows <- function() {
   if (!length(pkgsToMigrate)) {
     message("No migration is necessary.")
     return(invisible(NULL))
+  } else {
+    if (interactive()) {
+      wrapped <- paste(strwrap(paste(shQuote(pkgsToMigrate), collapse = ", "), 78), collapse = "\n")
+      message("The following packages will be migrated:\n- ",
+              wrapped)
+      response <- readline("Do you want to continue? [Y/n]: ")
+      if (tolower(substring(response, 1, 1)) != "y") {
+        message("Migration aborted.")
+        return(invisible(pkgsToMigrate))
+      }
+    }
   }
-
-  message("Beginning migration process...")
 
   ## Set up the library
   systemLib <- normalizePath(.Library, winslash = "/", mustWork = TRUE)
@@ -173,6 +186,8 @@ migrate_windows <- function() {
   result
 
 }
+
+migrate_windows <- migrate_packages
 
 checkNeedsPackratMigration <- function(project = NULL) {
 
