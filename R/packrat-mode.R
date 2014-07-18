@@ -10,6 +10,10 @@ beforePackratModeOn <- function(project) {
 
   project <- getProjectDir(project)
 
+  ## Check and see if we need to generate default options
+  if (!file.exists(packratOptionsFilePath(project = project)))
+    initOptions(project = project)
+
   # If someone is going from packrat mode on in project A, to packrat mode on
   # in project B, then we only want to update the 'project' in the state --
   # we should just carry forward the other state variables
@@ -138,7 +142,7 @@ afterPackratModeOn <- function(project,
   }
 
   # Insert hooks to library modifying functions to auto.snapshot on change
-  if (interactive() && auto.snapshot) {
+  if (interactive() && isTRUE(auto.snapshot)) {
     if (file.exists(getPackratDir(project))) {
       addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
     } else {
