@@ -113,6 +113,7 @@ migrate_packages <- function() {
       devtools::install_github(repo = desc$GithubRepo,
                                username = desc$GithubUsername,
                                ref = ref,
+                               quick = TRUE
       )
     }
   }
