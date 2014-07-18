@@ -75,15 +75,36 @@ readLockFile <- function(file) {
 
   df <- as.data.frame(readDcf(file), stringsAsFactors = FALSE)
   df <- cleanupWhitespace(df)
+
+  # Used 'GitHub' instead of 'Github' for a brief period -- translate those
+  names(df) <- gsub("^GitHub", "Github", names(df))
+
+  # Translate the names according to the aliases we maintain
   names(df) <- translate(names(df), aliases)
 
   # Split the repos
   repos <- gsub("[\r\n]", " ", df[1, 'Repos'])
-  repos <- strsplit(unlist(strsplit(repos, ",\\s*", perl = TRUE)), "=", fixed = TRUE)
-  repos <- setNames(
-    sapply(repos, "[[", 2),
-    sapply(repos, "[[", 1)
-  )
+  repos <- strsplit(unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE)), "=", fixed = TRUE)
+
+  # Support older-style lockfiles containing unnamed repositories
+  repoLens <- vapply(repos, length, numeric(1))
+  if (all(repoLens == 1)) {
+    # Support for old (unnamed) repositories
+
+    if (length(repoLens) > 1) {
+      # We warn if there were multiple repositories (if there was only one, we
+      # can safely assume it was CRAN)
+      warning("Old-style repository format detected; bumped to new version\n",
+              "Please re-set the repositories with options(repos = ...)\n",
+              "and call packrat::snapshot() to update the lock file.")
+    }
+    repos <- c(CRAN = repos[[1]])
+  } else if (all(repoLens == 2)) {
+    repos <- setNames(
+      sapply(repos, "[[", 2),
+      sapply(repos, "[[", 1)
+    )
+  }
 
   list(
     packrat_format = df[1, 'PackratFormat'],
