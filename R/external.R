@@ -74,6 +74,20 @@ loadExternalPackages <- function() {
   pkgs <- get_opts("external.packages")
   if (length(pkgs)) {
     pkgs <- pkgs[ !is.null(pkgs) & !is.na(pkgs) & nchar(pkgs) ]
-    for (pkg in pkgs) extlib(pkg)
+    failures <- dropNull(lapply(pkgs, function(pkg) {
+      tryCatch(
+        expr = extlib(pkg),
+        error = function(e) {
+          pkg
+        }
+      )
+    }))
+    if (length(failures)) {
+      failures <- as.character(unlist(failures))
+      message("Warning: failed to load the following external packages:\n- ",
+              paste(shQuote(failures), collapse = ", "))
+    }
+    return(length(failures) > 0)
   }
+  return(TRUE)
 }

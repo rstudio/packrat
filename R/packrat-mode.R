@@ -166,7 +166,12 @@ afterPackratModeOn <- function(project,
   # Update settings
   updateSettings(project = project)
 
-  if (interactive()) loadExternalPackages()
+  if (interactive()) {
+    success <- loadExternalPackages()
+    if (!success) {
+      warning("Failed to load one or more external packages on entering packrat mode")
+    }
+  }
 
   invisible(getLibPaths())
 
