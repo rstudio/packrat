@@ -111,3 +111,22 @@ moveInstalledPackagesToCache <- function(project = NULL) {
   }
 
 }
+
+# Pull out cached package information from the DESCRIPTION
+cachedPackages <- function(cacheDir = cacheLibDir(), fields = NULL) {
+  pkgCachePaths <- list.files(cacheDir, full.names = TRUE)
+  pkgPaths <- setNames(lapply(pkgCachePaths, function(x) {
+    list.files(x, full.names = TRUE)
+  }), basename(pkgCachePaths))
+
+  lapply(pkgPaths, function(hashedPath) {
+    result <- setNames(lapply(hashedPath, function(path) {
+      readDcf(file.path(path, "DESCRIPTION"), all = TRUE)
+    }), basename(hashedPath))
+    if (!is.null(fields)) {
+      result[fields]
+    } else {
+      result
+    }
+  })
+}
