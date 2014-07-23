@@ -9,18 +9,39 @@ Here are a couple of things to be aware of as you begin to use packrat.
 
 Packrat currently only works with three types of packages: 
 
-1. Packages installed from a CRAN repository (or a CRAN-like repository such as
-   BioConductor)
+1. Packages installed from a CRAN repository (or a CRAN-like repository such
+   as BioConductor)
 2. Packages installed by `devtools::install_github`, version 1.4 or later.
-3. Local source packages (via the `source.packages` parameter)
+3. Local source packages (as discovered within a 'local repository'; see the
+   `local.repos` option within `?"packrat-options"`)
 
 If you depend on a package that doesn't fall into any of these types, you'll
-need to coerce it into one of these types. The easiest way to do this is to put
-the package's source into a `.tar.gz` file, and use the `source.packages`
-parameter. Note that if you use this mechanism, you will need to update the
-version of the package every time you make a change to the source code; Packrat
-relies on version numbers for local source packages to know when they've been
-updated.
+need to coerce it into one of these types. We recommend building a local
+repository, acting as a place where source R packages will live (and can be
+used) by your packrat projects. For example, you might keep all of your R
+source packages in a directory called:
+
+    ~/R/packages
+
+and then, to use this directory as a local repository in your packrat
+projects, you would use:
+
+    ## Specify a local repository on startup packrat::init(options =
+    list(local.repos = "~/R/packages"))
+
+or
+
+    ## Set the local repositories for an existing packrat project
+    packrat::set_opts(local.repos = "~/R/packages")
+
+After doing this, packages from these repositories can be installed with
+`packrat::install_local()`. For example:
+
+    ## install a package `lassoTools` that lives within a local repository
+    packrat::install_local("lassoTools")
+
+and Packrat will automatically disocver the package `lassoTools` within the
+local repository.
 
 ### Building packages
 
@@ -29,12 +50,12 @@ repositories when available. However, many packages don't have binaries, and
 even those that do now may not have them in the near future (CRAN does not
 archive binaries, only sources). 
 
-Packrat stores the sources for each package locally, so that your project never
-depends on having platform binaries available from a mirror.
+Packrat stores the sources for each package locally, so that your project
+never depends on having platform binaries available from a mirror.
 
 However, this means it is almost certain that you'll need to be able to build
 source packages locally in order to use Packrat. See [Package Development
-Prerequisites](http://www.rstudio.com/ide/docs/packages/prerequisites) to learn
-more about the tools to install for your operating system. It's recommended
-that you and your collaborators prepare your machines for package development
-before using Packrat.
+Prerequisites](http://www.rstudio.com/ide/docs/packages/prerequisites) to
+learn more about the tools to install for your operating system. It's
+recommended that you and your collaborators prepare your machines for package
+development before using Packrat.

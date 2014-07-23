@@ -108,6 +108,16 @@ project--even if that someone else is you, years in the future, dusting off
 some old backups--they won't need to try to figure out what versions of what
 packages you were running, and where you got them.
 
+## Installing local source packages
+
+You may be working on a project with an R package that is not available on any
+external repository. Don't fret; packrat can still handle this! With source
+packages, we expect these packages live in a _local repository_. A local
+repository is just a directory containing package sources. This can be set
+within a packrat project with:
+
+    packrat::set_opts(local.repos = "<path_to_repo>")
+
 ## Restoring snapshots
 
 Once your project has a snapshot, you can easily install the packages from that
