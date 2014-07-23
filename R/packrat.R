@@ -203,10 +203,8 @@ init <- function(project = '.',
 
       updateSettings(project, options)
 
-      ## Symlink system libraries on mac
-      if (is.mac()) {
-        symlinkSystemPackages(project = project)
-      }
+      ## Symlink system libraries always
+      symlinkSystemPackages(project = project)
 
       message("Initialization complete!")
 

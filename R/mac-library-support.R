@@ -21,6 +21,9 @@ symlinkSystemPackages <- function(project = NULL) {
   ## Perform the symlinking -- we symlink individual packages because we don't
   ## want to capture any user libraries that may have been installed in the 'system'
   ## library directory
+  ##
+  ## NOTE: On Windows, we use junction points rather than symlinks to achieve the same
+  ## effect
   for (pkg in rownames(sysPkgsBase)) {
     symlink(
       file.path(.Library, pkg),

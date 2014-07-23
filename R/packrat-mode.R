@@ -106,15 +106,9 @@ afterPackratModeOn <- function(project,
   # Hide the site libraries
   hideSiteLibraries()
 
-  ## Ensure the system libraries are symlinked on Mac
-  if (is.mac()) {
-    symlinkSystemPackages(project = project)
-  }
-
-  # Use the symlinked library on Mac
-  if (is.mac()) {
-    useSymlinkedSystemLibrary(project = project)
-  }
+  ## Ensure the system libraries are symlinked
+  symlinkSystemPackages(project = project)
+  useSymlinkedSystemLibrary(project = project)
 
   # Set the library
   setLibPaths(localLib)
