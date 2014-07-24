@@ -5,9 +5,6 @@ local({
   if (is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA)) &&
         suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
 
-    # Check if we need to migrate the library (mainly for Windows)
-    packrat:::checkNeedsMigration()
-
     # Check 'print.banner.on.startup' -- when NA and RStudio, don't print
     print.banner <- packrat::get_opts("print.banner.on.startup")
     if (print.banner == "auto" && is.na(Sys.getenv("RSTUDIO", unset = NA))) {
