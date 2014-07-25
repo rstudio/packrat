@@ -65,15 +65,30 @@ hashLibWindows <- function(libDir, pkgName) {
   dllPaths <- list.files(libDir, recursive = TRUE, full.names = TRUE, pattern = glob2rx("*.dll"))
   if (!length(dllPaths)) return(character())
   objdump <- findObjdump("Could not locate 'objdump': please ensure Rtools is installed and on your PATH.")
-  tmpFile <- tempfile(fileext = ".txt")
-  on.exit(unlink(tmpFile))
-  lapply(dllPaths, function(path) {
-    path <- normalizePath(path)
-    tmpFile <- normalizePath(tmpFile)
-    shell(paste(shQuote(objdump), "-d", shQuote(path), ">>", shQuote(tmpFile)))
+  tmpDir <- file.path(tempdir(), "packrat-hash")
+  dir.create(tmpDir)
+  on.exit(unlink(tmpDir, recursive = TRUE))
+  tmpFiles <- normalizePath(mustWork = FALSE,
+    file.path(tmpDir, paste0(1:length(dllPaths), sep = ".txt"))
+  )
+  # Write out hashes to file
+  lapply(seq_along(dllPaths), function(i) {
+    path <- dllPaths[[i]]
+    path <- normalizePath(path, mustWork = FALSE)
+    system2(objdump,
+            args = c("-d", shQuote(path)),
+            stdout = tmpFiles[[i]])
   })
-  tools:::md5sum(tmpFile)
-  gsub(" .*", "", hash)
+  # Append files into a single file
+  masterFile <- normalizePath(
+    mustWork = FALSE,
+    file.path(tmpDir, "master.txt")
+  )
+  file.create(masterFile)
+  lapply(tmpFiles, function(x) {
+    file.append(x, masterFile)
+  })
+  unname(tools::md5sum(masterFile))
 }
 
 # We assume 'path' is the path to a DESCRIPTION file
