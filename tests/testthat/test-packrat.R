@@ -203,7 +203,3 @@ test_that("status does not fail", {
   status(projRoot)
 
 })
-
-test_that("hash does not fail if LinkingTo packages are not available", {
-  expect_warning(hash("packages/egg/DESCRIPTION"))
-})
