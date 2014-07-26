@@ -284,9 +284,7 @@ updateSvnIgnore <- function(project, options) {
                   relOldLibraryDir()
   ))
 
-  if (is.mac()) {
-    add <- c(add, "packrat/lib-R")
-  }
+  add <- c(add, "packrat/lib-R")
 
   svn <- Sys.which("svn")
   if (svn == "") {

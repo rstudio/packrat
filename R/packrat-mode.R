@@ -194,7 +194,7 @@ setPackratModeOff <- function(project = NULL,
   # Restore .Library.site
   if (isPackratModeOn()) {
     restoreSiteLibraries()
-    if (is.mac()) restoreLibrary(".Library")
+    restoreLibrary(".Library")
   }
 
   Sys.unsetenv("R_PACKRAT_MODE")
