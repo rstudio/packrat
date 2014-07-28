@@ -106,9 +106,10 @@ afterPackratModeOn <- function(project,
   # Hide the site libraries
   hideSiteLibraries()
 
-  ## Ensure the system libraries are symlinked
-  symlinkSystemPackages(project = project)
-  useSymlinkedSystemLibrary(project = project)
+  ## Symlink system libraries if possible
+  if (symlinkSystemPackages(project = project)) {
+    useSymlinkedSystemLibrary(project = project)
+  }
 
   # Set the library
   setLibPaths(localLib)

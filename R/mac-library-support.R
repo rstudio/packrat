@@ -1,4 +1,5 @@
 ## System packages == installed packages with a non-NA priority
+## Returns TRUE/FALSE, indicating whether the symlinking was successful
 symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
@@ -24,11 +25,15 @@ symlinkSystemPackages <- function(project = NULL) {
   ##
   ## NOTE: On Windows, we use junction points rather than symlinks to achieve the same
   ## effect
-  for (pkg in rownames(sysPkgsBase)) {
+  results <- vapply(rownames(sysPkgsBase), function(pkg) {
     symlink(
       file.path(.Library, pkg),
       file.path(libRdir, pkg)
     )
+  }, logical(1))
+
+  if (!all(results)) {
+    return(FALSE)
   }
 
   ## Clean up recursive symlinks if necessary -- it is possible that, e.g.
@@ -42,6 +47,8 @@ symlinkSystemPackages <- function(project = NULL) {
       unlink(file)
     }
   }))
+
+  return(TRUE)
 
 }
 
