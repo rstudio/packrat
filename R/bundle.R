@@ -28,7 +28,7 @@ bundle <- function(project = NULL,
     tarName <- paste(tarName, ".tar.gz", sep = "")
     bundlesDir <- bundlesDir(project)
     if (!file.exists(bundlesDir)) {
-      dir.create(bundlesDir)
+      dir.create(bundlesDir, recursive = TRUE)
     }
     file <- file.path(bundlesDir(project), tarName)
   }
@@ -45,19 +45,19 @@ bundle <- function(project = NULL,
     "^\\.Rproj\\.user/"
   )
 
-  # Collect all the files we want to zip up -- this ignores any dot files,
-  # or files hidden in . folders
-  projectFiles <- list.files(recursive = TRUE, all.files = TRUE)
+  # Collect all files and folders we want to zip up. We list all
+  # files and directories within the project root, excluding packrat
+  # -- which we add back in piecemeal later.
+  projectFiles <- list.files(all.files = TRUE, no.. = TRUE)
   for (item in blackList) {
     projectFiles <- grep(item, projectFiles, perl = TRUE, invert = TRUE, value = TRUE)
   }
-
 
   # Exclude the packrat folder at this stage -- we re-add the components we
   # need piece by piece
   projectFiles <- projectFiles[
     !startswith(projectFiles, .packrat$packratFolderName)
-    ]
+  ]
 
   # Make sure we add packrat
   basePackratFiles <- list_files(
@@ -71,21 +71,11 @@ bundle <- function(project = NULL,
 
   # These need to be relative paths
   if (include.src) {
-    packratSrc <- list_files(
-      file.path(.packrat$packratFolderName, "src"),
-      recursive = TRUE,
-      full.names = TRUE
-    )
-    filesToZip <- c(filesToZip, packratSrc)
+    filesToZip <- c(filesToZip, relSrcDir())
   }
 
   if (include.lib) {
-    packratLib <- list.files(
-      file.path(.packrat$packratFolderName, "lib"),
-      recursive = TRUE,
-      full.names = TRUE
-    )
-    filesToZip <- c(filesToZip, packratLib)
+    filesToZip <- c(filesToZip, relLibDir())
   }
 
   if (file.exists(file) && !overwrite) {
@@ -94,7 +84,10 @@ bundle <- function(project = NULL,
 
   ## Make sure the base folder name is inheritted from the project name
   setwd("../")
-  tar(file, files = file.path(basename(project), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
+  result <- tar(file, files = file.path(basename(project), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
+  if (result != 0) {
+    stop("Failed to bundle the packrat project.")
+  }
   message("The packrat project has been bundled at:\n- \"", file, "\"")
   invisible(file)
 }
