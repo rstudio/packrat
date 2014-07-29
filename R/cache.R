@@ -7,94 +7,9 @@ isUsingCache <- function(project) {
   isTRUE(get_opts("use.cache", project = project))
 }
 
-hashLib <- function(libDir, pkgName) {
-  if (is.windows()) {
-    hashLibWindows(libDir, pkgName)
-  } else if (is.mac()) {
-    hashLibMac(libDir, pkgName)
-  } else if (is.linux()) {
-    hashLibLinux(libDir, pkgName)
-  }
-}
-
-findOtool <- function(failureMessage) {
-  otool <- Sys.which("otool")
-  if (otool == "")
-    stop(message)
-  otool
-}
-
-findMd5sum <- function(failureMessage) {
-  md5 <- Sys.which("md5sum")
-  if (md5 == "") {
-    md5 <- Sys.which("md5")
-    if (md5 == "") {
-      stop(failureMessage)
-    }
-  }
-  md5
-}
-
-findObjdump <- function(failureMessage) {
-  objdump <- Sys.which("objdump")
-  if (objdump == "")
-    stop(failureMessage)
-  objdump
-}
-
-hashLibMac <- function(libDir, pkgName) {
-  soPath <- list.files(libDir, full.names = TRUE)
-  if (!length(soPath)) return(character())
-  otool <- findOtool("Could not find 'otool': Please install command line tools.")
-  md5 <- findMd5sum("Could not find 'md5' or 'md5sum': Please install command line tools.")
-  hash <- system(paste(shQuote(otool), "-t", shQuote(soPath), "|", shQuote(md5)), intern = TRUE)
-  return(hash)
-}
-
-hashLibLinux <- function(libDir, pkgName) {
-  soPath <- list.files(libDir, full.names = TRUE)
-  if (!length(soPath)) return(character())
-  objdump <- findObjdump("Could not locate 'objdump': do you have the appropriate command line tools installed?")
-  md5 <- findMd5sum("Could not locate 'md5': do you have the appropriate command line tools installed?")
-  hash <- system(paste(shQuote(objdump), "-d", shQuote(soPath), "|", shQuote(md5)), intern = TRUE)
-  gsub(" .*", "", hash)
-
-}
-
-hashLibWindows <- function(libDir, pkgName) {
-  dllPaths <- list.files(libDir, recursive = TRUE, full.names = TRUE, pattern = glob2rx("*.dll"))
-  if (!length(dllPaths)) return(character())
-  objdump <- findObjdump("Could not locate 'objdump': please ensure Rtools is installed and on your PATH.")
-  tmpDir <- file.path(tempdir(), "packrat-hash")
-  dir.create(tmpDir)
-  on.exit(unlink(tmpDir, recursive = TRUE))
-  tmpFiles <- normalizePath(mustWork = FALSE,
-    file.path(tmpDir, paste0(1:length(dllPaths), sep = ".txt"))
-  )
-  # Write out hashes to file
-  lapply(seq_along(dllPaths), function(i) {
-    path <- dllPaths[[i]]
-    path <- normalizePath(path, mustWork = FALSE)
-    system2(objdump,
-            args = c("-d", shQuote(path)),
-            stdout = tmpFiles[[i]])
-  })
-  # Append files into a single file
-  masterFile <- normalizePath(
-    mustWork = FALSE,
-    file.path(tmpDir, "master.txt")
-  )
-  file.create(masterFile)
-  lapply(tmpFiles, function(x) {
-    file.append(x, masterFile)
-  })
-  unname(tools::md5sum(masterFile))
-}
-
 # We assume 'path' is the path to a DESCRIPTION file
 #' @importFrom tools md5sum
 hash <- function(path) {
-
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
 
@@ -106,20 +21,47 @@ hash <- function(path) {
   if ("GithubSHA1" %in% names(DESCRIPTION))
     return(DESCRIPTION$GithubSHA1)
 
+  # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
+  # it essentially makes packages installed from source un-recoverable, since they will get
+  # built transiently and installed (and so that field could never be replicated).
   fields <- c("Package", "Version", "Depends", "Imports", "Suggests", "LinkingTo")
   sub <- DESCRIPTION[names(DESCRIPTION) %in% fields]
 
-  # If the package has a shared object file, hash components of that as well
-  libDir <- file.path(dirname(path), "libs")
-  libHash <- hashLib(libDir, pkgName)
+  # Handle LinkingTo specially -- we need to discover what version of packages in LinkingTo
+  # were actually linked against in order to properly disambiguate e.g. httpuv 1.0 linked
+  # against Rcpp 0.11.2 and httpuv 1.0 linked against Rcpp 0.11.2.1
 
-  # Normalize for hashing
+  # TODO: It would really be best if, on installation, we recorded what version of LinkingTo
+  # packages were actually linked to, in case that package is not available in the library
+  # (or, even worse, is actually a different version!)
+  linkingToField <- unlist(strsplit(as.character(sub[["LinkingTo"]]), "\\s*,\\s*"))
+  linkingToPkgs <- gsub("\\s*\\(.*", "", linkingToField)
+  linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
+
+  linkingToHashes <- lapply(linkingToPkgs, function(x) {
+    DESCRIPTION <- system.file("DESCRIPTION", package = x)
+    if (!file.exists(DESCRIPTION)) return(NULL) ## warn later
+    else hash(DESCRIPTION)
+  })
+
+  missingLinkingToPkgs <- linkingToPkgs[vapply(linkingToHashes, is.null, logical(1))]
+  if (length(missingLinkingToPkgs)) {
+    warning("The following packages specified in the LinkingTo field for package '",
+            pkgName,
+            "' are unavailable:\n- ",
+            paste(shQuote(missingLinkingToPkgs), collapse = ", "),
+            "\nThese packages are required to be installed when attempting to hash this package for caching.",
+            call. = FALSE)
+  }
+  linkingToHashes <- dropNull(linkingToHashes)
+
+  # Normalize for hashing and add in the linkingTo hashes as well
   ready <- normalizeForHash(sub)
+  ready <- paste0(ready, do.call(paste0, linkingToHashes))
   tempfile <- tempfile()
-  on.exit(unlink(tempfile))
   cat(ready, file = tempfile)
-  cat(libHash, file = tempfile, append = TRUE)
   result <- md5sum(tempfile)
+  unlink(tempfile)
   if (is.na(result)) stop("Failed to hash file!")
   unname(result)
 }
