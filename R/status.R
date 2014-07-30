@@ -111,14 +111,19 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   currently.used <- allPkgNames %in% inferredPkgNames
 
   # Generate a table that holds the current overall state
-  statusTbl <- data.frame( stringsAsFactors = FALSE,
-                           row.names = 1:length(allPkgNames),
-                           package = allPkgNames,
-                           packrat.version = packrat.version,
-                           packrat.source  = packrat.source,
-                           library.version = library.version,
-                           currently.used  = currently.used
+  external.packages <- opts$external.packages()
+  statusTbl <- data.frame(stringsAsFactors = FALSE,
+                          row.names = 1:length(allPkgNames),
+                          package = allPkgNames,
+                          packrat.version = packrat.version,
+                          packrat.source  = packrat.source,
+                          library.version = library.version,
+                          currently.used  = currently.used,
+                          external.package = allPkgNames %in% external.packages
   )
+
+  # Only give information on packages not included in external.packages
+  statusTbl <- statusTbl[!statusTbl$external.package, ]
 
   # Fill the state, according to the different kinds of mismatches there might
   # be between packrat.version, library.version, currently.used
