@@ -52,6 +52,38 @@ symlinkSystemPackages <- function(project = NULL) {
 
 }
 
+symlinkExternalPackages <- function(project = NULL, lib.loc = .libPaths()) {
+  project <- getProjectDir(project)
+
+  external.packages <- opts$external.packages()
+  if (!length(external.packages)) return(invisible(NULL))
+  loc <- setNames(lapply(external.packages, function(x) {
+    find.package(x, lib.loc = lib.loc, quiet = TRUE)
+  }), external.packages)
+  notFound <- loc[sapply(loc, function(x) {
+    !length(x)
+  })]
+  if (length(notFound)) {
+    warning("The following external packages could not be located:\n- ",
+            paste(shQuote(names(notFound)), collapse = ", "))
+  }
+  loc <- loc[sapply(loc, function(x) length(x) > 0)]
+  if (!file.exists(libExtDir(project)))
+    dir.create(libExtDir(project), recursive = TRUE)
+  results <- lapply(loc, function(x) {
+    symlink(
+      x,
+      file.path(libExtDir(project), basename(x))
+    )
+  })
+  failedSymlinks <- results[sapply(results, Negate(isTRUE))]
+  if (length(failedSymlinks)) {
+    warning("The following external packages could not be linked into ",
+            "the packrat private library:\n- ",
+            paste(shQuote(names(failedSymlinks)), collapse = ", "))
+  }
+}
+
 is.symlink <- function(path) {
 
   ## Strip trailing '/'

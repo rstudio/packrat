@@ -111,8 +111,12 @@ afterPackratModeOn <- function(project,
     useSymlinkedSystemLibrary(project = project)
   }
 
+  symlinkExternalPackages(project = project)
+
   # Set the library
-  setLibPaths(localLib)
+  if (!file.exists(libExtDir(project)))
+    dir.create(libExtDir(project), recursive = TRUE)
+  setLibPaths(c(localLib, libExtDir(project)))
 
   # If we unloaded packrat, reload the packrat namespace (don't need to attach)
   # and then reassign the mutables
@@ -160,13 +164,6 @@ afterPackratModeOn <- function(project,
 
   # Update settings
   updateSettings(project = project)
-
-  if (interactive()) {
-    success <- loadExternalPackages()
-    if (!success) {
-      warning("Failed to load one or more external packages on entering packrat mode")
-    }
-  }
 
   invisible(getLibPaths())
 
