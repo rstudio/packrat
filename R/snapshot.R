@@ -141,6 +141,13 @@ snapshotImpl <- function(project,
   # (last snapshot)
   lockPackages <- lockInfo(project, fatal = FALSE)
   diffs <- diff(lockPackages, allRecords)
+
+  # Don't remove packages that are specified as part of external.packages
+  # This means 'external.packages' is 'sticky', in that we only remove a package
+  # from the lockfile that's an external package if it's also removed from that field
+  ## TODO: Think about 'downgrade', 'crossgrade', 'upgrade' -- but presumedly this
+  ## shouldn't happen for external.packages within the context of a packrat project
+  diffs <- diffs[!(names(diffs) %in% opts$external.packages())]
   mustConfirm <- any(c('downgrade', 'remove', 'crossgrade') %in% diffs)
 
   if (!ignore.stale) {
