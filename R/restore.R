@@ -313,6 +313,7 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
 removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
   unlink(file.path(srcDir(project), pkgNames), recursive = TRUE)
   remove.packages(pkgNames, lib.loc)
+  pkgNames
 }
 
 # Installs a single package from its record. Returns the method used to install

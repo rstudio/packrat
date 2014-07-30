@@ -447,9 +447,18 @@ clean <- function(packages = NULL,
                    actions = actions))
   } else {
 
-    removePkgs(project = project,
-               pkgNames = packages,
-               lib.loc = lib.loc)
+    result <- removePkgs(project = project,
+                         pkgNames = packages,
+                         lib.loc = lib.loc)
+
+    if (length(result)) {
+      message("The following packages have been removed:\n- ",
+              paste(shQuote(result), collapse = ", "))
+    } else {
+      message("The packrat private library is already clean.")
+    }
+
+    invisible(result)
 
   }
 
@@ -467,36 +476,15 @@ unused_packages <- function(project = NULL,
                             lib.loc = libDir(project)) {
 
   project <- getProjectDir(project)
-  rootDeps <- appDependencies(project)
-  missingPackageNames <- character(0)
-  packagesInUse <- getPackageRecords(
-    rootDeps,
-    project = project,
-    available = NULL,
-    recursive = TRUE,
-    lib.loc = lib.loc,
-    missing.package = function(pkgName, lib.loc) {
-      missingPackageNames <<- c(missingPackageNames, pkgName)
-      return(NULL)
-    }
-  )
-  missingPackageNames <- sort(unique(missingPackageNames))
-
-  prettyPrintNames(
-    missingPackageNames,
-    c("Can't detect orphaned packages because these package(s) are not installed:")
-  )
-
-  if (length(missingPackageNames) > 0) {
-    return(invisible())
-  }
+  packagesInUse <- appDependencies(project)
 
   installedPkgNames <- row.names(installed.packages(
-    lib.loc=lib.loc,
-    priority=c('NA', 'recommended'), noCache=TRUE))
+    lib.loc = lib.loc,
+    priority = c('NA', 'recommended'), noCache = TRUE
+  ))
 
   orphans <- setdiff(installedPkgNames,
-                     pkgNames(flattenPackageRecords(packagesInUse)))
+                     packagesInUse)
 
   ## Exclude 'manipulate', 'rstudio'
   orphans <- setdiff(orphans, c("manipulate", "rstudio"))
