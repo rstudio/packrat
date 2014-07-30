@@ -227,6 +227,11 @@ getSourceForPkgRecord <- function(pkgRecord,
 
 snapshotSources <- function(project, repos, pkgRecords) {
 
+  # Don't snapshot packages included in external.packages
+  external.packages <- opts$external.packages()
+  pkgRecords <- Filter(function(x) !(x$name %in% external.packages),
+                       pkgRecords)
+
   # Get a list of source packages available on the repositories
   availablePkgs <- available.packages(contrib.url(repos, "source"),
                                       type = "source")
@@ -308,6 +313,7 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
 removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
   unlink(file.path(srcDir(project), pkgNames), recursive = TRUE)
   remove.packages(pkgNames, lib.loc)
+  pkgNames
 }
 
 # Installs a single package from its record. Returns the method used to install
@@ -474,11 +480,17 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   invisible()
 }
 
-restoreImpl <- function(project, repos, pkgRecords, lib,
-                        pkgsToIgnore=character(0),
-                        prompt=interactive(),
+restoreImpl <- function(project,
+                        repos,
+                        pkgRecords,
+                        lib,
+                        pkgsToIgnore = character(),
+                        prompt = interactive(),
                         dry.run = FALSE,
                         restart = TRUE) {
+
+  # We also ignore restores for packages specified in external.packages
+  pkgsToIgnore <- c(pkgsToIgnore, opts$external.packages())
 
   installedPkgs <- rownames(installed.packages(lib.loc = lib))
   installedPkgs <- setdiff(installedPkgs, c("manipulate", "rstudio"))

@@ -58,9 +58,11 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   Add the packrat private sources to your version control system ignore?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{FALSE})
 ##' \item \code{external.packages}:
-##'   Packages which should be loaded from the user library upon entering packrat mode.
-##'   This can be useful for very large packages which you don't want duplicated across
-##'   multiple projects, e.g. Bioconductor annotation packages.
+##'   Packages which should be loaded from the user library. This can be useful for
+##'   very large packages which you don't want duplicated across multiple projects,
+##'   e.g. BioConductor annotation packages, or for package development scenarios
+##'   wherein you want to use e.g. \code{devtools} and \code{roxygen2} for package
+##'   development, but do not want your package to depend on these packages.
 ##'   (EXPERIMENTAL; defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
 ##' \item \code{local.repos}:
 ##'   Local 'repositories'; i.e., directories containing package sources either as

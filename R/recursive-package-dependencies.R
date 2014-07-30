@@ -50,7 +50,7 @@ getPackageDependencies <- function(pkgs,
 
 excludeBasePackages <- function(packages) {
 
-  installedPkgsSystemLib <- as.data.frame(installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
+  installedPkgsSystemLib <- as.data.frame(utils::installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
   basePkgs <- with(installedPkgsSystemLib, Package[Priority %in% "base"])
   setdiff(packages, c("R", basePkgs))
 
@@ -58,8 +58,8 @@ excludeBasePackages <- function(packages) {
 
 excludeRecommendedPackages <- function(packages) {
 
-  installedPkgsSystemLib <- as.data.frame(installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
-  installedPkgsLocalLib <- as.data.frame(installed.packages(lib.loc = .libPaths()[1]), stringsAsFactors = FALSE)
+  installedPkgsSystemLib <- as.data.frame(utils::installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
+  installedPkgsLocalLib <- as.data.frame(utils::installed.packages(lib.loc = .libPaths()[1]), stringsAsFactors = FALSE)
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package

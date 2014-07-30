@@ -157,6 +157,10 @@ libRdir <- function(project = NULL) {
   file.path(getPackratDir(project), "lib-R")
 }
 
+libExtDir <- function(project = NULL) {
+  file.path(getPackratDir(project), "lib-ext")
+}
+
 startsWithBytes <- function(x, y) {
   Encoding(x) <- Encoding(y) <- "bytes"
   return(substring(x, 1, nchar(y, type = "bytes")) == x)
