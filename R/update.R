@@ -22,6 +22,8 @@ updateInit <- function() {
   cat(.Rprofile, file = file.path("inst", "resources", "init-rprofile.R"), sep = "\n")
 }
 
+# This functino is used to update project settings, typically called after
+# a call to packrat::set_opts
 updateSettings <- function(project = NULL, options = NULL) {
 
   project <- getProjectDir(project)
@@ -48,6 +50,9 @@ updateSettings <- function(project = NULL, options = NULL) {
     lockFile <- readLockFile(file = lockFilePath(project))
     options('repos' = lockFile$repos)
   }
+
+  # Update the external packages library
+  symlinkExternalPackages(project = project)
 
   invisible(TRUE)
 

@@ -52,14 +52,39 @@ symlinkSystemPackages <- function(project = NULL) {
 
 }
 
-symlinkExternalPackages <- function(project = NULL, lib.loc = .libPaths()) {
+symlinkExternalPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
+  # Bash any old symlinks that might exist
+  unlink(libExtDir(project), recursive = TRUE)
+  dir.create(libExtDir(project), recursive = TRUE)
+
+  # Find the user libraries -- if packrat mode is off, this is presumedly
+  # just the .libPaths(); if we're in packrat mode we have to ask packrat
+  # for those libraries
+  if (isPackratModeOn()) {
+    lib.loc <- .packrat_mutables$get("origLibPaths")
+  } else {
+    lib.loc <- .libPaths()
+  }
+
+  # Get the external packages as well as their dependencies (these need
+  # to be symlinked in so that imports and so on can be correctly resolved)
   external.packages <- opts$external.packages()
   if (!length(external.packages)) return(invisible(NULL))
-  loc <- setNames(lapply(external.packages, function(x) {
+  pkgDeps <- recursivePackageDependencies(
+    external.packages,
+    lib.loc = lib.loc,
+    available.packages = NULL
+  )
+  allPkgs <- union(external.packages, pkgDeps)
+
+  # Get the locations of these packages within the supplied lib.loc
+  loc <- setNames(lapply(allPkgs, function(x) {
     find.package(x, lib.loc = lib.loc, quiet = TRUE)
-  }), external.packages)
+  }), allPkgs)
+
+  # Warn about missing packages
   notFound <- loc[sapply(loc, function(x) {
     !length(x)
   })]
@@ -67,9 +92,9 @@ symlinkExternalPackages <- function(project = NULL, lib.loc = .libPaths()) {
     warning("The following external packages could not be located:\n- ",
             paste(shQuote(names(notFound)), collapse = ", "))
   }
+
+  # Symlink the packages that were found
   loc <- loc[sapply(loc, function(x) length(x) > 0)]
-  if (!file.exists(libExtDir(project)))
-    dir.create(libExtDir(project), recursive = TRUE)
   results <- lapply(loc, function(x) {
     symlink(
       x,
