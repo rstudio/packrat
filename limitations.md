@@ -40,7 +40,7 @@ After doing this, packages from these repositories can be installed with
     ## install a package `lassoTools` that lives within a local repository
     packrat::install_local("lassoTools")
 
-and Packrat will automatically disocver the package `lassoTools` within the
+and Packrat will automatically discover the package `lassoTools` within the
 local repository.
 
 ### Building packages
