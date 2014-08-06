@@ -117,9 +117,15 @@ getSourceForPkgRecord <- function(pkgRecord,
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {
       # Get the source package
-      fileLoc <- download.packages(pkgRecord$name, destdir = pkgSrcDir,
-                                   available = availablePkgs, repos = repos,
-                                   type = "source", quiet = TRUE)
+      # NOTE: we cannot use 'availablePkgs' as it might have been used to
+      # generate an available package listing for _binary_ packages,
+      # rather than source packages. Leave it NULL and let R do the
+      # right thing
+      fileLoc <- download.packages(pkgRecord$name,
+                                   destdir = pkgSrcDir,
+                                   repos = repos,
+                                   type = "source",
+                                   quiet = TRUE)
       if (!nrow(fileLoc))
         warning("Failed to download current version of ", pkgRecord$name,
                 "(", pkgRecord$version, ")")
