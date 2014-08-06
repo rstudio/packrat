@@ -339,20 +339,40 @@ installPkg <- function(pkgRecord,
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
   # is the version desired, and (c) R is set to download binaries. We also
   # just copy a symlink from the cache if possible.
+  copiedFromCache <- FALSE
   if (isUsingCache(project) &&
       length(pkgRecord$hash) &&
       isCacheable(pkgRecord$name) &&
       pkgRecord$hash %in% cache) {
 
     # This package has already been installed in the cache; just symlink
-    # to that
-    symlink(
+    # to that if possible, or copy otherwise
+    success <- suppressWarnings(symlink(
       file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash)),
       file.path(libDir(project), pkgRecord$name)
-    )
-    type <- "symlinked cache"
-    needsInstall <- FALSE
-  } else if (isFromCranlikeRepo(pkgRecord) &&
+    ))
+
+    if (success) {
+      type <- "symlinked cache"
+      needsInstall <- FALSE
+    } else {
+      ## just copy the directory over instead of symlinking
+      success <- all(dir_copy(
+        file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash)),
+        file.path(libDir(project), pkgRecord$name)
+      ))
+      if (!success) {
+        warning("Failed to symlink or copy package '", pkgRecord$name, "' from cache")
+      } else {
+        type <- "copied cache"
+        needsInstall <- FALSE
+      }
+    }
+    copiedFromCache <- success
+  }
+
+  if (!(copiedFromCache) &&
+        isFromCranlikeRepo(pkgRecord) &&
         pkgRecord$name %in% rownames(availablePkgs) &&
         versionMatchesDb(pkgRecord, availablePkgs) &&
         !identical(getOption("pkgType"), "source")) {
@@ -381,6 +401,7 @@ installPkg <- function(pkgRecord,
       # the repo
     })
   }
+
   if (is.null(pkgSrc)) {
     # When installing from github or an older version, use the cached source
     # tarball or zip created in snapshotSources
