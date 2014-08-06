@@ -387,22 +387,24 @@ installPkg <- function(pkgRecord,
     pkgSrc <- file.path(srcDir(project), pkgRecord$name,
                         pkgSrcFilename(pkgRecord))
   }
-  if (!file.exists(pkgSrc)) {
-    # If the source file is missing, try to download it. (Could happen in the
-    # case where the packrat lockfile is present but cached sources are
-    # missing.)
-    getSourceForPkgRecord(pkgRecord,
-                          srcDir(project),
-                          availablePkgs,
-                          repos,
-                          quiet = TRUE)
-    if (!file.exists(pkgSrc)) {
-      stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
-           ": sources missing at ", pkgSrc)
-    }
-  }
 
   if (needsInstall) {
+
+    if (!file.exists(pkgSrc)) {
+      # If the source file is missing, try to download it. (Could happen in the
+      # case where the packrat lockfile is present but cached sources are
+      # missing.)
+      getSourceForPkgRecord(pkgRecord,
+                            srcDir(project),
+                            availablePkgs,
+                            repos,
+                            quiet = TRUE)
+      if (!file.exists(pkgSrc)) {
+        stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
+             ": sources missing at ", pkgSrc)
+      }
+    }
+
     local({
       # devtools does not install to any libraries other than the default, so
       # if the library we wish to install to is not the default, set as the
