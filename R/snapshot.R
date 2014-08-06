@@ -87,6 +87,11 @@ snapshotImpl <- function(project,
                          fallback.ok = FALSE,
                          snapshot.sources = TRUE) {
 
+  # ensure packrat directory available
+  packratDir <- getPackratDir(project)
+  if (!file.exists(packratDir))
+    dir.create(packratDir, recursive = TRUE)
+
   # When snapshotting, we take the union of:
   #
   # 1. Inferred dependencies (packages that appear to be in use in your code), and
