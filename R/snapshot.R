@@ -84,7 +84,8 @@ snapshotImpl <- function(project,
                          prompt = interactive(),
                          auto.snapshot = FALSE,
                          verbose = TRUE,
-                         fallback.ok = FALSE) {
+                         fallback.ok = FALSE,
+                         snapshot.sources = TRUE) {
 
   # When snapshotting, we take the union of:
   #
@@ -207,11 +208,15 @@ snapshotImpl <- function(project,
   }
 
   if (!dry.run) {
-    snapshotSources(project, activeRepos(project), allRecordsFlat)
+
+    if (snapshot.sources)
+      snapshotSources(project, activeRepos(project), allRecordsFlat)
+
     writeLockFile(
       lockFilePath(project),
       allRecords
     )
+
     for (record in allRecordsFlat) {
       name <- record$name
       path <- file.path(libDir(project), name, "DESCRIPTION")
@@ -219,7 +224,9 @@ snapshotImpl <- function(project,
         annotatePkgDesc(record, project, libDir(project))
       }
     }
+
     moveInstalledPackagesToCache(project)
+
     if (verbose) {
       message('Snapshot written to ',
               shQuote(normalizePath(lockFilePath(project), winslash = '/'))
