@@ -7,8 +7,18 @@ getPackageDependencies <- function(pkgs,
   }
 
   deps <- unlist(lapply(pkgs, function(pkg) {
+
+    # Read the package DESCRIPTION file
     pkgDescFile <- system.file('DESCRIPTION', package = pkg,
                                lib.loc = lib.loc)
+
+    # Get any packages available in local repositories
+    localReposPkgPaths <- as.character(unlist(lapply(opts$local.repos(), function(x) {
+      fullPaths <- list.files(x, full.names = TRUE)
+      fullPaths[file.exists(file.path(fullPaths, "DESCRIPTION"))]
+    })))
+    localReposPkgs <- basename(localReposPkgPaths)
+
     if (file.exists(pkgDescFile)) {
       # try to read dependency information from the locally installed package
       # if it's available (dependency information in available.packages may not
@@ -25,6 +35,16 @@ getPackageDependencies <- function(pkgs,
       # package database
       theseDeps <- as.list(
         available.packages[pkg, c("Depends", "Imports", "LinkingTo")])
+    } else if (pkg %in% localReposPkgs) {
+      # use the version in the local repository
+      allIdx <- which(localReposPkgs == pkg)
+      path <- localReposPkgPaths[allIdx[1]]
+      if (length(allIdx) > 1) {
+        warning("Package '", pkg, "' found in multiple local repositories; ",
+                "inferring dependencies from package at path:\n- ", shQuote(path))
+      }
+      theseDeps <- combineDcfFields(as.data.frame(readDcf(path)),
+                                    c("Depends", "Imports", "LinkingTo"))
     } else {
       warning("Package '", pkg, "' not available in repository or locally")
       return(NULL)
