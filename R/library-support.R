@@ -25,14 +25,18 @@ symlinkSystemPackages <- function(project = NULL) {
   ##
   ## NOTE: On Windows, we use junction points rather than symlinks to achieve the same
   ## effect
-  results <- vapply(rownames(sysPkgsBase), function(pkg) {
+  results <- suppressWarnings(vapply(rownames(sysPkgsBase), function(pkg) {
     symlink(
       file.path(.Library, pkg),
       file.path(libRdir, pkg)
     )
-  }, logical(1))
+  }, logical(1)))
 
+  # symlink returns FALSE if there was a failure
   if (!all(results)) {
+    # clean up the libRdir if it's empty
+    if (!length(list.files(libRdir)))
+      unlink(libRdir, recursive = TRUE)
     return(FALSE)
   }
 
