@@ -34,7 +34,9 @@ symlinkSystemPackages <- function(project = NULL) {
 
   # symlink returns FALSE if there was a failure
   if (!all(results)) {
-    unlink(libRdir, recursive = TRUE)
+    # clean up the libRdir if it's empty
+    if (!length(list.files(libRdir)))
+      unlink(libRdir, recursive = TRUE)
     return(FALSE)
   }
 
