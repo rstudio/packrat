@@ -181,7 +181,7 @@ init <- function(project = '.',
         package <- description$Package
       }
 
-      ## Make sure the .Rprofile, .gitignore, etc. are up to date
+      ## Make sure the .Rprofile is up to date
       augmentRprofile(project)
       options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
 
@@ -201,6 +201,8 @@ init <- function(project = '.',
         file.path(project, .packrat$packratFolderName, "init.R")
       )
 
+      # Update project settings -- this also involves updating the .gitignore,
+      # etc
       updateSettings(project, options)
 
       ## Symlink system libraries always

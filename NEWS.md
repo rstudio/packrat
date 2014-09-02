@@ -1,4 +1,7 @@
-# Packrat 0.4.1.1 (Unreleased)
+# Packrat 0.4.2 (Unreleased)
+
+- Packrat now adds `.Rprofile` to the `.Rbuildignore` file used for package
+  development. (#138)
 
 # Packrat 0.4.1
 

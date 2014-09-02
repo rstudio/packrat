@@ -220,7 +220,13 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 }
 
 updateRBuildIgnore <- function(project = NULL, options) {
-  updateIgnoreFile(project = project, file = ".Rbuildignore", add = "^packrat/")
+
+  add <- c(
+    "^packrat/",
+    "^\\.Rprofile$"
+  )
+
+  updateIgnoreFile(project = project, file = ".Rbuildignore", add = add)
 }
 
 updateGitIgnore <- function(project = NULL, options) {
@@ -233,10 +239,14 @@ updateGitIgnore <- function(project = NULL, options) {
       "vcs.ignore.src" = paste0(relSrcDir(), "/")
     )
   )
+
   add <- names(git.options)[sapply(git.options, isTRUE)]
   remove <- names(git.options)[sapply(git.options, isFALSE)]
 
-  updateIgnoreFile(project = project, file = ".gitignore", add = add, remove = remove)
+  updateIgnoreFile(project = project,
+                   file = ".gitignore",
+                   add = add,
+                   remove = remove)
 }
 
 isGitProject <- function(project) {
