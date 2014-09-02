@@ -1,4 +1,20 @@
-# Packrat 0.3.0.99 (Unreleased)
+# Packrat 0.4.1
+
+- Coincides with first CRAN release of packrat.
+
+- Disabled migration warnings on Windows (as we now use junction points if
+  possible to facilitate isolation)
+
+- Fix bug with `tar` and projects containing a large number of files (#129)
+
+- External packages (alongside their dependencies) are now symlinked to the
+  `packrat/lib-ext` folder -- this allows external packages to function better
+  alongside regular packrat workflows.
+
+- If package symlinking (junctioning) fails, we instead copy the package to
+  the corresponding packrat `lib*` folder.
+
+# Packrat 0.4.0
 
 - The `source.packages` argument for `init` and `snapshot` has now been
   removed. In lieu, projects can now specify local repositories -- packages
