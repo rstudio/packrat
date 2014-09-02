@@ -7,3 +7,4 @@
 ^tests/testthat/packrat/
 ^scenarios/
 ^configure.R$
+^NEWS.md$
