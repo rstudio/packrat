@@ -87,3 +87,32 @@ download <- function(url, ...) {
     download.file(url, ...)
   }
 }
+
+
+# Download from a URL with a certain number of retries -- returns TRUE
+# if the download succeeded, and FALSE otherwise
+downloadWithRetries <- function(url, ..., maxTries = 5L) {
+  maxTries <- as.integer(maxTries)
+  stopifnot(maxTries > 0L)
+
+  success <- FALSE
+
+  for (i in 1:maxTries) {
+    # NOTE: Windows seems to return a warning that the status code was 200
+    # even on a successful download...
+    tryCatch(
+      expr = {
+        result <- suppressWarnings(download(url, ...))
+        if (result %in% c(0, 200))
+          success <- TRUE
+        else
+          Sys.sleep(1)
+      },
+      error = function(e) {
+        Sys.sleep(1)
+      }
+    )
+    if (success) break
+  }
+  success
+}

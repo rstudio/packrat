@@ -1,5 +1,9 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Downloads are now retried (up to a default of 5 times) on failure -- this
+  should help with intermittent timeouts when e.g. downloading archives from
+  GitHub. (#134)
+
 - Packrat now adds `.Rprofile` to the `.Rbuildignore` file used for package
   development. (#138)
 
