@@ -5,7 +5,7 @@ test_that("updateRBuildIgnore adds the packrat directory to ignore", {
   unlink(path)
   updateRBuildIgnore(project = tempdir())
   content <- readLines(path)
-  expect_identical(content, "^packrat/")
+  expect_identical(content, c("^packrat/", "^\\.Rprofile$"))
   unlink(path)
 })
 
@@ -15,7 +15,7 @@ test_that("updateRBuildIgnore preserves content in ignore file", {
   cat(c("foo", "bar", "baz"), file = path, sep = "\n")
   updateRBuildIgnore(project = tempdir())
   content <- readLines(path)
-  expect_identical(content, c("foo", "bar", "baz", "^packrat/"))
+  expect_identical(content, c("foo", "bar", "baz", "^packrat/", "^\\.Rprofile$"))
   unlink(path)
 })
 
