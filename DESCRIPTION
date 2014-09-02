@@ -1,9 +1,10 @@
 Package: packrat
 Type: Package
-Title: Reproducible dependency management
+Title: A dependency management system for projects and their R package
+    dependencies
 Version: 0.4.1
 Date: 2014-09-02
-Author: RStudio, Inc.
+Author: Kevin Ushey, Jonathan McPherson, Joe Cheng, JJ Allaire
 Maintainer: Kevin Ushey <kevin@rstudio.com>
 Description: Packrat is a tool for managing the R packages your project depends
     on in an isolated, portable, and reproducible way.
