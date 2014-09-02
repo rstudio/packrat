@@ -86,13 +86,9 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   # Don't stop execution if package missing from library; just propogate later
   # as information to user
   inferredPkgNames <- appDependencies(project)
-  inferredPkgRecords <- getPackageRecords(
-    inferredPkgNames,
-    project = project,
-    lib.loc = lib.loc,
-    available = available.packages(contrib.url(activeRepos(project))),
-    missing.package = function(package, lib.loc) NULL
-  )
+
+  # Suppress warnings on 'Suggests', since they may be from non-CRAN repos (e.g. OmegaHat)
+  suggestedPkgNames <- suppressWarnings(appDependencies(project, fields = "Suggests"))
 
   # All packages mentioned in one of the three above
   allPkgNames <- sort(unique(c(
@@ -108,7 +104,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   packrat.version <- .match(packratVersions)
   packrat.source  <- .match(packratSources)
   library.version <- .match(installedPkgVersions)
-  currently.used <- allPkgNames %in% inferredPkgNames
+  currently.used <- allPkgNames %in% c(inferredPkgNames, suggestedPkgNames)
 
   # Generate a table that holds the current overall state
   external.packages <- opts$external.packages()

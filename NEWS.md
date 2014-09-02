@@ -1,5 +1,10 @@
 # Packrat 0.4.2 (Unreleased)
 
+- `packrat::status()` no longer asks you to uninstall packages that are
+  found within the `Suggests:` field of the project's R package dependency
+  chain, but does not require you to track these packages in the lockfile
+  either. (#109)
+
 - Downloads are now retried (up to a default of 5 times) on failure -- this
   should help with intermittent timeouts when e.g. downloading archives from
   GitHub. (#134)

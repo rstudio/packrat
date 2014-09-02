@@ -26,7 +26,9 @@
 # appDependencies("~/projects/shiny/app1")
 # }
 # @keywords internal
-appDependencies <- function(project = NULL, available.packages = NULL) {
+appDependencies <- function(project = NULL,
+                            available.packages = NULL,
+                            fields = c("Imports", "Depends", "LinkingTo")) {
 
   if (is.null(available.packages)) available.packages <- available.packages()
 
@@ -43,12 +45,16 @@ appDependencies <- function(project = NULL, available.packages = NULL) {
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
-    childDeps <- recursivePackageDependencies(parentDeps, libDir(project),
-                                              available.packages)
+    childDeps <- recursivePackageDependencies(parentDeps,
+                                              libDir(project),
+                                              available.packages,
+                                              fields)
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
-    childDeps <- recursivePackageDependencies(parentDeps, libDir(project),
-                                              available.packages)
+    childDeps <- recursivePackageDependencies(parentDeps,
+                                              libDir(project),
+                                              available.packages,
+                                              fields)
   }
 
   sort(unique(c(parentDeps, childDeps, "packrat")))
