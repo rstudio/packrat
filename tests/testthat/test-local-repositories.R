@@ -29,8 +29,11 @@ test_that("install_local fails if no repository has been defined", {
 })
 
 test_that("packrat::get_opts can read / write atrocious paths", {
+
   path <- list.files(pattern = "^Ugly")
-  opts$local.repos(path)
-  readPath <- opts$local.repos()
-  expect_identical(path, readPath)
+  with_dir(tempdir(), {
+    opts$local.repos(path)
+    readPath <- opts$local.repos()
+    expect_identical(path, readPath)
+  })
 })
