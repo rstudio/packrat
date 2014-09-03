@@ -162,7 +162,7 @@ init <- function(project = '.',
     prFiles
   )
 
-  tryCatch(
+  withCallingHandlers(
 
     expr = {
 
@@ -221,7 +221,7 @@ init <- function(project = '.',
 
       invisible()
 
-    },
+    }, ## expr
 
     error = function(e) {
 
@@ -235,9 +235,7 @@ init <- function(project = '.',
         }
       }
 
-      stop(e)
-
-    }
+    } ## error
 
   )
 
