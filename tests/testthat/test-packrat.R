@@ -83,7 +83,6 @@ test_that("snapshot captures new dependencies", {
   expect_true("toast" %in% pkgs)
 })
 
-
 test_that("dependencies in library directories are ignored", {
   makeLibrariesProject()
   projRoot <- cloneTestProject("libraries")

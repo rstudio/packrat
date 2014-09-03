@@ -435,3 +435,10 @@ symlink <- function(from, to) {
   if (is.windows()) Sys.junction(from, to)
   else file.symlink(from, to)
 }
+
+with_dir <- function(dir, expr) {
+  owd <- getwd()
+  setwd(dir)
+  on.exit(setwd(owd))
+  eval(expr, envir = parent.frame())
+}
