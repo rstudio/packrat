@@ -64,7 +64,7 @@ getPackageDependencies <- function(pkgs,
   deps <- dropSystemPackages(deps)
 
   if (is.null(deps)) NULL
-  else sort(unique(deps))
+  else sort_c(unique(deps))
 }
 
 excludeBasePackages <- function(packages) {
@@ -103,9 +103,9 @@ recursivePackageDependencies <- function(pkgs, lib.loc,
   while (length(depsToCheck)) {
     newDeps <- getPackageDependencies(depsToCheck, lib.loc, available.packages, fields)
     depsToCheck <- setdiff(newDeps, deps)
-    deps <- sort(unique(c(deps, newDeps)))
+    deps <- sort_c(unique(c(deps, newDeps)))
   }
   if (is.null(deps)) NULL
-  else sort(unique(deps))
+  else sort_c(unique(deps))
 
 }

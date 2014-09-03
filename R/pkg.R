@@ -444,7 +444,7 @@ flattenPackageRecords <- function(packageRecords, depInfo = FALSE, sourcePath = 
     }
   }
   visit(packageRecords)
-  lapply(sort(ls(visited)), function(name) {
+  lapply(sort_c(ls(visited)), function(name) {
     visited[[name]]
   })
 }

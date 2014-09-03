@@ -57,7 +57,7 @@ appDependencies <- function(project = NULL,
                                               fields)
   }
 
-  sort(unique(c(parentDeps, childDeps, "packrat")))
+  sort_c(unique(c(parentDeps, childDeps, "packrat")))
 
 }
 

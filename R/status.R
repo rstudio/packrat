@@ -91,7 +91,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   suggestedPkgNames <- suppressWarnings(appDependencies(project, fields = "Suggests"))
 
   # All packages mentioned in one of the three above
-  allPkgNames <- sort(unique(c(
+  allPkgNames <- sort_c(unique(c(
     packratNames, installedPkgNames, inferredPkgNames
   )))
 

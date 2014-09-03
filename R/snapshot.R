@@ -112,7 +112,7 @@ snapshotImpl <- function(project,
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
-  inferredPkgs <- sort(appDependencies(project))
+  inferredPkgs <- sort_c(appDependencies(project))
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
