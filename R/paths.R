@@ -218,11 +218,7 @@ defaultAppDataDir <- function() {
 
   # normalize path
   appDataDir <- normalizePath(file.path(appDataDirBase, "packrat"),
-                            mustWork = FALSE)
-
-  # ensure that it exists
-  if (!file.exists(appDataDir))
-    dir.create(appDataDir, recursive = TRUE)
+                              mustWork = FALSE)
 
   # return it
   appDataDir
