@@ -61,7 +61,7 @@ when you try to use it.** If you already have devtools installed, make sure
 it's 1.4 or later before proceeding.
 
     > install.packages("devtools")
-    > devtools::install_github("rstudio/packrat")
+    > install.packages("packrat")
 
 You'll also need to make sure your machine is able to build packages from
 source. See [Package Development
