@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- The automatic snapshot mechanism now re-uses the `available.packages()`
+  cache, to avoid unnecessary internet requests to CRAN.
+
 - `packrat::status()` no longer asks you to uninstall packages that are
   found within the `Suggests:` field of the project's R package dependency
   chain, but does not require you to track these packages in the lockfile

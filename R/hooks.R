@@ -38,9 +38,32 @@ snapshotHook <- function(expr, value, ok, visible) {
 
 }
 
+## Make a call that copies the local available.packages() cache
+makeCopyAvailablePackagesCacheCmd <- function(contrib.url, dir) {
+
+  makeName <- function(contrib.url) {
+    vapply(contrib.url, function(x) {
+      paste0("repos_", URLencode(x, TRUE), ".rds")
+    }, character(1), USE.NAMES = FALSE)
+  }
+
+  name <- makeName(contrib.url)
+
+  fromCmd <- paste0("file.path(",
+                    paste(sep = ", ",
+                          surround(dir, with = "'"),
+                          surround(name, with = "'")
+                    ),
+                    ")"
+  )
+  toCmd <- paste0("file.path(tempdir(), '", name, "')")
+
+  paste0("file.copy(", fromCmd, ", ", toCmd, ")")
+}
+
 ## Builds a call that can be executed asynchronously -- returned as a character
 ## vector that can be pasted with e.g. paste(call, collapse = "; ")
-buildSnapshotHookCall <- function(project) {
+buildSnapshotHookCall <- function(project, debug = FALSE) {
 
   project <- getProjectDir()
   packratDir <- getPackratDir(project)
@@ -59,22 +82,32 @@ buildSnapshotHookCall <- function(project) {
 
   setwdCmd <- paste0("setwd(", surround(project, with = "'"), ")")
   reposCmd <- paste0("options('repos' = ", repos, ")")
+  copyAvailablePackagesCacheCmd <- makeCopyAvailablePackagesCacheCmd(
+    contrib.url(getOption('repos')), tempdir()
+  )
   setLibsCmd <- paste0(".libPaths(c(",
                        paste(surround(getLibPaths(), with = "'"), collapse = ", "),
                        "))")
-  snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")), silent = TRUE)")
+  if (debug) {
+    snapshotCmd <- paste0("packrat:::snapshotImpl(", snapshotArgs, ")")
+  } else {
+    snapshotCmd <- paste0("try(suppressMessages(packrat:::snapshotImpl(", snapshotArgs, ")), silent = TRUE)")
+  }
   cleanupCmd <- paste0("if (file.exists(",
                        surround(snapshotLockPath, with = "'"),
                        ")) file.remove(",
                        surround(snapshotLockPath, with = "'"),
                        ")")
+  removeTmpdirCmd <- paste0("unlink(tempdir(), recursive = TRUE)")
 
   c(
     setwdCmd,
     reposCmd,
+    copyAvailablePackagesCacheCmd,
     setLibsCmd,
     snapshotCmd,
     cleanupCmd,
+    removeTmpdirCmd,
     "invisible()"
   )
 }
@@ -99,7 +132,7 @@ snapshotHookImpl <- function(debug = FALSE) {
     return(TRUE)
   }
 
-  fullCmd <- paste(buildSnapshotHookCall(project), collapse = "; ")
+  fullCmd <- paste(buildSnapshotHookCall(project, debug = debug), collapse = "; ")
   file.create(snapshotLockPath, recursive = TRUE)
   r_path <- file.path(R.home("bin"), "R")
   args <- paste("--vanilla", "--slave", "-e", surround(fullCmd, with = "\""))
