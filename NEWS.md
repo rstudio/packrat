@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Packrat gains the 'load.external.packages.on.startup' option, to control
+  whether external packages are loaded on startup.
+
 - Allow users to specify packrat itself as an external package (experimental,
   #147)
 
