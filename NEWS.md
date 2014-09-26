@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Allow users to specify packrat itself as an external package (experimental,
+  #147)
+
 - The automatic snapshot mechanism now re-uses the `available.packages()`
   cache, to avoid unnecessary internet requests to CRAN.
 

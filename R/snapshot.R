@@ -196,6 +196,15 @@ snapshotImpl <- function(project,
       # write the new lockfile. If packages were installed NOT by packrat, we
       # need to mark them as installed by packrat so they no longer are
       # considered "dirty" changes in need of snapshotting.
+
+      # Write a lockfile containing no packages if there is no lockfile.
+      if (!file.exists(lockFilePath(project))) {
+        writeLockFile(
+          lockFilePath(project),
+          allRecords
+        )
+      }
+
       return()
     }
   }

@@ -13,7 +13,8 @@ VALID_OPTIONS <- list(
   },
   local.repos = function(x) {
     is.null(x) || is.character(x)
-  }
+  },
+  load.external.packages.on.startup = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -24,7 +25,8 @@ default_opts <- function() {
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
-    local.repos = ""
+    local.repos = "",
+    load.external.packages.on.startup = TRUE
   )
 }
 
@@ -67,6 +69,9 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' \item \code{local.repos}:
 ##'   Local 'repositories'; i.e., directories containing package sources either as
 ##'   folders or as package tarballs. (Character vector; empty by default)
+##' \item \code{load.external.packages.on.startup}:
+##'   Load any packages specified within \code{external.packages} on startup?
+##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.

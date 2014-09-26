@@ -117,9 +117,11 @@ afterPackratModeOn <- function(project,
   setLibPaths(c(localLib, libExtDir(project)))
 
   # Load any packages specified in external.packages
-  lapply(opts$external.packages(), function(x) {
-    library(x, character.only = TRUE, quietly = TRUE)
-  })
+  if (isTRUE(opts$load.external.packages.on.startup())) {
+    lapply(opts$external.packages(), function(x) {
+      library(x, character.only = TRUE, quietly = TRUE)
+    })
+  }
 
   # If we unloaded packrat, reload the packrat namespace (don't need to attach)
   # and then reassign the mutables

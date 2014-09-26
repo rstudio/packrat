@@ -57,6 +57,9 @@ Get and set options for the current packrat-managed project.
 \item \code{local.repos}:
   Local 'repositories'; i.e., directories containing package sources either as
   folders or as package tarballs. (Character vector; empty by default)
+\item \code{load.external.packages.on.startup}:
+  Load any packages specified within \code{external.packages} on startup?
+  (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
 }
 }
 \examples{
