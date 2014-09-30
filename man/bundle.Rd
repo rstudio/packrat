@@ -4,7 +4,7 @@
 \title{Bundle a Packrat Project}
 \usage{
 bundle(project = NULL, file = NULL, include.src = TRUE,
-  include.lib = FALSE, overwrite = FALSE, ...)
+  include.lib = FALSE, include.bundles = TRUE, overwrite = FALSE, ...)
 }
 \arguments{
 \item{project}{The project directory. Defaults to the currently activate
@@ -17,6 +17,8 @@ to a file with name \code{<package>-<date>.zip}.}
 \item{include.src}{Include the packrat sources?}
 
 \item{include.lib}{Include the packrat private library?}
+
+\item{include.bundles}{Include other packrat bundle tarballs?}
 
 \item{overwrite}{Boolean; overwrite the file at \code{file} if it already exists?}
 

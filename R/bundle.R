@@ -9,6 +9,7 @@
 #'  to a file with name \code{<package>-<date>.zip}.
 #' @param include.src Include the packrat sources?
 #' @param include.lib Include the packrat private library?
+#' @param include.bundles Include other packrat bundle tarballs?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
 #' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
@@ -16,6 +17,7 @@ bundle <- function(project = NULL,
                    file = NULL,
                    include.src = TRUE,
                    include.lib = FALSE,
+                   include.bundles = TRUE,
                    overwrite = FALSE,
                    ...) {
 
@@ -42,7 +44,8 @@ bundle <- function(project = NULL,
   pattern <- c(
     "^(?!\\.Rproj\\.user)",
     if (!include.src) "^(?!packrat/src/)",
-    if (!include.lib) "^(?!packrat/lib.*)"
+    if (!include.lib) "^(?!packrat/lib.*)",
+    if (!include.bundles) "^(?!packrat/bundles/)"
   )
 
   ## Make sure the base folder name is inheritted from the project name
