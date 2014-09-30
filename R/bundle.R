@@ -34,57 +34,40 @@ bundle <- function(project = NULL,
   }
 
   file <- normalizePath(file, mustWork = FALSE)
-
-  # Make sure we're in the project dir so relative paths are properly set
-  owd <- getwd()
-  on.exit(setwd(owd))
-  setwd(project)
-
-  # Blacklist certain files / folders
-  blackList <- c(
-    "^\\.Rproj\\.user/"
-  )
-
-  # Collect all files and folders we want to zip up. We list all
-  # files and directories within the project root, excluding packrat
-  # -- which we add back in piecemeal later.
-  projectFiles <- list.files(all.files = TRUE, no.. = TRUE)
-  for (item in blackList) {
-    projectFiles <- grep(item, projectFiles, perl = TRUE, invert = TRUE, value = TRUE)
-  }
-
-  # Exclude the packrat folder at this stage -- we re-add the components we
-  # need piece by piece
-  projectFiles <- projectFiles[
-    !startswith(projectFiles, .packrat$packratFolderName)
-  ]
-
-  # Make sure we add packrat
-  basePackratFiles <- list_files(
-    .packrat$packratFolderName,
-    all.files = TRUE,
-    recursive = FALSE,
-    full.names = TRUE
-  )
-
-  filesToZip <- c(projectFiles, basePackratFiles)
-
-  # These need to be relative paths
-  if (include.src) {
-    filesToZip <- c(filesToZip, relSrcDir())
-  }
-
-  if (include.lib) {
-    filesToZip <- c(filesToZip, relLibDir())
-  }
-
   if (file.exists(file) && !overwrite) {
     stop("A file already exists at file location '", file, "'.")
   }
 
+  # Regex negation patterns that we use to selectively leave some items out
+  pattern <- c(
+    "^(?!\\.Rproj\\.user)",
+    if (!include.src) "^(?!packrat/src/)",
+    if (!include.lib) "^(?!packrat/lib.*)"
+  )
+
   ## Make sure the base folder name is inheritted from the project name
-  setwd("../")
-  result <- tar(file, files = file.path(basename(project), filesToZip), compression = "gzip", tar = Sys.getenv("TAR"), ...)
+  ##
+  ## The internal version of 'tar' used by R on Windows fails if one tries to include
+  ## a file in a sub-directory, without actually including that subdirectory.
+  ## To work around this, we are forced to copy the files we want to tar to
+  ## a temporary directory, and then tar that. Sigh...
+  dir_copy(
+    from = getwd(),
+    to = file.path(tempdir(), basename(project)),
+    pattern = pattern,
+    overwrite = TRUE
+  )
+
+  ## Now bundle up that copied directory, from the tempdir path
+  setwd(tempdir())
+  result <- tar(
+    tarfile = file,
+    files = basename(project),
+    compression = "gzip",
+    tar = Sys.getenv("TAR"),
+    ...
+  )
+
   if (result != 0) {
     stop("Failed to bundle the packrat project.")
   }

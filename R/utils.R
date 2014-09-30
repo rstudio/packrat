@@ -81,7 +81,20 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
 
   # Get relative file paths
   files.relative <- list.files(from, all.files = all.files, full.names = FALSE,
-                               pattern = pattern, recursive = TRUE, no.. = TRUE)
+                               recursive = TRUE, no.. = TRUE)
+
+  # Apply the pattern to the files
+  if (!is.null(pattern)) {
+    files.relative <- Reduce(intersect, lapply(pattern, function(p) {
+      grep(
+        pattern = p,
+        x = files.relative,
+        ignore.case = ignore.case,
+        perl = TRUE,
+        value = TRUE
+      )
+    }))
+  }
 
   # Get paths from and to
   files.from <- file.path(from, files.relative)

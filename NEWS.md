@@ -1,5 +1,9 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Packrat now properly bundles projects on Windows (files in the packrat
+  folder were not properly bundled when using the internal version of R's tar)
+  (#152)
+
 - Packrat gains the 'load.external.packages.on.startup' option, to control
   whether external packages are loaded on startup.
 
