@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- `packrat::bundle()` gains an 'include.bundles' argument, for specifying
+  whether previously generated bundles are included as part of new bundles.
+
 - Packrat now properly bundles projects on Windows (files in the packrat
   folder were not properly bundled when using the internal version of R's tar)
   (#152)
