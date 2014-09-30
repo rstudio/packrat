@@ -59,3 +59,23 @@ Prerequisites](http://www.rstudio.com/ide/docs/packages/prerequisites) to
 learn more about the tools to install for your operating system. It's
 recommended that you and your collaborators prepare your machines for package
 development before using Packrat.
+
+
+### Initialization
+
+To enable Packrat, a small piece of code is added to the `.Rprofile` file in the
+project's directory.  (If the file doesn't exist yet, it is created.)  This has
+the following consequences:
+
+- Any local or site-wide initialization file is overridden.  If you want to execute those
+  files in addition, source them from your project's `.Rprofile`, e.g.:
+    ```r
+    source("~/.Rprofile")
+    ```
+- To enable Packrat when starting R from a subdirectory in your project
+  (e.g., when knitting a report that lives in a subdirectory),
+  create an `.Rprofile` with the following contents in the subdirectory
+  (and in each intermediate subdirectory along the path to that file):
+    ```r
+    source("../.Rprofile", chdir = TRUE)
+    ```
