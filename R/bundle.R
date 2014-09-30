@@ -59,14 +59,15 @@ bundle <- function(project = NULL,
   )
 
   ## Now bundle up that copied directory, from the tempdir path
-  setwd(tempdir())
-  result <- tar(
-    tarfile = file,
-    files = basename(project),
-    compression = "gzip",
-    tar = Sys.getenv("TAR"),
-    ...
-  )
+  with_dir(tempdir(), {
+    result <- tar(
+      tarfile = file,
+      files = basename(project),
+      compression = "gzip",
+      tar = Sys.getenv("TAR"),
+      ...
+    )
+  })
 
   if (result != 0) {
     stop("Failed to bundle the packrat project.")
