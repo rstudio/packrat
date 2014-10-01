@@ -21,8 +21,42 @@ bundle <- function(project = NULL,
                    overwrite = FALSE,
                    ...) {
 
+  TAR <- Sys.getenv("TAR")
+  if (identical(TAR, "internal") || identical(TAR, "")) {
+    bundle_internal(project = project,
+                    file = file,
+                    include.src = include.src,
+                    include.lib = include.lib,
+                    include.bundles = include.bundles,
+                    overwrite = overwrite,
+                    ...)
+  } else {
+    bundle_external(project = project,
+                    file = file,
+                    include.src = include.src,
+                    include.lib = include.lib,
+                    include.bundles = include.bundles,
+                    overwrite = overwrite,
+                    ...)
+  }
+
+}
+
+bundle_internal <- function(project = NULL,
+                            file = NULL,
+                            include.src = TRUE,
+                            include.lib = FALSE,
+                            include.bundles = TRUE,
+                            overwrite = FALSE,
+                            ...) {
+
   project <- getProjectDir(project)
   stopIfNotPackified(project)
+
+  # Make sure we're in the project dir so relative paths are properly set
+  owd <- getwd()
+  on.exit(setwd(owd), add = TRUE)
+  setwd(project)
 
   # If file is NULL, write to a local file with the current date
   if (is.null(file)) {
@@ -35,7 +69,11 @@ bundle <- function(project = NULL,
     file <- file.path(bundlesDir(project), tarName)
   }
 
-  file <- normalizePath(file, mustWork = FALSE)
+  file <- file.path(
+    normalizePath(dirname(file), mustWork = FALSE),
+    basename(file)
+  )
+
   if (file.exists(file) && !overwrite) {
     stop("A file already exists at file location '", file, "'.")
   }
@@ -53,7 +91,7 @@ bundle <- function(project = NULL,
   ## The internal version of 'tar' used by R on Windows fails if one tries to include
   ## a file in a sub-directory, without actually including that subdirectory.
   ## To work around this, we are forced to copy the files we want to tar to
-  ## a temporary directory, and then tar that. Sigh...
+  ## a temporary directory, and then tar that.
   dir_copy(
     from = getwd(),
     to = file.path(tempdir(), basename(project)),
@@ -61,22 +99,116 @@ bundle <- function(project = NULL,
     overwrite = TRUE
   )
 
+  ## Clean up after ourselves
+  on.exit(unlink(file.path(tempdir(), basename(project))), add = TRUE)
+
   ## Now bundle up that copied directory, from the tempdir path
-  with_dir(tempdir(), {
-    result <- tar(
-      tarfile = file,
-      files = basename(project),
-      compression = "gzip",
-      tar = Sys.getenv("TAR"),
-      ...
-    )
-  })
+  setwd(tempdir())
+  result <- tar(
+    tarfile = file,
+    files = basename(project),
+    compression = "gzip",
+    tar = Sys.getenv("TAR"),
+    ...
+  )
 
   if (result != 0) {
     stop("Failed to bundle the packrat project.")
   }
   message("The packrat project has been bundled at:\n- \"", file, "\"")
   invisible(file)
+}
+
+bundle_external <- function(project = NULL,
+                   file = NULL,
+                   include.src = TRUE,
+                   include.lib = FALSE,
+                   include.bundles = TRUE,
+                   overwrite = FALSE,
+                   ...) {
+
+  project <- getProjectDir(project)
+  stopIfNotPackified(project)
+
+  # If file is NULL, write to a local file with the current date
+  if (is.null(file)) {
+    tarName <- paste(basename(project), Sys.Date(), sep = "-")
+    tarName <- paste(tarName, ".tar.gz", sep = "")
+    bundlesDir <- bundlesDir(project)
+    if (!file.exists(bundlesDir)) {
+      dir.create(bundlesDir, recursive = TRUE)
+    }
+    file <- file.path(bundlesDir(project), tarName)
+  }
+
+  file <- file.path(
+    normalizePath(dirname(file), mustWork = FALSE),
+    basename(file)
+  )
+
+  # Make sure we're in the project dir so relative paths are properly set
+  owd <- getwd()
+  on.exit(setwd(owd), add = TRUE)
+  setwd(project)
+
+  # Blacklist certain files / folders
+  blackList <- c(
+    "^\\.Rproj\\.user"
+  )
+
+  # Collect all files and folders we want to zip up. We list all
+  # files and directories within the project root, excluding packrat
+  # -- which we add back in piecemeal later.
+  projectFiles <- list.files(all.files = TRUE, no.. = TRUE)
+  for (item in blackList) {
+    projectFiles <- grep(item, projectFiles, perl = TRUE, invert = TRUE, value = TRUE)
+  }
+
+  # Exclude the packrat folder at this stage -- we re-add the components we
+  # need piece by piece
+  projectFiles <- projectFiles[
+    !startswith(projectFiles, .packrat$packratFolderName)
+  ]
+
+  # Make sure we add packrat
+  basePackratFiles <- list_files(
+    .packrat$packratFolderName,
+    all.files = TRUE,
+    recursive = FALSE,
+    full.names = TRUE
+  )
+
+  filesToZip <- c(projectFiles, basePackratFiles)
+
+  # These need to be relative paths
+  if (include.src) {
+    filesToZip <- c(filesToZip, relSrcDir())
+  }
+
+  if (include.lib) {
+    filesToZip <- c(filesToZip, relLibDir())
+  }
+
+  if (file.exists(file) && !overwrite) {
+    stop("A file already exists at file location '", file, "'.")
+  }
+
+  ## Make sure the base folder name is inheritted from the project name
+  ## NOTE: logic earlier sends us back to original directory
+  setwd("../")
+  result <- tar(file,
+                files = file.path(basename(project), filesToZip),
+                compression = "gzip",
+                tar = Sys.getenv("TAR"),
+                ...)
+
+  if (result != 0) {
+    stop("Failed to bundle the packrat project.")
+  }
+
+  message("The packrat project has been bundled at:\n- \"", file, "\"")
+  invisible(file)
+
 }
 
 ##' Unbundle a Packrat Project
@@ -100,9 +232,9 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
   ## Get the list of files in the output directory -- we diff against it
   ## to figure out what the top-level directory name is
   owd <- getwd()
-  on.exit(setwd(owd))
-
+  on.exit(setwd(owd), add = TRUE)
   setwd(where)
+
   whereFiles <- list.files()
   message("- Untarring '", basename(bundle), "' in directory '", where, "'...")
   untar(bundle, exdir = where, ...)
