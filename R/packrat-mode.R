@@ -111,6 +111,9 @@ afterPackratModeOn <- function(project,
     useSymlinkedSystemLibrary(project = project)
   }
 
+  # Refresh the contents of 'lib-ext' if necessary
+  symlinkExternalPackages(project = project)
+
   # Set the library
   if (!file.exists(libExtDir(project)))
     dir.create(libExtDir(project), recursive = TRUE)
