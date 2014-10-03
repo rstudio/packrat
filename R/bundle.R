@@ -2,17 +2,25 @@
 #'
 #' Bundle a packrat project, for easy sharing.
 #'
+#' The project is bundled as a gzipped tarball (\code{.tar.gz}), which can
+#' be unbundled either with \code{packrat::\link{unbundle}} (which
+#' restores the project as well), \R's own \code{\link{untar}}, or
+#' through most system \code{tar} implementations.
+#'
 #' @param project The project directory. Defaults to the currently activate
 #'  project. By default, the current project active under \code{packratMode}
 #'  is checked.
-#' @param file The location to file the bundled file. By default, we write
-#'  to a file with name \code{<package>-<date>.zip}.
+#' @param file The path to write the bundle. By default, we write
+#'  the bundle to \code{packrat/bundles/<project>-<date>.tar.gz}, with
+#'  \code{<date>} as returned by \code{Sys.date()}.
 #' @param include.src Include the packrat sources?
-#' @param include.lib Include the packrat private library?
-#' @param include.bundles Include other packrat bundle tarballs?
+#' @param include.lib Include the packrat private library/
+#' @param include.bundles Include other packrat bundle tarballs
+#'  (as in \code{packrat/bundles/})?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
 #' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
+#' @return The path (invisibly) to the bundled project.
 bundle <- function(project = NULL,
                    file = NULL,
                    include.src = TRUE,

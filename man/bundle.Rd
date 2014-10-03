@@ -11,20 +11,31 @@ bundle(project = NULL, file = NULL, include.src = TRUE,
 project. By default, the current project active under \code{packratMode}
 is checked.}
 
-\item{file}{The location to file the bundled file. By default, we write
-to a file with name \code{<package>-<date>.zip}.}
+\item{file}{The path to write the bundle. By default, we write
+the bundle to \code{packrat/bundles/<project>-<date>.tar.gz}, with
+\code{<date>} as returned by \code{Sys.date()}.}
 
 \item{include.src}{Include the packrat sources?}
 
-\item{include.lib}{Include the packrat private library?}
+\item{include.lib}{Include the packrat private library/}
 
-\item{include.bundles}{Include other packrat bundle tarballs?}
+\item{include.bundles}{Include other packrat bundle tarballs
+(as in \code{packrat/bundles/})?}
 
 \item{overwrite}{Boolean; overwrite the file at \code{file} if it already exists?}
 
 \item{...}{Optional arguments passed to \code{\link{tar}}.}
 }
+\value{
+The path (invisibly) to the bundled project.
+}
 \description{
 Bundle a packrat project, for easy sharing.
+}
+\details{
+The project is bundled as a gzipped tar archive (\code{.tar.gz}), which can
+be unbundled either with \code{packrat::\link{unbundle}} (which
+restores the project as well), \R's own \code{\link{untar}}, or
+through most system \code{tar} implementations.
 }
 
