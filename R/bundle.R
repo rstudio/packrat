@@ -14,7 +14,7 @@
 #'  the bundle to \code{packrat/bundles/<project>-<date>.tar.gz}, with
 #'  \code{<date>} as returned by \code{Sys.date()}.
 #' @param include.src Include the packrat sources?
-#' @param include.lib Include the packrat private library/
+#' @param include.lib Include the packrat private library?
 #' @param include.bundles Include other packrat bundle tarballs
 #'  (as in \code{packrat/bundles/})?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
