@@ -10,8 +10,7 @@
 - Packrat gains the 'load.external.packages.on.startup' option, to control
   whether external packages are loaded on startup.
 
-- Allow users to specify packrat itself as an external package (experimental,
-  #147)
+- Allow users to specify packrat itself as an external package (experimental, #147)
 
 - The automatic snapshot mechanism now re-uses the `available.packages()`
   cache, to avoid unnecessary internet requests to CRAN.
