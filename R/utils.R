@@ -262,9 +262,17 @@ updateGitIgnore <- function(project = NULL, options) {
                    remove = remove)
 }
 
+# A packrat project is managed by git if any one of its parent directories
+# contains a '.git' folder.
 isGitProject <- function(project) {
-  .git <- file.path(project, ".git")
-  file.exists(.git) && is_dir(.git)
+  path <- project
+  while (dirname(path) != path) {
+    .git <- file.path(path, ".git")
+    if (file.exists(.git) && is_dir(.git))
+      return(TRUE)
+    path <- dirname(path)
+  }
+  return(FALSE)
 }
 
 isSvnProject <- function(project) {

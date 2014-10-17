@@ -1,8 +1,13 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Packrat now infers itself to be a git-managed project if any of its parent
+  directories contains a `.git` folder. This ensures packrat projects included
+  as sub-directories of a git-managed folder are properly understood as git-managed
+  projects.
+
 - `packrat::bundle()` gains an 'include.vcs.history' argument, for
   specifying whether VCS history folders (e.g. `.git/`, `.svn/`) should
-  be packaged as part of the bundle.
+  be packaged as part of the bundle. (#159)
 
 - `packrat::bundle()` gains an 'include.bundles' argument, for specifying
   whether previously generated bundles are included as part of new bundles.
