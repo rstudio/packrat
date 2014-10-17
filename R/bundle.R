@@ -17,6 +17,8 @@
 #' @param include.lib Include the packrat private library?
 #' @param include.bundles Include other packrat bundle tarballs
 #'  (as in \code{packrat/bundles/})?
+#' @param include.vcs.history Include version control history (ie, \code{.git/}
+#'  or \code{.svn/} folders)?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
 #' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
@@ -26,6 +28,7 @@ bundle <- function(project = NULL,
                    include.src = TRUE,
                    include.lib = FALSE,
                    include.bundles = TRUE,
+                   include.vcs.history = TRUE,
                    overwrite = FALSE,
                    ...) {
 
@@ -36,6 +39,7 @@ bundle <- function(project = NULL,
                     include.src = include.src,
                     include.lib = include.lib,
                     include.bundles = include.bundles,
+                    include.vcs.history = include.vcs.history,
                     overwrite = overwrite,
                     ...)
   } else {
@@ -44,6 +48,7 @@ bundle <- function(project = NULL,
                     include.src = include.src,
                     include.lib = include.lib,
                     include.bundles = include.bundles,
+                    include.vcs.history = include.vcs.history,
                     overwrite = overwrite,
                     ...)
   }
@@ -55,6 +60,7 @@ bundle_internal <- function(project = NULL,
                             include.src = TRUE,
                             include.lib = FALSE,
                             include.bundles = TRUE,
+                            include.vcs.history = TRUE,
                             overwrite = FALSE,
                             ...) {
 
@@ -91,7 +97,8 @@ bundle_internal <- function(project = NULL,
     "^(?!\\.Rproj\\.user)",
     if (!include.src) "^(?!packrat/src/)",
     if (!include.lib) "^(?!packrat/lib.*)",
-    if (!include.bundles) "^(?!packrat/bundles/)"
+    if (!include.bundles) "^(?!packrat/bundles/)",
+    if (!include.vcs.history) "^(?!\\.(git|svn))"
   )
 
   ## Make sure the base folder name is inheritted from the project name
@@ -132,6 +139,7 @@ bundle_external <- function(project = NULL,
                    include.src = TRUE,
                    include.lib = FALSE,
                    include.bundles = TRUE,
+                   include.vcs.history = TRUE,
                    overwrite = FALSE,
                    ...) {
 
@@ -195,6 +203,10 @@ bundle_external <- function(project = NULL,
 
   if (include.lib) {
     filesToZip <- c(filesToZip, relLibDir())
+  }
+
+  if (!include.vcs.history) {
+    filesToZip <- grep("^\\.(git|svn)", filesToZip, invert = TRUE, value = TRUE)
   }
 
   if (file.exists(file) && !overwrite) {

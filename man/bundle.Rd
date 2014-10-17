@@ -4,7 +4,8 @@
 \title{Bundle a Packrat Project}
 \usage{
 bundle(project = NULL, file = NULL, include.src = TRUE,
-  include.lib = FALSE, include.bundles = TRUE, overwrite = FALSE, ...)
+  include.lib = FALSE, include.bundles = TRUE, include.vcs.history = TRUE,
+  overwrite = FALSE, ...)
 }
 \arguments{
 \item{project}{The project directory. Defaults to the currently activate
@@ -17,10 +18,13 @@ the bundle to \code{packrat/bundles/<project>-<date>.tar.gz}, with
 
 \item{include.src}{Include the packrat sources?}
 
-\item{include.lib}{Include the packrat private library/}
+\item{include.lib}{Include the packrat private library?}
 
 \item{include.bundles}{Include other packrat bundle tarballs
 (as in \code{packrat/bundles/})?}
+
+\item{include.vcs.history}{Include version control history (ie, \code{.git/}
+or \code{.svn/} folders)?}
 
 \item{overwrite}{Boolean; overwrite the file at \code{file} if it already exists?}
 
@@ -33,7 +37,7 @@ The path (invisibly) to the bundled project.
 Bundle a packrat project, for easy sharing.
 }
 \details{
-The project is bundled as a gzipped tar archive (\code{.tar.gz}), which can
+The project is bundled as a gzipped tarball (\code{.tar.gz}), which can
 be unbundled either with \code{packrat::\link{unbundle}} (which
 restores the project as well), \R's own \code{\link{untar}}, or
 through most system \code{tar} implementations.
