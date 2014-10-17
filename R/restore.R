@@ -10,7 +10,8 @@ pkgSrcFilename <- function(pkgRecord) {
 # repository.
 isFromCranlikeRepo <- function(pkgRecord) {
   identical(pkgRecord$source, "CRAN") ||
-    identical(pkgRecord$source, "Bioconductor")
+  identical(pkgRecord$source, "Bioconductor") ||
+  inherits(pkgRecord, "CustomCRANLikeRepository")
 }
 
 # Given a package record and a database of packages, check to see if

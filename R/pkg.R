@@ -252,6 +252,7 @@ getPackageRecords <- function(pkgNames,
 inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
+  repos <- getOption('repos')
 
   if (!is.null(df$Repository) &&
         identical(as.character(df$Repository), 'CRAN')) {
@@ -283,6 +284,13 @@ inferPackageRecord <- function(df) {
       source = 'Bioconductor',
       version = ver
     ), class=c('packageRecord', 'Bioconductor')))
+  } else if (!is.null(df$Repository) && df$Repository %in% names(repos)) {
+    # It's a package from a custom CRAN-like repo!
+    return(structure(list(
+      name = name,
+      source = df$Repository,
+      version = ver
+    ), class=c("packageRecord", "CustomCRANLikeRepository")))
   } else if (identical(as.character(df$InstallSource), "source")) {
     # It's a local source package!
     return(structure(list(

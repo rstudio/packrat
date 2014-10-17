@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Packrat now understands how to install packages from custom CRAN-like
+  repositories. (#153)
+
 - Packrat now infers itself to be a git-managed project if any of its parent
   directories contains a `.git` folder. This ensures packrat projects included
   as sub-directories of a git-managed folder are properly understood as git-managed
