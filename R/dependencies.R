@@ -35,7 +35,7 @@ appDependencies <- function(project = NULL,
   project <- getProjectDir(project)
 
   ## For R packages, we only use the DESCRIPTION file
-  if (file.exists(file.path(project, "DESCRIPTION"))) {
+  if (isRPackage(project)) {
 
     ## Make sure we get records recursively from the packages in DESCRIPTION
     parentDeps <-
@@ -290,3 +290,18 @@ expressionDependencies <- function(e) {
   unique(unlist(children))
 }
 
+isRPackage <- function(project) {
+  file <- file.path(project, "DESCRIPTION")
+  if (!file.exists(file)) {
+    return(FALSE)
+  }
+
+  DESCRIPTION <- readDcf(file = file)
+  if (!("Type" %in% colnames(DESCRIPTION))) {
+    return(FALSE)
+  }
+
+  Type <- unname(as.character(DESCRIPTION[, "Type"]))
+  identical(Type, "Package")
+
+}
