@@ -1,4 +1,3 @@
-
 #' Disable the use of Packrat in a Project
 #'
 #' Disable packrat within a project, reverting to the use of standard user
@@ -29,11 +28,6 @@ disable <- function(project = NULL, restart = TRUE) {
 
   # remove packrat from the .Rprofile
   editRprofileAutoloader(project, "remove")
-
-  # remove packrat.lock
-  lockFile <- lockFilePath(project)
-  if (file.exists(lockFile))
-    file.remove(lockFile)
 
   # turn packrat mode off
   off(project)
