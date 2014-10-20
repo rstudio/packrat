@@ -296,7 +296,15 @@ isRPackage <- function(project) {
     return(FALSE)
   }
 
-  DESCRIPTION <- readDcf(file = file)
+  DESCRIPTION <- tryCatch(
+    readDcf(file = file),
+    error = function(e) {
+      warning("A 'DESCRIPTION' file was found, but could not be read as DCF",
+              call. = FALSE)
+      return(FALSE)
+    }
+  )
+
   if (!("Type" %in% colnames(DESCRIPTION))) {
     return(FALSE)
   }
