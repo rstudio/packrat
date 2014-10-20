@@ -131,7 +131,9 @@ cachedPackages <- function(cacheDir = cacheLibDir(), fields = NULL) {
   })
 }
 
-clearPackratCache <- function(cacheDir = cacheLibDir(), ask = TRUE) {
+listCachedPackages <- cachedPackages
+
+clearPackageCache <- function(cacheDir = cacheLibDir(), ask = TRUE) {
 
   if (ask) {
     message("The packrat cache directory was resolved to:\n- ",
