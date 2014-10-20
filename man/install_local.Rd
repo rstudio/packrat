@@ -3,17 +3,17 @@
 \alias{install_local}
 \title{Install a Package from a Local Repository}
 \usage{
-install_local(pkgs, lib = .libPaths()[1], repos = get_opts("local.repos"),
-  ...)
+install_local(pkgs, ..., lib = .libPaths()[1],
+  repos = get_opts("local.repos"))
 }
 \arguments{
 \item{pkgs}{A character vector of package names.}
 
+\item{...}{Optional arguments passed to \code{\link[packrat]{install}}.}
+
 \item{lib}{The library in which the package should be installed.}
 
 \item{repos}{The local repositories to search for the package names specified.}
-
-\item{...}{Optional arguments passed to \code{\link[packrat]{install}}.}
 }
 \description{
 This function can be used to install a package from a local 'repository'; i.e.,
