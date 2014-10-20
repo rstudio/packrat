@@ -198,9 +198,10 @@ endswith <- function(str1, str2) {
 }
 
 stopIfNotPackified <- function(project) {
+
   if (!checkPackified(project, quiet = TRUE)) {
     if (identical(project, getwd())) {
-      stop("This project has not yet been packified.\nRun 'packrat::init() to init packrat.",
+      stop("This project has not yet been packified.\nRun 'packrat::init()' to init packrat.",
            call. = FALSE)
     } else {
       stop("The project at '", project, "' has not yet been packified.\nRun 'packrat::init('", project, "') to init packrat.",
