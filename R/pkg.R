@@ -288,7 +288,7 @@ inferPackageRecord <- function(df) {
     # It's a package from a custom CRAN-like repo!
     return(structure(list(
       name = name,
-      source = df$Repository,
+      source = as.character(df$Repository),
       version = ver
     ), class=c("packageRecord", "CustomCRANLikeRepository")))
   } else if (identical(as.character(df$InstallSource), "source")) {
