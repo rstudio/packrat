@@ -130,7 +130,10 @@ init <- function(project = '.',
                  enter = TRUE,
                  restart = enter) {
 
-  opts <- default_opts()
+  opts <- get_opts(project = project)
+  if (is.null(opts))
+    opts <- default_opts()
+
   if (!is.null(options)) {
     for (i in seq_along(options)) {
       name <- names(options)[[i]]
@@ -145,7 +148,8 @@ init <- function(project = '.',
                            mustWork = TRUE)
   message("Initializing packrat project in directory:\n- ", surround(project, "\""))
 
-  ## A set of files that packrat might generate as part of init
+  ## A set of files that packrat might generate as part of init -- we
+  ## enumerate them here to assist with later cleanup
   prFiles <- c(
     file.path(project, ".gitignore"),
     file.path(project, ".Rprofile"),
