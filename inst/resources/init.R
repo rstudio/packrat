@@ -15,8 +15,9 @@ local({
     return(packrat::on(print.banner = print.banner))
   }
 
-  ## Bootstrapping -- only performed in interactive contexts
-  if (interactive()) {
+  ## Bootstrapping -- only performed in interactive contexts,
+  ## or when explicitly asked for on the command line
+  if (interactive() || "--bootstrap-packrat" %in% commandArgs(TRUE)) {
 
     ## Escape hatch to allow RStudio to handle initialization
     if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
@@ -138,7 +139,7 @@ local({
     ## an 'installed from source' version
 
     ## -- InstallAgent -- ##
-    installAgent <- 'InstallAgent: packrat 0.4.1.16'
+    installAgent <- 'InstallAgent: packrat 0.4.1.17'
 
     ## -- InstallSource -- ##
     installSource <- 'InstallSource: source'
@@ -165,7 +166,7 @@ local({
 
     # Callers (source-erers) can define this hidden variable to make sure we don't enter packrat mode
     # Primarily useful for testing
-    if (!exists(".__DONT_ENTER_PACKRAT_MODE__.")) {
+    if (!exists(".__DONT_ENTER_PACKRAT_MODE__.") && interactive()) {
       message("> Packrat bootstrap successfully completed. Entering packrat mode...")
       packrat::on()
     }

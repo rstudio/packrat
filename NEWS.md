@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- Packrat projects can now be non-interactively bootstrapped using the command:
+  `R --vanilla -f packrat/init.R --args --bootstrap-packrat`. (#158)
+
 - `packrat::bundle()` gains an 'omit.cran.src' argument, for ignoring package
   sources that are retrievable from CRAN. (#156)
 
