@@ -20,6 +20,8 @@
 #' @param include.vcs.history Include version control history (ie, \code{.git/}
 #'  or \code{.svn/} folders)?
 #' @param overwrite Boolean; overwrite the file at \code{file} if it already exists?
+#' @param omit.cran.src Boolean; when \code{TRUE}, packages whose sources can
+#'  be retrieved from CRAN are excluded from the bundle.
 #' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
 #' @return The path (invisibly) to the bundled project.
@@ -30,6 +32,7 @@ bundle <- function(project = NULL,
                    include.bundles = TRUE,
                    include.vcs.history = FALSE,
                    overwrite = FALSE,
+                   omit.cran.src = FALSE,
                    ...) {
 
   TAR <- Sys.getenv("TAR")
@@ -41,6 +44,7 @@ bundle <- function(project = NULL,
                     include.bundles = include.bundles,
                     include.vcs.history = include.vcs.history,
                     overwrite = overwrite,
+                    omit.cran.src = omit.cran.src,
                     ...)
   } else {
     bundle_external(project = project,
@@ -50,6 +54,7 @@ bundle <- function(project = NULL,
                     include.bundles = include.bundles,
                     include.vcs.history = include.vcs.history,
                     overwrite = overwrite,
+                    omit.cran.src = omit.cran.src,
                     ...)
   }
 
@@ -62,6 +67,7 @@ bundle_internal <- function(project = NULL,
                             include.bundles = TRUE,
                             include.vcs.history = TRUE,
                             overwrite = FALSE,
+                            omit.cran.src = FALSE,
                             ...) {
 
   project <- getProjectDir(project)
@@ -107,18 +113,49 @@ bundle_internal <- function(project = NULL,
   ## a file in a sub-directory, without actually including that subdirectory.
   ## To work around this, we are forced to copy the files we want to tar to
   ## a temporary directory, and then tar that.
+  bundlePath <- file.path(tempdir(), "packrat-bundles")
+  from <- getwd()
+  to <- file.path(bundlePath, basename(project))
   dir_copy(
-    from = getwd(),
-    to = file.path(tempdir(), basename(project)),
+    from = from,
+    to = to,
     pattern = pattern,
     overwrite = TRUE
   )
 
   ## Clean up after ourselves
-  on.exit(unlink(file.path(tempdir(), basename(project))), add = TRUE)
+  on.exit(unlink(to, recursive = TRUE), add = TRUE)
+
+  ## Remove any CRAN packages if 'omit.cran.src' was specified.
+  if (omit.cran.src) {
+    lockfile <- readLockFilePackages(lockFilePath(project))
+    pkgs <- vapply(lockfile, `[[`, FUN.VALUE = character(1), "name", USE.NAMES = FALSE)
+    isCRAN <- vapply(lockfile, FUN.VALUE = logical(1), function(x) {
+      x[["source"]] == "CRAN"
+    })
+    cranPkgs <- pkgs[isCRAN]
+    srcPkgs <- list.files(
+      srcDir(project = to),
+      full.names = TRUE,
+      recursive = TRUE
+    )
+
+    for (srcPkg in srcPkgs) {
+
+      isPathToCranPkg <- any(unlist(lapply(cranPkgs, function(cranPkg) {
+        grepl(cranPkg, basename(srcPkg))
+      })))
+
+      if (isPathToCranPkg) {
+        unlink(srcPkg)
+      }
+
+    }
+
+  }
 
   ## Now bundle up that copied directory, from the tempdir path
-  setwd(tempdir())
+  setwd(bundlePath)
   result <- tar(
     tarfile = file,
     files = basename(project),
@@ -141,6 +178,7 @@ bundle_external <- function(project = NULL,
                    include.bundles = TRUE,
                    include.vcs.history = TRUE,
                    overwrite = FALSE,
+                   omit.cran.src = FALSE,
                    ...) {
 
   project <- getProjectDir(project)
@@ -198,7 +236,13 @@ bundle_external <- function(project = NULL,
 
   # These need to be relative paths
   if (include.src) {
-    filesToZip <- c(filesToZip, relSrcDir())
+    filesToZip <- c(
+      filesToZip,
+      file.path(
+        relSrcDir(),
+        list.files(relSrcDir(), recursive = TRUE)
+      )
+    )
   }
 
   if (include.lib) {
@@ -211,6 +255,40 @@ bundle_external <- function(project = NULL,
 
   if (file.exists(file) && !overwrite) {
     stop("A file already exists at file location '", file, "'.")
+  }
+
+  ## Remove any CRAN packages if 'omit.cran.src' was specified.
+  if (omit.cran.src) {
+    lockfile <- readLockFilePackages(lockFilePath(project))
+    pkgs <- vapply(lockfile, `[[`, FUN.VALUE = character(1), "name", USE.NAMES = FALSE)
+    isCRAN <- vapply(lockfile, FUN.VALUE = logical(1), function(x) {
+      x[["source"]] == "CRAN"
+    })
+    cranPkgs <- pkgs[isCRAN]
+    srcPkgs <- list.files(srcDir(project = file.path(tempdir(), basename(project))),
+                          full.names = TRUE,
+                          recursive = TRUE)
+    srcPkgsRelative <- file.path(
+      relSrcDir(),
+      list.files(recursive = TRUE,
+        srcDir(project = file.path(tempdir(), basename(project)))
+      )
+    )
+
+    for (i in seq_along(srcPkgs)) {
+      srcPkg <- srcPkgs[[i]]
+      srcPkgRelative <- srcPkgsRelative[[i]]
+
+      isPathToCranPkg <- any(unlist(lapply(cranPkgs, function(cranPkg) {
+        grepl(cranPkg, basename(srcPkg))
+      })))
+
+      if (isPathToCranPkg) {
+        filesToZip <- setdiff(filesToZip, srcPkgRelative)
+      }
+
+    }
+
   }
 
   ## Make sure the base folder name is inheritted from the project name

@@ -42,6 +42,7 @@ test_that("Bundle works when using an external tar", {
 
     dir.create("packrat-test-bundle")
     setwd("packrat-test-bundle")
+    cat("library(bread)", file = "test.R")
     packrat::init(enter = FALSE)
     packrat::bundle(file = file.path("test-bundle.tar.gz"))
     untar("test-bundle.tar.gz", exdir = "untarred")
@@ -56,3 +57,53 @@ test_that("Bundle works when using an external tar", {
   }
 
 })
+
+test_that("Bundle works when omitting CRAN packages", {
+
+  if (Sys.getenv("TAR") != "") {
+
+    owd <- getwd()
+    setwd(tempdir())
+
+    dir.create("packrat-test-bundle")
+    setwd("packrat-test-bundle")
+    cat("library(bread)", file = "test.R")
+    packrat::init(enter = FALSE)
+    packrat::bundle(file = file.path("test-bundle.tar.gz"), omit.cran.src = TRUE)
+    untar("test-bundle.tar.gz", exdir = "untarred")
+    expect_identical(
+      setdiff(
+        grep("lib*", list.files("packrat"), value = TRUE, invert = TRUE),
+        "src"
+      ),
+      list.files("untarred/packrat-test-bundle/packrat/")
+    )
+
+    unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
+    setwd(owd)
+
+  }
+
+  ## Test for internal TAR
+  owd <- getwd()
+  setwd(tempdir())
+
+  if (file.exists("packrat-test-bundle"))
+    unlink("packrat-test-bundle", recursive = TRUE)
+
+  dir.create("packrat-test-bundle")
+  setwd("packrat-test-bundle")
+  cat("library(bread)", file = "test.R")
+  packrat::init(enter = FALSE)
+  packrat:::bundle_internal(file = file.path("test-bundle.tar.gz"), omit.cran.src = TRUE)
+  untar("test-bundle.tar.gz", exdir = "untarred")
+  expect_identical(
+    grep("lib*", list.files("packrat"), value = TRUE, invert = TRUE),
+    list.files("untarred/packrat-test-bundle/packrat/")
+  )
+
+  unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
+  setwd(owd)
+
+})
+

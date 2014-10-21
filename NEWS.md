@@ -1,5 +1,8 @@
 # Packrat 0.4.2 (Unreleased)
 
+- `packrat::bundle()` gains an 'omit.cran.src' argument, for ignoring package
+  sources that are retrievable from CRAN. (#156)
+
 - Packrat now understands how to install packages from custom CRAN-like
   repositories. (#153)
 

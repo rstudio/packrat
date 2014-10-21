@@ -5,7 +5,8 @@
 \usage{
 bundle(project = NULL, file = NULL, include.src = TRUE,
   include.lib = FALSE, include.bundles = TRUE,
-  include.vcs.history = FALSE, overwrite = FALSE, ...)
+  include.vcs.history = FALSE, overwrite = FALSE, omit.cran.src = FALSE,
+  ...)
 }
 \arguments{
 \item{project}{The project directory. Defaults to the currently activate
@@ -27,6 +28,9 @@ the bundle to \code{packrat/bundles/<project>-<date>.tar.gz}, with
 or \code{.svn/} folders)?}
 
 \item{overwrite}{Boolean; overwrite the file at \code{file} if it already exists?}
+
+\item{omit.cran.src}{Boolean; when \code{TRUE}, packages whose sources can
+be retrieved from CRAN are excluded from the bundle.}
 
 \item{...}{Optional arguments passed to \code{\link{tar}}.}
 }

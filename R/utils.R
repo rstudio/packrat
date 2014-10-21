@@ -62,6 +62,9 @@ is_dir <- function(file) {
 dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
                      pattern = NULL, ignore.case = TRUE) {
 
+  owd <- getwd()
+  on.exit(setwd(owd), add = TRUE)
+
   # Make sure we're doing sane things
   if (!is_dir(from)) stop("'", from, "' is not a directory.")
 
