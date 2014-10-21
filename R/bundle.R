@@ -28,7 +28,7 @@ bundle <- function(project = NULL,
                    include.src = TRUE,
                    include.lib = FALSE,
                    include.bundles = TRUE,
-                   include.vcs.history = TRUE,
+                   include.vcs.history = FALSE,
                    overwrite = FALSE,
                    ...) {
 

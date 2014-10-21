@@ -4,8 +4,8 @@
 \title{Bundle a Packrat Project}
 \usage{
 bundle(project = NULL, file = NULL, include.src = TRUE,
-  include.lib = FALSE, include.bundles = TRUE, include.vcs.history = TRUE,
-  overwrite = FALSE, ...)
+  include.lib = FALSE, include.bundles = TRUE,
+  include.vcs.history = FALSE, overwrite = FALSE, ...)
 }
 \arguments{
 \item{project}{The project directory. Defaults to the currently activate
