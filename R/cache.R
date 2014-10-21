@@ -121,7 +121,7 @@ cachedPackages <- function(cacheDir = cacheLibDir(), fields = NULL) {
 
   lapply(pkgPaths, function(hashedPath) {
     result <- setNames(lapply(hashedPath, function(path) {
-      readDcf(file.path(path, "DESCRIPTION"), all = TRUE)
+      as.list(readDcf(file.path(path, "DESCRIPTION"), all = TRUE))
     }), basename(hashedPath))
     if (!is.null(fields)) {
       result[fields]
