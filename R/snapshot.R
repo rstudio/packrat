@@ -102,7 +102,7 @@ snapshotImpl <- function(project,
 
   ## If we are using packrat alongside an R package, then we should
   ## ignore the package itself
-  if (file.exists(file.path(project, "DESCRIPTION"))) {
+  if (isRPackage(project = project)) {
     ignore <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
   } else {
     ignore <- NULL

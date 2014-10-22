@@ -305,11 +305,17 @@ inferPackageRecord <- function(df) {
     return(NULL)
   } else {
 
-    # Don't warn if this is an R package being managed by packrat
-    if (file.exists("DESCRIPTION")) {
-      pkgName <- unname(readDcf("DESCRIPTION")[, "Package"])
-    } else {
-      pkgName <- NULL
+    # Don't warn if this is an R package being managed by packrat.
+    # NOTE: Not all projects with DESCRIPTION files are R packages!
+    pkgName <- NULL
+    if (isPackratModeOn() && isRPackage()) {
+      projectPath <- .packrat_mutables$get("project")
+      if (!is.null(projectPath)) {
+        pkgName <- tryCatch(
+          unname(readDcf(file.path(projectPath, "DESCRIPTION"))[, "Package"]),
+          error = function(e) NULL
+        )
+      }
     }
 
     if (!identical(pkgName, name)) {

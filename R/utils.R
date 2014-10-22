@@ -166,8 +166,8 @@ pkgDescriptionDependencies <- function(file) {
 
   ## Don't include 'base' packages
   ip <- installed.packages()
-  basePkgs <- ip[ Vectorize(isTRUE)(ip[, "Priority"] == "base"), "Package" ]
-  result <- result[ !(result$Package %in% basePkgs), ]
+  basePkgs <- ip[Vectorize(isTRUE)(ip[, "Priority"] == "base"), "Package"]
+  result <- result[!(result$Package %in% basePkgs), ]
 
   ## Don't include R
   result <- result[ !result$Package == "R", ]
