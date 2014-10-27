@@ -550,11 +550,6 @@ packify <- function(project = NULL, quiet = FALSE) {
     content <- readLines(.Rprofile)
     autoloader <- readLines(autoloaderPath)
 
-    # if there is no content just overwrite the old file
-    if (!length(content) || identical(unique(content), "")) {
-      return(file.copy(autoloaderPath, .Rprofile, overwrite = TRUE))
-    }
-
     # Remove the old autoloader
     starts <- grep("#### -- Packrat Autoloader", content)
     if (length(starts)) {
