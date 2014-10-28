@@ -565,14 +565,17 @@ packify <- function(project = NULL, quiet = FALSE) {
       end <- NULL
     }
 
-    if (length(start) && length(end) && end > start)
-      content <- content[-c(start:end)]
-
-    if (length(content)) {
-      content <- c(content, "", autoloader)
+    if (length(start) && length(end) && end > start) {
+      before <- seq_len(start)
+      after <- seq(from = end + 1, length.out = length(content) - end)
     } else {
-      content <- autoloader
+      before <- seq_along(content)
+      after <- integer()
+      if (length(content))
+        autoloader <- c("", autoloader)
     }
+
+    content <- c(content[before], autoloader, content[after])
     cat(content, file = .Rprofile, sep = "\n")
 
   }
