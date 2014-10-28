@@ -580,7 +580,8 @@ packify <- function(project = NULL, quiet = FALSE) {
   ## Copy in packrat/init.R
   file.copy(
     instInitFilePath(),
-    file.path(project, .packrat$packratFolderName, "init.R")
+    file.path(project, .packrat$packratFolderName, "init.R"),
+    overwrite = TRUE
   )
 
   invisible()
