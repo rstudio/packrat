@@ -550,11 +550,6 @@ packify <- function(project = NULL, quiet = FALSE) {
     content <- readLines(.Rprofile)
     autoloader <- readLines(autoloaderPath)
 
-    # if there is no content just overwrite the old file
-    if (!length(content) || identical(unique(content), "")) {
-      return(file.copy(autoloaderPath, .Rprofile, overwrite = TRUE))
-    }
-
     # Remove the old autoloader
     starts <- grep("#### -- Packrat Autoloader", content)
     if (length(starts)) {
@@ -570,14 +565,17 @@ packify <- function(project = NULL, quiet = FALSE) {
       end <- NULL
     }
 
-    if (length(start) && length(end) && end > start)
-      content <- content[-c(start:end)]
-
-    if (length(content)) {
-      content <- c(content, "", autoloader)
+    if (length(start) && length(end) && end > start) {
+      before <- seq_len(start)
+      after <- seq(from = end + 1, length.out = length(content) - end)
     } else {
-      content <- autoloader
+      before <- seq_along(content)
+      after <- integer()
+      if (length(content))
+        autoloader <- c("", autoloader)
     }
+
+    content <- c(content[before], autoloader, content[after])
     cat(content, file = .Rprofile, sep = "\n")
 
   }
@@ -585,7 +583,8 @@ packify <- function(project = NULL, quiet = FALSE) {
   ## Copy in packrat/init.R
   file.copy(
     instInitFilePath(),
-    file.path(project, .packrat$packratFolderName, "init.R")
+    file.path(project, .packrat$packratFolderName, "init.R"),
+    overwrite = TRUE
   )
 
   invisible()
