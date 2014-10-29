@@ -17,13 +17,17 @@ symlinkSystemPackages <- function(project = NULL) {
     ## Get the DESCRIPTION for 'base'
     baseDescriptionPath <- file.path(libRdir, "base", "DESCRIPTION")
     if (file.exists(baseDescriptionPath)) {
-      DESCRIPTION <- readDcf(baseDescriptionPath, all = TRUE)
-      libRVersion <- package_version(DESCRIPTION$Version)
-      rVersion <- getRversion()
-      if (libRVersion != rVersion) {
-        message("Updating system packages ('", libRVersion, "' -> '", rVersion, "')")
-        unlink(libRdir, recursive = TRUE)
-      }
+      tryCatch({
+        DESCRIPTION <- readDcf(baseDescriptionPath, all = TRUE)
+        libRVersion <- package_version(DESCRIPTION$Version)
+        rVersion <- getRversion()
+        if (libRVersion != rVersion) {
+          message("Updating system packages ('", libRVersion, "' -> '", rVersion, "')")
+          unlink(libRdir, recursive = TRUE)
+        }
+      }, error = function(e) {
+        warning("Unable to read DESCRIPTION file associated with 'base' package")
+      })
     }
   }
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
