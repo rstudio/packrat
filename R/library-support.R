@@ -11,11 +11,24 @@ symlinkSystemPackages <- function(project = NULL) {
   ## Make a directory where we can symlink these libraries
   libRdir <- libRdir(project = project)
 
-  ## We bash any old symlinks that were there already and regenerate
-  ## them if necessary (this is an inexpensive process so we don't feel
-  ## too badly)
+  ## Only bash the old symlinks if the version of R running is not
+  ## equal to the R version of 'base' in lib-R.
   if (file.exists(libRdir)) {
-    unlink(libRdir, recursive = TRUE)
+    ## Get the DESCRIPTION for 'base'
+    baseDescriptionPath <- file.path(libRdir, "base", "DESCRIPTION")
+    if (file.exists(baseDescriptionPath)) {
+      tryCatch({
+        DESCRIPTION <- readDcf(baseDescriptionPath, all = TRUE)
+        libRVersion <- package_version(DESCRIPTION$Version)
+        rVersion <- getRversion()
+        if (libRVersion != rVersion) {
+          message("Updating system packages ('", libRVersion, "' -> '", rVersion, "')")
+          unlink(libRdir, recursive = TRUE)
+        }
+      }, error = function(e) {
+        warning("Unable to read DESCRIPTION file associated with 'base' package")
+      })
+    }
   }
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
 
