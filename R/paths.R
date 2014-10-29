@@ -154,7 +154,7 @@ packratOptionsFilePath <- function(project = NULL) {
 }
 
 libRdir <- function(project = NULL) {
-  file.path(getPackratDir(project), "lib-R")
+  file.path(tempdir(), "packrat", getProjectDir(project), "lib-r")
 }
 
 libExtDir <- function(project = NULL) {
