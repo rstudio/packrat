@@ -32,6 +32,8 @@ symlinkSystemPackages <- function(project = NULL) {
   }
   dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
 
+
+
   ## Perform the symlinking -- we symlink individual packages because we don't
   ## want to capture any user libraries that may have been installed in the 'system'
   ## library directory

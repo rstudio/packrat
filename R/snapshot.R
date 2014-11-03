@@ -265,8 +265,16 @@ activeRepos <- function(project) {
   if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
     # Bioconductor repos may include repos already accounted for above
     # unique drops names so it's unsuitable for us here
-    repos <- c(repos, BiocInstaller::biocinstallRepos())
-    repos <- repos[!duplicated(names(repos))]
+    biocRepos <- BiocInstaller::biocinstallRepos()
+
+    ## Ignore what BiocInstaller says about CRAN
+    if ("CRAN" %in% names(biocRepos)) {
+      biocRepos <- biocRepos[-c(which(names(biocRepos) == "CRAN"))]
+    }
+
+    biocRepoNames <- names(biocRepos)
+    oldRepos <- repos[!(names(repos) %in% biocRepoNames)]
+    repos <- c(oldRepos, biocRepos)
   }
 
   return(repos)
