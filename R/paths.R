@@ -32,6 +32,11 @@ getPackratDir <- function(project = NULL) {
 ## -- unlikely since we encourage people to build from snapshots, but we leave it
 ## possible)
 libDir <- function(project = NULL) {
+
+  envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
+  if (!is.na(envLibDir))
+    return(envLibDir)
+
   project <- getProjectDir(project)
   file.path(
     libraryRootDir(project),
