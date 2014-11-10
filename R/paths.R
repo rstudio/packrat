@@ -35,7 +35,11 @@ libDir <- function(project = NULL) {
 
   envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
   if (!is.na(envLibDir))
-    return(envLibDir)
+    return(file.path(
+      envLibDir,
+      R.version$platform,
+      getRversion()
+    ))
 
   project <- getProjectDir(project)
   file.path(
@@ -54,6 +58,11 @@ relLibDir <- function() {
 
 ## The root library directory for a project, e.g. <proj>/<packrat>/lib
 libraryRootDir <- function(project = NULL) {
+
+  envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
+  if (!is.na(envLibDir))
+    return(envLibDir)
+
   project <- getProjectDir(project)
   file.path(
     project,
@@ -159,10 +168,18 @@ packratOptionsFilePath <- function(project = NULL) {
 }
 
 libRdir <- function(project = NULL) {
+  envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
+  if (!is.na(envLibDir))
+    return(file.path(envLibDir, "lib-R"))
+
   file.path(getPackratDir(project), "lib-R")
 }
 
 libExtDir <- function(project = NULL) {
+  envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
+  if (!is.na(envLibDir))
+    return(file.path(envLibDir, "lib-ext"))
+
   file.path(getPackratDir(project), "lib-ext")
 }
 
