@@ -2,8 +2,22 @@ local({
 
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
-  if (is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA)) &&
-        suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
+  ## Escape hatch to allow RStudio to handle initialization
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
+        is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
+    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
+    setHook("rstudio.sessionInit", function(...) {
+      source("packrat/init.R")
+    })
+    return(invisible(NULL))
+  }
+
+  ## Unload packrat in case it's loaded -- this ensures packrat _must_ be
+  ## loaded from the private library. Note that `requireNamespace` will
+  ## succeed if the package is already loaded, regardless of lib.loc!
+  try(unloadNamespace("packrat"), silent = TRUE)
+
+  if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
 
     # Check 'print.banner.on.startup' -- when NA and RStudio, don't print
     print.banner <- packrat::get_opts("print.banner.on.startup")
@@ -18,16 +32,6 @@ local({
   ## Bootstrapping -- only performed in interactive contexts,
   ## or when explicitly asked for on the command line
   if (interactive() || "--bootstrap-packrat" %in% commandArgs(TRUE)) {
-
-    ## Escape hatch to allow RStudio to handle initialization
-    if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
-          is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
-      Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
-      setHook("rstudio.sessionInit", function(...) {
-        source("packrat/init.R")
-      })
-      return(invisible(NULL))
-    }
 
     message("Packrat is not installed in the local library -- ",
             "attempting to bootstrap an installation...")
