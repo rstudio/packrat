@@ -305,10 +305,13 @@ isRPackage <- function(project) {
     }
   )
 
+  # If 'Type' is missing from the DESCRIPTION file, then we implicitly assume
+  # that it is an R package (#172)
   if (!("Type" %in% colnames(DESCRIPTION))) {
-    return(FALSE)
+    return(TRUE)
   }
 
+  # Otherwise, ensure that the type is `Package`
   Type <- unname(as.character(DESCRIPTION[, "Type"]))
   identical(Type, "Package")
 
