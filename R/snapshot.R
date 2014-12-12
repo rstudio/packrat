@@ -76,16 +76,32 @@ snapshot <- function(project = NULL,
 
 }
 
-snapshotImpl <- function(project,
-                         available = available.packages(),
-                         lib.loc = libDir(project),
-                         dry.run = FALSE,
-                         ignore.stale = FALSE,
-                         prompt = interactive(),
-                         auto.snapshot = FALSE,
-                         verbose = TRUE,
-                         fallback.ok = FALSE,
-                         snapshot.sources = TRUE) {
+#' Internal Snapshot Implementation
+#'
+#' This is the internal implementation for \code{\link{snapshot}}. Most users
+#' should prefer calling \code{\link{snapshot}}.
+#'
+#' @inheritParams snapshot
+#' @param auto.snapshot Internal use -- should be set to \code{TRUE} when this
+#'   is an automatic snapshot.
+#' @param verbose Print output to the console while \code{snapshot}-ing?
+#' @param fallback.ok Fall back to the latest CRAN version of a package if the
+#'   locally installed version is unavailable?
+#' @param snapshot.sources Download the tarball associated with a particular
+#'   package?
+#' @keywords internal
+#' @rdname snapshotImpl
+#' @export
+.snapshotImpl <- function(project,
+                          available = available.packages(),
+                          lib.loc = libDir(project),
+                          dry.run = FALSE,
+                          ignore.stale = FALSE,
+                          prompt = interactive(),
+                          auto.snapshot = FALSE,
+                          verbose = TRUE,
+                          fallback.ok = FALSE,
+                          snapshot.sources = TRUE) {
 
   # ensure packrat directory available
   packratDir <- getPackratDir(project)
@@ -252,6 +268,11 @@ snapshotImpl <- function(project,
                         actions = diffs[!is.na(diffs)],
                         pkgsSnapshot = allRecords)))
 }
+
+# NOTE: `.snapshotImpl` is exported as an 'internal' function that may be
+# used by other packages, but we keep an (unexported) version of `snapshotImpl`
+# around for compatibility with older Packrat versions.
+snapshotImpl <- .snapshotImpl
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
