@@ -1,4 +1,4 @@
-# Packrat 0.4.2 (Unreleased)
+# Packrat 0.4.2
 
 - Packrat properly infers whether a project is an R package. A project
   with a `DESCRIPTION` file that has no `Type:` field, or has the
