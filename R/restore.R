@@ -111,9 +111,17 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     })
     type <- "local"
-  } else if (isFromCranlikeRepo(pkgRecord) &&
-               pkgRecord$name %in% rownames(availablePkgs)) {
-    currentVersion <- availablePkgs[pkgRecord$name,"Version"]
+  }
+
+  else if (isFromCranlikeRepo(pkgRecord) &&
+           pkgRecord$name %in% rownames(availablePkgs)) {
+
+    currentVersion <- availablePkgs[pkgRecord$name, "Version"]
+
+    # NOTE: We may need to check the source repositories as well.
+    sourcePkgs <- available.packages(type = "source")
+    currentSrcVersion <- sourcePkgs[pkgRecord$name, "Version"]
+
     # Is the source for this version of the package on CRAN and/or a
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {
@@ -138,10 +146,42 @@ getSourceForPkgRecord <- function(pkgRecord,
         file.copy(fileLoc[1,2], pkgSrcDir)
       }
       type <- paste(type, "current")
-    } else {
-      # The version requested is not the version on CRAN; it may be an
-      # older version. Look for the older version in the CRAN archive for
-      # each named repository.
+
+    }
+
+    # The version requested is available in the source repositories -- we'll
+    # download that source package and install from source.
+    else if (identical(pkgRecord$version, currentSrcVersion)) {
+      foundVersion <- FALSE
+      for (repo in repos) {
+        tryCatch({
+          srcUrl <- file.path(repo, "src/contrib",
+                                  pkgSrcFile)
+          if (!downloadWithRetries(srcUrl,
+                                   file.path(pkgSrcDir, pkgSrcFile),
+                                   mode = "wb", quiet = TRUE)) {
+            message("FAILED")
+            stop("Failed to download package from URL:\n- ", shQuote(srcUrl))
+          }
+          foundVersion <- TRUE
+          type <- paste(type, "current source")
+          break
+        }, error = function(e) {
+          # Ignore error and try the next repository
+        })
+      }
+      if (!foundVersion) {
+        stop("Couldn't find source for version ", pkgRecord$version, " of ",
+             pkgRecord$name, " (", currentVersion, " is current)")
+      }
+
+
+    }
+
+    # The version requested is not the version on CRAN; it may be an
+    # older version. Look for the older version in the CRAN archive for
+    # each named repository.
+    else {
       foundVersion <- FALSE
       for (repo in repos) {
         tryCatch({
@@ -166,7 +206,10 @@ getSourceForPkgRecord <- function(pkgRecord,
              pkgRecord$name, " (", currentVersion, " is current)")
       }
     }
-  } else if (identical(pkgRecord$source, "github")) {
+  }
+
+  # The package is from GitHub -- download from their archives
+  else if (identical(pkgRecord$source, "github")) {
     archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/",
                         pkgRecord$gh_repo, "/archive/", pkgRecord$gh_sha1,
                         ".tar.gz", sep = "")
