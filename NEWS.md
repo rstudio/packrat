@@ -1,4 +1,26 @@
-# Packrat 0.4.2 (Unreleased)
+# Packrat 0.4.2
+
+- Packrat properly infers whether a project is an R package. A project
+  with a `DESCRIPTION` file that has no `Type:` field, or has the
+  `Type: Package` field, will be considered as an `R` package.
+  
+- Custom library paths can be set through the `R_PACKRAT_LIB_DIR` environment
+  variable, which can be useful when using Packrat for non-local dependency
+  management or deployment.
+
+- A bug in the propagation of BioC repositories was fixed.
+
+- Symlinks to `R` packages are created and destroyed more conservatively; this
+  should help prevent problems where multiple `R` processes are acting within
+  a single Packrat project.
+  
+- The autoloader was not properly created in rare cases (thanks, @krlmlr!)
+
+- `install_local` now forces `lib` and `repos` to be passed as named arguments,
+  to avoid insidious errors. (#162)
+
+- Packrat no longer removes the lockfile on `disable`; rather, it simply removes
+  the autoloader. (#161)
 
 - Packrat projects can now be non-interactively bootstrapped using the command:
   `R --vanilla -f packrat/init.R --args --bootstrap-packrat`. (#158)
