@@ -1,3 +1,10 @@
+# Packrat 0.4.3 (Unreleased)
+
+- Added the `R` option `packrat.default.project.options`, which are now respected
+  on e.g. `packrat::init()`. You can set
+  `options(packrat.default.project.options = list(...))` to set your own
+  default project options to use across Packrat projects.
+
 # Packrat 0.4.2
 
 - Packrat properly infers whether a project is an R package. A project

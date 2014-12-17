@@ -134,10 +134,25 @@ init <- function(project = '.',
   if (is.null(opts))
     opts <- default_opts()
 
+  # Read custom Packrat options and apply them
+  customDefaultOptions <- getOption("packrat.default.project.options")
+  if (!is.null(customDefaultOptions)) {
+
+    # Validate the options (will stop on failure)
+    validateOptions(customDefaultOptions)
+
+    # Set the options
+    for (i in seq_along(customDefaultOptions)) {
+      name <- names(customDefaultOptions)[[i]]
+      opts[[name]] <- customDefaultOptions[[name]]
+    }
+  }
+
+  # NOTE: Explicitly set options should override default options set by
+  # the user
   if (!is.null(options)) {
     for (i in seq_along(options)) {
       name <- names(options)[[i]]
-      value <- options[[i]]
       opts[[name]] <- options[[name]]
     }
   }
