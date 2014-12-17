@@ -222,30 +222,13 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
       )
     }
 
-    # Packages that are no longer used, but still seen in the library
-    whichPkgsNotNeeded <- with(statusTbl,
-                               !currently.used &
-                                 !is.na(library.version)
-    )
-    pkgsNotNeeded <- statusTbl$package[whichPkgsNotNeeded]
-    if (length(pkgsNotNeeded)) {
-      prettyPrint(
-        searchPackages(installedPkgRecords, pkgsNotNeeded),
-        "The following packages are installed but not needed:",
-        c("Use packrat::clean() to remove them. Or, if they are actually needed\n",
-          "by your project, add `library(packagename)` calls to a .R file\n",
-          "somewhere in your project.")
-      )
-    }
-
     # If everything is in order, let the user know
     if (!(any(onlyPackrat) ||
             length(missingFromPackrat) ||
             length(pkgNamesUntracked) ||
             length(pkgNamesOutOfSync) ||
             length(deletedButStillTracked) ||
-            length(missingFromPackrat) ||
-            length(pkgsNotNeeded))) {
+            length(missingFromPackrat))) {
       message("Up to date.")
     }
 
