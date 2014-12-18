@@ -3,12 +3,21 @@ layout: home
 title: How to Set Up a Custom CRAN-like Repository
 ---
 
+## Introduction
+
 This document will walk you through how to create a custom, CRAN-like
-repository. We will create a CRAN-like repository on-disk, add a package to it,
-and then use `install.packages()` to install it. You might also find the
-[offical R
+repository. We will:
+
+1. Create a CRAN-like repository called `sushi` on disk,
+2. Generate and uploada a package called `sashimi` to this repository,
+3. Use `install.packages()` to install the package.
+
+You might also find the 
+[official R
 documentation](http://cran.r-project.org/doc/manuals/r-release/R-admin.html#Setting-up-a-package-repository)
 on the topic helpful as a reference.
+
+## Let's get started!
 
 First, we create the directory itself -- we'll put it at `~/local-cran`:
 
