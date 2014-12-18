@@ -3,9 +3,12 @@ layout: home
 title: How to Set Up a Custom CRAN-like Repository
 ---
 
-This document will walk you through how to create a custom, CRAN-like repository.
-We will create a CRAN-like repository on-disk, add a package to it, and then use
-`install.packages()` to install it.
+This document will walk you through how to create a custom, CRAN-like
+repository. We will create a CRAN-like repository on-disk, add a package to it,
+and then use `install.packages()` to install it. You might also find the
+[offical R
+documentation](http://cran.r-project.org/doc/manuals/r-release/R-admin.html#Setting-up-a-package-repository)
+on the topic helpful as a reference.
 
 First, we create the directory itself -- we'll put it at `~/local-cran`:
 
