@@ -54,14 +54,15 @@ installing packages to a private library from a snapshot is called
 
 ## Installing packrat
 
-Until packrat is ready for CRAN, you can install it directly from GitHub using
-[devtools](https://github.com/hadley/devtools). **It's very important that you
-use devtools 1.4 or later to install packrat, otherwise you will get errors
-when you try to use it.** If you already have devtools installed, make sure
-it's 1.4 or later before proceeding.
+Packrat is now available on CRAN, so you can install it with:
+
+    > install.packages("packrat")
+
+If you like to live on the bleeding edge, you can also install the development
+version of Packrat with:
 
     > install.packages("devtools")
-    > install.packages("packrat")
+    > devtools::install_github("rstudio/packrat")
 
 You'll also need to make sure your machine is able to build packages from
 source. See [Package Development
@@ -75,6 +76,8 @@ tools needed for your operating system.
 * Then check out some of the **[most common commands](commands.html)**.
 * If you're using RStudio, read the **[guide to using Packrat with RStudio](rstudio.html)**.
 * We also have a short list of **[limitations and caveats](limitations.html)** you should be aware of.
+* If you want to set up your own, local, custom CRAN-like repository, you can read
+  **[Setting Up a Custom CRAN-like Repository](custom-repos.html)**.
 
 ## Need help?
 
