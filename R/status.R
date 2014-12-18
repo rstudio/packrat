@@ -70,12 +70,25 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     installedPkgs <- installedPkgs[installedPkgs != pkgName]
   }
 
+  # NOTE: We avoid explicitly calling `available.packages()`, just in case we haven't
+  # yet cached the set of available packages. However, to infer broken dependency chains
+  # it is in general necessary to have the set of `available.packages()` to fill in
+  # broken links.
+  availablePkgs <- if (hasCachedAvailablePackages())
+    available.packages()
+  else
+    suppressWarnings(available.packages(""))
+
+  inferredPkgNames <- appDependencies(project,
+                                      available.packages = availablePkgs)
+
   # Recursive should be false here -- we collect records _only_ for packages which are installed
   installedPkgRecords <- flattenPackageRecords(
     getPackageRecords(installedPkgs,
                       project = project,
                       recursive = FALSE,
                       lib.loc = lib.loc,
+                      available = availablePkgs,
                       missing.package = function(...) NULL
     )
   )
@@ -83,12 +96,15 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   installedPkgVersions <- getPackageElement(installedPkgRecords, "version")
 
   # Packages inferred from the code
-  # Don't stop execution if package missing from library; just propogate later
+  # Don't stop execution if package missing from library; just propagate later
   # as information to user
-  inferredPkgNames <- appDependencies(project)
 
   # Suppress warnings on 'Suggests', since they may be from non-CRAN repos (e.g. OmegaHat)
-  suggestedPkgNames <- suppressWarnings(appDependencies(project, fields = "Suggests"))
+  suggestedPkgNames <- suppressWarnings(
+    appDependencies(project,
+                    available.packages = availablePkgs,
+                    fields = "Suggests")
+  )
 
   # All packages mentioned in one of the three above
   allPkgNames <- sort_c(unique(c(
@@ -245,4 +261,11 @@ getPackageElement <- function(package, element) {
     unlist(lapply(package, "[[", "name"))
   )
 
+}
+
+hasCachedAvailablePackages <- function() {
+  contrib.url <- contrib.url(getOption('repos'))
+  tempFiles <- list.files(tempdir())
+  repoNames <- paste("repos_", URLencode(contrib.url, TRUE), ".rds", sep = "")
+  all(repoNames %in% tempFiles)
 }
