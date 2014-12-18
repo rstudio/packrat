@@ -55,21 +55,28 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   packratSources <- getPackageElement(packratPackages, "source")
 
   ## Packages in the library (with their version)
-  installedPkgs <- installed.packages(
+  installedPkgs <- as.data.frame(installed.packages(
     lib.loc = lib.loc,
     noCache = TRUE
-  )[, "Package"]
+  ))
 
   ## Ignore 'rstudio', 'manipulate'
-  installedPkgs <- setdiff(installedPkgs, c('rstudio', 'manipulate'))
+  installedPkgs <- installedPkgs[!(installedPkgs$Package %in% c("rstudio", "manipulate")), ]
 
   ## If we are using packrat alongside an R package, then we should
   ## ignore the package itself
   if (isRPackage(project = project)) {
     pkgName <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
-    installedPkgs <- installedPkgs[installedPkgs != pkgName]
+    installedPkgs <- installedPkgs[installedPkgs$Package != pkgName, ]
   }
 
+  installedPkgNames <- installedPkgs$Package
+  installedPkgVersions <- installedPkgs$Version
+
+  # Packages inferred from the code
+  # Don't stop execution if package missing from library; just propagate later
+  # as information to user
+  #
   # NOTE: We avoid explicitly calling `available.packages()`, just in case we haven't
   # yet cached the set of available packages. However, to infer broken dependency chains
   # it is in general necessary to have the set of `available.packages()` to fill in
@@ -82,22 +89,6 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   inferredPkgNames <- appDependencies(project,
                                       available.packages = availablePkgs)
 
-  # Recursive should be false here -- we collect records _only_ for packages which are installed
-  installedPkgRecords <- flattenPackageRecords(
-    getPackageRecords(installedPkgs,
-                      project = project,
-                      recursive = FALSE,
-                      lib.loc = lib.loc,
-                      available = availablePkgs,
-                      missing.package = function(...) NULL
-    )
-  )
-  installedPkgNames <- getPackageElement(installedPkgRecords, "name")
-  installedPkgVersions <- getPackageElement(installedPkgRecords, "version")
-
-  # Packages inferred from the code
-  # Don't stop execution if package missing from library; just propagate later
-  # as information to user
 
   # Suppress warnings on 'Suggests', since they may be from non-CRAN repos (e.g. OmegaHat)
   suggestedPkgNames <- suppressWarnings(
