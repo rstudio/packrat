@@ -45,11 +45,19 @@
 #' }
 #' @export
 snapshot <- function(project = NULL,
-                     available = available.packages(),
+                     available = NULL,
                      lib.loc = libDir(project),
                      ignore.stale = FALSE,
                      dry.run = FALSE,
                      prompt = interactive()) {
+
+  if (is.null(available))
+  {
+    available <- if (dry.run)
+      suppressWarnings(available.packages(""))
+    else
+      available.packages()
+  }
 
   project <- getProjectDir(project)
 
@@ -93,7 +101,7 @@ snapshot <- function(project = NULL,
 #' @rdname snapshotImpl
 #' @export
 .snapshotImpl <- function(project,
-                          available = available.packages(),
+                          available = NULL,
                           lib.loc = libDir(project),
                           dry.run = FALSE,
                           ignore.stale = FALSE,
@@ -102,6 +110,14 @@ snapshot <- function(project = NULL,
                           verbose = TRUE,
                           fallback.ok = FALSE,
                           snapshot.sources = TRUE) {
+
+  if (is.null(available))
+  {
+    available <- if (dry.run)
+      suppressWarnings(available.packages(""))
+    else
+      available.packages()
+  }
 
   # ensure packrat directory available
   packratDir <- getPackratDir(project)
@@ -128,7 +144,8 @@ snapshot <- function(project = NULL,
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
-  inferredPkgs <- sort_c(appDependencies(project))
+  inferredPkgs <- sort_c(appDependencies(project,
+                                         available.packages = available))
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
