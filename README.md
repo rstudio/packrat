@@ -98,3 +98,9 @@ Packrat supports a set of common analytic workflows:
    collected within one directory), and call `packrat::init()` to immediately
    obtain R package sources for all packages used in your project, and snapshot
    that state so it can hence be preserved across time.
+
+# Setting up your own custom, CRAN-like repositories
+
+Please view the [set-up
+guide](http://rstudio.github.io/packrat/custom-repos.html) here for a simple
+walkthrough in how you might set up your own, local, custom CRAN repository.
