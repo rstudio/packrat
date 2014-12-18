@@ -39,7 +39,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   ### enumerating the packages in lib.loc.
 
   ## Packages from the lockfile (with their version)
-  packratPackages <- lockInfo(project, fatal=FALSE)
+  packratPackages <- lockInfo(project, fatal = FALSE)
 
   if (length(packratPackages) == 0) {
     initArg <- if (projectDefault) '' else deparse(project)
@@ -55,23 +55,30 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   packratSources <- getPackageElement(packratPackages, "source")
 
   ## Packages in the library (with their version)
-  installedPkgs <- as.data.frame(installed.packages(
-    lib.loc = lib.loc,
-    noCache = TRUE
-  ))
+  installedPkgFolders <- list.files(lib.loc, full.names = TRUE)
 
-  ## Ignore 'rstudio', 'manipulate'
-  installedPkgs <- installedPkgs[!(installedPkgs$Package %in% c("rstudio", "manipulate")), ]
+  installedPkgRecords <- lapply(installedPkgFolders, function(path) {
 
-  ## If we are using packrat alongside an R package, then we should
-  ## ignore the package itself
-  if (isRPackage(project = project)) {
-    pkgName <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
-    installedPkgs <- installedPkgs[installedPkgs$Package != pkgName, ]
-  }
+    descPath <- file.path(path, "DESCRIPTION")
+    if (!file.exists(descPath)) {
+      warning("No DESCRIPTION file for installed package '", basename(path), "'")
+      return(NULL)
+    }
 
-  installedPkgNames <- installedPkgs$Package
-  installedPkgVersions <- installedPkgs$Version
+    DESCRIPTION <- readDcf(descPath, all = TRUE)
+    list(
+      name = DESCRIPTION$Package,
+      source = DESCRIPTION$InstallSource,
+      version = DESCRIPTION$Version
+    )
+  })
+
+  installedPkgNames <- unlist(lapply(installedPkgRecords, `[[`, "name"))
+  names(installedPkgNames) <- installedPkgNames
+  installedPkgVersions <- unlist(lapply(installedPkgRecords, `[[`, "version"))
+  names(installedPkgVersions) <- installedPkgNames
+
+  # Manually construct package records suitable for later reporting
 
   # Packages inferred from the code
   # Don't stop execution if package missing from library; just propagate later
@@ -86,8 +93,10 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   else
     suppressWarnings(available.packages(""))
 
-  inferredPkgNames <- appDependencies(project,
-                                      available.packages = availablePkgs)
+  inferredPkgNames <- appDependencies(
+    project,
+    available.packages = availablePkgs
+  )
 
 
   # Suppress warnings on 'Suggests', since they may be from non-CRAN repos (e.g. OmegaHat)
