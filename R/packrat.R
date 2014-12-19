@@ -189,6 +189,9 @@ init <- function(project = '.',
       if (isPackratModeOn())
         off()
 
+      ## Create the 'packrat' directory and write out the options first
+      options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
+
       ## We always re-packify so that the current version of packrat present can
       ## insert the appropriate auto-loaders
       packify(project = project, quiet = TRUE)
@@ -202,12 +205,11 @@ init <- function(project = '.',
 
       ## Make sure the .Rprofile is up to date
       augmentRprofile(project)
-      options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
 
       # Take a snapshot
       snapshotImpl(project,
                    available.packages(contrib.url(activeRepos(project))),
-                   lib.loc = NULL,
+                   lib.loc = libDir(project),
                    ignore.stale = TRUE,
                    fallback.ok = TRUE)
 
