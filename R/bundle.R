@@ -39,6 +39,9 @@ bundle <- function(project = NULL,
   resDir <- opts$project.resources.path()
   isInternalTar <- identical(TAR, "internal") || identical(TAR, "")
 
+  # NOTE: If we are using external resources, then we fall back to the
+  # internal tar, which mandates copying everything together into a temporary
+  # directory before 'tar'ing everything up.
   if (isInternalTar || !is.null(resDir)) {
     bundle_internal(project = project,
                     file = file,
@@ -130,12 +133,23 @@ bundle_internal <- function(project = NULL,
   ## copy that in as well.
   resDir <- opts$project.resources.path()
   if (!is.null(resDir)) {
-    dir_copy(
-      from = resDir,
-      to = file.path(to, "packrat"),
-      pattern = pattern,
-      overwrite = TRUE
-    )
+
+    resPath <- file.path(resDir, basename(project))
+    dirs <- list.files(resPath, full.names = TRUE)
+
+    if (!include.src) dirs <- dirs[basename(dirs) != "src"]
+    if (!include.lib) dirs <- dirs[grep("^lib.*", basename(dirs), invert = TRUE)]
+    if (!include.bundles) dirs <- dirs[basename(dirs) != "bundles"]
+
+    if (length(dirs)) {
+      lapply(dirs, function(dir) {
+        dir_copy(from = dir,
+                 to = file.path(to, "packrat", basename(dir)),
+                 pattern = pattern,
+                 overwrite = TRUE)
+      })
+    }
+
   }
 
   ## Clean up after ourselves
@@ -354,10 +368,13 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
   dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
 
   if (restore) {
-    setwd(dirName)
+
     if (length(dirName) != 1) {
       stop("Couldn't infer top-level directory name; cannot perform automatic restore")
     }
+
+    setwd(dirName)
+
     ## Ensure the (empty) library directory is present before restoring
     dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")
