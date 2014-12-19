@@ -268,14 +268,14 @@ bundle_external <- function(project = NULL,
     filesToZip <- c(
       filesToZip,
       file.path(
-        relSrcDir(),
-        list.files(relSrcDir(), recursive = TRUE)
+        "packrat/src",
+        list.files("packrat/src", recursive = TRUE)
       )
     )
   }
 
   if (include.lib) {
-    filesToZip <- c(filesToZip, relLibDir())
+    filesToZip <- c(filesToZip, "packrat/lib")
   }
 
   if (!include.vcs.history) {
@@ -298,7 +298,7 @@ bundle_external <- function(project = NULL,
                           full.names = TRUE,
                           recursive = TRUE)
     srcPkgsRelative <- file.path(
-      relSrcDir(),
+      "packrat/src",
       list.files(recursive = TRUE,
         srcDir(project = file.path(tempdir(), basename(project)))
       )
