@@ -36,7 +36,10 @@ bundle <- function(project = NULL,
                    ...) {
 
   TAR <- Sys.getenv("TAR")
-  if (identical(TAR, "internal") || identical(TAR, "")) {
+  resDir <- opts$project.resources.path()
+  isInternalTar <- identical(TAR, "internal") || identical(TAR, "")
+
+  if (isInternalTar || !is.null(resDir)) {
     bundle_internal(project = project,
                     file = file,
                     include.src = include.src,
@@ -122,6 +125,18 @@ bundle_internal <- function(project = NULL,
     pattern = pattern,
     overwrite = TRUE
   )
+
+  ## If the project resources are in a separate directory, we need to explicitly
+  ## copy that in as well.
+  resDir <- opts$project.resources.path()
+  if (!is.null(resDir)) {
+    dir_copy(
+      from = resDir,
+      to = file.path(to, "packrat"),
+      pattern = pattern,
+      overwrite = TRUE
+    )
+  }
 
   ## Clean up after ourselves
   on.exit(unlink(to, recursive = TRUE), add = TRUE)

@@ -1,7 +1,5 @@
 local({
 
-  libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
-
   ## Escape hatch to allow RStudio to handle initialization
   if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
         is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
@@ -10,6 +8,19 @@ local({
       source("packrat/init.R")
     })
     return(invisible(NULL))
+  }
+
+  ## Check the packrat.opts file for a custom resources path
+  optFile <- file.path("packrat", "packrat.opts")
+  opts <- readLines(optFile)
+
+  resourcePath <- "packrat"
+  if (any(grepl("^project.resources.path:", opts, perl = TRUE))) {
+    string <- grep("^project.resources.path:", opts, perl = TRUE, value = TRUE)
+    resourcePath <- gsub("^project.resources.path:\\s*", "", string, perl = TRUE)
+    libDir <- file.path(resourcePath, basename(getwd()), "lib", R.version$platform, getRversion())
+  } else {
+    libDir <- file.path("packrat", "lib", R.version$platform, getRversion())
   }
 
   ## Unload packrat in case it's loaded -- this ensures packrat _must_ be

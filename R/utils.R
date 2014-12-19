@@ -252,8 +252,8 @@ updateGitIgnore <- function(project = NULL, options) {
   names(git.options) <- swap(
     names(git.options),
     c(
-      "vcs.ignore.lib" = paste0(relLibraryRootDir(), "*/"),
-      "vcs.ignore.src" = paste0(relSrcDir(), "/")
+      "vcs.ignore.lib" = "packrat/lib*/",
+      "vcs.ignore.src" = "packrat/src/"
     )
   )
 
@@ -306,8 +306,8 @@ updateSvnIgnore <- function(project, options) {
   names(svn.options) <- swap(
     names(svn.options),
     c(
-      "vcs.ignore.lib" = relLibraryRootDir(),
-      "vcs.ignore.src" = relSrcDir()
+      "vcs.ignore.lib" = "packrat/lib",
+      "vcs.ignore.src" = "packrat/src"
     )
   )
   add <- names(svn.options)[sapply(svn.options, isTRUE)]
@@ -315,8 +315,8 @@ updateSvnIgnore <- function(project, options) {
 
   ## We need to explicitly exclude library.new, library.old
   add <- unique(c(add,
-                  relNewLibraryDir(),
-                  relOldLibraryDir()
+                  "packrat/library.new",
+                  "packrat/library.old"
   ))
 
   add <- c(add, "packrat/lib-R")

@@ -14,7 +14,10 @@ VALID_OPTIONS <- list(
   local.repos = function(x) {
     is.null(x) || is.character(x)
   },
-  load.external.packages.on.startup = list(TRUE, FALSE)
+  load.external.packages.on.startup = list(TRUE, FALSE),
+  project.resources.path = function(x) {
+    is.null(x) || (is.character(x) && length(x) == 1)
+  }
 )
 
 default_opts <- function() {
@@ -26,7 +29,8 @@ default_opts <- function() {
     vcs.ignore.src = FALSE,
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
     local.repos = "",
-    load.external.packages.on.startup = TRUE
+    load.external.packages.on.startup = TRUE,
+    project.resources.path = NULL
   )
 }
 
@@ -72,6 +76,12 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' \item \code{load.external.packages.on.startup}:
 ##'   Load any packages specified within \code{external.packages} on startup?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##' \item \code{project.resources.path}:
+##'   Path to store project resources -- specificaly, the \code{lib/}, \code{src/},
+##'   \code{bundles/} directories? Defaults to \code{NULL}, implying that these
+##'   directories are placed within the \code{packrat} sub-directory of the
+##'   package; if set, the project resources will be stored at
+##'   \code{<project.resource.path>/<projectName>/}.
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
