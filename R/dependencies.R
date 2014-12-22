@@ -237,7 +237,7 @@ expressionDependencies <- function(e) {
     parent <- e
     child <- e[[1L]]
     while (is.call(child)) {
-      parent <- e[[1L]]
+      parent <- parent[[1L]]
       child <- parent[[1L]]
     }
     if (as.character(child) %in% c("::", ":::")) {
