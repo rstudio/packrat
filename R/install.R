@@ -637,8 +637,8 @@ add_path <- function(path, after = Inf) {
 
 reload <- function(pkg = ".", quiet = FALSE) {
   if (paste0("package:", pkg) %in% search()) {
-    if (!quiet) message("Reloading installed ", pkg$package)
+    if (!quiet) message("Reloading installed package: \", pkg, \"")
     forceUnload(pkg)
-    require(pkg, character.only = TRUE, quietly = TRUE)
+    library(pkg, character.only = TRUE, quietly = TRUE)
   }
 }
