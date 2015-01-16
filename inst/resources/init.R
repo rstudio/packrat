@@ -15,7 +15,8 @@ local({
   ## Unload packrat in case it's loaded -- this ensures packrat _must_ be
   ## loaded from the private library. Note that `requireNamespace` will
   ## succeed if the package is already loaded, regardless of lib.loc!
-  try(unloadNamespace("packrat"), silent = TRUE)
+  if ("packrat" %in% loadedNamespaces())
+    try(unloadNamespace("packrat"), silent = TRUE)
 
   if (suppressWarnings(requireNamespace("packrat", quietly = TRUE, lib.loc = libDir))) {
 
@@ -143,7 +144,7 @@ local({
     ## an 'installed from source' version
 
     ## -- InstallAgent -- ##
-    installAgent <- 'InstallAgent: packrat 0.4.2-8'
+    installAgent <- 'InstallAgent: packrat 0.4.2-9'
 
     ## -- InstallSource -- ##
     installSource <- 'InstallSource: source'
