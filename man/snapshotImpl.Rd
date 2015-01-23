@@ -4,10 +4,10 @@
 \alias{.snapshotImpl}
 \title{Internal Snapshot Implementation}
 \usage{
-.snapshotImpl(project, available = available.packages(),
-  lib.loc = libDir(project), dry.run = FALSE, ignore.stale = FALSE,
-  prompt = interactive(), auto.snapshot = FALSE, verbose = TRUE,
-  fallback.ok = FALSE, snapshot.sources = TRUE)
+.snapshotImpl(project, available = NULL, lib.loc = libDir(project),
+  dry.run = FALSE, ignore.stale = FALSE, prompt = interactive(),
+  auto.snapshot = FALSE, verbose = TRUE, fallback.ok = FALSE,
+  snapshot.sources = TRUE)
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working

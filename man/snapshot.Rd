@@ -4,9 +4,8 @@
 \alias{snapshot}
 \title{Capture and store the packages and versions in use}
 \usage{
-snapshot(project = NULL, available = available.packages(),
-  lib.loc = libDir(project), ignore.stale = FALSE, dry.run = FALSE,
-  prompt = interactive())
+snapshot(project = NULL, available = NULL, lib.loc = libDir(project),
+  ignore.stale = FALSE, dry.run = FALSE, prompt = interactive())
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
