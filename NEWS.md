@@ -1,4 +1,10 @@
-# Packrat 0.4.3 (Unreleased)
+# Packrat 0.4.3
+
+- Packrat avoids superfluous calls to `available.packages()` when possible,
+  to avoid unnecessary internet requests.
+
+- A bug where `packrat::status()` could cause the `R` session to hang was fixed.
+  (#179)
 
 - Added the `R` option `packrat.default.project.options`, which are now respected
   on e.g. `packrat::init()`. You can set
@@ -23,7 +29,7 @@
   
 - The autoloader was not properly created in rare cases (thanks, @krlmlr!)
 
-- `install_local` now forces `lib` and `repos` to be passed as named arguments,
+- `install_local()` now forces `lib` and `repos` to be passed as named arguments,
   to avoid insidious errors. (#162)
 
 - Packrat no longer removes the lockfile on `disable`; rather, it simply removes
