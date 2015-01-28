@@ -147,8 +147,8 @@ migrate <- function(project = ".", ask = TRUE) {
   on.exit(setLibPaths(oldLibPaths), add = TRUE)
   setLibPaths(libDir())
 
-  if (require("devtools")) {
-    install_github("rstudio/packrat")
+  if (requireNamespace("devtools")) {
+    devtools::install_github("rstudio/packrat")
   }
 
   message("- Packrat successfully updated. Please restart your R session to continue.")

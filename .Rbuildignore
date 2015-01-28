@@ -4,7 +4,7 @@
 ^internal/
 ^packrat/
 ^announce/
-^tests/testthat/packrat/
+^tests/
 ^scenarios/
 ^configure.R$
 ^NEWS.md$

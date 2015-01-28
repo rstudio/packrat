@@ -104,7 +104,7 @@ migrate_packages <- function() {
   ## Install packages from GitHub
   if (length(githubPkgs)) {
     message("> Installing GitHub packages")
-    if (!require("devtools")) {
+    if (!requireNamespace("devtools")) {
       install.packages("devtools", lib = userLib())
     }
     for (pkg in githubPkgs) {

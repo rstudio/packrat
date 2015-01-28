@@ -153,7 +153,7 @@ fileDependencies.Rmd <- function(file) {
     }
   })
 
-  if (require("knitr", quietly = TRUE)) {
+  if (requireNamespace("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
     tryCatch(silent(

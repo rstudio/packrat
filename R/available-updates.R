@@ -20,7 +20,7 @@ githubUpdates <- function(lib.loc = .libPaths()) {
     DESCRIPTIONS <-
       Filter(function(x) any(grepl("^Github", colnames(x))), DESCRIPTIONS)
     if (!length(DESCRIPTIONS)) return(NULL)
-    if (!require("httr")) stop("Need package 'httr' to check for GitHub updates")
+    if (!requireNamespace("httr")) stop("Need package 'httr' to check for GitHub updates")
     do.call(rbind, enumerate(DESCRIPTIONS, function(x) {
       url <- file.path("https://api.github.com",
                        "repos",
