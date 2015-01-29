@@ -275,9 +275,8 @@ expressionDependencies <- function(e) {
     }
 
     # base case: call to :: or :::
-    if (fname %in% c("::", ":::")) (
+    if (fname %in% c("::", ":::"))
       return(as.character(e[[2L]]))
-    )
 
     # base case: methods functions
     if (fname %in% c("setClass", "setRefClass", "setMethod", "setGeneric")) {
