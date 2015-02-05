@@ -32,15 +32,20 @@ for uploaded packages will live.
 
 Now, we'll create the 'binary' directories, where built binary versions of
 these packages (for the various architectures supported) live. Note that these
-folders should exist, but it is not necessary to populate them.
+folders should exist, but it is not necessary to populate them. Binary packages
+are also keyed to certain `R` versions, of the form `<major>.<minor>`. If you
+plan on distributing binary packages, be sure to create a sub-folder
+corresponding to each version of `R` you support!
 
+    rVersion <- paste(unlist(getRversion())[1:2], collapse = ".")
+    
     binPaths <- list(
-      win.binary = "bin/windows/contrib",
-      mac.binary = "bin/macosx/contrib",
-      mac.binary.mavericks = "bin/macosx/mavericks/contrib",
-      mac.binary.leopard = "bin/macosx/leopard/contrib"
+      win.binary = file.path("bin/windows/contrib", rVersion),
+      mac.binary = file.path("bin/macosx/contrib", rVersion),
+      mac.binary.mavericks = file.path("bin/macosx/mavericks/contrib", rVersion),
+      mac.binary.leopard = file.path("bin/macosx/leopard/contrib", rVersion)
     )
-
+    
     binPaths <- lapply(binPaths, function(x) file.path(localCRAN, x))
     lapply(binPaths, function(path) {
       dir.create(path, recursive = TRUE)
@@ -146,10 +151,14 @@ Wait... where does Packrat fit in all of this? Well, Packrat already
 understands how to communicate with CRAN-like repositories -- that's what it
 does by default. So, all you need to do in your Packrat project is:
 
-1. Update the `repos` in your project, analogous to the command above `options(repos = c(oldRepos, sushi = cranURI))`, and
+1. Update the `repos` in your project, analogous to the command above
+   `options(repos = c(oldRepos, sushi = cranURI))`, and
 2. Call `packrat::snapshot()` to update the repositories associated with your project,
 
 and you're good to go!
+
+If you'd like to get this code all in one place,
+please see [here](r/custom-repos.R).
 
 ## More Resources
 
