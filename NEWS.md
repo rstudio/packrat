@@ -1,3 +1,9 @@
+# Packrat 0.4.4 (Unreleased)
+
+- Packrat now properly infers whether a package is from a CRAN-like repository,
+  by checking if the `source` field maps to one of the repository names in
+  `getOption('repos')`. (#185)
+
 # Packrat 0.4.3
 
 - Packrat avoids superfluous calls to `available.packages()` when possible,
