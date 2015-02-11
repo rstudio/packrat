@@ -44,7 +44,9 @@ create_repo <- function(path, name = basename(path)) {
   message("Local CRAN repository '", name, "' created at: ",
           "\n- ", shQuote(path))
 
-  URI <- setNames(paste("file://", root, sep = ""), name)
+  URI <- paste("file://", root, sep = "")
+  names(URI) <- name
+
   options(repos = c(getOption("repos"), URI))
 
 }
@@ -155,4 +157,62 @@ uploadPackageTarball <- function(package, repo) {
   tools::write_PACKAGES(contribUrl, type = "source")
   message("Package '", basename(path), "' successfully uploaded.")
   file.path(contribUrl, basename(path))
+}
+
+#' Add a Repository
+#'
+#' Add a repository to the set of currently available repositories. This is
+#' effectively an easier-to-use wrapper over interacting with the
+#' \code{"repos"} option, which is otherwise set with \code{options(repos = ...)}.
+#'
+#' @param ... Named arguments of the form \code{<repoName> = <pathToRepo>}
+#' @param overwrite Boolean; overwrite if a repository with the given name
+#'   already exists?
+#'
+#' @name repository-management
+#' @rdname repository-management
+#' @export
+add_repos <- function(..., overwrite = FALSE) {
+
+  dots <- list(...)
+  if (any(!nzchar(names(dots))))
+    stop("all argument to 'add_repos()' should be named")
+
+  missing <- unlist(lapply(dots, function(x) {
+    !file.exists(x)
+  }))
+
+  if (any(missing))
+    stop("The following paths do not exist: \n- ",
+         paste(shQuote(dots[missing]), collapse = "\n- "))
+
+  oldRepos <- getOption("repos")
+  if (!overwrite) {
+    conflicts <- intersect(names(dots), names(oldRepos))
+    if (length(conflicts)) {
+      quoted <- paste(shQuote(conflicts), " (", oldRepos[conflicts], ")", sep = "")
+      stop("The following repositories have already been set.\n",
+           "Use 'overwrite = TRUE' to override these repository paths.\n- ",
+           paste(quoted, collapse = "\n- "))
+    }
+  }
+
+
+  # TODO: support non-local (ie non-file based) repos
+  paths <- normalizePath(unlist(dots), winslash = "/", mustWork = TRUE)
+  URIs <- paste("file://", paths, sep = "")
+
+  newRepos <- URIs
+  names(newRepos) <- names(dots)
+
+  repos <- c(oldRepos, newRepos)
+  options(repos = repos)
+  invisible(repos)
+}
+
+#' @name repository-management
+#' @rdname repository-management
+#' @export
+set_repos <- function(...) {
+  add_repos(..., overwrite = TRUE)
 }
