@@ -492,3 +492,11 @@ with_collate <- function(locale, code) {
 }
 
 sort_c <- function(x) with_collate("C", sort(x))
+
+is.string <- function(x) {
+  is.character(x) && length(x) == 1
+}
+
+is.directory <- function(x) {
+  file.exists(x) && isTRUE(file.info(x)[["isdir"]]) # guard against NA
+}
