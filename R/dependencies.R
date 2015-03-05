@@ -58,8 +58,15 @@ appDependencies <- function(project = NULL,
                                               fields)
   }
 
-  sort_c(unique(c(parentDeps, childDeps, "packrat")))
+  result <- unique(c(parentDeps, childDeps, "packrat"))
 
+  # If this project is implicitly a shiny application, then
+  # add that in as the previously run expression dependency lookup
+  # won't have found it.
+  if (isShinyApp(project))
+    result <- c(result, "shiny")
+
+  sort_c(result)
 }
 
 # detect all package dependencies for a directory of files
@@ -290,29 +297,66 @@ expressionDependencies <- function(e) {
   unique(unlist(children))
 }
 
-isRPackage <- function(project) {
-  file <- file.path(project, "DESCRIPTION")
-  if (!file.exists(file)) {
-    return(FALSE)
-  }
+# Read a DESCRIPTION file into a data.frame
+readDESCRIPTION <- function(path) {
 
-  DESCRIPTION <- tryCatch(
-    readDcf(file = file),
+  if (!file.exists(path))
+    stop("No DESCRIPTION file at path '", path, "'")
+
+  tryCatch(
+    readDcf(file = path, all = TRUE),
     error = function(e) {
-      warning("A 'DESCRIPTION' file was found, but could not be read as DCF",
-              call. = FALSE)
-      return(FALSE)
+      return(data.frame())
     }
   )
+}
+
+isRPackage <- function(project) {
+
+  descriptionPath <- file.path(project, "DESCRIPTION")
+  if (!file.exists(descriptionPath))
+    return(FALSE)
+
+  DESCRIPTION <- readDESCRIPTION(descriptionPath)
 
   # If 'Type' is missing from the DESCRIPTION file, then we implicitly assume
   # that it is an R package (#172)
-  if (!("Type" %in% colnames(DESCRIPTION))) {
+  if (!("Type" %in% names(DESCRIPTION)))
     return(TRUE)
-  }
 
   # Otherwise, ensure that the type is `Package`
-  Type <- unname(as.character(DESCRIPTION[, "Type"]))
+  Type <- unname(as.character(DESCRIPTION$Type))
   identical(Type, "Package")
 
+}
+
+# Infer whether a project is (implicitly) a Shiny application,
+# in the absence of explicit `library()` statements.
+isShinyApp <- function(project) {
+
+  # Check for a DESCRIPTION file with 'Type: Shiny'
+  descriptionPath <- file.path(project, "DESCRIPTION")
+  if (file.exists(descriptionPath)) {
+    DESCRIPTION <- readDESCRIPTION(descriptionPath)
+    if (tolower(DESCRIPTION$Type) == "shiny")
+      return(TRUE)
+  }
+
+  # Check for a server.r with a 'shinyServer' call
+  serverPath <- file.path(project, "server.R")
+  if (file.exists(file.path(project, "server.R"))) {
+    contents <- paste(readLines(serverPath), collapse = "\n")
+    if (grepl("shinyServer\\s*\\(", contents, perl = TRUE))
+      return(TRUE)
+  }
+
+  # Check for a single-file application with 'app.R'
+  appPath <- file.path(project, "app.R")
+  if (file.exists(appPath)) {
+    contents <- paste(readLines(appPath, collapse = "\n"))
+    if (grepl("shinyApp\\s*\\(", contents, perl = TRUE))
+      return(TRUE)
+  }
+
+  return(FALSE)
 }
