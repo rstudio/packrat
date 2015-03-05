@@ -63,7 +63,7 @@ appDependencies <- function(project = NULL,
   # If this project is implicitly a shiny application, then
   # add that in as the previously run expression dependency lookup
   # won't have found it.
-  if (isShinyApp(project))
+  if (!("shiny" %in% result) && isShinyApp(project))
     result <- c(result, "shiny")
 
   sort_c(result)
