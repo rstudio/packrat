@@ -231,7 +231,7 @@ defaultAppDataDir <- function() {
 }
 
 packratCacheVersion <- function() {
-  "v1"
+  "v2"
 }
 
 cacheLibDir <- function(...) {

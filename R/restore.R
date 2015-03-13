@@ -357,7 +357,7 @@ installPkg <- function(pkgRecord,
     # This package has already been installed in the cache; just symlink
     # to that if possible, or copy otherwise
     success <- suppressWarnings(symlink(
-      file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash)),
+      file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)),
       file.path(libDir(project), pkgRecord$name)
     ))
 
