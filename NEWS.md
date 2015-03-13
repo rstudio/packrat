@@ -1,5 +1,8 @@
 # Packrat 0.4.4 (Unreleased)
 
+- Packrat issues a warning if it was unable to infer the source of a particular
+  package on initialization and instead uses the latest CRAN version.
+
 - Packrat now infers whether a project implicitly depends on Shiny.
 
 - Packrat now properly infers whether a package is from a CRAN-like repository,

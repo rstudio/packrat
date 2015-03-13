@@ -108,6 +108,14 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
     # If this failed, try falling back to something of the same name in 'available'
     if (!nzchar(pkgDescFile) || (result$source == "unknown" && fallback.ok)) {
+
+      # Let the user know if we're falling back to latest CRAN (because we failed
+      # to infer the source of a particular package)
+      if (result$source == "unknown" && fallback.ok) {
+        warning("Failed to infer source for package '", pkgName, "'; using ",
+                "latest available version on CRAN instead")
+      }
+
       if (pkgName %in% rownames(available)) {
         pkg <- available[pkgName,]
         df <- data.frame(
