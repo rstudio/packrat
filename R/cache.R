@@ -10,6 +10,8 @@ isUsingCache <- function(project) {
 # We assume 'path' is the path to a DESCRIPTION file
 #' @importFrom tools md5sum
 hash <- function(path) {
+
+
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
 
@@ -79,8 +81,6 @@ moveInstalledPackagesToCache <- function(project = NULL) {
   if (!file.exists(cacheLibDir()))
     dir.create(cacheLibDir(), recursive = TRUE)
 
-  project <- getProjectDir(project)
-
   ## All directories within the 'lib' directory which are not symlinks are fresh
   ## and may need to be moved
   installedPkgPaths <- list.files(libDir(project), full.names = TRUE)
@@ -93,19 +93,18 @@ moveInstalledPackagesToCache <- function(project = NULL) {
   ## for each package installed that is not a symlink, we migrate it to the cache
   for (package in needsMove) {
     hash <- hash(file.path(package, "DESCRIPTION"))
+    cachedPackagePath <- cacheLibDir(basename(package), hash, basename(package))
 
     ## if the package doesn't exist in the cache, copy it there
-    if (!file.exists(cacheLibDir(basename(package), hash))) {
-      dir_copy(
-        package,
-        cacheLibDir(basename(package), hash)
-      )
-    }
+    if (!file.exists(cacheLibDir(basename(package), hash)))
+      dir_copy(package, cachedPackagePath)
 
     ## replace the local package with a symlink
-    if (!is.symlink(package)) unlink(package, recursive = TRUE)
+    if (!is.symlink(package))
+      unlink(package, recursive = TRUE)
+
     symlink(
-      normalizePath(cacheLibDir(basename(package), hash)),
+      normalizePath(cachedPackagePath),
       package
     )
   }
@@ -114,20 +113,27 @@ moveInstalledPackagesToCache <- function(project = NULL) {
 
 # Pull out cached package information from the DESCRIPTION
 cachedPackages <- function(cacheDir = cacheLibDir(), fields = NULL) {
+
   pkgCachePaths <- list.files(cacheDir, full.names = TRUE)
   pkgPaths <- setNames(lapply(pkgCachePaths, function(x) {
     list.files(x, full.names = TRUE)
   }), basename(pkgCachePaths))
 
-  lapply(pkgPaths, function(hashedPath) {
-    result <- setNames(lapply(hashedPath, function(path) {
-      as.list(readDcf(file.path(path, "DESCRIPTION"), all = TRUE))
-    }), basename(hashedPath))
+  lapply(seq_along(pkgPaths), function(i) {
+
+    pkgName <- names(pkgPaths)[[i]]
+    hashedPaths <- pkgPaths[[i]]
+
+    result <- setNames(lapply(hashedPaths, function(path) {
+      as.list(readDcf(file.path(path, pkgName, "DESCRIPTION"), all = TRUE))
+    }), pkgName)
+
     if (!is.null(fields)) {
-      result[fields]
+      lapply(result, `[`, fields)
     } else {
       result
     }
+
   })
 }
 

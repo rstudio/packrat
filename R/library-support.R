@@ -57,9 +57,11 @@ symlinkSystemPackages <- function(project = NULL) {
 
   ## Clean up recursive symlinks if necessary -- it is possible that, e.g.
   ## within a base package directory:
+  ##
   ##     /Library/Frameworks/R.framework/Versions/3.2/library/MASS
+  ##
   ## there will be a link to MASS within MASS; we try to be friendly and
-  ## remove those
+  ## remove those.
   recursiveSymlinks <- file.path(.Library, sysPkgNames, sysPkgNames)
   invisible(lapply(recursiveSymlinks, function(file) {
     if (is.symlink(file)) {
