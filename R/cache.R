@@ -55,11 +55,15 @@ hash <- function(path) {
             "\nThese packages are required to be installed when attempting to hash this package for caching.",
             call. = FALSE)
   }
-  linkingToHashes <- dropNull(linkingToHashes)
+
+  linkingToHashes <- paste(
+    collapse = "",
+    sort_c(unlist(dropNull(linkingToHashes)))
+  )
 
   # Normalize for hashing and add in the linkingTo hashes as well
   ready <- normalizeForHash(sub)
-  ready <- paste0(ready, do.call(paste0, linkingToHashes))
+  ready <- paste(ready, linkingToHashes)
   tempfile <- tempfile()
   cat(ready, file = tempfile)
   result <- md5sum(tempfile)

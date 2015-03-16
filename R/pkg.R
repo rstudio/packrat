@@ -101,6 +101,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
     # First, try inferring the package source from the DESCRIPTION file -- if it's unknown
     # we might fall back to something in available.packages
+    result <- list()
     if (nzchar(pkgDescFile)) {
       df <- as.data.frame(readDcf(pkgDescFile))
       result <- suppressWarnings(inferPackageRecord(df))
