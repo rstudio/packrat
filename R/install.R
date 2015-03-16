@@ -576,7 +576,7 @@ system_check <- function(cmd, args = character(), env = character(),
     stopMsg <- paste0(
       "Command failed (", status, ")",
       "\n\nFailed to run system command:\n\n",
-      "\t", shQuote(cmd),
+      "\t", full,
       "\n\nThe command failed with output:\n",
       paste(result, collapse = "\n")
     )
