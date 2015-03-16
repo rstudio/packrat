@@ -573,12 +573,16 @@ system_check <- function(cmd, args = character(), env = character(),
 
   status <- attr(result, "status")
   if (!is.null(status) && !(status == 0)) {
-    stopMsg <- paste0("Command failed (", status, ")",
+    stopMsg <- paste0(
+      "Command failed (", status, ")",
+      "\n\nFailed to run system command:\n\n",
+      "\t", shQuote(cmd),
       "\n\nThe command failed with output:\n",
-      paste(result, collapse = "\n"))
+      paste(result, collapse = "\n")
+    )
     # issue #186
     if (nchar(stopMsg) > getOption("warning.length")) {
-      print(stopMsg, file=stderr())
+      print(stopMsg, file = stderr())
     }
     stop(stopMsg, call. = FALSE)
   }
