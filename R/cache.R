@@ -56,10 +56,12 @@ hash <- function(path) {
             call. = FALSE)
   }
 
-  linkingToHashes <- paste(
-    collapse = "",
-    sort_c(unlist(dropNull(linkingToHashes)))
-  )
+
+  linkingToHashes <- if (length(linkingToHashes))
+    paste(
+      collapse = "",
+      sort_c(unlist(dropNull(linkingToHashes)))
+    )
 
   # Normalize for hashing and add in the linkingTo hashes as well
   ready <- normalizeForHash(sub)
