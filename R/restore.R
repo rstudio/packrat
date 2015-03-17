@@ -344,6 +344,34 @@ installPkg <- function(pkgRecord,
   type <- "built source"
   needsInstall <- TRUE
 
+  # If we're trying to install a package that overwrites a symlink, e.g. for a
+  # cached package, we need to move that symlink out of the way (otherwise
+  # `install.packages()` or `R CMD INSTALL` will fail with surprising errors,
+  # like:
+  #
+  #     Error: 'zoo' is not a valid package name
+  #
+  # To avoid this, we explicitly move the symlink out of the way, and later
+  # restore it if, for some reason, package installation failed.
+  pkgInstallPath <- file.path(lib, pkgRecord$name)
+
+  if (file.exists(pkgInstallPath) && is.symlink(pkgInstallPath)) {
+
+    resolvedPath <- tryCatch(
+      normalizePath(pkgInstallPath, mustWork = TRUE),
+      error = function(e) NULL
+    )
+
+    if (!is.null(resolvedPath)) {
+      unlink(pkgInstallPath)
+      on.exit(add = TRUE, {
+        if (!file.exists(pkgInstallPath)) {
+          symlink(resolvedPath, pkgInstallPath)
+        }
+      })
+    }
+  }
+
   # Generally we want to install from sources, but we will download a pre-
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
   # is the version desired, and (c) R is set to download binaries. We also
