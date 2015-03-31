@@ -35,6 +35,16 @@ appDependencies <- function(project = NULL,
 
   project <- getProjectDir(project)
 
+  ## We want to search both local and global library paths for DESCRIPTION files
+  ## in the recursive dependency lookup; hence we take a large (ordered) union
+  ## of library paths. The ordering ensures that we search the private library first,
+  ## and fall back to the local / global library (necessary for `packrat::init`)
+  libPaths <- c(
+    libDir(project),
+    .libPaths(),
+    .packrat_mutables$origLibPaths
+  )
+
   ## For R packages, we only use the DESCRIPTION file
   if (isRPackage(project)) {
 
@@ -47,13 +57,13 @@ appDependencies <- function(project = NULL,
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
     childDeps <- recursivePackageDependencies(parentDeps,
-                                              libDir(project),
+                                              libPaths,
                                               available.packages,
                                               fields)
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
     childDeps <- recursivePackageDependencies(parentDeps,
-                                              libDir(project),
+                                              libPaths,
                                               available.packages,
                                               fields)
   }
