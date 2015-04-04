@@ -452,7 +452,7 @@ setNames <- function(object = nm, nm) {
 # is an empty list, then 'unlist(list())' will return NULL,
 # and list()[NULL] returns list() as we would hope
 dropNull <- function(x) {
-  x[unlist(lapply(x, Negate(is.null)))]
+  Filter(Negate(is.null), x)
 }
 
 surround <- function(x, with = "'") {
