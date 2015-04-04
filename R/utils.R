@@ -448,9 +448,6 @@ setNames <- function(object = nm, nm) {
 }
 
 # Drop null values in a list
-# Note that we use unlist(lapply(...)) because, if 'x'
-# is an empty list, then 'unlist(list())' will return NULL,
-# and list()[NULL] returns list() as we would hope
 dropNull <- function(x) {
   Filter(Negate(is.null), x)
 }
