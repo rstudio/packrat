@@ -363,7 +363,7 @@ isShinyApp <- function(project) {
   # Check for a single-file application with 'app.R'
   appPath <- file.path(project, "app.R")
   if (file.exists(appPath)) {
-    contents <- paste(readLines(appPath, collapse = "\n"))
+    contents <- paste(readLines(appPath), collapse = "\n")
     if (grepl("shinyApp\\s*\\(", contents, perl = TRUE))
       return(TRUE)
   }
