@@ -348,7 +348,7 @@ isShinyApp <- function(project) {
   descriptionPath <- file.path(project, "DESCRIPTION")
   if (file.exists(descriptionPath)) {
     DESCRIPTION <- readDESCRIPTION(descriptionPath)
-    if (tolower(DESCRIPTION$Type) == "shiny")
+    if (length(DESCRIPTION$Type) && tolower(DESCRIPTION$Type) == "shiny")
       return(TRUE)
   }
 
