@@ -163,8 +163,6 @@ with_something <- function(set) {
 in_dir <- with_something(setwd)
 
 set_libpaths <- function(paths) {
-  libpath <- normalizePath(paths, mustWork = TRUE)
-
   old <- getLibPaths()
   setLibPaths(paths)
   invisible(old)

@@ -91,8 +91,6 @@ moveInstalledPackagesToCache <- function(project = NULL) {
   ## and may need to be moved
   installedPkgPaths <- list.files(libDir(project), full.names = TRUE)
   if (!length(installedPkgPaths)) return(invisible())
-  cachedPkgPaths <- list.files(cacheLibDir(), full.names = TRUE)
-  cachedPkgHashes <- list.files(cachedPkgPaths)
 
   needsMove <- installedPkgPaths[sapply(installedPkgPaths, Negate(is.symlink))]
 

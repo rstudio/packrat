@@ -193,13 +193,6 @@ init <- function(project = '.',
       ## insert the appropriate auto-loaders
       packify(project = project, quiet = TRUE)
 
-      descriptionFile <- file.path(project, 'DESCRIPTION')
-
-      if (file.exists(descriptionFile)) {
-        description <- as.data.frame(readDcf(descriptionFile))
-        package <- description$Package
-      }
-
       ## Make sure the .Rprofile is up to date
       augmentRprofile(project)
       options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list

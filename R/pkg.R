@@ -78,7 +78,7 @@ getPackageRecordsLocalReposImpl <- function(pkg, repos, fatal = TRUE) {
   dcf <- as.data.frame(readDcf(file.path(path, "DESCRIPTION")), stringsAsFactors = FALSE)
   deps <- combineDcfFields(dcf, c("Depends", "Imports", "LinkingTo"))
   deps <- deps[deps != "R"]
-  record <- structure(list(
+  structure(list(
     name = pkg,
     source = 'source',
     version = dcf$Version,
@@ -353,7 +353,7 @@ getSourcePackageInfoImpl <- function(path) {
   ## For tarballs, we unzip them to a temporary directory and then read from there
   tempdir <- file.path(tempdir(), "packrat", path)
   if (endswith(path, "tar.gz")) {
-    paths <- untar(path, exdir = tempdir)
+    untar(path, exdir = tempdir)
     folderName <- list.files(tempdir, full.names = TRUE)[[1]]
   } else {
     folderName <- path

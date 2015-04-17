@@ -280,10 +280,6 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
     Hash = hash(descFile)
   )
 
-  # Drop any NULL elements above (this could occur for e.g. source_path, since
-  # only source packages will have a source path)
-  recordsDF <- as.data.frame(dropNull(records))
-
   # Read in the DCF file
   content <- as.data.frame(readDcf(descFile))
   stopifnot(nrow(content) == 1)
@@ -504,9 +500,6 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   cachedPkgs <- list.files(cacheLibDir(), full.names = TRUE)
   cache <- unlist(lapply(cachedPkgs, list.files))
 
-  # If this is the initial snapshot, we can optimize the installation of
-  # packages from the global library to the private Packrat library
-  initialSnapshot <- !identical(getLibPaths()[1], lib)
   installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))
 

@@ -195,8 +195,6 @@ setPackratModeOn <- function(project = NULL,
 setPackratModeOff <- function(project = NULL,
                               print.banner = TRUE) {
 
-  path <- packratModeFilePath(project)
-
   # Restore .Library.site
   if (isPackratModeOn()) {
     restoreSiteLibraries()
@@ -235,7 +233,6 @@ setPackratModeOff <- function(project = NULL,
 checkPackified <- function(project = NULL, quiet = FALSE) {
 
   project <- getProjectDir(project)
-  packratDir <- getPackratDir(project)
 
   lockPath <- lockFilePath(project)
   if (!file.exists(lockPath)) {
