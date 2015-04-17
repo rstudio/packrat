@@ -41,10 +41,15 @@ symlinkSystemPackages <- function(project = NULL) {
   ## NOTE: On Windows, we use junction points rather than symlinks to achieve the same
   ## effect
   results <- suppressWarnings(vapply(rownames(sysPkgsBase), function(pkg) {
-    symlink(
-      file.path(.Library, pkg),
-      file.path(libRdir, pkg)
-    )
+
+    from <- file.path(.Library, pkg)
+    to <- file.path(libRdir, pkg)
+
+    # Bash old symlinks just to ensure this session will be non-stale.
+    # TODO: What if multiple R sessions want to run with a single packrat project?
+    if (file.exists(to)) unlink(to)
+
+    symlink(from, to)
   }, logical(1)))
 
   # symlink returns FALSE if there was a failure
