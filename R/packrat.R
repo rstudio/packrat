@@ -337,6 +337,9 @@ restore <- function(project = NULL,
   # .libPaths() to be persistent -- so we unset them at the conclusion
   # of the restore. This is done to ensure downstream calls to e.g.
   # `system.file()` are successful.
+  if (!file.exists(libDir(project)))
+    dir.create(libDir(project), recursive = TRUE)
+
   oldLibPaths <- .libPaths()
   .libPaths(c(libDir(project), oldLibPaths))
   on.exit(.libPaths(oldLibPaths), add = TRUE)
