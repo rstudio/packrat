@@ -309,6 +309,13 @@ bundle_external <- function(project = NULL,
 
 }
 
+extractProjectNameFromBundlePath <- function(bundlePath) {
+  bundleBasename <- basename(bundlePath)
+  reDate <- "^(.*?)-\\d{4}-\\d{2}-\\d{2}\\.tar\\.gz$"
+  if (grepl(reDate, bundleBasename, perl = TRUE))
+    gsub(reDate, "\\1", bundleBasename, perl = TRUE)
+}
+
 ##' Unbundle a Packrat Project
 ##'
 ##' Unbundle a previously \code{\link{bundle}}d project.
@@ -332,6 +339,13 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
   owd <- getwd()
   on.exit(setwd(owd), add = TRUE)
   setwd(where)
+
+  # Ensure that the directory we'll be creating doesn't already exist.
+  # It's possible that people will have renamed the bundles, so make
+  # this a no-op on error.
+  projectName <- extractProjectNameFromBundlePath(bundle)
+  if (!is.null(projectName) && file.exists(file.path(where, projectName)))
+    stop("Path '", file.path(where, projectName), "' already exists!")
 
   whereFiles <- list.files()
   message("- Untarring '", basename(bundle), "' in directory '", where, "'...")
