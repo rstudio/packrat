@@ -291,6 +291,20 @@ snapshot <- function(project = NULL,
 # around for compatibility with older Packrat versions.
 snapshotImpl <- .snapshotImpl
 
+getBiocRepos <- function() {
+
+  rVersion <- unlist(getRversion())
+  rv <- paste(rVersion[[1]], rVersion[[2]], sep = ".")
+  prefix <- sprintf("http://bioconductor.org/packages/%s", rv)
+
+  c(
+    BioCsoft  = file.path(prefix, "bioc"),
+    BioCann   = file.path(prefix, "data/annotation"),
+    BioCexp   = file.path(prefix, "data/experiment"),
+    BioCextra = file.path(prefix, "extra")
+  )
+}
+
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
 activeRepos <- function(project) {
@@ -301,15 +315,7 @@ activeRepos <- function(project) {
   # private set of repos, which we need to expose here so we can download
   # sources to Bioconducter packages.
   if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
-    # Bioconductor repos may include repos already accounted for above
-    # unique drops names so it's unsuitable for us here
-    biocRepos <- BiocInstaller::biocinstallRepos()
-
-    ## Ignore what BiocInstaller says about CRAN
-    if ("CRAN" %in% names(biocRepos)) {
-      biocRepos <- biocRepos[-c(which(names(biocRepos) == "CRAN"))]
-    }
-
+    biocRepos <- getBiocRepos()
     biocRepoNames <- names(biocRepos)
     oldRepos <- repos[!(names(repos) %in% biocRepoNames)]
     repos <- c(oldRepos, biocRepos)
