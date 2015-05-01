@@ -425,11 +425,8 @@ installPkg <- function(pkgRecord,
       # accommodate for this, we need to munge the "both" pkgType, as this
       # does not work properly when 'available' is supplied.
       pkgType <- getOption("pkgType")
-      if (identical(pkgType, "both")) {
-        binaryPkgType <- getBinaryPkgType()
-        options(pkgType = binaryPkgType)
-        on.exit(options(pkgType = pkgType))
-      }
+      if (identical(pkgType, "both"))
+        availablePkgs <- NULL
 
       suppressMessages(
         capture.output(
