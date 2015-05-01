@@ -410,23 +410,36 @@ installPkg <- function(pkgRecord,
         versionMatchesDb(pkgRecord, availablePkgs) &&
         !identical(getOption("pkgType"), "source")) {
     tempdir <- tempdir()
-    tryCatch ({
+    tryCatch({
       # install.packages emits both messages and standard output; redirect these
       # streams to keep our own output clean.
 
       # on windows, we need to detach the package before installation
-      if (is.windows() &&
-          paste0("package:", pkgRecord$name) %in% search()) {
+      if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
         pkg <- paste0("package:", pkgRecord$name)
         detach(pkg, character.only = TRUE)
         on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
+      # Here, we're attempting to install a binary package -- to properly
+      # accommodate for this, we need to munge the "both" pkgType, as this
+      # does not work properly when 'available' is supplied.
+      pkgType <- getOption("pkgType")
+      if (identical(pkgType, "both")) {
+        binaryPkgType <- getBinaryPkgType()
+        options(pkgType = binaryPkgType)
+        on.exit(options(pkgType = pkgType))
+      }
+
       suppressMessages(
         capture.output(
-          utils::install.packages(pkgRecord$name, lib = lib, repos = repos,
-                                  available = availablePkgs, quiet = TRUE,
-                                  dependencies = FALSE, verbose = FALSE)))
+          utils::install.packages(pkgRecord$name,
+                                  lib = lib,
+                                  repos = repos,
+                                  available = availablePkgs,
+                                  quiet = TRUE,
+                                  dependencies = FALSE,
+                                  verbose = FALSE)))
       type <- "downloaded binary"
       needsInstall <- FALSE
     }, error = function(e) {

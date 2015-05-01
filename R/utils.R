@@ -489,3 +489,7 @@ with_collate <- function(locale, code) {
 }
 
 sort_c <- function(x) with_collate("C", sort(x))
+
+getBinaryPkgType <- function() {
+  .Platform$pkgType
+}
