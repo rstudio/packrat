@@ -421,9 +421,9 @@ installPkg <- function(pkgRecord,
         on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
-      # Here, we're attempting to install a binary package -- to properly
-      # accommodate for this, we need to munge the "both" pkgType, as this
-      # does not work properly when 'available' is supplied.
+      # If pkgType is 'both', the availablePkgs inferred will be wrong.
+      # The default behaviour for `available.packages()`,
+      # when `pkgType == "both"`.
       pkgType <- getOption("pkgType")
       if (identical(pkgType, "both"))
         availablePkgs <- NULL
