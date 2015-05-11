@@ -220,10 +220,12 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
   project <- getProjectDir(project)
 
-  ## If the file doesn't exist, create and fill it
+  ## If the file doesn't exist and we have content, create and fill it
   path <- file.path(project, file)
   if (!file.exists(path)) {
-    cat(add, file = path, sep = "\n")
+    if (length(add) > 0) {
+      cat(add, file = path, sep = "\n")
+    }
     return(invisible())
   }
 
