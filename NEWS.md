@@ -1,5 +1,14 @@
 # Packrat 0.4.4 (Unreleased)
 
+- Facilities for interacting with local CRAN-like repositories have been added.
+  This feature will eventually supersede the functionality offered by packrat's
+  'ad-hoc' local repositories. The functions `packrat::create_repo()` and
+  `packrat::upload_package()` are the two main API functions currently exported
+  for uploading (source) packages to a local CRAN-like repository. By using a
+  local CRAN-like repository, pre-existing workflows using `library()` and
+  `install.packages()` to install packages should 'just work', as long as the
+  `repos` option is properly set.
+
 - The cache directory layout has been modified to ensure help (`?`) calls
   succeed. This is a breaking change with older versions of Packrat, and so
   newer versions of Packrat will use a new cache folder. (#194)
