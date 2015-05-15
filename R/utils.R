@@ -503,3 +503,18 @@ is.directory <- function(x) {
 getBinaryPkgType <- function() {
   .Platform$pkgType
 }
+
+normalize.path <- function(path) {
+  normalizePath(path, winslash = "/", mustWork = TRUE)
+}
+
+filePrefix <- function() {
+  if (is.windows())
+    "file:///"
+  else
+    "file://"
+}
+
+reFilePrefix <- function() {
+  paste("^", filePrefix(), sep = "")
+}

@@ -6,8 +6,9 @@
 #' @param path Path to the local CRAN-like repository.
 #' @param name The name to assign to the repository. Defaults to the
 #'   directory name in which the reopsitory is created.
+#' @param add Add this new repository to the current set of repositories?
 #' @export
-create_repo <- function(path, name = basename(path)) {
+create_repo <- function(path, name = basename(path), add = TRUE) {
 
   if (file.exists(path))
     stop("Path '", path, "' is not empty; cannot create ",
@@ -17,7 +18,7 @@ create_repo <- function(path, name = basename(path)) {
     stop("A repository named '", name, "' is already registered!")
 
   dir.create(path, recursive = TRUE)
-  root <- normalizePath(path, winslash = "/", mustWork = TRUE)
+  root <- normalize.path(path)
 
   ## Create the 'contrib' dirs
 
@@ -42,13 +43,15 @@ create_repo <- function(path, name = basename(path)) {
   })
 
   message("Local CRAN repository '", name, "' created at: ",
-          "\n- ", shQuote(path))
+          "\n- ", shQuote(normalize.path(path)))
 
-  URI <- paste("file://", root, sep = "")
+  URI <- paste(filePrefix(), root, sep = "")
   names(URI) <- name
 
-  options(repos = c(getOption("repos"), URI))
+  if (add)
+    options(repos = c(getOption("repos"), URI))
 
+  URI
 }
 
 binContribDirs <- function(root, rVersions = NULL) {
@@ -56,7 +59,7 @@ binContribDirs <- function(root, rVersions = NULL) {
   # so that these versions of R don't fail when attempting to query
   # the PACKAGES file in the binary directory
   if (is.null(rVersions))
-    rVersions <- c("2.15", "2.16", "3.0", "3.1", "3.2")
+    rVersions <- c("2.15", "2.16", "3.0", "3.1", "3.2", "3.3")
 
   list(
     win.binary = file.path(root, "bin/windows/contrib", rVersions),
@@ -73,8 +76,10 @@ binContribDirs <- function(root, rVersions = NULL) {
 #'   to a folder containing the source code for a package (which
 #'   will then be built with \code{R CMD build}) and then uploaded
 #'   to the local repository.
+#' @param to The name of the CRAN-like repository.
+#' @param ... Optional arguments passed to \code{R CMD build}.
 #' @export
-upload_package <- function(package, to) {
+upload_package <- function(package, to, ...) {
 
   # validation
   if (!file.exists(package))
@@ -108,14 +113,14 @@ upload_package <- function(package, to) {
   else
     to
 
-if (!grepl("^file://", repo))
-  stop("packages can only be uploaded to local CRAN-like repositories with ",
-       "this version of packrat",
-       call. = FALSE)
+  if (!grepl(reFilePrefix(), repo))
+    stop("packages can only be uploaded to local CRAN-like repositories with ",
+         "this version of packrat",
+         call. = FALSE)
 
   # perform upload
   if (is.directory(package))
-    uploadPackageSourceDir(package, repo)
+    uploadPackageSourceDir(package, repo, ...)
   else
     uploadPackageTarball(package, repo)
 }
@@ -135,7 +140,7 @@ uploadPackageSourceDir <- function(package, repo, ...) {
   if (!file.exists(path))
     stop("failed to build source package")
 
-  contribUrl <- sub("^file://", "", file.path(repo, "src", "contrib"))
+  contribUrl <- sub(reFilePrefix(), "", file.path(repo, "src", "contrib"))
   success <- file.copy(
     path,
     contribUrl
@@ -150,7 +155,7 @@ uploadPackageSourceDir <- function(package, repo, ...) {
 }
 
 uploadPackageTarball <- function(package, repo) {
-  contribUrl <- sub("^file://", "", file.path(repo, "src", "contrib"))
+  contribUrl <- sub(reFilePrefix(), "", file.path(repo, "src", "contrib"))
   if (!file.copy(package, contribUrl))
     stop("failed to upload package '", basename(package), "' to '", contribUrl, "'")
 
@@ -200,7 +205,7 @@ add_repos <- function(..., overwrite = FALSE) {
 
   # TODO: support non-local (ie non-file based) repos
   paths <- normalizePath(unlist(dots), winslash = "/", mustWork = TRUE)
-  URIs <- paste("file://", paths, sep = "")
+  URIs <- paste(filePrefix(), paths, sep = "")
 
   newRepos <- URIs
   names(newRepos) <- names(dots)
