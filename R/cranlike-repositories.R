@@ -136,6 +136,11 @@ uploadPackageSourceDir <- function(package, repo, ...) {
   if (!all(success))
     stop("failed to copy package files to temporary directory")
 
+  # Annotate the DESCRIPTION with the name of the repository we're
+  # going to be uploading to
+  descPath <- file.path(dir, "DESCRIPTION")
+  setRepositoryField(descPath, repo)
+
   path <- build(dir, ...)
   if (!file.exists(path))
     stop("failed to build source package")
@@ -154,9 +159,30 @@ uploadPackageSourceDir <- function(package, repo, ...) {
   file.path(contribUrl, basename(path))
 }
 
-uploadPackageTarball <- function(package, repo) {
+uploadPackageTarball <- function(package, repo, ...) {
+
+  # Annotate the package DESCRIPTION with the repository
+  tmpTarballPath <- file.path(tempdir(), "packrat-tarball-upload")
+  untar(package, exdir = tmpTarballPath)
+  pkgName <- sub("_.*", "", basename(package))
+  untarredPath <- file.path(tmpTarballPath, pkgName)
+  setRepositoryField(
+    file.path(untarredPath, "DESCRIPTION"),
+    repo
+  )
+
+  owd <- getwd()
+  setwd(tmpTarballPath)
+  on.exit(setwd(owd), add = TRUE)
+
+  success <- tar(basename(package), files = pkgName)
+  if (success != 0)
+    stop("Failed to re-tar package tarball")
+
+  path <- normalize.path(basename(package))
+
   contribUrl <- sub(reFilePrefix(), "", file.path(repo, "src", "contrib"))
-  if (!file.copy(package, contribUrl))
+  if (!file.copy(path, contribUrl))
     stop("failed to upload package '", basename(package), "' to '", contribUrl, "'")
 
   tools::write_PACKAGES(contribUrl, type = "source")
@@ -220,4 +246,15 @@ add_repos <- function(..., overwrite = FALSE) {
 #' @export
 set_repos <- function(...) {
   add_repos(..., overwrite = TRUE)
+}
+
+setRepositoryField <- function(descPath, repo) {
+  contents <- readLines(descPath)
+  repoIdx <- grep("^Repository:", contents)
+  repoLine <- paste("Repository:", repo)
+  if (length(repoIdx))
+    contents[[repoIdx]] <- repoLine
+  else
+    contents <- c(contents, repoLine)
+  cat(contents, file = descPath, sep = "\n")
 }

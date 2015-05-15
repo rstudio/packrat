@@ -17,12 +17,16 @@ test_that("We can create and 'upload' an example package", {
 
   # Create an example package
   pkgKitten::kitten("sashimi", path = dir)
-  descPath <- file.path(dir, "sashimi", "DESCRIPTION")
-  cat("Repository: sushi", file = descPath, append = TRUE, sep = "\n")
 
   # Try uploading the package
   packrat::upload_package(
     file.path(dir, "sashimi"),
+    "sushi"
+  )
+
+  # Try uploading a tarball
+  packrat::upload_package(
+    file.path(dir, "sashimi_1.0.tar.gz"),
     "sushi"
   )
 
@@ -33,5 +37,6 @@ test_that("We can create and 'upload' an example package", {
   library("sashimi", lib.loc = tempLib)
 
   sashimi::hello("World!")
+  detach("package:sashimi", unload = TRUE)
 
 })
