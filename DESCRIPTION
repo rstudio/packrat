@@ -17,7 +17,8 @@ Imports:
 Suggests:
     testthat (>= 0.7),
     devtools,
-    httr
+    httr,
+    pkgKitten
 Enhances: knitr,
     BiocInstaller
 URL: https://github.com/rstudio/packrat/
