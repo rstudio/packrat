@@ -41,10 +41,21 @@ symlinkSystemPackages <- function(project = NULL) {
   ## NOTE: On Windows, we use junction points rather than symlinks to achieve the same
   ## effect
   results <- suppressWarnings(vapply(rownames(sysPkgsBase), function(pkg) {
-    symlink(
-      file.path(.Library, pkg),
-      file.path(libRdir, pkg)
-    )
+
+    from <- file.path(.Library, pkg)
+    to <- file.path(libRdir, pkg)
+
+    # Bash old symlinks just to ensure this session will be non-stale.
+    # TODO: What if multiple R sessions want to run with a single packrat project?
+    if (file.exists(to) && is.symlink(to))
+      unlink(to)
+
+    # TODO: For some reason, empty directories rather than junction points can
+    # get generated on Windows.
+    if (file.exists(to))
+      unlink(to, recursive = TRUE)
+
+    symlink(from, to)
   }, logical(1)))
 
   # symlink returns FALSE if there was a failure
@@ -57,9 +68,11 @@ symlinkSystemPackages <- function(project = NULL) {
 
   ## Clean up recursive symlinks if necessary -- it is possible that, e.g.
   ## within a base package directory:
+  ##
   ##     /Library/Frameworks/R.framework/Versions/3.2/library/MASS
+  ##
   ## there will be a link to MASS within MASS; we try to be friendly and
-  ## remove those
+  ## remove those.
   recursiveSymlinks <- file.path(.Library, sysPkgNames, sysPkgNames)
   invisible(lapply(recursiveSymlinks, function(file) {
     if (is.symlink(file)) {

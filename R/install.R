@@ -163,8 +163,6 @@ with_something <- function(set) {
 in_dir <- with_something(setwd)
 
 set_libpaths <- function(paths) {
-  libpath <- normalizePath(paths, mustWork = TRUE)
-
   old <- getLibPaths()
   setLibPaths(paths)
   invisible(old)
@@ -442,7 +440,7 @@ scan_registry_for_rtools <- function(debug = FALSE) {
 
   rts <- vector("list", length(keys))
 
-  for(i in seq_along(keys)) {
+  for (i in seq_along(keys)) {
     version <- names(keys)[[i]]
     key <- keys[[version]]
     if (!is.list(key) || is.null(key$InstallPath)) next;
@@ -573,9 +571,17 @@ system_check <- function(cmd, args = character(), env = character(),
 
   status <- attr(result, "status")
   if (!is.null(status) && !(status == 0)) {
-    stopMsg <- paste0("Command failed (", status, ")",
+    stopMsg <- paste0(
+      "Command failed (", status, ")",
+      "\n\nFailed to run system command:\n\n",
+      "\t", full,
       "\n\nThe command failed with output:\n",
-      paste(result, collapse = "\n"))
+      paste(result, collapse = "\n")
+    )
+    # issue #186
+    if (nchar(stopMsg) > getOption("warning.length")) {
+      print(stopMsg, file = stderr())
+    }
     stop(stopMsg, call. = FALSE)
   }
 

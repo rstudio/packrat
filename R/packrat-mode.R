@@ -6,6 +6,13 @@ setPackratModeEnvironmentVar <- function() {
   Sys.setenv("R_PACKRAT_MODE" = "1")
 }
 
+ensurePkgTypeNotBoth <- function() {
+  oldPkgType <- getOption("pkgType")
+  if (identical(oldPkgType, "both"))
+    options(pkgType = .Platform$pkgType)
+  oldPkgType
+}
+
 beforePackratModeOn <- function(project) {
 
   project <- getProjectDir(project)
@@ -13,6 +20,10 @@ beforePackratModeOn <- function(project) {
   ## Check and see if we need to generate default options
   if (!file.exists(packratOptionsFilePath(project = project)))
     initOptions(project = project)
+
+  # Ensure that 'pkgType' is not set to 'both', since its defaults are
+  # confusing and set up in such a way that packrat just breaks.
+  oldPkgType <- ensurePkgTypeNotBoth()
 
   # If someone is going from packrat mode on in project A, to packrat mode on
   # in project B, then we only want to update the 'project' in the state --
@@ -22,7 +33,8 @@ beforePackratModeOn <- function(project) {
       origLibPaths = getLibPaths(),
       .Library = .Library,
       .Library.site = .Library.site,
-      project = project
+      project = project,
+      oldPkgType = oldPkgType
     )
   } else {
     state <- .packrat_mutables$get()
@@ -195,8 +207,6 @@ setPackratModeOn <- function(project = NULL,
 setPackratModeOff <- function(project = NULL,
                               print.banner = TRUE) {
 
-  path <- packratModeFilePath(project)
-
   # Restore .Library.site
   if (isPackratModeOn()) {
     restoreSiteLibraries()
@@ -213,6 +223,11 @@ setPackratModeOff <- function(project = NULL,
   if (!is.null(libPaths)) {
     setLibPaths(libPaths)
   }
+
+  # Reset 'pkgType'
+  oldPkgType <- .packrat_mutables$get("oldPkgType")
+  if (!is.null(oldPkgType))
+    options(pkgType = oldPkgType)
 
   # Turn off packrat mode
   if (interactive() && print.banner) {
@@ -235,7 +250,6 @@ setPackratModeOff <- function(project = NULL,
 checkPackified <- function(project = NULL, quiet = FALSE) {
 
   project <- getProjectDir(project)
-  packratDir <- getPackratDir(project)
 
   lockPath <- lockFilePath(project)
   if (!file.exists(lockPath)) {
@@ -299,9 +313,9 @@ on <- function(project = NULL,
   project <- getProjectDir(project)
 
   # If there is no lockfile already, perform an init
-  if (!file.exists(lockFilePath(project = project))) {
+  if (!file.exists(lockFilePath(project = project)))
     return(init(project = project))
-  }
+
   setPackratModeOn(project = project,
                    auto.snapshot = auto.snapshot,
                    clean.search.path = clean.search.path,

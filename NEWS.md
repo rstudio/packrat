@@ -1,3 +1,19 @@
+# Packrat 0.4.4 (Unreleased)
+
+- The cache directory layout has been modified to ensure help (`?`) calls
+  succeed. This is a breaking change with older versions of Packrat, and so
+  newer versions of Packrat will use a new cache folder. (#194)
+  
+- Packrat issues a warning on `packrat::init()` if it was unable to infer the
+  source of a particular package on initialization and instead uses the latest
+  CRAN version.
+
+- Packrat now infers whether a project implicitly depends on Shiny.
+
+- Packrat now properly infers whether a package is from a CRAN-like repository,
+  by checking if the `source` field maps to one of the repository names in
+  `getOption('repos')`. (#185)
+
 # Packrat 0.4.3
 
 - Packrat avoids superfluous calls to `available.packages()` when possible,

@@ -220,10 +220,12 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
   project <- getProjectDir(project)
 
-  ## If the file doesn't exist, create and fill it
+  ## If the file doesn't exist and we have content, create and fill it
   path <- file.path(project, file)
   if (!file.exists(path)) {
-    cat(add, file = path, sep = "\n")
+    if (length(add) > 0) {
+      cat(add, file = path, sep = "\n")
+    }
     return(invisible())
   }
 
@@ -448,11 +450,8 @@ setNames <- function(object = nm, nm) {
 }
 
 # Drop null values in a list
-# Note that we use unlist(lapply(...)) because, if 'x'
-# is an empty list, then 'unlist(list())' will return NULL,
-# and list()[NULL] returns list() as we would hope
 dropNull <- function(x) {
-  x[unlist(lapply(x, Negate(is.null)))]
+  Filter(Negate(is.null), x)
 }
 
 surround <- function(x, with = "'") {
@@ -499,4 +498,8 @@ is.string <- function(x) {
 
 is.directory <- function(x) {
   file.exists(x) && isTRUE(file.info(x)[["isdir"]]) # guard against NA
+}
+
+getBinaryPkgType <- function() {
+  .Platform$pkgType
 }

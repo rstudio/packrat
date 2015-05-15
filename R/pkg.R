@@ -78,7 +78,7 @@ getPackageRecordsLocalReposImpl <- function(pkg, repos, fatal = TRUE) {
   dcf <- as.data.frame(readDcf(file.path(path, "DESCRIPTION")), stringsAsFactors = FALSE)
   deps <- combineDcfFields(dcf, c("Depends", "Imports", "LinkingTo"))
   deps <- deps[deps != "R"]
-  record <- structure(list(
+  structure(list(
     name = pkg,
     source = 'source',
     version = dcf$Version,
@@ -101,6 +101,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
     # First, try inferring the package source from the DESCRIPTION file -- if it's unknown
     # we might fall back to something in available.packages
+    result <- list()
     if (nzchar(pkgDescFile)) {
       df <- as.data.frame(readDcf(pkgDescFile))
       result <- suppressWarnings(inferPackageRecord(df))
@@ -108,6 +109,14 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
     # If this failed, try falling back to something of the same name in 'available'
     if (!nzchar(pkgDescFile) || (result$source == "unknown" && fallback.ok)) {
+
+      # Let the user know if we're falling back to latest CRAN (because we failed
+      # to infer the source of a particular package)
+      if (result$source == "unknown" && fallback.ok) {
+        warning("Failed to infer source for package '", pkgName, "'; using ",
+                "latest available version on CRAN instead")
+      }
+
       if (pkgName %in% rownames(available)) {
         pkg <- available[pkgName,]
         df <- data.frame(
@@ -344,7 +353,7 @@ getSourcePackageInfoImpl <- function(path) {
   ## For tarballs, we unzip them to a temporary directory and then read from there
   tempdir <- file.path(tempdir(), "packrat", path)
   if (endswith(path, "tar.gz")) {
-    paths <- untar(path, exdir = tempdir)
+    untar(path, exdir = tempdir)
     folderName <- list.files(tempdir, full.names = TRUE)[[1]]
   } else {
     folderName <- path

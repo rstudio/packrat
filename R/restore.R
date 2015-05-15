@@ -11,7 +11,8 @@ pkgSrcFilename <- function(pkgRecord) {
 isFromCranlikeRepo <- function(pkgRecord) {
   identical(pkgRecord$source, "CRAN") ||
   identical(pkgRecord$source, "Bioconductor") ||
-  inherits(pkgRecord, "CustomCRANLikeRepository")
+  inherits(pkgRecord, "CustomCRANLikeRepository") ||
+  (length(pkgRecord$source) && pkgRecord$source %in% names(getOption("repos")))
 }
 
 # Given a package record and a database of packages, check to see if
@@ -279,10 +280,6 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
     Hash = hash(descFile)
   )
 
-  # Drop any NULL elements above (this could occur for e.g. source_path, since
-  # only source packages will have a source path)
-  recordsDF <- as.data.frame(dropNull(records))
-
   # Read in the DCF file
   content <- as.data.frame(readDcf(descFile))
   stopifnot(nrow(content) == 1)
@@ -343,6 +340,34 @@ installPkg <- function(pkgRecord,
   type <- "built source"
   needsInstall <- TRUE
 
+  # If we're trying to install a package that overwrites a symlink, e.g. for a
+  # cached package, we need to move that symlink out of the way (otherwise
+  # `install.packages()` or `R CMD INSTALL` will fail with surprising errors,
+  # like:
+  #
+  #     Error: 'zoo' is not a valid package name
+  #
+  # To avoid this, we explicitly move the symlink out of the way, and later
+  # restore it if, for some reason, package installation failed.
+  pkgInstallPath <- file.path(lib, pkgRecord$name)
+
+  if (file.exists(pkgInstallPath) && is.symlink(pkgInstallPath)) {
+
+    resolvedPath <- tryCatch(
+      normalizePath(pkgInstallPath, mustWork = TRUE),
+      error = function(e) NULL
+    )
+
+    if (!is.null(resolvedPath)) {
+      unlink(pkgInstallPath)
+      on.exit(add = TRUE, {
+        if (!file.exists(pkgInstallPath)) {
+          symlink(resolvedPath, pkgInstallPath)
+        }
+      })
+    }
+  }
+
   # Generally we want to install from sources, but we will download a pre-
   # built binary if (a) the package exists on CRAN, (b) the version on CRAN
   # is the version desired, and (c) R is set to download binaries. We also
@@ -356,7 +381,7 @@ installPkg <- function(pkgRecord,
     # This package has already been installed in the cache; just symlink
     # to that if possible, or copy otherwise
     success <- suppressWarnings(symlink(
-      file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash)),
+      file.path(cacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)),
       file.path(libDir(project), pkgRecord$name)
     ))
 
@@ -385,23 +410,33 @@ installPkg <- function(pkgRecord,
         versionMatchesDb(pkgRecord, availablePkgs) &&
         !identical(getOption("pkgType"), "source")) {
     tempdir <- tempdir()
-    tryCatch ({
+    tryCatch({
       # install.packages emits both messages and standard output; redirect these
       # streams to keep our own output clean.
 
       # on windows, we need to detach the package before installation
-      if (is.windows() &&
-          paste0("package:", pkgRecord$name) %in% search()) {
+      if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
         pkg <- paste0("package:", pkgRecord$name)
         detach(pkg, character.only = TRUE)
         on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
+      # If pkgType is 'both', the availablePkgs inferred will be wrong.
+      # The default behaviour for `available.packages()`,
+      # when `pkgType == "both"`.
+      pkgType <- getOption("pkgType")
+      if (identical(pkgType, "both"))
+        availablePkgs <- NULL
+
       suppressMessages(
         capture.output(
-          utils::install.packages(pkgRecord$name, lib = lib, repos = repos,
-                                  available = availablePkgs, quiet = TRUE,
-                                  dependencies = FALSE, verbose = FALSE)))
+          utils::install.packages(pkgRecord$name,
+                                  lib = lib,
+                                  repos = repos,
+                                  available = availablePkgs,
+                                  quiet = TRUE,
+                                  dependencies = FALSE,
+                                  verbose = FALSE)))
       type <- "downloaded binary"
       needsInstall <- FALSE
     }, error = function(e) {
@@ -475,9 +510,6 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   cachedPkgs <- list.files(cacheLibDir(), full.names = TRUE)
   cache <- unlist(lapply(cachedPkgs, list.files))
 
-  # If this is the initial snapshot, we can optimize the installation of
-  # packages from the global library to the private Packrat library
-  initialSnapshot <- !identical(getLibPaths()[1], lib)
   installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))
 

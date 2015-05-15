@@ -193,13 +193,6 @@ init <- function(project = '.',
       ## insert the appropriate auto-loaders
       packify(project = project, quiet = TRUE)
 
-      descriptionFile <- file.path(project, 'DESCRIPTION')
-
-      if (file.exists(descriptionFile)) {
-        description <- as.data.frame(readDcf(descriptionFile))
-        package <- description$Package
-      }
-
       ## Make sure the .Rprofile is up to date
       augmentRprofile(project)
       options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
@@ -338,6 +331,19 @@ restore <- function(project = NULL,
     on.exit(callHook(project, "restore", FALSE), add = TRUE)
   }
 
+  # Ensure the .libPaths() is set for the duration of this restore.
+  # Because it's possible for a user to attempt to restore a particular
+  # project while _not_ within packrat mode, we do not want the new
+  # .libPaths() to be persistent -- so we unset them at the conclusion
+  # of the restore. This is done to ensure downstream calls to e.g.
+  # `system.file()` are successful.
+  if (!file.exists(libDir(project)))
+    dir.create(libDir(project), recursive = TRUE)
+
+  oldLibPaths <- .libPaths()
+  .libPaths(c(libDir(project), oldLibPaths))
+  on.exit(.libPaths(oldLibPaths), add = TRUE)
+
   # RTools cp.exe (invoked during installation) can warn on Windows since we
   # use paths of the format c:/foo/bar and it prefers /cygwin/c/foo/bar.
   # Unfortunately, R's implementation of tar treats this warning output as
@@ -358,7 +364,7 @@ restore <- function(project = NULL,
   # Make sure the library directory exists
   libDir <- libDir(project)
   if (!file.exists(libDir)) {
-    dir.create(libDir, recursive=TRUE)
+    dir.create(libDir, recursive = TRUE)
   }
 
   # See if any of the packages that are currently in the library are dirty.
