@@ -206,8 +206,9 @@ uploadPackageTarball <- function(package, repo, ...) {
 add_repos <- function(..., overwrite = FALSE) {
 
   dots <- list(...)
-  if (any(!nzchar(names(dots))))
-    stop("all argument to 'add_repos()' should be named")
+  dotNames <- names(dots)
+  if (!length(dotNames) || any(!nzchar(dotNames)))
+    stop("all arguments to 'add_repos' should be named")
 
   missing <- unlist(lapply(dots, function(x) {
     !file.exists(x)
