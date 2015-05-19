@@ -4,7 +4,7 @@ readManifest <- function(project = NULL) {
     return(list())
 
   content <- read(path)
-  splat <- strsplit(content, "\n{2,}", perl = TRUE)
+  splat <- strsplit(content, "\n{2,}", perl = TRUE)[[1]]
   lapply(splat, readManifestEntry)
 }
 
