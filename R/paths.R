@@ -131,6 +131,10 @@ lockFilePath <- function(project = NULL) {
   file.path(getPackratDir(project), "packrat.lock")
 }
 
+manifestFilePath <- function(project = NULL) {
+  file.path(getPackratDir(project), "packrat.manifest")
+}
+
 snapshotLockFilePath <- function(project = NULL) {
   file.path(getPackratDir(project), "snapshot.lock")
 }
