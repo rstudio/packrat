@@ -264,10 +264,7 @@ snapshot <- function(project = NULL,
       allRecords
     )
 
-    writeManifest(
-      manifestFilePath(project),
-      allRecords
-    )
+    writeManifest(project, allRecords)
 
     for (record in allRecordsFlat) {
       name <- record$name

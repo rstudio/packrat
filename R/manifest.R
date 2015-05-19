@@ -10,14 +10,15 @@ readManifest <- function(project = NULL) {
 
 # Manifest entries are just DESCRIPTION files
 readManifestEntry <- function(entry) {
-  read.dcf(textConnection(entry))
+  readDcf(textConnection(entry), all = TRUE)
 }
 
-writeManifest <- function(manifestPath, pkgRecords) {
+writeManifest <- function(project, pkgRecords) {
+  project <- getProjectDir(NULL)
+  manifestPath <- manifestFilePath(project)
+  ip <- installed.packages(lib.loc = libDir(project))
 
-  ip <- installed.packages()
   missingPkgs <- c()
-
   content <- vapply(pkgRecords, FUN.VALUE = character(1), USE.NAMES = FALSE, function(record) {
     name <- record$name
 
@@ -33,6 +34,12 @@ writeManifest <- function(manifestPath, pkgRecords) {
 
     read(descPath)
   })
+
+  if (length(missingPkgs)) {
+    stop("The DESCRIPTION files associated with the following packages ",
+         "could not be found:\n- ",
+         paste(surround(missingPkgs, with = '"'), collapse = ", "))
+  }
 
   cat(content, file = manifestPath, sep = "\n")
 }
