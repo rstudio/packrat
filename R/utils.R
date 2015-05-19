@@ -518,3 +518,15 @@ filePrefix <- function() {
 reFilePrefix <- function() {
   paste("^", filePrefix(), sep = "")
 }
+
+read <- function(path) {
+
+  if (!file.exists(path))
+    stop("No file at path '", path, "'")
+
+  info <- as.list(file.info(path))
+  if (identical(info$isdir, TRUE))
+    stop("'", path, "' refers to a directory, not a file")
+
+  readChar(path, info$size)
+}

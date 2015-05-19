@@ -264,6 +264,11 @@ snapshot <- function(project = NULL,
       allRecords
     )
 
+    writeManifest(
+      manifestFilePath(project),
+      allRecords
+    )
+
     for (record in allRecordsFlat) {
       name <- record$name
       path <- file.path(libDir(project), name, "DESCRIPTION")
