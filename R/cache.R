@@ -7,17 +7,23 @@ isUsingCache <- function(project) {
   isTRUE(get_opts("use.cache", project = project))
 }
 
+installedDescLookup <- function(pkgName) {
+  system.file("DESCRIPTION", package = pkgName)
+}
+
 # We assume 'path' is the path to a DESCRIPTION file
 #' @importFrom tools md5sum
-hash <- function(path) {
+hash <- function(path, descLookup = NULL) {
 
+  if (is.null(descLookup)) {
+    descLookup <- installedDescLookup
+  }
 
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
 
-  pkgName <- basename(dirname(path))
-
   DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
+  pkgName <- DESCRIPTION[["Package"]]
 
   # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
   # it essentially makes packages installed from source un-recoverable, since they will get
@@ -37,7 +43,7 @@ hash <- function(path) {
   linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
 
   linkingToHashes <- lapply(linkingToPkgs, function(x) {
-    DESCRIPTION <- system.file("DESCRIPTION", package = x)
+    DESCRIPTION <- descLookup(x)
     if (!file.exists(DESCRIPTION)) return(NULL) ## warn later
     else hash(DESCRIPTION)
   })
