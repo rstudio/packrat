@@ -149,6 +149,10 @@ getPackageRecordsLockfile <- function(pkgNames, project) {
   }
 }
 
+vecdiff <- function(x, y) {
+  x[match(x, y, 0L) == 0L]
+}
+
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames,
                               project = NULL,
@@ -161,12 +165,16 @@ getPackageRecords <- function(pkgNames,
                               check.lockfile = FALSE,
                               fallback.ok = FALSE) {
 
+  origPkgNames <- pkgNames
+
+  pkgNames <- stats::setNames(nm = pkgNames)
+
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
 
   if (check.lockfile) {
     lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
-    pkgNames <- setdiff(pkgNames, sapply(lockfilePkgRecords, "[[", "name"))
+    pkgNames <- vecdiff(pkgNames, sapply(lockfilePkgRecords, "[[", "name"))
   } else {
     lockfilePkgRecords <- list()
   }
@@ -176,7 +184,7 @@ getPackageRecords <- function(pkgNames,
   srcPkgRecords <- getPackageRecordsInstalledFromSource(pkgsInstalledFromSource,
                                                         lib.loc = lib.loc)
 
-  pkgNames <- setdiff(pkgNames, pkgsInstalledFromSource)
+  pkgNames <- vecdiff(pkgNames, pkgsInstalledFromSource)
 
   # Next, get the package records for packages that are now presumedly from
   # an external source
@@ -191,11 +199,11 @@ getPackageRecords <- function(pkgNames,
   externalPkgRecords <- externalPkgRecords[unlist(lapply(externalPkgRecords, function(x) {
     x$source != "unknown"
   }))]
-  pkgNames <- setdiff(pkgNames, sapply(externalPkgRecords, "[[", "name"))
+  pkgNames <- vecdiff(pkgNames, sapply(externalPkgRecords, "[[", "name"))
 
   # Finally, get the package records for packages manually specified in source.packages
   manualSrcPkgRecords <- getPackageRecordsLocalRepos(pkgNames, local.repos, fatal = !fallback.ok)
-  pkgNames <- setdiff(pkgNames, sapply(manualSrcPkgRecords, "[[", "name"))
+  pkgNames <- vecdiff(pkgNames, sapply(manualSrcPkgRecords, "[[", "name"))
 
   # If there's leftovers (for example, packages installed from source that cannot be located
   # in any of the local repositories), but it's a package we can find on CRAN, fallback to it
@@ -209,7 +217,7 @@ getPackageRecords <- function(pkgNames,
   } else {
     fallbackPkgRecords <- list()
   }
-  pkgNames <- setdiff(pkgNames, sapply(fallbackPkgRecords, "[[", "name"))
+  pkgNames <- vecdiff(pkgNames, sapply(fallbackPkgRecords, "[[", "name"))
 
   # If there's anything leftover, fail
   if (length(pkgNames))
@@ -228,6 +236,9 @@ getPackageRecords <- function(pkgNames,
 
   # Remove any null records
   allRecords <- dropNull(allRecords)
+
+  # Remove any duplicate records, reorder
+  allRecords <- allRecords[origPkgNames]
 
   # Now get recursive package dependencies if necessary
   if (recursive) {
