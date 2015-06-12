@@ -13,11 +13,7 @@ installedDescLookup <- function(pkgName) {
 
 # We assume 'path' is the path to a DESCRIPTION file
 #' @importFrom tools md5sum
-hash <- function(path, descLookup = NULL) {
-
-  if (is.null(descLookup)) {
-    descLookup <- installedDescLookup
-  }
+hash <- function(path, descLookup = installedDescLookup) {
 
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
