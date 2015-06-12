@@ -11,14 +11,27 @@ installedDescLookup <- function(pkgName) {
   system.file("DESCRIPTION", package = pkgName)
 }
 
-# We assume 'path' is the path to a DESCRIPTION file
+# We assume 'path' is the path to a DESCRIPTION file, or a data frame (the
+# data frame data must have stringsAsFactors = FALSE).
+#
+# descLookup is a function that takes a single argument pkgName and must
+# return one of: 1) a file path to DESCRIPTION file, 2) a data frame (with
+# stringsAsFactors = FALSE) of the DESCRIPTION dcf data, or 3) NULL if
+# the DESCRIPTION is not available. By default, installedDescLookup is
+# used, which looks in the active lib paths for the desired DESCRIPTION
+# files.
+#
 #' @importFrom tools md5sum
 hash <- function(path, descLookup = installedDescLookup) {
 
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
 
-  DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
+  if (is.data.frame(path)) {
+    DESCRIPTION <- path
+  } else {
+    DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
+  }
   pkgName <- DESCRIPTION[["Package"]]
 
   # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
@@ -39,9 +52,14 @@ hash <- function(path, descLookup = installedDescLookup) {
   linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
 
   linkingToHashes <- lapply(linkingToPkgs, function(x) {
-    DESCRIPTION <- descLookup(x)
-    if (!file.exists(DESCRIPTION)) return(NULL) ## warn later
-    else hash(DESCRIPTION)
+    linkingToDesc <- descLookup(x)
+    # If we return NULL
+    if (is.null(linkingToDesc))
+      return(NULL)
+    else if (is.character(linkingToDesc) && !file.exists(linkingToDesc))
+      return(NULL)
+    else
+      hash(linkingToDesc)
   })
 
   missingLinkingToPkgs <- linkingToPkgs[vapply(linkingToHashes, is.null, logical(1))]
