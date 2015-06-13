@@ -36,7 +36,13 @@ bundle <- function(project = NULL,
                    ...) {
 
   TAR <- Sys.getenv("TAR")
-  if (identical(TAR, "internal") || identical(TAR, "")) {
+  resDir <- opts$project.resources.path()
+  isInternalTar <- identical(TAR, "internal") || identical(TAR, "")
+
+  # NOTE: If we are using external resources, then we fall back to the
+  # internal tar, which mandates copying everything together into a temporary
+  # directory before 'tar'ing everything up.
+  if (isInternalTar || !is.null(resDir)) {
     bundle_internal(project = project,
                     file = file,
                     include.src = include.src,
@@ -122,6 +128,29 @@ bundle_internal <- function(project = NULL,
     pattern = pattern,
     overwrite = TRUE
   )
+
+  ## If the project resources are in a separate directory, we need to explicitly
+  ## copy that in as well.
+  resDir <- opts$project.resources.path()
+  if (!is.null(resDir)) {
+
+    resPath <- file.path(resDir, basename(project))
+    dirs <- list.files(resPath, full.names = TRUE)
+
+    if (!include.src) dirs <- dirs[basename(dirs) != "src"]
+    if (!include.lib) dirs <- dirs[grep("^lib.*", basename(dirs), invert = TRUE)]
+    if (!include.bundles) dirs <- dirs[basename(dirs) != "bundles"]
+
+    if (length(dirs)) {
+      lapply(dirs, function(dir) {
+        dir_copy(from = dir,
+                 to = file.path(to, "packrat", basename(dir)),
+                 pattern = pattern,
+                 overwrite = TRUE)
+      })
+    }
+
+  }
 
   ## Clean up after ourselves
   on.exit(unlink(to, recursive = TRUE), add = TRUE)
@@ -239,14 +268,14 @@ bundle_external <- function(project = NULL,
     filesToZip <- c(
       filesToZip,
       file.path(
-        relSrcDir(),
-        list.files(relSrcDir(), recursive = TRUE)
+        "packrat/src",
+        list.files("packrat/src", recursive = TRUE)
       )
     )
   }
 
   if (include.lib) {
-    filesToZip <- c(filesToZip, relLibDir())
+    filesToZip <- c(filesToZip, "packrat/lib")
   }
 
   if (!include.vcs.history) {
@@ -269,7 +298,7 @@ bundle_external <- function(project = NULL,
                           full.names = TRUE,
                           recursive = TRUE)
     srcPkgsRelative <- file.path(
-      relSrcDir(),
+      "packrat/src",
       list.files(recursive = TRUE,
         srcDir(project = file.path(tempdir(), basename(project)))
       )
@@ -353,10 +382,13 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
   dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
 
   if (restore) {
-    setwd(dirName)
+
     if (length(dirName) != 1) {
       stop("Couldn't infer top-level directory name; cannot perform automatic restore")
     }
+
+    setwd(dirName)
+
     ## Ensure the (empty) library directory is present before restoring
     dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")

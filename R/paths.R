@@ -18,12 +18,12 @@ getProjectDir <- function(project = NULL) {
   )
 }
 
+# Although a project's resources might live in a separate directory,
+# the packrat folder is always a sub-directory of the project (ie --
+# packrat.lock, packrat.opts)
 getPackratDir <- function(project = NULL) {
   project <- getProjectDir(project)
-  file.path(
-    project,
-    .packrat$packratFolderName
-  )
+  file.path(project, "packrat")
 }
 
 ## We differentiate between the 'libDir' -- the actual architecture-specific
@@ -45,86 +45,35 @@ libDir <- function(project = NULL) {
   )
 }
 
-relLibDir <- function() {
-  file.path(
-    .packrat$packratFolderName,
-    relativeLibDir('lib')
-  )
+resourcesDir <- function(..., project = NULL) {
+  project <- getProjectDir(project)
+  optDir <- opts$project.resources.path()
+  if (is.null(optDir))
+    file.path(getPackratDir(project), ...)
+  else
+    file.path(optDir, basename(project), ...)
 }
 
 ## The root library directory for a project, e.g. <proj>/<packrat>/lib
 libraryRootDir <- function(project = NULL) {
-  project <- getProjectDir(project)
-  file.path(
-    project,
-    .packrat$packratFolderName,
-    'lib'
-  )
-}
-
-relLibraryRootDir <- function() {
-  file.path(
-    .packrat$packratFolderName,
-    'lib'
-  )
-}
-
-relativeLibDir <- function(libraryRoot) {
-  file.path(
-    libraryRoot,
-    R.version$platform,
-    getRversion()
-  )
+  resourcesDir("lib", project = project)
 }
 
 # Temporary library directory when modifying an in-use library
 newLibraryDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'library.new'
-  )
-}
-
-relNewLibraryDir <- function() {
-  file.path(
-    .packrat$packratFolderName,
-    'library.new'
-  )
+  resourcesDir("library.new", project = project)
 }
 
 oldLibraryDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'library.old'
-  )
-}
-
-relOldLibraryDir <- function() {
-  file.path(
-    .packrat$packratFolderName,
-    'library.old'
-  )
+  resourcesDir("library.old", project = project)
 }
 
 srcDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'src'
-  )
-}
-
-relSrcDir <- function() {
-  file.path(
-    .packrat$packratFolderName,
-    'src'
-  )
+  resourcesDir("src", project = project)
 }
 
 bundlesDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'bundles'
-  )
+  resourcesDir("bundles", project = project)
 }
 
 lockFilePath <- function(project = NULL) {
@@ -150,33 +99,38 @@ instInitRprofileFilePath <- function() {
   file.path(system.file(package = "packrat"), "resources", "init-rprofile.R")
 }
 
-instMacRUserlibFilePath <- function() {
-  file.path(system.file(package = "packrat"), "resources", "mac_r_userlib.sh")
-}
-
 packratOptionsFilePath <- function(project = NULL) {
   file.path(getPackratDir(project), "packrat.opts")
 }
 
 libRdir <- function(project = NULL) {
-  file.path(getPackratDir(project), "lib-R")
+  resourcesDir("lib-R", project = project)
 }
 
 libExtDir <- function(project = NULL) {
-  file.path(getPackratDir(project), "lib-ext")
+  resourcesDir("lib-ext", project = project)
 }
 
 startsWithBytes <- function(x, y) {
   Encoding(x) <- Encoding(y) <- "bytes"
-  return(substring(x, 1, nchar(y, type = "bytes")) == x)
+  return(substring(x, 1, nchar(y, type = "bytes")) == y)
 }
 
 prettyLibDir <- function(project = NULL) {
   project <- getProjectDir(project)
+  resDir <- resourcesDir(project = project)
+  homeDir <- path.expand("~/")
+  if (startsWithBytes(resDir, homeDir))
+    resDir <- gsub(homeDir, "~/", resDir, fixed = TRUE)
+  file.path(resDir, "lib")
+}
+
+prettyProjectDir <- function(project = NULL) {
+  project <- getProjectDir(project)
   homeDir <- path.expand("~/")
   if (startsWithBytes(project, homeDir))
     project <- gsub(homeDir, "~/", project, fixed = TRUE)
-  file.path(project, .packrat$packratFolderName, "lib")
+  project
 }
 
 

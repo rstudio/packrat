@@ -61,6 +61,12 @@ Get and set options for the current packrat-managed project.
 \item \code{load.external.packages.on.startup}:
   Load any packages specified within \code{external.packages} on startup?
   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+\item \code{project.resources.path}:
+  Path to store project resources -- specificaly, the \code{lib/}, \code{src/},
+  \code{bundles/} directories? Defaults to \code{NULL}, implying that these
+  directories are placed within the \code{packrat} sub-directory of the
+  package; if set, the project resources will be stored at
+  \code{<project.resource.path>/<projectName>/}.
 }
 }
 \examples{

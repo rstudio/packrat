@@ -156,7 +156,9 @@ afterPackratModeOn <- function(project,
 
   # Give the user some visual indication that they're starting a packrat project
   if (interactive() && print.banner) {
-    msg <- paste("Packrat mode on. Using library in directory:\n- \"", prettyLibDir(project), "\"", sep = "")
+    msg <- paste("Packrat mode activated for project: \n- \"",
+                 prettyProjectDir(project),
+                 "\"", sep = "")
     message(msg)
   }
 
