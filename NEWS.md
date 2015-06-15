@@ -1,5 +1,14 @@
 # Packrat 0.4.4 (Unreleased)
 
+- Packrat no longer creates empty ignore files (thanks, @aronatkins)
+
+- Bioconductor repositories are now created internally by packrat. This should 
+  resolve errors where Bioconductor repository URLs are generated when an
+  incompatible version of `BiocInstaller` is installed.
+  
+- Packrat now understands the `pkgType = "both"` option and can properly
+  restore projects when that option is set.
+  
 - The `ignored.packages` option has been added, allowing users to specify
   packages that should not be tracked by packrat. Such packaes will not
   enter the lockfile on `packrat::snapshot()` calls; nor will they be
