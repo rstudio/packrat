@@ -1,5 +1,10 @@
 # Packrat 0.4.4 (Unreleased)
 
+- The `ignored.packages` option has been added, allowing users to specify
+  packages that should not be tracked by packrat. Such packaes will not
+  enter the lockfile on `packrat::snapshot()` calls; nor will they be
+  cleaned out on `packrat::restore()` calls.
+
 - Simple functions for interacting with the set of available repositories
   have been added. See `?repository-management` for more details.
   

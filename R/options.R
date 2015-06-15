@@ -1,6 +1,6 @@
 ## When adding new options, be sure to update the VALID_OPTIONS list
 ## (define your own custom validators by assigning a function)
-## and update the initOptions + documentation below
+## and update the default_opts() function + documentation in 'get_opts()' below
 
 VALID_OPTIONS <- list(
   auto.snapshot = function(x) x %in% c(TRUE, FALSE),
@@ -14,7 +14,10 @@ VALID_OPTIONS <- list(
   local.repos = function(x) {
     is.null(x) || is.character(x)
   },
-  load.external.packages.on.startup = list(TRUE, FALSE)
+  load.external.packages.on.startup = list(TRUE, FALSE),
+  ignored.packages = function(x) {
+    is.null(x) || is.character(x)
+  }
 )
 
 default_opts <- function() {
@@ -26,7 +29,8 @@ default_opts <- function() {
     vcs.ignore.src = FALSE,
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
     local.repos = "",
-    load.external.packages.on.startup = TRUE
+    load.external.packages.on.startup = TRUE,
+    ignored.packages = NULL
   )
 }
 
@@ -72,6 +76,9 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' \item \code{load.external.packages.on.startup}:
 ##'   Load any packages specified within \code{external.packages} on startup?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##' \item \code{ignored.packages}:
+##'   Prevent packrat from tracking certain packages. Dependencies of these packages
+##'   will also not be tracked.
 ##' }
 ##'
 ##' @param options A character vector of valid option names.

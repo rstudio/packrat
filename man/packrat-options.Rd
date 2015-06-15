@@ -61,6 +61,9 @@ Get and set options for the current packrat-managed project.
 \item \code{load.external.packages.on.startup}:
   Load any packages specified within \code{external.packages} on startup?
   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+\item \code{ignored.packages}:
+  Prevent packrat from tracking certain packages. Dependencies of these packages
+  will also not be tracked.
 }
 }
 \examples{
