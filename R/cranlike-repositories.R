@@ -1,14 +1,15 @@
 #' Create a Local, CRAN-like Repository
 #'
-#' This function generates a local CRAN-like repository which can be
+#' Generate a local CRAN-like repository which can be
 #' used to store and distribute \R packages.
 #'
-#' @param path Path to the local CRAN-like repository.
+#' @param path Path to a local CRAN-like repository.
 #' @param name The name to assign to the repository. Defaults to the
 #'   directory name in which the reopsitory is created.
 #' @param add Add this new repository to the current set of repositories?
+#'
 #' @export
-create_repo <- function(path, name = basename(path), add = TRUE) {
+repos_create <- function(path, name = basename(path), add = TRUE) {
 
   if (file.exists(path))
     stop("Path '", path, "' is not empty; cannot create ",
@@ -76,10 +77,11 @@ binContribDirs <- function(root, rVersions = NULL) {
 #'   to a folder containing the source code for a package (which
 #'   will then be built with \code{R CMD build}) and then uploaded
 #'   to the local repository.
-#' @param to The name of the CRAN-like repository.
+#' @param to The name of the CRAN-like repository. It (currently) must
+#'   be a local (on-disk) CRAN repository.
 #' @param ... Optional arguments passed to \code{R CMD build}.
 #' @export
-upload_package <- function(package, to, ...) {
+repos_upload <- function(package, to, ...) {
 
   # validation
   if (!file.exists(package))
@@ -190,33 +192,24 @@ uploadPackageTarball <- function(package, repo, ...) {
   file.path(contribUrl, basename(path))
 }
 
-#' Add a Repository
-#'
-#' Add a repository to the set of currently available repositories. This is
-#' effectively an easier-to-use wrapper over interacting with the
-#' \code{"repos"} option, which is otherwise set with \code{options(repos = ...)}.
-#'
-#' @param ... Named arguments of the form \code{<repoName> = <pathToRepo>}
-#' @param overwrite Boolean; overwrite if a repository with the given name
-#'   already exists?
-#'
-#' @name repository-management
-#' @rdname repository-management
-#' @export
-add_repos <- function(..., overwrite = FALSE) {
+addRepos <- function(..., overwrite = FALSE, local) {
 
   dots <- list(...)
   dotNames <- names(dots)
   if (!length(dotNames) || any(!nzchar(dotNames)))
-    stop("all arguments to 'add_repos' should be named")
+    stop("all arguments should be named")
 
-  missing <- unlist(lapply(dots, function(x) {
-    !file.exists(x)
-  }))
+  # For local (on-disk) repositories, ensure that the paths
+  # supplied do exist
+  if (local) {
+    missing <- unlist(lapply(dots, function(x) {
+      !file.exists(x)
+    }))
 
-  if (any(missing))
-    stop("The following paths do not exist: \n- ",
-         paste(shQuote(dots[missing]), collapse = "\n- "))
+    if (any(missing))
+      stop("The following paths do not exist: \n- ",
+           paste(shQuote(dots[missing]), collapse = "\n- "))
+  }
 
   oldRepos <- getOption("repos")
   if (!overwrite) {
@@ -229,10 +222,12 @@ add_repos <- function(..., overwrite = FALSE) {
     }
   }
 
-
-  # TODO: support non-local (ie non-file based) repos
-  paths <- normalizePath(unlist(dots), winslash = "/", mustWork = TRUE)
-  URIs <- paste(filePrefix(), paths, sep = "")
+  URIs <- if (local) {
+    paths <- normalizePath(unlist(dots), winslash = "/", mustWork = TRUE)
+    paste(filePrefix(), paths, sep = "")
+  } else {
+    unlist(dots)
+  }
 
   newRepos <- URIs
   names(newRepos) <- names(dots)
@@ -242,12 +237,57 @@ add_repos <- function(..., overwrite = FALSE) {
   invisible(repos)
 }
 
-#' @name repository-management
+#' Add a Repository
+#'
+#' Add a repository to the set of currently available repositories. This is
+#' effectively an easier-to-use wrapper over interacting with the
+#' \code{"repos"} option, which is otherwise set with \code{options(repos = ...)}.
+#'
+#' \code{repos_add_local} is used for adding file-based repositories; that is,
+#' CRAN repositories that live locally on disk and not on the internet / local network.
+#'
+#' @param ... Named arguments of the form \code{<repoName> = <pathToRepo>}.
+#' @param overwrite Boolean; overwrite if a repository with the given name
+#'   already exists?
+#'
 #' @rdname repository-management
+#' @name repository-management
+#'
 #' @export
-set_repos <- function(...) {
-  add_repos(..., overwrite = TRUE)
+repos_add <- function(..., overwrite = FALSE) {
+  addRepos(..., overwrite = overwrite, local = FALSE)
 }
+
+#' @rdname repository-management
+#' @name repository-management
+#' @export
+repos_add_local <- function(..., overwrite = FALSE) {
+  addRepos(..., overwrite = overwrite, local = TRUE)
+}
+
+#' @rdname repository-management
+#' @name repository-management
+#' @export
+repos_set <- function(...) {
+  addRepos(..., overwrite = TRUE)
+}
+
+#' @param names The names of repositories (as exist in e.g.
+#'   \code{names(getOption("repos"))}).
+#' @rdname repository-management
+#' @name repository-management
+#' @export
+repos_remove <- function(names) {
+  oldRepos <- getOption("repos")
+  repos <- oldRepos[setdiff(names(oldRepos), names)]
+  options(repos = repos)
+  invisible(repos)
+}
+
+#' @rdname repository-management
+#' @name repository-management
+#' @export
+repos_list <- function() getOption("repos")
 
 setRepositoryField <- function(descPath, repo) {
   contents <- readLines(descPath)
