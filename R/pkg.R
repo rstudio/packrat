@@ -149,10 +149,6 @@ getPackageRecordsLockfile <- function(pkgNames, project) {
   }
 }
 
-vecdiff <- function(x, y) {
-  x[match(x, y, 0L) == 0L]
-}
-
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames,
                               project = NULL,

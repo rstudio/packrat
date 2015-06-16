@@ -518,3 +518,7 @@ filePrefix <- function() {
 reFilePrefix <- function() {
   paste("^", filePrefix(), sep = "")
 }
+
+vecdiff <- function(x, y) {
+  x[match(x, y, 0L) == 0L]
+}
