@@ -233,6 +233,7 @@ addRepos <- function(repos, overwrite = FALSE, local = FALSE) {
   names(newRepos) <- names(dots)
 
   repos <- c(oldRepos, newRepos)
+  repos <- repos[!duplicated(repos)]
   options(repos = repos)
   invisible(repos)
 }
