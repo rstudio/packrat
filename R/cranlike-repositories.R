@@ -192,9 +192,9 @@ uploadPackageTarball <- function(package, repo, ...) {
   file.path(contribUrl, basename(path))
 }
 
-addRepos <- function(..., overwrite = FALSE, local) {
+addRepos <- function(repos, overwrite = FALSE, local = FALSE) {
 
-  dots <- list(...)
+  dots <- repos
   dotNames <- names(dots)
   if (!length(dotNames) || any(!nzchar(dotNames)))
     stop("all arguments should be named")
@@ -255,21 +255,28 @@ addRepos <- function(..., overwrite = FALSE, local) {
 #'
 #' @export
 repos_add <- function(..., overwrite = FALSE) {
-  addRepos(..., overwrite = overwrite, local = FALSE)
+  addRepos(list(...), overwrite = overwrite, local = FALSE)
 }
 
 #' @rdname repository-management
 #' @name repository-management
 #' @export
 repos_add_local <- function(..., overwrite = FALSE) {
-  addRepos(..., overwrite = overwrite, local = TRUE)
+  addRepos(list(...), overwrite = overwrite, local = TRUE)
 }
 
 #' @rdname repository-management
 #' @name repository-management
 #' @export
 repos_set <- function(...) {
-  addRepos(..., overwrite = TRUE)
+  addRepos(list(...), overwrite = TRUE, local = FALSE)
+}
+
+#' @rdname repository-management
+#' @name repository-management
+#' @export
+repos_set_local <- function(...) {
+  addRepos(list(...), overwrite = TRUE, local = TRUE)
 }
 
 #' @param names The names of repositories (as exist in e.g.

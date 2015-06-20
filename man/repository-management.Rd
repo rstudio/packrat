@@ -6,6 +6,7 @@
 \alias{repos_list}
 \alias{repos_remove}
 \alias{repos_set}
+\alias{repos_set_local}
 \alias{repository-management}
 \title{Add a Repository}
 \usage{
@@ -14,6 +15,8 @@ repos_add(..., overwrite = FALSE)
 repos_add_local(..., overwrite = FALSE)
 
 repos_set(...)
+
+repos_set_local(...)
 
 repos_remove(names)
 
