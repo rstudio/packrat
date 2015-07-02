@@ -13,19 +13,19 @@ test_that("We can create and 'upload' an example package", {
 
   # Create the local repo
   localCRAN <- file.path(dir, "sushi")
-  packrat::create_repo(localCRAN)
+  packrat::repos_create(localCRAN)
 
   # Create an example package
   pkgKitten::kitten("sashimi", path = dir)
 
   # Try uploading the package
-  packrat::upload_package(
+  packrat::repos_upload(
     file.path(dir, "sashimi"),
     "sushi"
   )
 
   # Try uploading a tarball
-  packrat::upload_package(
+  packrat::repos_upload(
     file.path(dir, "sashimi_1.0.tar.gz"),
     "sushi"
   )

@@ -80,7 +80,8 @@ snapshot <- function(project = NULL,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run)
 
-  if (dry.run) return(invisible(snapshotResult))
+  if (dry.run)
+    return(invisible(snapshotResult))
 
 }
 
@@ -219,32 +220,42 @@ snapshot <- function(project = NULL,
                    'Modifying these packages already present in packrat:')
   }
 
-  if (all(is.na(diffs))) {
-    if (!verbose) message("Already up to date.")
-    if (is.null(lib.loc) ||
-          all(installedByPackrat(pkgNames(allRecordsFlat), lib.loc, FALSE))) {
-      # If none of the packages/versions differ, and all of the packages in the
-      # private library were installed by packrat, then we can short-circuit.
-      # If the package/versions differ, we obviously need to continue, so we can
-      # write the new lockfile. If packages were installed NOT by packrat, we
-      # need to mark them as installed by packrat so they no longer are
-      # considered "dirty" changes in need of snapshotting.
-
-      # Write a lockfile containing no packages if there is no lockfile.
-      if (!file.exists(lockFilePath(project))) {
-        writeLockFile(
-          lockFilePath(project),
-          allRecords
-        )
-      }
-
-      return()
-    }
-  }
-
   ## For use by automatic snapshotting -- only perform the automatic snapshot
   ## if it's a 'safe' action; ie, escape early if we would have prompted
-  if (mustConfirm && isTRUE(auto.snapshot)) return(invisible())
+  if (mustConfirm && isTRUE(auto.snapshot))
+    return(invisible())
+
+  ## Short-circuit if we know that there is nothing to be updated.
+  if (all(is.na(diffs))) {
+
+    # Check to see if the current repositories + the snapshotted
+    # repositories are in sync.
+    lockfile <- readLockFile(lockFilePath(project))
+    lockfileRepos <- lockfile$repos
+    reposInSync <- identical(sort(getOption("repos")),
+                             sort(lockfileRepos))
+
+    # Check to see whether all of the installed packages are currently
+    # tracked by packrat.
+    if (!reposInSync) {
+
+      allTracked <-
+        is.null(lib.loc) ||
+        all(installedByPackrat(pkgNames(allRecordsFlat), lib.loc, FALSE))
+
+      if (allTracked) {
+
+        # Ensure a packrat lockfile is available
+        if (!file.exists(lockFilePath(project)))
+          writeLockFile(lockFilePath(project), allRecords)
+        else if (verbose)
+          message("Already up to date.")
+
+        return()
+
+      }
+    }
+  }
 
   if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n]: ')
