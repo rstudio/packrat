@@ -182,6 +182,10 @@ afterPackratModeOn <- function(project,
     options(repos = repos)
   }
 
+  # Set a secure download method if any of the repos URLs use https
+  if (any(grepl("^https", repos)))
+    options(download.file.method = secureDownloadMethod())
+
   # Update settings
   updateSettings(project = project)
 
