@@ -529,8 +529,9 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
               pkgRecord$version, ") ... ", appendLF = FALSE)
       removePkgs(project, pkgRecord$name, lib)
     } else if (identical(action, "add")) {
+      # Insert newline to show progress on consoles that buffer to newlines.
       message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ",
-              appendLF = FALSE)
+              appendLF = TRUE)
     } else if (identical(action, "remove")) {
       if (is.null(pkgRecord)) {
         message("Removing ", names(actions[i]), " ... ", appendLF = FALSE)
@@ -544,7 +545,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
       next
     }
     type <- installPkg(pkgRecord, project, availablePkgs, repos, lib, cache)
-    message("OK (", type, ")")
+    message("\tOK (", type, ")")
   }
   invisible()
 }
