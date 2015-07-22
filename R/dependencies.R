@@ -154,7 +154,7 @@ fileDependencies.Rmd <- function(file) {
 
     if (requireNamespace("knitr", quietly = TRUE)) {
       if (packageVersion("knitr") >= "1.10.18") {
-        knit_params <- knitr::knit_params.yaml(yaml, evaluate = FALSE)
+        knit_params <- knitr::knit_params_yaml(yaml, evaluate = FALSE)
         if (length(knit_params) > 0) {
           # Parameterized R Markdown documents can use a Shiny customization app.
           deps <- append(deps, "shiny")
