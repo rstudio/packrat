@@ -1,0 +1,11 @@
+---
+title: "Rmd with parameters"
+params:
+  whack: !r stringr::word("the quick brown fox jumped over the lazy dog", 2)
+---
+
+This is an example document using parameters.
+
+```{r}
+params$whack
+```
