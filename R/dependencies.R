@@ -135,10 +135,7 @@ hasYamlFrontMatter <- function(content) {
 }
 
 yamlDeps <- function(yaml) {
-  # Collapse with newlines -- makes regex parsing easier
-  yaml <- paste(yaml, collapse = "\n")
   c(
-    "rmarkdown",
     "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml, perl = TRUE))],
     "rticles"[any(grepl("rticles::", yaml, perl = TRUE))]
   )
@@ -146,17 +143,34 @@ yamlDeps <- function(yaml) {
 
 fileDependencies.Rmd <- function(file) {
 
+  # All Rmd files get an "rmarkdown" dependency.
+  deps <- c("rmarkdown")
+  
   # We need to check for and parse YAML frontmatter if necessary
-  yamlDeps <- NULL
   content <- readLines(file)
   if (hasYamlFrontMatter(content)) {
     tripleDashes <- grep("^---\\s*$", content, perl = TRUE)
     start <- tripleDashes[[1]]
     end <- tripleDashes[[2]]
-    yamlDeps <- yamlDeps(content[(start + 1):(end - 1)])
-  }
+    yaml <- content[(start + 1):(end - 1)]
+    yaml <- paste(yaml, collapse = "\n")
+    deps <- append(deps, yamlDeps(yaml))
 
-  deps <- yamlDeps
+    if (requireNamespace("knitr", quietly = TRUE)) {
+      if (packageVersion("knitr") >= "1.10.18") {
+        knit_params <- knitr::knit_params_yaml(yaml, evaluate = FALSE)
+        if (length(knit_params) > 0) {
+          # Parameterized R Markdown documents can use a Shiny customization app.
+          deps <- append(deps, "shiny")
+          for (param in knit_params) {
+            if (!is.null(param$expr)) {
+              deps <- append(deps, expressionDependencies(parse(text = param$expr)))
+            }
+          }
+        }
+      }
+    }
+  }
 
   # Escape hatch for empty .Rmd files
   if (!length(content) || identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")) {
