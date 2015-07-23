@@ -37,32 +37,49 @@ download <- function(url, ...) {
   # First, check protocol. If http or https, check platform:
   if (grepl('^https?://', url)) {
 
-    # If Windows, call setInternet2, then use download.file with defaults.
+    # Check whether we are running R 3.2 and whether we have libcurl
+    isR32 <- getRversion() >= "3.2"
+
+    # Windows
     if (.Platform$OS.type == "windows") {
 
-      # If we directly use setInternet2, R CMD CHECK gives a Note on Mac/Linux
-      seti2 <- `::`(utils, 'setInternet2')
+      if (isR32) {
+        method <- "wininet"
+      } else {
 
-      # Store initial settings, and restore on exit
-      internet2_start <- seti2(NA)
-      on.exit(suppressWarnings(seti2(internet2_start)))
+        # If we directly use setInternet2, R CMD CHECK gives a Note on Mac/Linux
+        seti2 <- `::`(utils, 'setInternet2')
 
-      # Needed for https. Will get warning if setInternet2(FALSE) already run
-      # and internet routines are used. But the warnings don't seem to matter.
-      suppressWarnings(seti2(TRUE))
+        # Check whether we are already using internet2 for internal
+        internet2_start <- seti2(NA)
+
+        # If not then temporarily set it
+        if (!internet2_start) {
+          # Store initial settings, and restore on exit
+          on.exit(suppressWarnings(seti2(internet2_start)))
+
+          # Needed for https. Will get warning if setInternet2(FALSE) already run
+          # and internet routines are used. But the warnings don't seem to matter.
+          suppressWarnings(seti2(TRUE))
+        }
+
+        method <- "internal"
+      }
 
       # download.file will complain about file size with something like:
       #       Warning message:
       #         In download.file(url, ...) : downloaded length 19457 != reported length 200
       # because apparently it compares the length with the status code returned (?)
       # so we supress that
-      suppressWarnings(download.file(url, ...))
+      suppressWarnings(download.file(url, method = method, ...))
 
     } else {
-      # If non-Windows, check for curl/wget/lynx, then call download.file with
+      # If non-Windows, check for libcurl/curl/wget/lynx, then call download.file with
       # appropriate method.
 
-      if (nzchar(Sys.which("wget")[1])) {
+      if (isR32 && capabilities("libcurl")) {
+        method <- "libcurl"
+      } else if (nzchar(Sys.which("wget")[1])) {
         method <- "wget"
       } else if (nzchar(Sys.which("curl")[1])) {
         method <- "curl"
@@ -115,4 +132,61 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
     if (success) break
   }
   success
+}
+
+# Attempt to determine a secure download method for the current platform/configuration
+# (returns NULL if none can be ascertaine, this will yield default behavior by R)
+secureDownloadMethod <- function() {
+
+  # Check whether we are running R 3.2 and whether we have libcurl
+  isR32 <- getRversion() >= "3.2"
+  haveLibcurl <- isR32 && capabilities("libcurl")
+
+  # Utility function to bind to libcurl or a fallback utility (e.g. wget)
+  posixMethod <- function(utility) {
+    if (haveLibcurl)
+      "libcurl"
+    else if (nzchar(Sys.which(utility)[1]))
+      utility
+    else
+      NULL
+  }
+
+  # Determine the right secure download method per-system
+  sysName <- Sys.info()[['sysname']]
+
+  # For windows we prefer binding directly to wininet if we can (since
+  # that doesn't rely on the value of setInternet2). If it's R <= 3.1
+  # then we can use "internal" for https so long as internet2 is enabled
+  # (we don't use libcurl on Windows because it doesn't check certs).
+  if (identical(sysName, "Windows")) {
+    if (isR32) {
+      "wininet"
+    }
+    else {
+      seti2 <- `::`(utils, 'setInternet2')
+      if (seti2(NA))
+        "internal"
+      else
+        NULL
+    }
+  }
+
+  # For Darwin and Linux we use libcurl if we can and then fall back
+  # to curl or wget as appropriate. We prefer libcurl because it honors
+  # the same proxy configuration that "internal" does so it less likely
+  # to break downloads for users behind proxy servers.
+
+  # OS X
+  else if (identical(sysName, "Darwin")) {
+    posixMethod("curl")
+  }
+
+  # Other UNIX
+  else {
+    method <- posixMethod("wget")
+    if (!nzchar(method))
+      method <- posixMethod("curl")
+    method
+  }
 }

@@ -1,5 +1,31 @@
 # Packrat 0.4.4 (Unreleased)
 
+- Packrat no longer creates empty ignore files (thanks, @aronatkins)
+
+- Bioconductor repositories are now created internally by packrat. This should 
+  resolve errors where Bioconductor repository URLs are generated when an
+  incompatible version of `BiocInstaller` is installed.
+  
+- Packrat now understands the `pkgType = "both"` option and can properly
+  restore projects when that option is set.
+  
+- The `ignored.packages` option has been added, allowing users to specify
+  packages that should not be tracked by packrat. Such packaes will not
+  enter the lockfile on `packrat::snapshot()` calls; nor will they be
+  cleaned out on `packrat::restore()` calls.
+
+- Simple functions for interacting with the set of available repositories
+  have been added. See `?repository-management` for more details.
+  
+- Facilities for interacting with local CRAN-like repositories have been added.
+  This feature will eventually supersede the functionality offered by packrat's
+  'ad-hoc' local repositories. The functions `packrat::repos_create()` and
+  `packrat::upload_package()` are the two main API functions currently exported
+  for uploading (source) packages to a local CRAN-like repository. By using a
+  local CRAN-like repository, pre-existing workflows using `library()` and
+  `install.packages()` to install packages should 'just work', as long as the
+  `repos` option is properly set.
+
 - The cache directory layout has been modified to ensure help (`?`) calls
   succeed. This is a breaking change with older versions of Packrat, and so
   newer versions of Packrat will use a new cache folder. (#194)

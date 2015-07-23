@@ -58,6 +58,12 @@ test_that("updateGitIgnore works", {
   expect_false("packrat/lib*/" %in% content)
   expect_false("packrat/src/" %in% content)
 
+  ## when all options FALSE and .gitignore does not already
+  ## exist, .gitignore is not created.
+  unlink(.gitignore)
+  updateGitIgnore(project = dir, options = options)
+  expect_false(file.exists(.gitignore))
+
   unlink(dir, recursive = TRUE)
 
 })

@@ -7,26 +7,37 @@ isUsingCache <- function(project) {
   isTRUE(get_opts("use.cache", project = project))
 }
 
-# We assume 'path' is the path to a DESCRIPTION file
-#' @importFrom tools md5sum
-hash <- function(path) {
+installedDescLookup <- function(pkgName) {
+  system.file("DESCRIPTION", package = pkgName)
+}
 
+# We assume 'path' is the path to a DESCRIPTION file, or a data frame (the
+# data frame data must have stringsAsFactors = FALSE).
+#
+# descLookup is a function that takes a single argument pkgName and must
+# return one of: 1) a file path to DESCRIPTION file, 2) a data frame (with
+# stringsAsFactors = FALSE) of the DESCRIPTION dcf data, or 3) NULL if
+# the DESCRIPTION is not available. By default, installedDescLookup is
+# used, which looks in the active lib paths for the desired DESCRIPTION
+# files.
+#
+#' @importFrom tools md5sum
+hash <- function(path, descLookup = installedDescLookup) {
 
   if (!file.exists(path))
     stop("No DESCRIPTION file at path '", path, "'!")
 
-  pkgName <- basename(dirname(path))
-
-  DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
-
-  # If we already have a GitHub SHA1, just use that
-  if ("GithubSHA1" %in% names(DESCRIPTION))
-    return(DESCRIPTION$GithubSHA1)
+  if (is.data.frame(path)) {
+    DESCRIPTION <- path
+  } else {
+    DESCRIPTION <- as.data.frame(readDcf(path), stringsAsFactors = FALSE)
+  }
+  pkgName <- DESCRIPTION[["Package"]]
 
   # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
   # it essentially makes packages installed from source un-recoverable, since they will get
   # built transiently and installed (and so that field could never be replicated).
-  fields <- c("Package", "Version", "Depends", "Imports", "Suggests", "LinkingTo")
+  fields <- c("Package", "Version", "GithubSHA1", "Depends", "Imports", "Suggests", "LinkingTo")
   sub <- DESCRIPTION[names(DESCRIPTION) %in% fields]
 
   # Handle LinkingTo specially -- we need to discover what version of packages in LinkingTo
@@ -41,9 +52,14 @@ hash <- function(path) {
   linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
 
   linkingToHashes <- lapply(linkingToPkgs, function(x) {
-    DESCRIPTION <- system.file("DESCRIPTION", package = x)
-    if (!file.exists(DESCRIPTION)) return(NULL) ## warn later
-    else hash(DESCRIPTION)
+    linkingToDesc <- descLookup(x)
+    # If we return NULL
+    if (is.null(linkingToDesc))
+      return(NULL)
+    else if (is.character(linkingToDesc) && !file.exists(linkingToDesc))
+      return(NULL)
+    else
+      hash(linkingToDesc)
   })
 
   missingLinkingToPkgs <- linkingToPkgs[vapply(linkingToHashes, is.null, logical(1))]

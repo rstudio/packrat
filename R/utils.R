@@ -220,10 +220,12 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
   project <- getProjectDir(project)
 
-  ## If the file doesn't exist, create and fill it
+  ## If the file doesn't exist and we have content, create and fill it
   path <- file.path(project, file)
   if (!file.exists(path)) {
-    cat(add, file = path, sep = "\n")
+    if (length(add) > 0) {
+      cat(add, file = path, sep = "\n")
+    }
     return(invisible())
   }
 
@@ -490,6 +492,29 @@ with_collate <- function(locale, code) {
 
 sort_c <- function(x) with_collate("C", sort(x))
 
+is.string <- function(x) {
+  is.character(x) && length(x) == 1
+}
+
+is.directory <- function(x) {
+  file.exists(x) && isTRUE(file.info(x)[["isdir"]]) # guard against NA
+}
+
 getBinaryPkgType <- function() {
   .Platform$pkgType
+}
+
+normalize.path <- function(path) {
+  normalizePath(path, winslash = "/", mustWork = TRUE)
+}
+
+filePrefix <- function() {
+  if (is.windows())
+    "file:///"
+  else
+    "file://"
+}
+
+reFilePrefix <- function() {
+  paste("^", filePrefix(), sep = "")
 }
