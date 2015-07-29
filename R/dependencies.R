@@ -130,8 +130,8 @@ fileDependencies <- function(file) {
 }
 
 hasYamlFrontMatter <- function(content) {
-  lines <- grep("^---\\s*$", content, perl = TRUE)
-  1 %in% lines && length(lines) >= 2
+  lines <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
+  1 %in% lines && length(lines) >= 2 && grepl("^---\\s*$", content[1], perl=TRUE)
 }
 
 yamlDeps <- function(yaml) {
@@ -150,9 +150,9 @@ fileDependencies.Rmd <- function(file) {
   yamlDeps <- NULL
   content <- readLines(file)
   if (hasYamlFrontMatter(content)) {
-    tripleDashes <- grep("^---\\s*$", content, perl = TRUE)
-    start <- tripleDashes[[1]]
-    end <- tripleDashes[[2]]
+    tripleDashesDots <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
+    start <- tripleDashesDots[[1]]
+    end <- tripleDashesDots[[2]]
     yamlDeps <- yamlDeps(content[(start + 1):(end - 1)])
   }
 
