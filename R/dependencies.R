@@ -135,10 +135,7 @@ hasYamlFrontMatter <- function(content) {
 }
 
 yamlDeps <- function(yaml) {
-  # Collapse with newlines -- makes regex parsing easier
-  yaml <- paste(yaml, collapse = "\n")
   c(
-    "rmarkdown",
     "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml, perl = TRUE))],
     "rticles"[any(grepl("rticles::", yaml, perl = TRUE))]
   )
@@ -146,17 +143,46 @@ yamlDeps <- function(yaml) {
 
 fileDependencies.Rmd <- function(file) {
 
+  deps <- "rmarkdown"
+
   # We need to check for and parse YAML frontmatter if necessary
   yamlDeps <- NULL
   content <- readLines(file)
   if (hasYamlFrontMatter(content)) {
+
+    # Extract the YAML frontmatter.
     tripleDashesDots <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
     start <- tripleDashesDots[[1]]
     end <- tripleDashesDots[[2]]
-    yamlDeps <- yamlDeps(content[(start + 1):(end - 1)])
+    yaml <- paste(content[(start + 1):(end - 1)], collapse = "\n")
+
+    # Populate 'deps'.
+    yamlDeps <- yamlDeps(yaml)
+    deps <- c(deps, yamlDeps)
+
+    # Extract additional dependencies from YAML parameters.
+    if (requireNamespace("knitr", quietly = TRUE) &&
+        packageVersion("knitr") >= "1.10.18") {
+
+      knitParams <- knitr::knit_params_yaml(yaml, evaluate = FALSE)
+      if (length(knitParams) > 0) {
+        deps <- c(deps, "shiny")
+        for (param in knitParams) {
+          if (!is.null(param$expr)) {
+            parsed <- tryCatch(
+              parse(text = param$expr),
+              error = function(e) NULL
+            )
+
+            if (length(parsed))
+              deps <- c(deps, expressionDependencies(parsed))
+          }
+        }
+      }
+
+    }
   }
 
-  deps <- yamlDeps
 
   # Escape hatch for empty .Rmd files
   if (!length(content) || identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")) {
