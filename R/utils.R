@@ -518,3 +518,17 @@ filePrefix <- function() {
 reFilePrefix <- function() {
   paste("^", filePrefix(), sep = "")
 }
+
+stopf <- function(fmt, ...) {
+  stop(sprintf(fmt, ...))
+}
+
+hasProgram <- function(program) {
+  nzchar(Sys.which(program)[[1]])
+}
+
+isSysName <- function(system) Sys.info()[["sysname"]] == system
+isWindowsSystem <- function() isSysName("Windows")
+isMacintoshSystem <- function() isSysName("Darwin")
+isLinuxSystem <- function() isSysName("Linux")
+

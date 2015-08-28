@@ -33,12 +33,11 @@
 #          "downloader.zip", mode = "wb")
 # }
 #
-download <- function(url, ...) {
-  # First, check protocol. If http or https, check platform:
-  if (grepl('^https?://', url)) {
+download <- function(url, method = inferDownloadMethod(url), ...) {
 
-    # If Windows, call setInternet2, then use download.file with defaults.
-    if (.Platform$OS.type == "windows") {
+  ## Do some appropriate setup for Windows platforms, when downloading
+  ## from a secure protocol.
+  if (isWindowsSystem() && grepl("^(?:ht|f)tps?://", url)) {
 
       # If we directly use setInternet2, R CMD CHECK gives a Note on Mac/Linux
       seti2 <- `::`(utils, 'setInternet2')
@@ -50,44 +49,104 @@ download <- function(url, ...) {
       # Needed for https. Will get warning if setInternet2(FALSE) already run
       # and internet routines are used. But the warnings don't seem to matter.
       suppressWarnings(seti2(TRUE))
-
-      # download.file will complain about file size with something like:
-      #       Warning message:
-      #         In download.file(url, ...) : downloaded length 19457 != reported length 200
-      # because apparently it compares the length with the status code returned (?)
-      # so we supress that
-      suppressWarnings(download.file(url, ...))
-
-    } else {
-      # If non-Windows, check for curl/wget/lynx, then call download.file with
-      # appropriate method.
-
-      if (nzchar(Sys.which("wget")[1])) {
-        method <- "wget"
-      } else if (nzchar(Sys.which("curl")[1])) {
-        method <- "curl"
-
-        # curl needs to add a -L option to follow redirects.
-        # Save the original options and restore when we exit.
-        orig_extra_options <- getOption("download.file.extra")
-        on.exit(options(download.file.extra = orig_extra_options))
-
-        options(download.file.extra = paste("-L", orig_extra_options))
-
-      } else if (nzchar(Sys.which("lynx")[1])) {
-        method <- "lynx"
-      } else {
-        stop("no download method found")
-      }
-
-      download.file(url, method = method, ...)
-    }
-
-  } else {
-    download.file(url, ...)
   }
+
+  # Download and suppress printing of warnings (they will still
+  # be caught and appropriately handled in 'downloadFile()')
+  suppressWarnings(downloadFile(url, method = method, ...))
 }
 
+# Get an appropriate download method for this system.
+inferDownloadMethod <- function(url) {
+
+  # Vectorization, just in case...
+  if (length(url) > 1)
+    return(vapply(url, inferDownloadMethod, FUN.VALUE = character(1)))
+
+  isInternetURL <- grepl("^(?:ht|f)tps?", url, perl = TRUE)
+  isSecureProtocol <- grepl("^(?:ht|f)tps://", url, perl = TRUE)
+
+  # Prefer 'wininet' on Windows for web requests.
+  if (Sys.info()[["sysname"]] == "Windows" && isInternetURL)
+    return("wininet")
+
+  # For non-secure protocols, prefer the internal download method.
+  if (!isSecureProtocol)
+    return("internal")
+
+  # Prefer 'libcurl' for secure protocol downloads on appropriate
+  # versions of R.
+  svnRev <- R.version$`svn rev`
+  if (isSecureProtocol && length(svnRev) && as.numeric(svnRev) >= 69197)
+    return("libcurl")
+
+  # Use external programs otherwise.
+  candidates <- c("wget", "curl", "lynx")
+  for (program in candidates)
+    if (hasProgram(program))
+      return(program)
+
+  stopf("No appropriate method for downloading from URL '%s' found.", url)
+}
+
+# A wrapper around 'utils::download.file()' that properly
+# turns non-zero status codes when using 'curl' or 'wget'
+# into errors.
+downloadFile <- function(url, method = inferDownloadMethod(url), ...) {
+
+  # Extract certain arguments from '...'
+  dots <- list(...)
+  extra <- if ("extra" %in% names(dots))
+    dots$extra
+  else
+    getOption("download.file.extra")
+
+  # If method is 'auto', default to 'libcurl'.
+  if (method == "auto")
+    method <- "libcurl"
+
+  # If we're trying to use 'libcurl' on a version of R that
+  # doesn't properly forward errors, fall back to a separate method.
+  svnRev <- R.version$`svn rev`
+  if (length(svnRev) && as.numeric(svnRev) < 69197 && method == "libcurl") {
+    fallbackMethod <- inferDownloadMethod(url)
+    warning("'libcurl' does not properly handle 404s with this version of R; ",
+            "falling back to method '", fallbackMethod, "'")
+
+    method <- method <- fallbackMethod
+  }
+
+  # Add 'extra' arguments to ensure 'curl' follows redirects
+  # and also fails on HTTP error codes.
+  if (method == "curl")
+    extra <- "-L -f"
+
+  # Call 'download.file()' and catch warnings; we need to
+  # elevate these to errors (as they imply the download failed)
+  caughtWarning <- NULL
+  result <- withCallingHandlers(
+    download.file(url, method = method, extra = extra, ...),
+    warning = function(w) {
+      caughtWarning <<- w
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  # Note that bogus warnings can be thrown when on Windows, so
+  # just warn if we're using an external program ('curl' or 'wget')
+  # respectively
+  if (method %in% c("curl", "wget")) {
+    if (length(caughtWarning)) {
+      msg <- sprintf("Failed to download '%s' (%s had exit status %s)",
+                     url,
+                     method,
+                     result)
+      stop(msg)
+    }
+  }
+
+  result
+}
 
 # Download from a URL with a certain number of retries -- returns TRUE
 # if the download succeeded, and FALSE otherwise
@@ -116,3 +175,4 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
   }
   success
 }
+

@@ -22,3 +22,5 @@ Enhances: knitr,
     BiocInstaller
 URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
+
+
