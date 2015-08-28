@@ -518,3 +518,7 @@ filePrefix <- function() {
 reFilePrefix <- function() {
   paste("^", filePrefix(), sep = "")
 }
+
+isProgramOnPath <- function(program) {
+  nzchar(Sys.which(program)[[1]])
+}
