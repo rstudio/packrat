@@ -17,8 +17,7 @@ getAvailableDownloadMethods <- function() {
   if (has("curl"))
     methods <- c(methods, "curl")
 
-  svnRevision <- R.version$`svn rev`
-  if (length(svnRevision) && as.numeric(svnRevision) >= 69197)
+  if (canUseLibCurlDownloadMethod())
     methods <- c(methods, "libcurl")
 
   methods

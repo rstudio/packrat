@@ -33,9 +33,7 @@
 #          "downloader.zip", mode = "wb")
 # }
 #
-download <- function(url, ...) {
-
-  method <- inferAppropriateDownloadMethod(url)
+download <- function(url, method = inferAppropriateDownloadMethod(url), ...) {
 
   # When on Windows using an 'internal' method, we need to call
   # 'setInternet2' to set some appropriate state.
@@ -45,12 +43,13 @@ download <- function(url, ...) {
     seti2 <- `::`(utils, 'setInternet2')
 
     # Check whether we are already using internet2 for internal
-    internet2_start <- seti2(NA)
+    usingInternet2 <- seti2(NA)
 
     # If not then temporarily set it
-    if (!internet2_start) {
+    if (!usingInternet2) {
+
       # Store initial settings, and restore on exit
-      on.exit(suppressWarnings(seti2(internet2_start)), add = TRUE)
+      on.exit(suppressWarnings(seti2(usingInternet2)), add = TRUE)
 
       # Needed for https. Will get warning if setInternet2(FALSE) already run
       # and internet routines are used. But the warnings don't seem to matter.
@@ -69,9 +68,8 @@ downloadFile <- function(url,
   # If we're using 'curl', we need to set '-L' to follow
   # redirects, and '-f' to ensure HTTP error codes are treated
   # as errors.
-  if (method == "curl") {
+  if (method == "curl")
     extra <- paste(extra, "-L -f")
-  }
 
   # Catch warnings in the call.
   caughtWarning <- NULL
@@ -100,10 +98,15 @@ downloadFile <- function(url,
 # respect HTTP error codes (and instead just downloads the 404
 # page and returns a zero status code)
 canUseLibCurlDownloadMethod <- function() {
+
+  if (!getRversion() >= "3.3.0")
+    return(FALSE)
+
   svnRev <- R.version$`svn rev`
-  goodVersion <- length(svnRev) && as.numeric(svnRev) >= 69197
-  hasLibCurl <- "libcurl" %in% names(capabilities()) && capabilities("libcurl")
-  goodVersion && hasLibCurl
+  if (!svnRev >= 69197)
+    return(FALSE)
+
+  "libcurl" %in% names(capabilities()) && capabilities("libcurl")
 }
 
 
@@ -163,10 +166,8 @@ secureDownloadMethod <- function() {
     # Otherwise, make a call to 'setInternet2' and use the 'internal' method
     # if that call succeeds.
     seti2 <- `::`(utils, 'setInternet2')
-    if (seti2(NA))
+    if (suppressWarnings(seti2(NA)))
       return("internal")
-    else
-      return(NULL)
   }
 
   # For Darwin and Linux we use libcurl if we can and then fall back

@@ -2,21 +2,24 @@ context("Custom CRAN-like Repositories")
 
 test_that("We can create and 'upload' an example package", {
 
-  testthat:::skip_on_cran()
-
-  # Bail if we don't have 'pkgKitten' (needed to generate
-  # a buildable package skeleton)
-  if (!requireNamespace("pkgKitten", quietly = TRUE))
+  if (!requireNamespace("devtools", quietly = TRUE))
     return()
 
   dir <- tempdir()
+  owd <- getwd()
+  setwd(dir)
+  on.exit(setwd(owd), add = TRUE)
 
   # Create the local repo
   localCRAN <- file.path(dir, "sushi")
   packrat::repos_create(localCRAN)
 
-  # Create an example package
-  pkgKitten::kitten("sashimi", path = dir)
+  repos <- getOption("repos")
+  options(repos = repos["sushi"])
+  on.exit(options(repos = repos), add = TRUE)
+
+  # Create an example package.
+  devtools::create(file.path(dir, "sashimi"))
 
   # Try uploading the package
   packrat::repos_upload(
@@ -24,9 +27,11 @@ test_that("We can create and 'upload' an example package", {
     "sushi"
   )
 
-  # Try uploading a tarball
+  # Try building and uploading a tarball
+  system(paste("R --vanilla CMD build", file.path(dir, "sashimi")))
+  tarball <- list.files(dir, pattern = "\\.tar\\.gz$")[[1]]
   packrat::repos_upload(
-    file.path(dir, "sashimi_1.0.tar.gz"),
+    file.path(dir, tarball),
     "sushi"
   )
 
@@ -35,8 +40,6 @@ test_that("We can create and 'upload' an example package", {
   dir.create(tempLib)
   install.packages("sashimi", lib = tempLib)
   library("sashimi", lib.loc = tempLib)
-
-  sashimi::hello("World!")
   detach("package:sashimi", unload = TRUE)
 
 })
