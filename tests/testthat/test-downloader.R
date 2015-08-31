@@ -2,14 +2,18 @@ context("Downloader")
 
 getAvailableDownloadMethods <- function() {
 
+  if (is.windows()) {
+    methods <- "internal"
+    if (getRversion() >= "3.2")
+      methods <- c(methods, "wininet")
+    return(methods)
+  }
+
   has <- function(program) {
     nzchar(Sys.which(program)[[1]])
   }
 
   methods <- "internal"
-
-  if (is.windows() && getRversion() >= "3.2")
-    methods <- c(methods, "wininet")
 
   if (has("wget"))
     methods <- c(methods, "wget")
