@@ -91,7 +91,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   availablePkgs <- if (hasCachedAvailablePackages())
     available.packages()
   else
-    suppressWarnings(available.packages(""))
+    availablePackagesSkeleton()
 
   inferredPkgNames <- appDependencies(
     project,

@@ -54,7 +54,7 @@ snapshot <- function(project = NULL,
   if (is.null(available))
   {
     available <- if (dry.run)
-      suppressWarnings(available.packages(""))
+      availablePackagesSkeleton()
     else
       available.packages()
   }
@@ -115,7 +115,7 @@ snapshot <- function(project = NULL,
   if (is.null(available))
   {
     available <- if (dry.run)
-      suppressWarnings(available.packages(""))
+      availablePackagesSkeleton()
     else
       available.packages()
   }
