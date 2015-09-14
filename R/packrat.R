@@ -161,7 +161,7 @@ init <- function(project = '.',
   project <- normalizePath(project,
                            winslash = '/',
                            mustWork = TRUE)
-  message("Initializing packrat project in directory:\n- ", surround(project, "\""))
+  message("Initializing packrat project in directory:\n- ", surround(prettyDir(project), "\""))
 
   ## A set of files that packrat might generate as part of init -- we
   ## enumerate them here to assist with later cleanup
