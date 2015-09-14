@@ -168,7 +168,7 @@ libExtDir <- function(project = NULL) {
 
 startsWithBytes <- function(x, y) {
   Encoding(x) <- Encoding(y) <- "bytes"
-  return(substring(x, 1, nchar(y, type = "bytes")) == x)
+  return(substring(x, 1, nchar(y, type = "bytes")) == y)
 }
 
 prettyLibDir <- function(project = NULL) {
