@@ -2,23 +2,6 @@ local({
 
   libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
 
-  ## Escape hatch to allow RStudio to handle initialization
-  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
-        is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
-    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
-    setHook("rstudio.sessionInit", function(...) {
-      # Ensure that, on sourcing 'packrat/init.R', we are
-      # within the project root directory
-      if (exists(".rs.getProjectDirectory")) {
-        owd <- getwd()
-        setwd(.rs.getProjectDirectory())
-        on.exit(setwd(owd), add = TRUE)
-      }
-      source("packrat/init.R")
-    })
-    return(invisible(NULL))
-  }
-
   ## Unload packrat in case it's loaded -- this ensures packrat _must_ be
   ## loaded from the private library. Note that `requireNamespace` will
   ## succeed if the package is already loaded, regardless of lib.loc!
@@ -35,6 +18,25 @@ local({
       print.banner <- FALSE
     }
     return(packrat::on(print.banner = print.banner))
+  }
+
+  ## Escape hatch to allow RStudio to handle bootstrapping. This
+  ## enables RStudio to provide print output when automagically
+  ## restoring a project from a bundle on load.
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
+      is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
+    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
+    setHook("rstudio.sessionInit", function(...) {
+      # Ensure that, on sourcing 'packrat/init.R', we are
+      # within the project root directory
+      if (exists(".rs.getProjectDirectory")) {
+        owd <- getwd()
+        setwd(.rs.getProjectDirectory())
+        on.exit(setwd(owd), add = TRUE)
+      }
+      source("packrat/init.R")
+    })
+    return(invisible(NULL))
   }
 
   ## Bootstrapping -- only performed in interactive contexts,
