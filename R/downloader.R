@@ -144,6 +144,13 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
 }
 
 inferAppropriateDownloadMethod <- function(url) {
+
+  ## If the user wants to explicitly use their own download method,
+  ## they can set 'packrat.download.method' and we'll honor that.
+  packrat.download.method <- getOption("packrat.download.method")
+  if (is.function(packrat.download.method))
+    return(packrat.download.method(url))
+
   isSecureWebProtocol <- grepl("^(?:ht|f)tps://", url, perl = TRUE)
   if (isSecureWebProtocol)
     return(secureDownloadMethod())
