@@ -68,8 +68,13 @@ downloadFile <- function(url,
   # If we're using 'curl', we need to set '-L' to follow
   # redirects, and '-f' to ensure HTTP error codes are treated
   # as errors.
-  if (method == "curl")
-    extra <- paste(extra, "-L -f")
+  if (method == "curl") {
+    if (!grepl("\\b-L\\b", extra))
+      extra <- paste(extra, "-L")
+
+    if (!grepl("\\b-f\\b", extra))
+      extra <- paste(extra, "-f")
+  }
 
   # Catch warnings in the call.
   caughtWarning <- NULL
