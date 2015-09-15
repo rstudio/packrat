@@ -538,3 +538,7 @@ availablePackagesSkeleton <- function() {
 
   result
 }
+
+isProgramOnPath <- function(program) {
+  nzchar(Sys.which(program)[[1]])
+}
