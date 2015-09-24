@@ -371,9 +371,10 @@ getDefaultLibPaths <- function(use.cache = TRUE) {
 
   with_dir(tempdir(), {
     R <- file.path(R.home("bin"), "R")
-    code <- shQuote("cat(.libPaths(), sep = '\\\\n')")
+    code <- shQuote("cat(.libPaths(), sep = '|||')")
     cmd <- paste(shQuote(R), "--slave", "-e", code)
-    result <- normalize_paths(system(cmd, intern = TRUE))
+    interned <- system(cmd, intern = TRUE)
+    result <- strsplit(interned, "|||", fixed = TRUE)[[1]]
     .packrat$default.libPaths <- result
     result
   })
