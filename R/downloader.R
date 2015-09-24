@@ -156,11 +156,13 @@ inferAppropriateDownloadMethod <- function(url) {
   if (is.function(packrat.download.method))
     return(packrat.download.method(url))
 
+  # Prefer using external programs (they can better handle redirects
+  # than R's internal downloader, or so it seems)
   isSecureWebProtocol <- grepl("^(?:ht|f)tps://", url, perl = TRUE)
-  if (isSecureWebProtocol)
+  if (is.linux() || is.mac() || isSecureWebProtocol)
     return(secureDownloadMethod())
-  else
-    return("internal")
+
+  return("internal")
 }
 
 # Attempt to determine a secure download method for the current
