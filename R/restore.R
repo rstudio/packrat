@@ -150,7 +150,7 @@ getSourceForPkgRecord <- function(pkgRecord,
                                   pkgRecord$name,
                                   pkgSrcFile)
           if (!downloadWithRetries(archiveUrl,
-                                   file.path(pkgSrcDir, pkgSrcFile),
+                                   destfile = file.path(pkgSrcDir, pkgSrcFile),
                                    mode = "wb", quiet = TRUE)) {
             message("FAILED")
             stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
@@ -178,7 +178,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         unlink(srczip, recursive=TRUE)
     })
 
-    if (!downloadWithRetries(archiveUrl, srczip, quiet = TRUE, mode = "wb")) {
+    if (!downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")) {
       message("FAILED")
       stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
     }
