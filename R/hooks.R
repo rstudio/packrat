@@ -86,7 +86,7 @@ buildSnapshotHookCall <- function(project, debug = FALSE) {
     contrib.url(getOption('repos')), tempdir()
   )
   setLibsCmd <- paste0(".libPaths(c(",
-                       paste(surround(getLibPaths(), with = "'"), collapse = ", "),
+                       paste(surround(getUserLibPaths(), with = "'"), collapse = ", "),
                        "))")
   if (debug) {
     snapshotCmd <- paste0("packrat:::snapshotImpl(", snapshotArgs, ")")

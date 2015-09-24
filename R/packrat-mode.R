@@ -112,7 +112,7 @@ afterPackratModeOn <- function(project,
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
-    unloadedSearchPath <- cleanSearchPath(lib.loc = getLibPaths())
+    unloadedSearchPath <- cleanSearchPath(lib.loc = getUserLibPaths())
   }
 
   # Hide the site libraries
@@ -232,9 +232,11 @@ setPackratModeOff <- function(project = NULL,
 
   # Reset the library paths
   libPaths <- .packrat_mutables$get("origLibPaths")
-  if (!is.null(libPaths)) {
+  if (is.null(libPaths))
+    libPaths <- getDefaultLibPaths()
+
+  if (length(libPaths))
     setLibPaths(libPaths)
-  }
 
   # Reset 'pkgType'
   oldPkgType <- .packrat_mutables$get("oldPkgType")

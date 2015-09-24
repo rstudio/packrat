@@ -1,6 +1,6 @@
 ## Clean up the search path -- unload all packages in the user library
 ## Primarily used when entering packrat mode
-cleanSearchPath <- function(verbose = TRUE, lib.loc = getLibPaths()) {
+cleanSearchPath <- function(verbose = TRUE, lib.loc = getUserLibPaths()) {
 
   searchPath <- search_path()
 

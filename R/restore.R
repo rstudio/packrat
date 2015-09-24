@@ -473,7 +473,7 @@ installPkg <- function(pkgRecord,
       # devtools does not install to any libraries other than the default, so
       # if the library we wish to install to is not the default, set as the
       # default while we do this operation.
-      if (!identical(getLibPaths()[1], lib)) {
+      if (!isPathToSameFile(getLibPaths()[1], lib)) {
         oldLibPaths <- getLibPaths()
         on.exit(setLibPaths(oldLibPaths), add = TRUE)
         # Make sure the library actually exists, otherwise setLibPaths will silently

@@ -345,10 +345,38 @@ setLibPaths <- function(paths) {
   .libPaths(paths)
 }
 
-## We only want to grab user libraries here -- system libraries are automatically
-## added in by R
-getLibPaths <- function(paths) {
-  setdiff(.libPaths(), c(.Library, .Library.site))
+normalize_paths <- function(paths, winslash = "/", mustWork = FALSE) {
+  paths[paths == ""] <- getwd()
+  unlist(lapply(paths, function(path) {
+    normalizePath(path, winslash = "/", mustWork = FALSE)
+  }))
+}
+
+getLibPaths <- function() {
+  normalize_paths(.libPaths())
+}
+
+getUserLibPaths <- function() {
+  allPaths <- getLibPaths()
+  sysPaths <- normalize_paths(c(.Library, .Library.site))
+  setdiff(allPaths, sysPaths)
+}
+
+## Get the default library paths (those that would be used upon
+## starting a new R session)
+getDefaultLibPaths <- function(use.cache = TRUE) {
+
+  if (use.cache && length(.packrat$default.libPaths))
+    return(.packrat$default.libPaths)
+
+  with_dir(tempdir(), {
+    R <- file.path(R.home("bin"), "R")
+    code <- shQuote("cat(.libPaths(), sep = '\\\\n')")
+    cmd <- paste(shQuote(R), "--slave", "-e", code)
+    result <- normalize_paths(system(cmd, intern = TRUE))
+    .packrat$default.libPaths <- result
+    result
+  })
 }
 
 getInstalledPkgInfo <- function(packages, installed.packages, ...) {
@@ -541,4 +569,16 @@ availablePackagesSkeleton <- function() {
 
 isProgramOnPath <- function(program) {
   nzchar(Sys.which(program)[[1]])
+}
+
+isPathToSameFile <- function(lhs, rhs) {
+
+  if (!(is.string(lhs) && is.string(rhs)))
+    return(FALSE)
+
+  lhsNorm <- normalizePath(lhs, winslash = "/", mustWork = FALSE)
+  rhsNorm <- normalizePath(rhs, winslash = "/", mustWork = FALSE)
+
+  lhsNorm == rhsNorm
+
 }

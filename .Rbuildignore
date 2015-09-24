@@ -8,3 +8,4 @@
 ^scenarios/
 ^configure.R$
 ^NEWS.md$
+^.*\.o$

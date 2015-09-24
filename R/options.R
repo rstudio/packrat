@@ -126,10 +126,10 @@ get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
 
 make_setter <- function(name) {
   force(name)
-  return( function(x) {
+  function(x) {
     if (missing(x)) return(get_opts(name))
     else do.call(set_opts, setNames(list(x), name))
-  })
+  }
 }
 
 ##' @rdname packrat-options
