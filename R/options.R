@@ -17,7 +17,8 @@ VALID_OPTIONS <- list(
   load.external.packages.on.startup = list(TRUE, FALSE),
   ignored.packages = function(x) {
     is.null(x) || is.character(x)
-  }
+  },
+  quiet.package.installation = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -30,7 +31,8 @@ default_opts <- function() {
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
     local.repos = "",
     load.external.packages.on.startup = TRUE,
-    ignored.packages = NULL
+    ignored.packages = NULL,
+    quiet.package.installation = TRUE
   )
 }
 
@@ -79,6 +81,8 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' \item \code{ignored.packages}:
 ##'   Prevent packrat from tracking certain packages. Dependencies of these packages
 ##'   will also not be tracked.
+##' \item \code{quiet.package.installation}:
+##'   Emit output during package installation?
 ##' }
 ##'
 ##' @param options A character vector of valid option names.

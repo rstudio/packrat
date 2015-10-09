@@ -490,8 +490,9 @@ installPkg <- function(pkgRecord,
         on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
+      quiet <- packrat::opts$quiet.package.installation()
       install_local_path(path = pkgSrc, reload = FALSE,
-                         dependencies = FALSE, quick = TRUE, quiet = TRUE)
+                         dependencies = FALSE, quick = TRUE, quiet = quiet)
     })
   }
 
@@ -502,6 +503,7 @@ installPkg <- function(pkgRecord,
 }
 
 playActions <- function(pkgRecords, actions, repos, project, lib) {
+
   # Get the list of available packages and the latest version of those packages
   # from the repositories, and the local install list for comparison
   availablePkgs <- available.packages(contrib.url(repos))
