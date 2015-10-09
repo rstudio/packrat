@@ -107,6 +107,9 @@ getPackageRecordsExternalSource <- function(pkgNames,
       result <- suppressWarnings(inferPackageRecord(df))
     }
 
+    if (is.null(result$source))
+      result$source <- "unknown"
+
     # If this failed, try falling back to something of the same name in 'available'
     if (!nzchar(pkgDescFile) || (result$source == "unknown" && fallback.ok)) {
 
