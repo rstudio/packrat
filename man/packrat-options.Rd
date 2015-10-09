@@ -64,6 +64,8 @@ Get and set options for the current packrat-managed project.
 \item \code{ignored.packages}:
   Prevent packrat from tracking certain packages. Dependencies of these packages
   will also not be tracked.
+\item \code{quiet.package.installation}:
+  Emit output during package installation?
 }
 }
 \examples{
