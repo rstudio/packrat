@@ -302,11 +302,29 @@ snapshot <- function(project = NULL,
 # around for compatibility with older Packrat versions.
 snapshotImpl <- .snapshotImpl
 
+# See https://www.bioconductor.org/about/release-announcements/#release-versions
+# for more info.
+rToBiocVersionMap <- list(
+  "3.3" = "3.2",
+  "3.2" = "3.1",
+  "3.1" = c("2.14", "3.0"),
+  "3.0" = c("2.13", "2.12"),
+  "2.15" = c("2.11", "2.10")
+)
+
 getBiocRepos <- function() {
 
+  # Get the major + minor R version
   rVersion <- unlist(getRversion())
-  rv <- paste(rVersion[[1]], rVersion[[2]], sep = ".")
-  prefix <- sprintf("http://bioconductor.org/packages/%s", rv)
+  rVersionMajorMinor <- paste(rVersion[[1]], rVersion[[2]], sep = ".")
+
+  ## Get the Bioc version. We don't use the installed 'BiocInstaller'
+  ## as it might be out of date / out of sync with the currently used
+  ## version of R.
+  biocVersion <- rToBiocVersionMap[[rVersionMajorMinor]][[1]]
+
+  # Build the prefix used to access BioC packages.
+  prefix <- sprintf("http://bioconductor.org/packages/%s", biocVersion)
 
   c(
     BioCsoft  = file.path(prefix, "bioc"),
