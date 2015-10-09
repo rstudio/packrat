@@ -262,79 +262,113 @@ fileDependencies.R <- function(file) {
   unique(pkgs)
 }
 
-# detect the package dependencies of an expression (adapted from
-# tools:::.check_packages_used)
-#
-# expressionDependencies(quote(library("h")))
-# expressionDependencies(quote(library(10, package = "h")))
-# expressionDependencies(quote(library(h)))
-# expressionDependencies(quote({library(h); library(g)}))
-# expressionDependencies(quote(h::f))
+anyOf <- function(object, ...) {
+  predicates <- list(...)
+  for (predicate in predicates)
+    if (predicate(object))
+      return(TRUE)
+  FALSE
+}
+
+allOf <- function(object, ...) {
+  predicates <- list(...)
+  for (predicate in predicates)
+    if (!predicate(object))
+      return(FALSE)
+  TRUE
+}
+
+recursiveWalk <- function(`_node`, fn, ...) {
+  fn(`_node`, ...)
+  if (is.call(`_node`)) {
+    for (i in seq_along(`_node`)) {
+      recursiveWalk(`_node`[[i]], fn, ...)
+    }
+  }
+}
+
+# Fills 'env' as a side effect
+identifyPackagesUsed <- function(call, env) {
+
+  if (!is.call(call))
+    return()
+
+  fn <- call[[1]]
+  if (!anyOf(fn, is.character, is.symbol))
+    return()
+
+  fnString <- as.character(fn)
+
+  # Check for '::', ':::'
+  if (fnString %in% c("::", ":::")) {
+    if (anyOf(call[[2]], is.character, is.symbol)) {
+      pkg <- as.character(call[[2]])
+      env[[pkg]] <- TRUE
+      return()
+    }
+  }
+
+  # Check for S4-related function calls (implying a dependency on methods)
+  if (fnString %in% c("setClass", "setMethod", "setRefClass", "setGeneric", "setGroupGeneric")) {
+    env[["methods"]] <- TRUE
+    return()
+  }
+
+  # Check for packge loaders
+  pkgLoaders <- c("library", "require", "loadNamespace", "requireNamespace")
+  if (!fnString %in% pkgLoaders)
+    return()
+
+  # Try matching the call.
+  loader <- tryCatch(
+    get(fnString, envir = asNamespace("base")),
+    error = function(e) NULL
+  )
+
+  if (!is.function(loader))
+    return()
+
+  matched <- match.call(loader, call)
+  if (!"package" %in% names(matched))
+    return()
+
+  # Protect against 'character.only = TRUE' + symbols.
+  # This defends us against a construct like:
+  #
+  #    for (x in pkgs)
+  #        library(x, character.only = TRUE)
+  #
+  if ("character.only" %in% names(matched)) {
+    if (is.symbol(matched[["package"]])) {
+      return()
+    }
+  }
+
+  if (anyOf(matched[["package"]], is.symbol, is.character)) {
+    pkg <- as.character(matched[["package"]])
+    env[[pkg]] <- TRUE
+    return()
+  }
+
+
+}
+
 expressionDependencies <- function(e) {
-  # base case
-  if (is.atomic(e) || is.name(e)) return()
 
-  # recursive case: expression (= list of calls)
   if (is.expression(e)) {
-    return(unlist(lapply(e, expressionDependencies)))
+    return(unlist(lapply(e, function(call) {
+      expressionDependencies(call)
+    })))
   }
 
-  ## traverse a call to find `::`, `:::`, `library`, `require` calls
-  if (is.call(e)) {
-    parent <- e
-    child <- e[[1L]]
-    while (is.call(child)) {
-      parent <- parent[[1L]]
-      child <- parent[[1L]]
-    }
-    if (as.character(child) %in% c("::", ":::")) {
-      return(as.character(parent[[2L]]))
-    } else if (as.character(child) %in% c("library", "require")) {
-      # Match arguments
-      call <- eval(call("match.call", child, quote(parent)))
-
-      # If character.only is TRUE and 'package' is a symbol, don't return that
-      # symbol
-      pkg <- call[["package"]]
-      co <- call[["character.only"]]
-      if (isTRUE(co) && is.symbol(pkg)) {
-        return()
-      } else {
-        return(as.character(pkg))
-      }
-    }
+  else if (is.call(e)) {
+    env <- new.env(parent = emptyenv())
+    recursiveWalk(e, identifyPackagesUsed, env)
+    return(names(env))
   }
 
-  # base case: a call
-  fname <- as.character(e[[1L]])
-  # a refclass method call, so return
-  if (length(fname) > 1) return()
+  else character()
 
-  if (length(fname) == 1) {
-
-    # base case: call to library/require
-    if (fname %in% c("library", "require")) {
-      mc <- match.call(get(fname, baseenv()), e)
-      if (is.null(mc$package)) return(NULL)
-      if (isTRUE(mc$character.only)) return(NULL)
-
-      return(as.character(mc$package))
-    }
-
-    # base case: call to :: or :::
-    if (fname %in% c("::", ":::"))
-      return(as.character(e[[2L]]))
-
-    # base case: methods functions
-    if (fname %in% c("setClass", "setRefClass", "setMethod", "setGeneric")) {
-      return("methods")
-    }
-
-  }
-
-  # recursive case: all other calls
-  children <- lapply(as.list(e[-1]), expressionDependencies)
-  unique(unlist(children))
 }
 
 # Read a DESCRIPTION file into a data.frame
