@@ -11,6 +11,7 @@
 #'   directory.
 #' @return Returns a list of the names of the packages on which R code in the
 #'   application depends.
+#' @param implicit.packrat.dependency is packrat an implicit dependency?
 #' @details Dependencies are determined by parsing application source code and
 #'   looking for calls to \code{library}, \code{require}, \code{::}, and
 #'   \code{:::}.
@@ -29,7 +30,8 @@
 #' @keywords internal
 appDependencies <- function(project = NULL,
                             available.packages = NULL,
-                            fields = c("Imports", "Depends", "LinkingTo")) {
+                            fields = c("Imports", "Depends", "LinkingTo"),
+                            implicit.packrat.dependency = TRUE) {
 
   if (is.null(available.packages)) available.packages <- available.packages()
 
@@ -72,7 +74,12 @@ appDependencies <- function(project = NULL,
                                               fields)
   }
 
-  result <- unique(c(parentDeps, childDeps, "packrat"))
+  result <- unique(c(parentDeps, childDeps))
+
+  # should packrat be included as automatic dependency?
+  if (implicit.packrat.dependency) {
+    result <- unique(c(result, "packrat"))
+  }
 
   # If this project is implicitly a shiny application, then
   # add that in as the previously run expression dependency lookup

@@ -98,6 +98,8 @@ snapshot <- function(project = NULL,
 #'   locally installed version is unavailable?
 #' @param snapshot.sources Download the tarball associated with a particular
 #'   package?
+#' @param implicit.packrat.dependency should packrat itself be included in the
+#'   snapshot as an implicit dependency?
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
@@ -110,7 +112,8 @@ snapshot <- function(project = NULL,
                           auto.snapshot = FALSE,
                           verbose = TRUE,
                           fallback.ok = FALSE,
-                          snapshot.sources = TRUE) {
+                          snapshot.sources = TRUE,
+                          implicit.packrat.dependency = TRUE) {
 
   if (is.null(available))
   {
@@ -146,7 +149,8 @@ snapshot <- function(project = NULL,
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
   inferredPkgs <- sort_c(appDependencies(project,
-                                         available.packages = available))
+                                         available.packages = available,
+                                         implicit.packrat.dependency = implicit.packrat.dependency))
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
