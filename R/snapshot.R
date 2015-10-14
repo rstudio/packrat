@@ -98,8 +98,10 @@ snapshot <- function(project = NULL,
 #'   locally installed version is unavailable?
 #' @param snapshot.sources Download the tarball associated with a particular
 #'   package?
-#' @param implicit.packrat.dependency should packrat itself be included in the
-#'   snapshot as an implicit dependency?
+#' @param implicit.packrat.dependency Include \code{packrat} as an implicit
+#'   dependency of this project, if not otherwise discovered? This should be
+#'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
+#'   via other means when attempting to load this project.
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
