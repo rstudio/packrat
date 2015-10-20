@@ -156,6 +156,12 @@ inferAppropriateDownloadMethod <- function(url) {
   if (is.function(packrat.download.method))
     return(packrat.download.method(url))
 
+  # If the user has already opted into using a certain download method,
+  # don't stomp on that.
+  download.file.method <- getOption("download.file.method")
+  if (!is.null(download.file.method))
+    return(download.file.method)
+
   # Prefer using external programs (they can better handle redirects
   # than R's internal downloader, or so it seems)
   isSecureWebProtocol <- grepl("^(?:ht|f)tps://", url, perl = TRUE)
