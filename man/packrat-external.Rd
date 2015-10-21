@@ -8,9 +8,9 @@
 \alias{with_extlib}
 \title{Managing External Libraries}
 \usage{
-with_extlib(packages, expr, envir = parent.frame(), ...)
+with_extlib(packages, expr, envir = parent.frame())
 
-extlib(packages, ...)
+extlib(packages)
 
 user_lib()
 
@@ -23,8 +23,6 @@ the duration of evaluation of \code{expr}.}
 \item{expr}{An \R expression.}
 
 \item{envir}{An environment in which the expression is evaluated.}
-
-\item{...}{Optional arguments passed to \code{\link{library}}.}
 }
 \description{
 These functions provide a mechanism for (temporarily) using packages outside

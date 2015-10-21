@@ -5,11 +5,17 @@
 \title{Detect Application Dependencies}
 \usage{
 appDependencies(project = NULL, available.packages = NULL,
-  fields = c("Imports", "Depends", "LinkingTo"))
+  fields = c("Imports", "Depends", "LinkingTo"),
+  implicit.packrat.dependency = TRUE)
 }
 \arguments{
 \item{project}{Directory containing application. Defaults to current working
 directory.}
+
+\item{implicit.packrat.dependency}{Include \code{packrat} as an implicit
+dependency of this project, if not otherwise discovered? This should be
+\code{FALSE} only if you can guarantee that \code{packrat} will be available
+via other means when attempting to load this project.}
 }
 \value{
 Returns a list of the names of the packages on which R code in the

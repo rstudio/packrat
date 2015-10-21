@@ -163,10 +163,12 @@ test_that("init, disable handle projects that have been initted / disabled sensi
   content <- readLines(file.path(projRoot, ".Rprofile"))
   expect_true(grepl(text, paste(content, collapse = "\n")))
   packrat::disable(projRoot, restart = FALSE)
-  expect_true(file.exists(file.path(projRoot, ".Rprofile")))
-  if (file.exists(file.path(projRoot, ".Rprofile")))
-    content <- readLines(file.path(projRoot, ".Rprofile"))
-  expect_true(grepl(text, paste(content, collapse = "\n")))
+  path <- file.path(projRoot, ".Rprofile")
+  expect_true(file.exists(path))
+  if (file.exists(path)) {
+    content <- readChar(path, file.info(path)$size, TRUE)
+    expect_true(grepl(text, paste(content, collapse = "\n")))
+  }
 
   unlink(projRoot, recursive = TRUE)
 

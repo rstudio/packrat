@@ -7,7 +7,7 @@
 .snapshotImpl(project, available = NULL, lib.loc = libDir(project),
   dry.run = FALSE, ignore.stale = FALSE, prompt = interactive(),
   auto.snapshot = FALSE, verbose = TRUE, fallback.ok = FALSE,
-  snapshot.sources = TRUE)
+  snapshot.sources = TRUE, implicit.packrat.dependency = TRUE)
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
@@ -46,6 +46,11 @@ locally installed version is unavailable?}
 
 \item{snapshot.sources}{Download the tarball associated with a particular
 package?}
+
+\item{implicit.packrat.dependency}{Include \code{packrat} as an implicit
+dependency of this project, if not otherwise discovered? This should be
+\code{FALSE} only if you can guarantee that \code{packrat} will be available
+via other means when attempting to load this project.}
 }
 \description{
 This is the internal implementation for \code{\link{snapshot}}. Most users

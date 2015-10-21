@@ -1,11 +1,22 @@
-# Packrat 0.4.4 (Unreleased)
+# Packrat 0.4.5
 
-- Packrat no longer creates empty ignore files (thanks, @aronatkins)
+- Fixed an issue where the autoloader header in a project's `.Rprofile`
+  could become duplicated.
 
-- Bioconductor repositories are now created internally by packrat. This should 
-  resolve errors where Bioconductor repository URLs are generated when an
-  incompatible version of `BiocInstaller` is installed.
-  
+- Packrat now attempts to choose a secure download method when downloading
+  files from `https` URLs, if a default download method is not already set.
+
+- The code used for detecting package dependencies has been re-written and
+  refactored, and should properly avoid detecting `x` as a dependency in e.g.
+  `library(x, character.only = TRUE)`.
+
+- `packrat::snapshot()` now updates the active repositories in the lock file,
+  even if no packages have changed.
+
+- Packrat no longer creates empty ignore files. (@aronatkins)
+
+# Packrat 0.4.4
+
 - Packrat now understands the `pkgType = "both"` option and can properly
   restore projects when that option is set.
   

@@ -9,14 +9,13 @@
 ##'   the duration of evaluation of \code{expr}.
 ##' @param expr An \R expression.
 ##' @param envir An environment in which the expression is evaluated.
-##' @param ... Optional arguments passed to \code{\link{library}}.
 ##' @name packrat-external
 ##' @rdname packrat-external
 ##' @examples \dontrun{
 ##' with_extlib("lattice", xyplot(1 ~ 1))
 ##' }
 ##' @export
-with_extlib <- function(packages, expr, envir = parent.frame(), ...) {
+with_extlib <- function(packages, expr, envir = parent.frame()) {
 
   if (!is.character(packages)) {
     stop("'packages' should be a character vector of libraries", call. = FALSE)
@@ -34,8 +33,9 @@ with_extlib <- function(packages, expr, envir = parent.frame(), ...) {
       if (!length(libPaths))
         libPaths <- getDefaultLibPaths()
 
-      for (package in packages)
-        library(package, character.only = TRUE, lib.loc = libPaths, warn.conflicts = FALSE, ...)
+      for (package in packages) {
+        library(package, character.only = TRUE, lib.loc = libPaths, warn.conflicts = FALSE)
+      }
 
       ## Evaluate the call
       error <- try(res <- eval(call$expr, envir = envir), silent = TRUE)
@@ -62,10 +62,11 @@ with_extlib <- function(packages, expr, envir = parent.frame(), ...) {
 ##' @name packrat-external
 ##' @rdname packrat-external
 ##' @export
-extlib <- function(packages, ...) {
+extlib <- function(packages) {
   lib.loc <- getDefaultLibPaths()
-  for (package in packages)
-    library(package, character.only = TRUE, lib.loc = lib.loc, ...)
+  for (package in packages) {
+    library(package, character.only = TRUE, lib.loc = lib.loc)
+  }
 }
 
 loadExternalPackages <- function() {

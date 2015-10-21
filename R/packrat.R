@@ -69,6 +69,7 @@
 #'
 #' @docType package
 #' @name packrat
+#' @import utils
 #' @author RStudio, Inc.
 NULL
 

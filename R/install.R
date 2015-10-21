@@ -37,7 +37,6 @@
 #'   package. This is useful for debugging (especially inside of RStudio).
 #'   It defaults to the option \code{"keep.source.pkgs"}.
 #' @export
-#' @importFrom utils install.packages
 #' @importFrom tools pkgVignettes
 install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
                     args = getOption("devtools.install.args"), quiet = FALSE,
