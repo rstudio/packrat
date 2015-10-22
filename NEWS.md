@@ -1,3 +1,8 @@
+# Packrat 0.4.6 (Unreleased)
+
+- Fixed an issue where the 'quiet.package.installation()' option could cause
+  a restore failure, if it was not already set for the active project.
+
 # Packrat 0.4.5
 
 - Fixed an issue where the autoloader header in a project's `.Rprofile`

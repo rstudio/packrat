@@ -490,7 +490,7 @@ installPkg <- function(pkgRecord,
         on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
       }
 
-      quiet <- packrat::opts$quiet.package.installation()
+      quiet <- isTRUE(packrat::opts$quiet.package.installation())
       install_local_path(path = pkgSrc, reload = FALSE,
                          dependencies = FALSE, quick = TRUE, quiet = quiet)
     })
