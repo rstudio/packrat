@@ -152,7 +152,6 @@ getSourceForPkgRecord <- function(pkgRecord,
           if (!downloadWithRetries(archiveUrl,
                                    destfile = file.path(pkgSrcDir, pkgSrcFile),
                                    mode = "wb", quiet = TRUE)) {
-            message("FAILED")
             stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
           }
           foundVersion <- TRUE
@@ -163,6 +162,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         })
       }
       if (!foundVersion) {
+        message("FAILED")
         stop("Couldn't find source for version ", pkgRecord$version, " of ",
              pkgRecord$name, " (", currentVersion, " is current)")
       }
@@ -233,7 +233,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
       message("OK (", type, ")")
     } else {
-      message("Failed")
+      message("FAILED")
       stop("Could not find sources for ", pkgRecord$name, " (",
            pkgRecord$version, ").")
     }
