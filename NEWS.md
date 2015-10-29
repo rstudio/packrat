@@ -1,4 +1,10 @@
-# Packrat 0.4.6 (Unreleased)
+# Packrat 0.4.6
+
+- Silence noisy 'FAILED' messages that occurred when querying a repository
+  for the existence of a package (in its archives) failed.
+
+- Fixed a regression where dependencies were not properly discovered when
+  using (R <= 3.1).
 
 - Fixed an issue where the 'quiet.package.installation()' option could cause
   a restore failure, if it was not already set for the active project.
