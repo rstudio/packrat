@@ -9,15 +9,17 @@
 #'
 #' @param project Directory containing application. Defaults to current working
 #'   directory.
-#' @return Returns a list of the names of the packages on which R code in the
-#'   application depends.
 #' @param implicit.packrat.dependency Include \code{packrat} as an implicit
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
 #'   via other means when attempting to load this project.
+#'
 #' @details Dependencies are determined by parsing application source code and
 #'   looking for calls to \code{library}, \code{require}, \code{::}, and
 #'   \code{:::}.
+#'
+#' @return Returns a list of the names of the packages on which R code in the
+#'   application depends.
 #'
 #' @examples
 #'
@@ -374,7 +376,7 @@ expressionDependencies <- function(e) {
   else if (is.call(e)) {
     env <- new.env(parent = emptyenv())
     recursiveWalk(e, identifyPackagesUsed, env)
-    return(names(env))
+    return(ls(env, all.names = TRUE))
   }
 
   else character()
