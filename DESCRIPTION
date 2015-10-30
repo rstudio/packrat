@@ -2,7 +2,7 @@ Package: packrat
 Type: Package
 Title: A Dependency Management System for Projects and their R Package
     Dependencies
-Version: 0.4.5-5
+Version: 0.4.5-6
 Author: Kevin Ushey, Jonathan McPherson, Joe Cheng, Aron Atkins, JJ Allaire
 Maintainer: Kevin Ushey <kevin@rstudio.com>
 Description: Manage the R packages your project depends
@@ -17,9 +17,8 @@ Suggests:
     testthat (>= 0.7),
     devtools,
     httr,
-    pkgKitten
-Enhances: knitr,
-    BiocInstaller
+    pkgKitten,
+    knitr
 URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 RoxygenNote: 5.0.0
