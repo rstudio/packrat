@@ -6,10 +6,10 @@ withTestContext({
     projRoot <- cloneTestProject("sated")
     repos <- getOption("repos")
     options(repos = c(CRAN = paste0("file:///", normalizePath("repo-empty"))))
-    on.exit(options(repos = repos), add = TRUE)
     ## we expect a warning signalling that the package 'breakfast' is not found
     ## in a repo or locally
     expect_error(suppressWarnings(init(enter = FALSE, projRoot)))
+    options(repos = repos)
   })
 
   test_that("init warns if a package is found in multiple local repos", {
