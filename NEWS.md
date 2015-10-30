@@ -1,5 +1,9 @@
 # Packrat 0.4.6 (Unreleased)
 
+- Packrat gains the option `snapshot.recommended.packages()`, to control
+  whether Recommended packages detected in the system library should become
+  part of the lockfile.
+
 - Silence noisy 'FAILED' messages that occurred when querying a repository
   for the existence of a package (in its archives) failed.
 
