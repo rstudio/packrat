@@ -1,9 +1,7 @@
-context("Custom CRAN-like Repositories")
+context("CRAN")
 
 test_that("We can create and 'upload' an example package", {
-
-  if (!requireNamespace("devtools", quietly = TRUE))
-    return()
+  skip_on_cran()
 
   dir <- tempdir()
   owd <- getwd()
@@ -19,9 +17,17 @@ test_that("We can create and 'upload' an example package", {
   on.exit(options(repos = repos), add = TRUE)
 
   # Create an example package.
-  devtools::create(file.path(dir, "sashimi"))
+  env <- new.env(parent = emptyenv())
+  env$sashimi <- function() {}
+  suppressMessages(
+    utils::package.skeleton("sashimi", path = dir, environment = env)
+  )
 
-  # Try uploading the package
+  # tidy up the broken package
+  unlink("sashimi/man/", recursive = TRUE)
+
+  # Try uploading the package from the directory itself (requires building)
+  message("\nBuilding sashimi:\n")
   packrat::repos_upload(
     file.path(dir, "sashimi"),
     "sushi"

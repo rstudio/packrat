@@ -4,8 +4,6 @@
 ^internal/
 ^packrat/
 ^announce/
-^tests/
 ^scenarios/
 ^configure.R$
 ^NEWS.md$
-^.*\.o$

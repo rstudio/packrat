@@ -16,9 +16,9 @@ test_that("dependencies are properly resolved in expressions", {
   })
 
   dependencies <- expressionDependencies(expr)
-  expect_equal(
+  expect_true(setequal(
     c("plyr", "dplyr", "stats", "knitr", "methods"),
     dependencies
-  )
+  ))
 
 })
