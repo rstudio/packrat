@@ -1,3 +1,5 @@
+Sys.setenv(R_PACKRAT_TESTING = "yes")
 library(testthat)
 library(packrat)
 test_check("packrat")
+Sys.unsetenv("R_PACKRAT_TESTING")

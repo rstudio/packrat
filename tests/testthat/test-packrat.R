@@ -146,6 +146,7 @@ withTestContext({
 
   test_that("init, disable handle projects that have been initted / disabled sensibly", {
     skip_on_cran()
+    skip_on_os("windows")
 
     projRoot <- cloneTestProject("sated")
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))

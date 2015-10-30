@@ -416,9 +416,11 @@ installPkg <- function(pkgRecord,
 
       # on windows, we need to detach the package before installation
       if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
-        pkg <- paste0("package:", pkgRecord$name)
-        detach(pkg, character.only = TRUE)
-        on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
+        if (!is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))) {
+          pkg <- paste0("package:", pkgRecord$name)
+          detach(pkg, character.only = TRUE)
+          on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
+        }
       }
 
       # If pkgType is 'both', the availablePkgs inferred will be wrong.
@@ -483,11 +485,12 @@ installPkg <- function(pkgRecord,
       }
 
       # on windows, we need to detach the package before installation
-      if (is.windows() &&
-            paste0("package:", pkgRecord$name) %in% search()) {
-        pkg <- paste0("package:", pkgRecord$name)
-        detach(pkg, character.only = TRUE)
-        on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
+      if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
+        if (!is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))) {
+          pkg <- paste0("package:", pkgRecord$name)
+          detach(pkg, character.only = TRUE)
+          on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
+        }
       }
 
       quiet <- isTRUE(packrat::opts$quiet.package.installation())

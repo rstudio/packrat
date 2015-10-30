@@ -24,7 +24,7 @@ test_that("We can create and 'upload' an example package", {
   )
 
   # tidy up the broken package
-  unlink("sashimi/man/", recursive = TRUE)
+  unlink("sashimi/man", recursive = TRUE)
 
   # Try uploading the package from the directory itself (requires building)
   message("\nBuilding sashimi:\n")
