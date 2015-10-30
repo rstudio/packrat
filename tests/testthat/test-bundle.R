@@ -6,9 +6,11 @@ withTestContext({
 
     TAR <- Sys.getenv("TAR")
     Sys.setenv(TAR = "")
+    on.exit(Sys.setenv(TAR = TAR), add = TRUE)
 
     owd <- getwd()
     setwd(tempdir())
+    on.exit(setwd(owd), add = TRUE)
 
     dir.create("packrat-test-bundle")
     setwd("packrat-test-bundle")
@@ -21,8 +23,6 @@ withTestContext({
     )
 
     unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
-    setwd(owd)
-    Sys.setenv(TAR = TAR)
 
   })
 
@@ -32,6 +32,7 @@ withTestContext({
 
       owd <- getwd()
       setwd(tempdir())
+      on.exit(setwd(owd), add = TRUE)
 
       dir.create("packrat-test-bundle")
       setwd("packrat-test-bundle")
@@ -45,7 +46,6 @@ withTestContext({
       )
 
       unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
-      setwd(owd)
 
     }
 
@@ -57,6 +57,7 @@ withTestContext({
 
       owd <- getwd()
       setwd(tempdir())
+      on.exit(setwd(owd), add = TRUE)
 
       dir.create("packrat-test-bundle")
       setwd("packrat-test-bundle")
@@ -73,13 +74,13 @@ withTestContext({
       )
 
       unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
-      setwd(owd)
 
     }
 
     ## Test for internal TAR
     owd <- getwd()
     setwd(tempdir())
+    on.exit(setwd(owd), add = TRUE)
 
     if (file.exists("packrat-test-bundle"))
       unlink("packrat-test-bundle", recursive = TRUE)
@@ -96,7 +97,6 @@ withTestContext({
     )
 
     unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
-    setwd(owd)
 
   })
 
