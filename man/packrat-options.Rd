@@ -66,6 +66,12 @@ Get and set options for the current packrat-managed project.
   will also not be tracked.
 \item \code{quiet.package.installation}:
   Emit output during package installation?
+\item \code{snapshot.recommended.packages}:
+  Should 'recommended' packages discovered in the system library be
+  snapshotted? See the \code{Priority} field of \code{available.packages()}
+  for more information -- 'recommended' packages are those normally bundled
+  with CRAN releases of R on OS X and Windows, but new releases are also
+  available on the CRAN server.
 }
 }
 \examples{

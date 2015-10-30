@@ -18,7 +18,8 @@ VALID_OPTIONS <- list(
   ignored.packages = function(x) {
     is.null(x) || is.character(x)
   },
-  quiet.package.installation = list(TRUE, FALSE)
+  quiet.package.installation = list(TRUE, FALSE),
+  snapshot.recommended.packages = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -32,7 +33,8 @@ default_opts <- function() {
     local.repos = "",
     load.external.packages.on.startup = TRUE,
     ignored.packages = NULL,
-    quiet.package.installation = TRUE
+    quiet.package.installation = TRUE,
+    snapshot.recommended.packages = FALSE
   )
 }
 
@@ -83,6 +85,12 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   will also not be tracked.
 ##' \item \code{quiet.package.installation}:
 ##'   Emit output during package installation?
+##' \item \code{snapshot.recommended.packages}:
+##'   Should 'recommended' packages discovered in the system library be
+##'   snapshotted? See the \code{Priority} field of \code{available.packages()}
+##'   for more information -- 'recommended' packages are those normally bundled
+##'   with CRAN releases of R on OS X and Windows, but new releases are also
+##'   available on the CRAN server.
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
