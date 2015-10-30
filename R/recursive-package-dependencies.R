@@ -90,9 +90,14 @@ excludeRecommendedPackages <- function(packages) {
 }
 
 dropSystemPackages <- function(packages) {
+
+  # always exclude base packages
   packages <- excludeBasePackages(packages)
-  if (!identical(packrat::opts$snapshot.recommended.packages(), FALSE))
+
+  # exclude recommended packages if desired by user
+  if (!isTRUE(packrat::opts$snapshot.recommended.packages()))
     packages <- excludeRecommendedPackages(packages)
+
   packages
 }
 
