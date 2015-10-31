@@ -7,3 +7,4 @@
 ^scenarios/
 ^configure.R$
 ^NEWS.md$
+^\.Rprofile$
