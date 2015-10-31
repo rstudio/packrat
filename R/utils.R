@@ -588,40 +588,16 @@ isTestingPackrat <- function() {
   !is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))
 }
 
-isDollarCall <- function(object) {
-
-  if (!is.call(object))
-    return(FALSE)
-
-  fn <- object[[1]]
-  if (is.symbol(fn) || is.character(fn))
-    return(as.character(fn) %in% c("$", "@"))
-
-  FALSE
-
-}
-
-partialEval <- function(object, envir) {
-
-  if (is.expression(object))
-    for (i in seq_along(object))
-      object[[i]] <- partialEval(object[[i]], envir)
-
-  else if (isDollarCall(object))
-    return(eval(object, envir = envir))
-
-  else if (is.call(object))
-    for (i in seq_along(object))
-      object[[i]] <- partialEval(object[[i]], envir)
-
-  else if (is.symbol(object))
-    return(eval(object, envir = envir))
-
-  object
-
-}
-
 defer <- function(expr, envir = parent.frame()) {
-  evaluated <- partialEval(substitute(expr), envir = parent.frame())
-  do.call("on.exit", list(substitute(evaluated), add = TRUE), envir = envir)
+
+  # Create a call that must be evaluated in the parent frame (as
+  # that's where functions and symbols need to be resolved)
+  call <- substitute(
+    evalq(expr, envir = envir),
+    list(expr = substitute(expr), envir = eval(parent.frame()))
+  )
+
+  # Use 'do.call' with 'on.exit' to attach the evaluation to
+  # the exit handlrs of the selected frame
+  do.call("on.exit", list(substitute(call), add = TRUE), envir = envir)
 }
