@@ -103,6 +103,9 @@ withTestContext <- function(expr) {
   opts <- setNames(lapply(fields, getOption), fields)
   on.exit(do.call(base::options, opts), add = TRUE)
 
+  Sys.setenv(R_PACKRAT_TESTING = "yes")
+  on.exit(Sys.unsetenv("R_PACKRAT_TESTING"), add = TRUE)
+
   cran <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
   options(repos = c(CRAN = cran), pkgType = "source", warn = 0)
   force(expr)

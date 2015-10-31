@@ -583,3 +583,7 @@ isPathToSameFile <- function(lhs, rhs) {
   lhsNorm == rhsNorm
 
 }
+
+isTestingPackrat <- function() {
+  !is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))
+}

@@ -416,7 +416,7 @@ installPkg <- function(pkgRecord,
 
       # on windows, we need to detach the package before installation
       if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
-        if (!is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))) {
+        if (!isTestingPackrat()) {
           pkg <- paste0("package:", pkgRecord$name)
           detach(pkg, character.only = TRUE)
           on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
@@ -486,7 +486,7 @@ installPkg <- function(pkgRecord,
 
       # on windows, we need to detach the package before installation
       if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
-        if (!is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))) {
+        if (!isTestingPackrat()) {
           pkg <- paste0("package:", pkgRecord$name)
           detach(pkg, character.only = TRUE)
           on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
