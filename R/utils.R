@@ -594,7 +594,7 @@ defer <- function(expr, envir = parent.frame()) {
   # that's where functions and symbols need to be resolved)
   call <- substitute(
     evalq(expr, envir = envir),
-    list(expr = substitute(expr), envir = eval(parent.frame()))
+    list(expr = substitute(expr), envir = parent.frame())
   )
 
   # Use 'do.call' with 'on.exit' to attach the evaluation to
