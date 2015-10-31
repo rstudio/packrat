@@ -64,3 +64,23 @@ test_that("defer evaluates in appropriate environment", {
   expect_identical(output, expected)
 
 })
+
+test_that("defer captures arguments properly", {
+
+  emit <- function(x) cat(x, sep = "\n")
+
+  foo <- function(x) {
+    defer(emit(x), envir = parent.frame())
+  }
+
+  bar <- function(y) {
+    emit("+ bar")
+    foo(y)
+    emit("- bar")
+  }
+
+  output <- capture.output(bar("> foo"))
+  expected <- c("+ bar", "- bar", "> foo")
+  expect_identical(output, expected)
+
+})
