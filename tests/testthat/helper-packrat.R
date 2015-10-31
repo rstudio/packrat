@@ -106,6 +106,9 @@ withTestContext <- function(expr) {
   Sys.setenv(R_PACKRAT_TESTING = "yes")
   on.exit(Sys.unsetenv("R_PACKRAT_TESTING"), add = TRUE)
 
+  Sys.setenv(R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep))
+  on.exit(Sys.unsetenv("R_PACKRAT_LIBPATHS"), add = TRUE)
+
   cran <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
   options(repos = c(CRAN = cran), pkgType = "source", warn = 0)
   force(expr)

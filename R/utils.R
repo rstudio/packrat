@@ -588,26 +588,7 @@ isTestingPackrat <- function() {
   !is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))
 }
 
-partialEval <- function(object, envir) {
-
-  if (is.symbol(object))
-    return(eval(object, envir = envir))
-
-  if (is.call(object)) {
-    for (i in 1:length(object)) {
-      object[[i]] <- partialEval(object[[i]], envir)
-    }
-  }
-
-  object
-
-}
-
 defer <- function(expr, envir = parent.frame()) {
-
-  # Evaluate symbols in the passed expression.
-  partial <- partialEval(substitute(expr), parent.frame())
-
-  # Attach the defer call to an arbitrary parent environment.
-  do.call("on.exit", list(substitute(partial), add = TRUE), envir = envir)
+  evaluated <- eval(substitute(substitute(expr)), parent.frame())
+  do.call("on.exit", list(substitute(evaluated), add = TRUE), envir = envir)
 }

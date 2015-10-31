@@ -1,5 +1,7 @@
 context("utils")
 
+emit <- function(x) cat(x, sep = "\n")
+
 test_that("dir_copy copies directories", {
 
   # Work in temporary directory
@@ -25,8 +27,6 @@ test_that("dir_copy copies directories", {
 })
 
 test_that("defer evaluates in appropriate environment", {
-
-  emit <- function(x) cat(x, sep = "\n")
 
   foo <- function() {
     emit("+ foo")
@@ -67,8 +67,6 @@ test_that("defer evaluates in appropriate environment", {
 
 test_that("defer captures arguments properly", {
 
-  emit <- function(x) cat(x, sep = "\n")
-
   foo <- function(x) {
     defer(emit(x), envir = parent.frame())
   }
@@ -80,6 +78,27 @@ test_that("defer captures arguments properly", {
   }
 
   output <- capture.output(bar("> foo"))
+  expected <- c("+ bar", "- bar", "> foo")
+  expect_identical(output, expected)
+
+})
+
+test_that("defer works with arbitrary expressions", {
+
+  foo <- function(x) {
+    defer({
+      x + 1
+      emit("> foo")
+    }, envir = parent.frame())
+  }
+
+  bar <- function() {
+    emit("+ bar")
+    foo(1)
+    emit("- bar")
+  }
+
+  output <- capture.output(bar())
   expected <- c("+ bar", "- bar", "> foo")
   expect_identical(output, expected)
 

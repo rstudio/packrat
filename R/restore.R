@@ -651,10 +651,6 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
   if (!is.windows())
     return(FALSE)
 
-  # avoid detach when testing
-  if (isTestingPackrat())
-    return(FALSE)
-
   # no need to detach if not actually attached
   searchPathName <- paste("package", pkg, sep = ":")
   if (!searchPathName %in% search())
@@ -666,15 +662,23 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
   if (!is.character(pkgPath))
     return(FALSE)
 
-  # got the package path; detach and reload on exit of parent
-  libPath <- dirname(pkgPath)
+  # got the package path; detach and reload on exit of parent.
+  # when running tests, we want to reload packrat from the same
+  # directory it was run from rather than the private library, as
+  # we install a dummy version of packrat that doesn't actually export
+  # the functions we need
+  libPaths <- if (pkg == "packrat" && isTestingPackrat()) {
+    strsplit(Sys.getenv("R_PACKRAT_LIBPATHS"),
+             .Platform$path.sep,
+             fixed = TRUE)[[1]]
+  } else {
+    dirname(pkgPath)
+  }
+
   detach(searchPathName, character.only = TRUE)
 
   # re-load the package when the calling function returns
-  defer(
-    library(pkg, lib.loc = libPath, character.only = TRUE),
-    parent.frame()
-  )
+  defer(library(pkg, lib.loc = libPaths, character.only = TRUE), parent.frame())
 
   TRUE
 }
