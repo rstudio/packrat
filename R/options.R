@@ -231,13 +231,20 @@ readOptsFile <- function(path) {
   result
 }
 
-## Read and parse an options file
+## Read and parse an options file. Returns the default set
+## of options if no options available.
 read_opts <- function(project = NULL) {
+
   project <- getProjectDir(project)
   path <- packratOptionsFilePath(project)
-  if (!file.exists(path)) return(list())
+
+  if (!file.exists(path))
+    return(default_opts())
+
   opts <- readOptsFile(path)
-  if (!length(opts)) return(list())
+  if (!length(opts))
+    return(default_opts())
+
   opts[] <- lapply(opts, function(x) {
     if (identical(x, "TRUE")) {
       return(TRUE)
@@ -249,6 +256,7 @@ read_opts <- function(project = NULL) {
       x
     }
   })
+
   opts
 }
 
