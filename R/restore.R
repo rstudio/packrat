@@ -647,10 +647,6 @@ restoreImpl <- function(project,
 
 detachPackageForInstallationIfNecessary <- function(pkg) {
 
-  # no need to detach on non-Windows OS
-  if (!is.windows())
-    return(FALSE)
-
   # no need to detach if not actually attached
   searchPathName <- paste("package", pkg, sep = ":")
   if (!searchPathName %in% search())

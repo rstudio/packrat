@@ -588,7 +588,40 @@ isTestingPackrat <- function() {
   !is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))
 }
 
+isDollarCall <- function(object) {
+
+  if (!is.call(object))
+    return(FALSE)
+
+  fn <- object[[1]]
+  if (is.symbol(fn) || is.character(fn))
+    return(as.character(fn) %in% c("$", "@"))
+
+  FALSE
+
+}
+
+partialEval <- function(object, envir) {
+
+  if (is.expression(object))
+    for (i in seq_along(object))
+      object[[i]] <- partialEval(object[[i]], envir)
+
+  else if (isDollarCall(object))
+    return(eval(object, envir = envir))
+
+  else if (is.call(object))
+    for (i in seq_along(object))
+      object[[i]] <- partialEval(object[[i]], envir)
+
+  else if (is.symbol(object))
+    return(eval(object, envir = envir))
+
+  object
+
+}
+
 defer <- function(expr, envir = parent.frame()) {
-  evaluated <- eval(substitute(substitute(expr)), parent.frame())
+  evaluated <- partialEval(substitute(expr), envir = parent.frame())
   do.call("on.exit", list(substitute(evaluated), add = TRUE), envir = envir)
 }
