@@ -587,3 +587,7 @@ isPathToSameFile <- function(lhs, rhs) {
 isTestingPackrat <- function() {
   !is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))
 }
+
+defer <- function(expr, envir = parent.frame()) {
+  do.call("on.exit", list(substitute(expr), add = TRUE), envir = envir)
+}

@@ -415,13 +415,7 @@ installPkg <- function(pkgRecord,
       # streams to keep our own output clean.
 
       # on windows, we need to detach the package before installation
-      if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
-        if (!isTestingPackrat()) {
-          pkg <- paste0("package:", pkgRecord$name)
-          detach(pkg, character.only = TRUE)
-          on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
-        }
-      }
+      detachPackageForInstallationIfNecessary(pkgRecord$name)
 
       # If pkgType is 'both', the availablePkgs inferred will be wrong.
       # The default behaviour for `available.packages()`,
@@ -485,13 +479,7 @@ installPkg <- function(pkgRecord,
       }
 
       # on windows, we need to detach the package before installation
-      if (is.windows() && paste0("package:", pkgRecord$name) %in% search()) {
-        if (!isTestingPackrat()) {
-          pkg <- paste0("package:", pkgRecord$name)
-          detach(pkg, character.only = TRUE)
-          on.exit(library(pkgRecord$name, character.only = TRUE), add = TRUE)
-        }
-      }
+      detachPackageForInstallationIfNecessary(pkgRecord$name)
 
       quiet <- isTRUE(packrat::opts$quiet.package.installation())
       install_local_path(path = pkgSrc, reload = FALSE,
@@ -655,5 +643,39 @@ restoreImpl <- function(project,
          project = project,
          targetLib = targetLib)
   }
+}
+
+detachPackageForInstallationIfNecessary <- function(pkg) {
+
+  # no need to detach on non-Windows OS
+  if (!is.windows())
+    return(FALSE)
+
+  # avoid detach when testing
+  if (isTestingPackrat())
+    return(FALSE)
+
+  # no need to detach if not actually attached
+  searchPathName <- paste("package", pkg, sep = ":")
+  if (!searchPathName %in% search())
+    return(FALSE)
+
+  # get the library the package was actually loaded from
+  location <- which(search() == searchPathName)
+  pkgPath <- attr(as.environment(location), "path")
+  if (!is.character(pkgPath))
+    return(FALSE)
+
+  # got the package path; detach and reload on exit of parent
+  libPath <- dirname(pkgPath)
+  detach(searchPathName, character.only = TRUE)
+
+  # re-load the package when the calling function returns
+  defer(
+    library(pkg, lib.loc = libPath, character.only = TRUE),
+    parent.frame()
+  )
+
+  TRUE
 }
 

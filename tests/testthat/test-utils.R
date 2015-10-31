@@ -23,3 +23,44 @@ test_that("dir_copy copies directories", {
   expect_error(dir_copy("foo", "bar"))
 
 })
+
+test_that("defer evaluates in appropriate environment", {
+
+  emit <- function(x) cat(x, sep = "\n")
+
+  foo <- function() {
+    emit("+ foo")
+    defer(emit("> foo"),              environment())
+    defer(emit("> foo.parent"),        parent.frame(1))
+    defer(emit("> foo.parent.parent"), parent.frame(2))
+    emit("- foo")
+  }
+
+  bar <- function() {
+    emit("+ bar")
+    foo()
+    emit("- bar")
+  }
+
+  baz <- function() {
+    emit("+ baz")
+    bar()
+    emit("- baz")
+  }
+
+  output <- capture.output(baz())
+  expected <- c(
+    "+ baz",
+    "+ bar",
+    "+ foo",
+    "- foo",
+    "> foo",
+    "- bar",
+    "> foo.parent",
+    "- baz",
+    "> foo.parent.parent"
+  )
+
+  expect_identical(output, expected)
+
+})
