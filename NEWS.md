@@ -1,4 +1,4 @@
-# Packrat 0.4.6 (Unreleased)
+# Packrat 0.4.6
 
 - Packrat gains the option `snapshot.recommended.packages()`, to control
   whether Recommended packages detected in the system library should become
