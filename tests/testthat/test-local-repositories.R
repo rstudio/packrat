@@ -12,11 +12,6 @@ withTestContext({
     options(repos = repos)
   })
 
-  test_that("init warns if a package is found in multiple local repos", {
-    projRoot <- cloneTestProject("sated")
-    expect_warning(init(enter = FALSE, projRoot, options = list(local.repos = c("packages", "other-packages"))))
-  })
-
   test_that("install_local fails if no repository has been defined", {
     expect_error(install_local("foo"))
   })

@@ -160,7 +160,7 @@ bundle_internal <- function(project = NULL,
     tarfile = file,
     files = basename(project),
     compression = "gzip",
-    tar = Sys.getenv("TAR"),
+    tar = "internal",
     ...
   )
 

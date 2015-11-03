@@ -4,6 +4,8 @@ withTestContext({
 
   test_that("Bundle works when using R's internal tar", {
 
+    skip_on_cran()
+
     TAR <- Sys.getenv("TAR")
     Sys.setenv(TAR = "")
 
@@ -27,6 +29,8 @@ withTestContext({
   })
 
   test_that("Bundle works when using an external tar", {
+
+    skip_on_cran()
 
     if (Sys.getenv("TAR") != "") {
 
