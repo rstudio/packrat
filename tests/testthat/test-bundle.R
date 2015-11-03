@@ -8,9 +8,11 @@ withTestContext({
 
     TAR <- Sys.getenv("TAR")
     Sys.setenv(TAR = "")
+    on.exit(Sys.setenv(TAR = TAR), add = TRUE)
 
     owd <- getwd()
     setwd(tempdir())
+    on.exit(setwd(owd), add = TRUE)
 
     dir.create("packrat-test-bundle")
     setwd("packrat-test-bundle")
@@ -23,8 +25,6 @@ withTestContext({
     )
 
     unlink(file.path(tempdir(), "packrat-test-bundle"), recursive = TRUE)
-    setwd(owd)
-    Sys.setenv(TAR = TAR)
 
   })
 
@@ -56,6 +56,8 @@ withTestContext({
   })
 
   test_that("Bundle works when omitting CRAN packages", {
+
+    skip_on_cran()
 
     if (Sys.getenv("TAR") != "") {
 
