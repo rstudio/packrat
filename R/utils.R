@@ -599,5 +599,5 @@ defer <- function(expr, envir = parent.frame()) {
 
   # Use 'do.call' with 'on.exit' to attach the evaluation to
   # the exit handlrs of the selected frame
-  do.call("on.exit", list(substitute(call), add = TRUE), envir = envir)
+  do.call(base::on.exit, list(substitute(call), add = TRUE), envir = envir)
 }
