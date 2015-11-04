@@ -601,3 +601,19 @@ defer <- function(expr, envir = parent.frame()) {
   # the exit handlrs of the selected frame
   do.call(base::on.exit, list(substitute(call), add = TRUE), envir = envir)
 }
+
+isUsingExternalTar <- function() {
+
+  TAR <- Sys.getenv("TAR")
+
+  if (!nzchar(TAR))
+    return(FALSE)
+
+  if (!nzchar(Sys.which(TAR)))
+    return(FALSE)
+
+  if (identical(TAR, "internal"))
+    return(FALSE)
+
+  TRUE
+}

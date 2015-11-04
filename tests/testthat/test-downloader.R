@@ -29,6 +29,8 @@ getAvailableDownloadMethods <- function() {
 
 test_that("404s are errors", {
 
+  skip_on_cran()
+
   URL <- "https://cran.rstudio.com/no/such/file/here.txt"
   methods <- getAvailableDownloadMethods()
 
@@ -46,7 +48,7 @@ test_that("404s are errors", {
 
 test_that("The same content is returned regardless of download method", {
 
-  skip_on_os("solaris")
+  skip_on_cran()
 
   URL <- "https://cran.rstudio.org/src/base/AUTHORS"
   methods <- getAvailableDownloadMethods()
