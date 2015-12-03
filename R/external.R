@@ -17,6 +17,10 @@
 ##' @export
 with_extlib <- function(packages, expr, envir = parent.frame()) {
 
+  # need to force this promise now otherwise it will get evaluated
+  # in the wrong context later on
+  force(envir)
+
   if (!is.character(packages)) {
     stop("'packages' should be a character vector of libraries", call. = FALSE)
   }
