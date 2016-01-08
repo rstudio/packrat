@@ -140,10 +140,13 @@ snapshot <- function(project = NULL,
 
   ## If we are using packrat alongside an R package, then we should
   ## ignore the package itself
+  ignore <- NULL
   if (isRPackage(project = project)) {
-    ignore <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
-  } else {
-    ignore <- NULL
+    desc <- readDcf(file.path(project, "DESCRIPTION"))
+    if ("Package" %in% colnames(desc)) {
+      # R packages are not guaranteed to have a "Package" field (see isRPackge)
+      ignore <- unname(desc[, "Package"])
+    }
   }
 
   ## rstudio, manipulate needs ignoring
