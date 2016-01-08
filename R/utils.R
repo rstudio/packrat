@@ -128,6 +128,11 @@ pkgDescriptionDependencies <- function(file) {
 
   if (!file.exists(file)) stop("no file '", file, "'")
   DESCRIPTION <- readDcf(file)
+
+  # ignore empty description
+  if (nrow(DESCRIPTION) < 1)
+    return(NULL)
+
   requirements <- DESCRIPTION[1, fields[fields %in% colnames(DESCRIPTION)]]
 
   ## Remove whitespace

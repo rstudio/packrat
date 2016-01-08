@@ -213,4 +213,10 @@ withTestContext({
     expect_warning(hash("packages/egg/DESCRIPTION"))
   })
 
+  test_that("snapshot succeeds with an empty DESCRIPTION", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("emptydesc")
+    .snapshotImpl(projRoot, implicit.packrat.dependency = FALSE,
+                  snapshot.sources = FALSE)
+  })
 })
