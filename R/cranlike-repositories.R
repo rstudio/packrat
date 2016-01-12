@@ -107,27 +107,30 @@ repos_upload <- function(package, to, ...) {
 
   if (!(isNameOfRepo || isRepo))
     stop("no repository '", to, "' available; ",
-         "try adding a repository with 'packrat::add_repo()'",
+         "try adding a repository with 'packrat::repos_create()'",
          call. = FALSE)
 
-  repo <- if (isNameOfRepo)
-    repos[[to]]
-  else
-    to
+  if (isNameOfRepo) {
+    repoName <- to
+    repoPath <- repos[[repoName]]
+  } else {
+    repoName <- names(repos)[which(repos == to)]
+    repoPath <- to
+  }
 
-  if (!grepl(reFilePrefix(), repo))
+  if (!grepl(reFilePrefix(), repoPath))
     stop("packages can only be uploaded to local CRAN-like repositories with ",
          "this version of packrat",
          call. = FALSE)
 
   # perform upload
   if (is.directory(package))
-    uploadPackageSourceDir(package, repo, ...)
+    uploadPackageSourceDir(package, repoName, repoPath, ...)
   else
-    uploadPackageTarball(package, repo)
+    uploadPackageTarball(package, repoName, repoPath)
 }
 
-uploadPackageSourceDir <- function(package, repo, ...) {
+uploadPackageSourceDir <- function(package, repoName, repoPath, ...) {
 
   # create temporary directory for package
   randomString <- paste(sample(c(0:9, letters, LETTERS), 16, TRUE), collapse = "")
@@ -141,27 +144,27 @@ uploadPackageSourceDir <- function(package, repo, ...) {
   # Annotate the DESCRIPTION with the name of the repository we're
   # going to be uploading to
   descPath <- file.path(dir, "DESCRIPTION")
-  setRepositoryField(descPath, repo)
+  setRepositoryField(descPath, repoName)
 
   path <- build(dir, ...)
   if (!file.exists(path))
     stop("failed to build source package")
 
-  contribUrl <- sub(reFilePrefix(), "", file.path(repo, "src", "contrib"))
+  contribUrl <- sub(reFilePrefix(), "", file.path(repoPath, "src", "contrib"))
   success <- file.copy(
     path,
     contribUrl
   )
 
   if (!success)
-    stop("failed to copy built package to CRAN repo '", repo, "'")
+    stop("failed to copy built package to CRAN repo '", repoName, "'")
 
   tools::write_PACKAGES(contribUrl, type = "source")
   message("Package '", basename(path), "' successfully uploaded.")
   file.path(contribUrl, basename(path))
 }
 
-uploadPackageTarball <- function(package, repo, ...) {
+uploadPackageTarball <- function(package, repoName, repoPath, ...) {
 
   # Annotate the package DESCRIPTION with the repository
   tmpTarballPath <- file.path(tempdir(), "packrat-tarball-upload")
@@ -170,7 +173,7 @@ uploadPackageTarball <- function(package, repo, ...) {
   untarredPath <- file.path(tmpTarballPath, pkgName)
   setRepositoryField(
     file.path(untarredPath, "DESCRIPTION"),
-    repo
+    repoName
   )
 
   owd <- getwd()
@@ -183,7 +186,7 @@ uploadPackageTarball <- function(package, repo, ...) {
 
   path <- normalize.path(basename(package))
 
-  contribUrl <- sub(reFilePrefix(), "", file.path(repo, "src", "contrib"))
+  contribUrl <- sub(reFilePrefix(), "", file.path(repoPath, "src", "contrib"))
   if (!file.copy(path, contribUrl))
     stop("failed to upload package '", basename(package), "' to '", contribUrl, "'")
 
@@ -297,10 +300,10 @@ repos_remove <- function(names) {
 #' @export
 repos_list <- function() getOption("repos")
 
-setRepositoryField <- function(descPath, repo) {
+setRepositoryField <- function(descPath, repoName) {
   contents <- readLines(descPath)
   repoIdx <- grep("^Repository:", contents)
-  repoLine <- paste("Repository:", repo)
+  repoLine <- paste("Repository:", repoName)
   if (length(repoIdx))
     contents[[repoIdx]] <- repoLine
   else
