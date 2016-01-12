@@ -92,6 +92,9 @@ appDependencies <- function(project = NULL,
   if (!("shiny" %in% result) && isShinyApp(project))
     result <- c(result, "shiny")
 
+  if (is.null(result))
+    return(character())
+
   sort_c(result)
 }
 

@@ -131,7 +131,7 @@ pkgDescriptionDependencies <- function(file) {
 
   # ignore empty description
   if (nrow(DESCRIPTION) < 1)
-    return(NULL)
+    return(list())
 
   requirements <- DESCRIPTION[1, fields[fields %in% colnames(DESCRIPTION)]]
 
@@ -175,7 +175,7 @@ pkgDescriptionDependencies <- function(file) {
   result <- result[!(result$Package %in% basePkgs), ]
 
   ## Don't include R
-  result <- result[ !result$Package == "R", ]
+  result <- result[!result$Package == "R", ]
 
   result
 

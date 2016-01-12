@@ -235,14 +235,14 @@ snapshot <- function(project = NULL,
     return(invisible())
 
   ## Short-circuit if we know that there is nothing to be updated.
-  if (all(is.na(diffs))) {
+  if (file.exists(lockFilePath(project)) && all(is.na(diffs))) {
 
     # Check to see if the current repositories + the snapshotted
     # repositories are in sync.
     lockfile <- readLockFile(lockFilePath(project))
     lockfileRepos <- lockfile$repos
-    reposInSync <- identical(sort(getOption("repos")),
-                             sort(lockfileRepos))
+    reposInSync <- identical(sort_c(getOption("repos")),
+                             sort_c(lockfileRepos))
 
     # Check to see whether all of the installed packages are currently
     # tracked by packrat.
