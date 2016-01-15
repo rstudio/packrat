@@ -2,9 +2,10 @@
 ## Returns TRUE/FALSE, indicating whether the symlinking was successful
 symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
+  sysLibPath <- tail(getDefaultLibPaths(), 1)
 
   ## Get the system packages
-  sysPkgs <- utils::installed.packages(.Library)
+  sysPkgs <- utils::installed.packages(sysLibPath)
   sysPkgsBase <- sysPkgs[!is.na(sysPkgs[, "Priority"]), ]
   sysPkgNames <- rownames(sysPkgsBase)
 
@@ -42,7 +43,7 @@ symlinkSystemPackages <- function(project = NULL) {
   ## effect
   results <- suppressWarnings(vapply(rownames(sysPkgsBase), function(pkg) {
 
-    from <- file.path(.Library, pkg)
+    from <- file.path(sysLibPath, pkg)
     to <- file.path(libRdir, pkg)
 
     # Bash old symlinks just to ensure this session will be non-stale.
@@ -73,7 +74,7 @@ symlinkSystemPackages <- function(project = NULL) {
   ##
   ## there will be a link to MASS within MASS; we try to be friendly and
   ## remove those.
-  recursiveSymlinks <- file.path(.Library, sysPkgNames, sysPkgNames)
+  recursiveSymlinks <- file.path(sysLibPath, sysPkgNames, sysPkgNames)
   invisible(lapply(recursiveSymlinks, function(file) {
     if (is.symlink(file)) {
       unlink(file)
