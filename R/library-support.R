@@ -2,7 +2,7 @@
 ## Returns TRUE/FALSE, indicating whether the symlinking was successful
 symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
-  sysLibPath <- tail(getDefaultLibPaths(), 1)
+  sysLibPath <- getSysLibPath()
 
   ## Get the system packages
   sysPkgs <- utils::installed.packages(sysLibPath)
@@ -165,4 +165,17 @@ is.symlink <- function(path) {
 useSymlinkedSystemLibrary <- function(project = NULL) {
   project <- getProjectDir(project)
   replaceLibrary(".Library", libRdir(project = project))
+}
+
+getSysLibPath <- function() {
+  # Just return .Library if it lies within R.home
+  if (identical(R.home("library"), .Library))
+    return(.Library)
+
+  # Otherwise, use a cached version of .Library
+  libPath <- .packrat_mutables$get(".Library")
+  if (!is.null(libPath))
+    return(libPath)
+
+  stop("Failed to ascertain the system library path", call. = FALSE)
 }
