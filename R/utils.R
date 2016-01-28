@@ -128,6 +128,11 @@ pkgDescriptionDependencies <- function(file) {
 
   if (!file.exists(file)) stop("no file '", file, "'")
   DESCRIPTION <- readDcf(file)
+
+  # ignore empty description
+  if (nrow(DESCRIPTION) < 1)
+    return(list())
+
   requirements <- DESCRIPTION[1, fields[fields %in% colnames(DESCRIPTION)]]
 
   ## Remove whitespace
@@ -170,7 +175,7 @@ pkgDescriptionDependencies <- function(file) {
   result <- result[!(result$Package %in% basePkgs), ]
 
   ## Don't include R
-  result <- result[ !result$Package == "R", ]
+  result <- result[!result$Package == "R", ]
 
   result
 
@@ -345,10 +350,39 @@ setLibPaths <- function(paths) {
   .libPaths(paths)
 }
 
-## We only want to grab user libraries here -- system libraries are automatically
-## added in by R
-getLibPaths <- function(paths) {
-  setdiff(.libPaths(), c(.Library, .Library.site))
+normalize_paths <- function(paths, winslash = "/", mustWork = FALSE) {
+  paths[paths == ""] <- getwd()
+  unlist(lapply(paths, function(path) {
+    normalizePath(path, winslash = "/", mustWork = FALSE)
+  }))
+}
+
+getLibPaths <- function() {
+  normalize_paths(.libPaths())
+}
+
+getUserLibPaths <- function() {
+  allPaths <- getLibPaths()
+  sysPaths <- normalize_paths(c(.Library, .Library.site))
+  setdiff(allPaths, sysPaths)
+}
+
+## Get the default library paths (those that would be used upon
+## starting a new R session)
+getDefaultLibPaths <- function(use.cache = TRUE) {
+
+  if (use.cache && length(.packrat$default.libPaths))
+    return(.packrat$default.libPaths)
+
+  with_dir(tempdir(), {
+    R <- file.path(R.home("bin"), "R")
+    code <- shQuote("cat(.libPaths(), sep = '|||')")
+    cmd <- paste(shQuote(R), "--slave", "-e", code)
+    interned <- system(cmd, intern = TRUE)
+    result <- strsplit(interned[length(interned)], "|||", fixed = TRUE)[[1]]
+    .packrat$default.libPaths <- result
+    result
+  })
 }
 
 getInstalledPkgInfo <- function(packages, installed.packages, ...) {
@@ -521,4 +555,74 @@ reFilePrefix <- function() {
 
 vecdiff <- function(x, y) {
   x[match(x, y, 0L) == 0L]
+}
+
+# Call 'available.packages()' with an invalid URL to get the
+# 'skeleton' output of 'available.packages()' (ie, an empty matrix
+# with all appropriate fields populated)
+availablePackagesSkeleton <- function() {
+
+  # Use internal download file method just to ensure no errors leak.
+  download.file.method <- getOption("download.file.method")
+  on.exit(options(download.file.method = download.file.method), add = TRUE)
+  options(download.file.method = "internal")
+
+  # Use 'available.packages()' to query a URL that doesn't exist
+  result <- withCallingHandlers(
+    available.packages("/no/such/path/here/i/hope/"),
+    warning = function(w) invokeRestart("muffleWarning"),
+    message = function(m) invokeRestart("muffleMessage")
+  )
+
+  result
+}
+
+isProgramOnPath <- function(program) {
+  nzchar(Sys.which(program)[[1]])
+}
+
+isPathToSameFile <- function(lhs, rhs) {
+
+  if (!(is.string(lhs) && is.string(rhs)))
+    return(FALSE)
+
+  lhsNorm <- normalizePath(lhs, winslash = "/", mustWork = FALSE)
+  rhsNorm <- normalizePath(rhs, winslash = "/", mustWork = FALSE)
+
+  lhsNorm == rhsNorm
+
+}
+
+isTestingPackrat <- function() {
+  !is.na(Sys.getenv("R_PACKRAT_TESTING", unset = NA))
+}
+
+defer <- function(expr, envir = parent.frame()) {
+
+  # Create a call that must be evaluated in the parent frame (as
+  # that's where functions and symbols need to be resolved)
+  call <- substitute(
+    evalq(expr, envir = envir),
+    list(expr = substitute(expr), envir = parent.frame())
+  )
+
+  # Use 'do.call' with 'on.exit' to attach the evaluation to
+  # the exit handlrs of the selected frame
+  do.call(base::on.exit, list(substitute(call), add = TRUE), envir = envir)
+}
+
+isUsingExternalTar <- function() {
+
+  TAR <- Sys.getenv("TAR")
+
+  if (!nzchar(TAR))
+    return(FALSE)
+
+  if (!nzchar(Sys.which(TAR)))
+    return(FALSE)
+
+  if (identical(TAR, "internal"))
+    return(FALSE)
+
+  TRUE
 }

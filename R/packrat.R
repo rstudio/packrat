@@ -69,6 +69,7 @@
 #'
 #' @docType package
 #' @name packrat
+#' @import utils
 #' @author RStudio, Inc.
 NULL
 
@@ -161,7 +162,7 @@ init <- function(project = '.',
   project <- normalizePath(project,
                            winslash = '/',
                            mustWork = TRUE)
-  message("Initializing packrat project in directory:\n- ", surround(project, "\""))
+  message("Initializing packrat project in directory:\n- ", surround(prettyDir(project), "\""))
 
   ## A set of files that packrat might generate as part of init -- we
   ## enumerate them here to assist with later cleanup
@@ -559,47 +560,7 @@ packify <- function(project = NULL, quiet = FALSE) {
   }
 
   ## Copy over the packrat autoloader
-  .Rprofile <- file.path(project, ".Rprofile")
-  autoloaderPath <- instInitRprofileFilePath()
-
-  if (!file.exists(.Rprofile)) {
-
-    file.copy(autoloaderPath, .Rprofile)
-
-  } else {
-
-    content <- readLines(.Rprofile)
-    autoloader <- readLines(autoloaderPath)
-
-    # Remove the old autoloader
-    starts <- grep("#### -- Packrat Autoloader", content)
-    if (length(starts)) {
-      start <- min(starts)
-    } else {
-      start <- NULL
-    }
-
-    ends <- grep("### -- End Packrat Autoloader -- ####", content)
-    if (length(ends)) {
-      end <- max(ends)
-    } else {
-      end <- NULL
-    }
-
-    if (length(start) && length(end) && end > start) {
-      before <- seq_len(start)
-      after <- seq(from = end + 1, length.out = length(content) - end)
-    } else {
-      before <- seq_along(content)
-      after <- integer()
-      if (length(content))
-        autoloader <- c("", autoloader)
-    }
-
-    content <- c(content[before], autoloader, content[after])
-    cat(content, file = .Rprofile, sep = "\n")
-
-  }
+  augmentRprofile(project = project)
 
   ## Copy in packrat/init.R
   file.copy(

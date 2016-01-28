@@ -1,8 +1,51 @@
-# Packrat 0.4.4 (Unreleased)
+# Packrat 0.4.6
 
+- Packrat gains the option `snapshot.recommended.packages()`, to control
+  whether Recommended packages detected in the system library should become
+  part of the lockfile.
+
+- Silence noisy 'FAILED' messages that occurred when querying a repository
+  for the existence of a package (in its archives) failed.
+
+- Fixed a regression where dependencies were not properly discovered when
+  using (R <= 3.1).
+
+- Fixed an issue where the 'quiet.package.installation()' option could cause
+  a restore failure, if it was not already set for the active project.
+
+# Packrat 0.4.5
+
+- Fixed an issue where the autoloader header in a project's `.Rprofile`
+  could become duplicated.
+
+- Packrat now attempts to choose a secure download method when downloading
+  files from `https` URLs, if a default download method is not already set.
+
+- The code used for detecting package dependencies has been re-written and
+  refactored, and should properly avoid detecting `x` as a dependency in e.g.
+  `library(x, character.only = TRUE)`.
+
+- `packrat::snapshot()` now updates the active repositories in the lock file,
+  even if no packages have changed.
+
+- Packrat no longer creates empty ignore files. (@aronatkins)
+
+# Packrat 0.4.4
+
+- Packrat now understands the `pkgType = "both"` option and can properly
+  restore projects when that option is set.
+  
+- The `ignored.packages` option has been added, allowing users to specify
+  packages that should not be tracked by packrat. Such packaes will not
+  enter the lockfile on `packrat::snapshot()` calls; nor will they be
+  cleaned out on `packrat::restore()` calls.
+
+- Simple functions for interacting with the set of available repositories
+  have been added. See `?repository-management` for more details.
+  
 - Facilities for interacting with local CRAN-like repositories have been added.
   This feature will eventually supersede the functionality offered by packrat's
-  'ad-hoc' local repositories. The functions `packrat::create_repo()` and
+  'ad-hoc' local repositories. The functions `packrat::repos_create()` and
   `packrat::upload_package()` are the two main API functions currently exported
   for uploading (source) packages to a local CRAN-like repository. By using a
   local CRAN-like repository, pre-existing workflows using `library()` and

@@ -4,8 +4,13 @@
 #'
 #' The project is bundled as a gzipped tarball (\code{.tar.gz}), which can
 #' be unbundled either with \code{packrat::\link{unbundle}} (which
-#' restores the project as well), \R's own \code{\link{untar}}, or
+#' restores the project as well), \R's own \code{utils::\link{untar}}, or
 #' through most system \code{tar} implementations.
+#'
+#' The \code{tar} implementation chosen is based on the \code{"TAR"} environment
+#' variable; this is in contrast to \code{utils::\link{tar}()}, which uses the
+#' \code{"tar"} environment variable (note that, depending on the platform,
+#' these may be distinct).
 #'
 #' @param project The project directory. Defaults to the currently activate
 #'  project. By default, the current project active under \code{packratMode}
@@ -35,18 +40,7 @@ bundle <- function(project = NULL,
                    omit.cran.src = FALSE,
                    ...) {
 
-  TAR <- Sys.getenv("TAR")
-  if (identical(TAR, "internal") || identical(TAR, "")) {
-    bundle_internal(project = project,
-                    file = file,
-                    include.src = include.src,
-                    include.lib = include.lib,
-                    include.bundles = include.bundles,
-                    include.vcs.history = include.vcs.history,
-                    overwrite = overwrite,
-                    omit.cran.src = omit.cran.src,
-                    ...)
-  } else {
+  if (isUsingExternalTar()) {
     bundle_external(project = project,
                     file = file,
                     include.src = include.src,
@@ -56,6 +50,17 @@ bundle <- function(project = NULL,
                     overwrite = overwrite,
                     omit.cran.src = omit.cran.src,
                     ...)
+  } else {
+    bundle_internal(project = project,
+                    file = file,
+                    include.src = include.src,
+                    include.lib = include.lib,
+                    include.bundles = include.bundles,
+                    include.vcs.history = include.vcs.history,
+                    overwrite = overwrite,
+                    omit.cran.src = omit.cran.src,
+                    ...)
+
   }
 
 }
@@ -160,7 +165,7 @@ bundle_internal <- function(project = NULL,
     tarfile = file,
     files = basename(project),
     compression = "gzip",
-    tar = Sys.getenv("TAR"),
+    tar = "internal",
     ...
   )
 
@@ -180,6 +185,8 @@ bundle_external <- function(project = NULL,
                    overwrite = FALSE,
                    omit.cran.src = FALSE,
                    ...) {
+
+  stopifnot(isUsingExternalTar())
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)

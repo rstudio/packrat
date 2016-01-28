@@ -37,7 +37,6 @@
 #'   package. This is useful for debugging (especially inside of RStudio).
 #'   It defaults to the option \code{"keep.source.pkgs"}.
 #' @export
-#' @importFrom utils install.packages
 #' @importFrom tools pkgVignettes
 install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
                     args = getOption("devtools.install.args"), quiet = FALSE,
@@ -566,18 +565,30 @@ system_check <- function(cmd, args = character(), env = character(),
   # on Windows
   result <- suppressWarnings(with_envvar(
     env,
-    system2(cmd, args, stdout = TRUE, stderr = TRUE)
+    if (quiet) {
+      system2(cmd, args, stdout = TRUE, stderr = TRUE)
+    } else {
+      system2(cmd, args)
+    }
   ))
 
   status <- attr(result, "status")
-  if (!is.null(status) && !(status == 0)) {
+  if (!is.null(status) && status != 0) {
+
     stopMsg <- paste0(
       "Command failed (", status, ")",
       "\n\nFailed to run system command:\n\n",
-      "\t", full,
-      "\n\nThe command failed with output:\n",
-      paste(result, collapse = "\n")
+      "\t", full
     )
+
+    if (length(result)) {
+      stopMsg <- paste0(
+        stopMsg,
+        "\n\nThe command failed with output:\n",
+        paste(result, collapse = "\n")
+      )
+    }
+
     # issue #186
     if (nchar(stopMsg) > getOption("warning.length")) {
       print(stopMsg, file = stderr())

@@ -112,7 +112,7 @@ afterPackratModeOn <- function(project,
 
   # Clean the search path up -- unload libraries that may have been loaded before
   if (clean.search.path) {
-    unloadedSearchPath <- cleanSearchPath(lib.loc = getLibPaths())
+    unloadedSearchPath <- cleanSearchPath(lib.loc = getUserLibPaths())
   }
 
   # Hide the site libraries
@@ -182,6 +182,18 @@ afterPackratModeOn <- function(project,
     options(repos = repos)
   }
 
+  # Set a secure download method if any of the repos URLs use https
+  if (any(grepl("^https", repos))) {
+    method <- secureDownloadMethod()
+    if (is.null(method)) {
+      secureRepos <- grep("^https", repos, value = TRUE)
+      pasted <- paste("-", shQuote(secureRepos), collapse = "\n")
+      warning("The following repositories require a secure download method but ",
+              "none could be found:\n", pasted)
+    }
+    options(download.file.method = method)
+  }
+
   # Update settings
   updateSettings(project = project)
 
@@ -220,9 +232,11 @@ setPackratModeOff <- function(project = NULL,
 
   # Reset the library paths
   libPaths <- .packrat_mutables$get("origLibPaths")
-  if (!is.null(libPaths)) {
+  if (is.null(libPaths))
+    libPaths <- getDefaultLibPaths()
+
+  if (length(libPaths))
     setLibPaths(libPaths)
-  }
 
   # Reset 'pkgType'
   oldPkgType <- .packrat_mutables$get("oldPkgType")

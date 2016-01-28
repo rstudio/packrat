@@ -1,8 +1,9 @@
 ##' Managing External Libraries
 ##'
-##' These functions provide a mechanism for (temporarily) using packages outside of the
-##' packrat private library.
-##'
+##' These functions provide a mechanism for (temporarily) using packages outside
+##' of the packrat private library. The packages are searched within the 'default'
+##' libraries; that is, the libraries that would be available upon launching a new
+##' \R session.
 ##'
 ##' @param packages A set of package names (as a character vector) to load for
 ##'   the duration of evaluation of \code{expr}.
@@ -16,6 +17,10 @@
 ##' @export
 with_extlib <- function(packages, expr, envir = parent.frame()) {
 
+  # need to force this promise now otherwise it will get evaluated
+  # in the wrong context later on
+  force(envir)
+
   if (!is.character(packages)) {
     stop("'packages' should be a character vector of libraries", call. = FALSE)
   }
@@ -27,12 +32,13 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
     tryCatch({
       ## Record the search path, then load the libraries
       oldSearch <- search()
-      ## This will be NULL when not in packrat mode -- but then this implies
-      ## we should use the user library anyway, so this is fine
-      origLibPaths <- .packrat_mutables$get("origLibPaths")
+
+      libPaths <- .packrat_mutables$get("origLibPaths")
+      if (!length(libPaths))
+        libPaths <- getDefaultLibPaths()
 
       for (package in packages) {
-        library(package, character.only = TRUE, lib.loc = origLibPaths, warn.conflicts = FALSE)
+        library(package, character.only = TRUE, lib.loc = libPaths, warn.conflicts = FALSE)
       }
 
       ## Evaluate the call
@@ -61,11 +67,8 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
 ##' @rdname packrat-external
 ##' @export
 extlib <- function(packages) {
+  lib.loc <- getDefaultLibPaths()
   for (package in packages) {
-    lib.loc <- .packrat_mutables$get("origLibPaths")
-    if (is.null(lib.loc)) {
-      lib.loc <- getLibPaths()
-    }
     library(package, character.only = TRUE, lib.loc = lib.loc)
   }
 }

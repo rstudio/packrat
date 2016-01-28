@@ -1,23 +1,31 @@
 local({
 
-  libDir <- file.path('packrat', 'lib', R.version$platform, getRversion())
+  ## Helper function to get the path to the library directory for a
+  ## given packrat project.
+  getPackratLibDir <- function(projDir = NULL) {
+    path <- file.path("packrat", "lib", R.version$platform, getRversion())
 
-  ## Escape hatch to allow RStudio to handle initialization
-  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
-        is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
-    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
-    setHook("rstudio.sessionInit", function(...) {
-      # Ensure that, on sourcing 'packrat/init.R', we are
-      # within the project root directory
-      if (exists(".rs.getProjectDirectory")) {
-        owd <- getwd()
-        setwd(.rs.getProjectDirectory())
-        on.exit(setwd(owd), add = TRUE)
-      }
-      source("packrat/init.R")
-    })
-    return(invisible(NULL))
+    if (!is.null(projDir)) {
+
+      ## Strip trailing slashes if necessary
+      projDir <- sub("/+$", "", projDir)
+
+      ## Only prepend path if different from current working dir
+      if (!identical(normalizePath(projDir), normalizePath(getwd())))
+        path <- file.path(projDir, path)
+    }
+
+    path
   }
+
+  ## Ensure that we set the packrat library directory relative to the
+  ## project directory. Normally, this should be the working directory,
+  ## but we also use '.rs.getProjectDirectory()' if necessary (e.g. we're
+  ## rebuilding a project while within a separate directory)
+  libDir <- if (exists(".rs.getProjectDirectory"))
+    getPackratLibDir(.rs.getProjectDirectory())
+  else
+    getPackratLibDir()
 
   ## Unload packrat in case it's loaded -- this ensures packrat _must_ be
   ## loaded from the private library. Note that `requireNamespace` will
@@ -35,6 +43,25 @@ local({
       print.banner <- FALSE
     }
     return(packrat::on(print.banner = print.banner))
+  }
+
+  ## Escape hatch to allow RStudio to handle bootstrapping. This
+  ## enables RStudio to provide print output when automagically
+  ## restoring a project from a bundle on load.
+  if (!is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
+      is.na(Sys.getenv("RSTUDIO_PACKRAT_BOOTSTRAP", unset = NA))) {
+    Sys.setenv("RSTUDIO_PACKRAT_BOOTSTRAP" = "1")
+    setHook("rstudio.sessionInit", function(...) {
+      # Ensure that, on sourcing 'packrat/init.R', we are
+      # within the project root directory
+      if (exists(".rs.getProjectDirectory")) {
+        owd <- getwd()
+        setwd(.rs.getProjectDirectory())
+        on.exit(setwd(owd), add = TRUE)
+      }
+      source("packrat/init.R")
+    })
+    return(invisible(NULL))
   }
 
   ## Bootstrapping -- only performed in interactive contexts,
@@ -151,7 +178,7 @@ local({
     ## an 'installed from source' version
 
     ## -- InstallAgent -- ##
-    installAgent <- 'InstallAgent: packrat 0.4.3-27'
+    installAgent <- 'InstallAgent: packrat 0.4.6-9'
 
     ## -- InstallSource -- ##
     installSource <- 'InstallSource: source'

@@ -31,9 +31,8 @@ editRprofileAutoloader <- function(project, action = c("update", "remove")) {
   packifyStart <- grep("#### -- Packrat Autoloader", .Rprofile, fixed = TRUE)
   packifyEnd <- grep("#### -- End Packrat Autoloader -- ####", .Rprofile, fixed = TRUE)
 
-  if (length(packifyStart) && length(packifyEnd)) {
+  if (length(packifyStart) && length(packifyEnd))
     .Rprofile <- .Rprofile[-c(packifyStart:packifyEnd)]
-  }
 
   ## Append init.R to the .Rprofile if needed
   if (identical(action, "update"))

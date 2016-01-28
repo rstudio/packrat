@@ -9,11 +9,17 @@
 #'
 #' @param project Directory containing application. Defaults to current working
 #'   directory.
-#' @return Returns a list of the names of the packages on which R code in the
-#'   application depends.
+#' @param implicit.packrat.dependency Include \code{packrat} as an implicit
+#'   dependency of this project, if not otherwise discovered? This should be
+#'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
+#'   via other means when attempting to load this project.
+#'
 #' @details Dependencies are determined by parsing application source code and
 #'   looking for calls to \code{library}, \code{require}, \code{::}, and
 #'   \code{:::}.
+#'
+#' @return Returns a list of the names of the packages on which R code in the
+#'   application depends.
 #'
 #' @examples
 #'
@@ -29,7 +35,8 @@
 #' @keywords internal
 appDependencies <- function(project = NULL,
                             available.packages = NULL,
-                            fields = c("Imports", "Depends", "LinkingTo")) {
+                            fields = c("Imports", "Depends", "LinkingTo"),
+                            implicit.packrat.dependency = TRUE) {
 
   if (is.null(available.packages)) available.packages <- available.packages()
 
@@ -52,6 +59,9 @@ appDependencies <- function(project = NULL,
     parentDeps <-
       pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
 
+    # Strip out any dependencies the user has requested we do not track.
+    parentDeps <- setdiff(parentDeps, packrat::opts$ignored.packages())
+
     ## For downstream dependencies, we don't grab their Suggests:
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
@@ -62,19 +72,28 @@ appDependencies <- function(project = NULL,
                                               fields)
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
+    parentDeps <- setdiff(parentDeps, packrat::opts$ignored.packages())
     childDeps <- recursivePackageDependencies(parentDeps,
                                               libPaths,
                                               available.packages,
                                               fields)
   }
 
-  result <- unique(c(parentDeps, childDeps, "packrat"))
+  result <- unique(c(parentDeps, childDeps))
+
+  # should packrat be included as automatic dependency?
+  if (implicit.packrat.dependency) {
+    result <- unique(c(result, "packrat"))
+  }
 
   # If this project is implicitly a shiny application, then
   # add that in as the previously run expression dependency lookup
   # won't have found it.
   if (!("shiny" %in% result) && isShinyApp(project))
     result <- c(result, "shiny")
+
+  if (is.null(result))
+    return(character())
 
   sort_c(result)
 }
@@ -126,15 +145,12 @@ fileDependencies <- function(file) {
 }
 
 hasYamlFrontMatter <- function(content) {
-  lines <- grep("^---\\s*$", content, perl = TRUE)
-  1 %in% lines && length(lines) >= 2
+  lines <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
+  1 %in% lines && length(lines) >= 2 && grepl("^---\\s*$", content[1], perl=TRUE)
 }
 
 yamlDeps <- function(yaml) {
-  # Collapse with newlines -- makes regex parsing easier
-  yaml <- paste(yaml, collapse = "\n")
   c(
-    "rmarkdown",
     "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml, perl = TRUE))],
     "rticles"[any(grepl("rticles::", yaml, perl = TRUE))]
   )
@@ -142,17 +158,46 @@ yamlDeps <- function(yaml) {
 
 fileDependencies.Rmd <- function(file) {
 
+  deps <- "rmarkdown"
+
   # We need to check for and parse YAML frontmatter if necessary
   yamlDeps <- NULL
   content <- readLines(file)
   if (hasYamlFrontMatter(content)) {
-    tripleDashes <- grep("^---\\s*$", content, perl = TRUE)
-    start <- tripleDashes[[1]]
-    end <- tripleDashes[[2]]
-    yamlDeps <- yamlDeps(content[(start + 1):(end - 1)])
+
+    # Extract the YAML frontmatter.
+    tripleDashesDots <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
+    start <- tripleDashesDots[[1]]
+    end <- tripleDashesDots[[2]]
+    yaml <- paste(content[(start + 1):(end - 1)], collapse = "\n")
+
+    # Populate 'deps'.
+    yamlDeps <- yamlDeps(yaml)
+    deps <- c(deps, yamlDeps)
+
+    # Extract additional dependencies from YAML parameters.
+    if (requireNamespace("knitr", quietly = TRUE) &&
+        packageVersion("knitr") >= "1.10.18") {
+
+      knitParams <- knitr::knit_params_yaml(yaml, evaluate = FALSE)
+      if (length(knitParams) > 0) {
+        deps <- c(deps, "shiny")
+        for (param in knitParams) {
+          if (!is.null(param$expr)) {
+            parsed <- tryCatch(
+              parse(text = param$expr),
+              error = function(e) NULL
+            )
+
+            if (length(parsed))
+              deps <- c(deps, expressionDependencies(parsed))
+          }
+        }
+      }
+
+    }
   }
 
-  deps <- yamlDeps
 
   # Escape hatch for empty .Rmd files
   if (!length(content) || identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")) {
@@ -232,79 +277,113 @@ fileDependencies.R <- function(file) {
   unique(pkgs)
 }
 
-# detect the package dependencies of an expression (adapted from
-# tools:::.check_packages_used)
-#
-# expressionDependencies(quote(library("h")))
-# expressionDependencies(quote(library(10, package = "h")))
-# expressionDependencies(quote(library(h)))
-# expressionDependencies(quote({library(h); library(g)}))
-# expressionDependencies(quote(h::f))
+anyOf <- function(object, ...) {
+  predicates <- list(...)
+  for (predicate in predicates)
+    if (predicate(object))
+      return(TRUE)
+  FALSE
+}
+
+allOf <- function(object, ...) {
+  predicates <- list(...)
+  for (predicate in predicates)
+    if (!predicate(object))
+      return(FALSE)
+  TRUE
+}
+
+recursiveWalk <- function(`_node`, fn, ...) {
+  fn(`_node`, ...)
+  if (is.call(`_node`)) {
+    for (i in seq_along(`_node`)) {
+      recursiveWalk(`_node`[[i]], fn, ...)
+    }
+  }
+}
+
+# Fills 'env' as a side effect
+identifyPackagesUsed <- function(call, env) {
+
+  if (!is.call(call))
+    return()
+
+  fn <- call[[1]]
+  if (!anyOf(fn, is.character, is.symbol))
+    return()
+
+  fnString <- as.character(fn)
+
+  # Check for '::', ':::'
+  if (fnString %in% c("::", ":::")) {
+    if (anyOf(call[[2]], is.character, is.symbol)) {
+      pkg <- as.character(call[[2]])
+      env[[pkg]] <- TRUE
+      return()
+    }
+  }
+
+  # Check for S4-related function calls (implying a dependency on methods)
+  if (fnString %in% c("setClass", "setMethod", "setRefClass", "setGeneric", "setGroupGeneric")) {
+    env[["methods"]] <- TRUE
+    return()
+  }
+
+  # Check for packge loaders
+  pkgLoaders <- c("library", "require", "loadNamespace", "requireNamespace")
+  if (!fnString %in% pkgLoaders)
+    return()
+
+  # Try matching the call.
+  loader <- tryCatch(
+    get(fnString, envir = asNamespace("base")),
+    error = function(e) NULL
+  )
+
+  if (!is.function(loader))
+    return()
+
+  matched <- match.call(loader, call)
+  if (!"package" %in% names(matched))
+    return()
+
+  # Protect against 'character.only = TRUE' + symbols.
+  # This defends us against a construct like:
+  #
+  #    for (x in pkgs)
+  #        library(x, character.only = TRUE)
+  #
+  if ("character.only" %in% names(matched)) {
+    if (is.symbol(matched[["package"]])) {
+      return()
+    }
+  }
+
+  if (anyOf(matched[["package"]], is.symbol, is.character)) {
+    pkg <- as.character(matched[["package"]])
+    env[[pkg]] <- TRUE
+    return()
+  }
+
+
+}
+
 expressionDependencies <- function(e) {
-  # base case
-  if (is.atomic(e) || is.name(e)) return()
 
-  # recursive case: expression (= list of calls)
   if (is.expression(e)) {
-    return(unlist(lapply(e, expressionDependencies)))
+    return(unlist(lapply(e, function(call) {
+      expressionDependencies(call)
+    })))
   }
 
-  ## traverse a call to find `::`, `:::`, `library`, `require` calls
-  if (is.call(e)) {
-    parent <- e
-    child <- e[[1L]]
-    while (is.call(child)) {
-      parent <- parent[[1L]]
-      child <- parent[[1L]]
-    }
-    if (as.character(child) %in% c("::", ":::")) {
-      return(as.character(parent[[2L]]))
-    } else if (as.character(child) %in% c("library", "require")) {
-      # Match arguments
-      call <- eval(call("match.call", child, quote(parent)))
-
-      # If character.only is TRUE and 'package' is a symbol, don't return that
-      # symbol
-      pkg <- call[["package"]]
-      co <- call[["character.only"]]
-      if (isTRUE(co) && is.symbol(pkg)) {
-        return()
-      } else {
-        return(as.character(pkg))
-      }
-    }
+  else if (is.call(e)) {
+    env <- new.env(parent = emptyenv())
+    recursiveWalk(e, identifyPackagesUsed, env)
+    return(ls(env, all.names = TRUE))
   }
 
-  # base case: a call
-  fname <- as.character(e[[1L]])
-  # a refclass method call, so return
-  if (length(fname) > 1) return()
+  else character()
 
-  if (length(fname) == 1) {
-
-    # base case: call to library/require
-    if (fname %in% c("library", "require")) {
-      mc <- match.call(get(fname, baseenv()), e)
-      if (is.null(mc$package)) return(NULL)
-      if (isTRUE(mc$character.only)) return(NULL)
-
-      return(as.character(mc$package))
-    }
-
-    # base case: call to :: or :::
-    if (fname %in% c("::", ":::"))
-      return(as.character(e[[2L]]))
-
-    # base case: methods functions
-    if (fname %in% c("setClass", "setRefClass", "setMethod", "setGeneric")) {
-      return("methods")
-    }
-
-  }
-
-  # recursive case: all other calls
-  children <- lapply(as.list(e[-1]), expressionDependencies)
-  unique(unlist(children))
 }
 
 # Read a DESCRIPTION file into a data.frame
@@ -329,14 +408,17 @@ isRPackage <- function(project) {
 
   DESCRIPTION <- readDESCRIPTION(descriptionPath)
 
-  # If 'Type' is missing from the DESCRIPTION file, then we implicitly assume
-  # that it is an R package (#172)
-  if (!("Type" %in% names(DESCRIPTION)))
+  # If 'Type' is in the DESCRIPTION, ensure it's equal to 'Package'.
+  if ("Type" %in% names(DESCRIPTION))
+    return(identical(DESCRIPTION$Type, "Package"))
+
+  # Some packages will have a DESCRIPTION file without the 'Type' field.
+  # Check that these still declare themselves with the 'Package' field.
+  if ("Package" %in% names(DESCRIPTION))
     return(TRUE)
 
-  # Otherwise, ensure that the type is `Package`
-  Type <- unname(as.character(DESCRIPTION$Type))
-  identical(Type, "Package")
+  # DESCRIPTION for a non-R package (e.g. Shiny application?)
+  FALSE
 
 }
 

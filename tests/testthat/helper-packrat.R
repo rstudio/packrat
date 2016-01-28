@@ -32,15 +32,6 @@ rebuildTestRepo <- function(testroot) {
   tools::write_PACKAGES(target, subdirs = TRUE)
 }
 
-# Sets up the fake repo used for testing
-setupTestRepo <- function() {
-  repo <- paste("file:///", normalizePath("repo", winslash = "/"),
-                sep = "")
-  names(repo) <- "CRAN"
-  options("repos" = repo)
-  options("pkgType" = "source")
-}
-
 # Installs a test package from source. Necessary because install.packages
 # fails under R CMD CHECK.
 installTestPkg <- function(pkg, ver, lib) {
@@ -74,7 +65,7 @@ verifyTopoSort <- function(graph, sorted) {
     return(FALSE)
   for (i in seq_along(sorted)) {
     deps <- graph[[sorted[[i]]]]
-    if (length(setdiff(deps, head(sorted, i-1))) > 0) {
+    if (length(setdiff(deps, head(sorted, i - 1))) > 0) {
       return(FALSE)
     }
   }
@@ -103,4 +94,22 @@ makeLibrariesProject <- function() {
   cat("library(oatmeal)", file = file.path(oldLibraryDir(project), "lib-old.R"), sep = "\n")
   cat("library(oatmeal)", file = file.path(newLibraryDir(project), "lib-new.R"), sep = "\n")
   project
+}
+
+# Sets up repositories etc. for a test context, and restores them when done.
+withTestContext <- function(expr) {
+
+  fields <- c("repos", "pkgType", "warn")
+  opts <- setNames(lapply(fields, getOption), fields)
+  on.exit(do.call(base::options, opts), add = TRUE)
+
+  Sys.setenv(R_PACKRAT_TESTING = "yes")
+  on.exit(Sys.unsetenv("R_PACKRAT_TESTING"), add = TRUE)
+
+  Sys.setenv(R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep))
+  on.exit(Sys.unsetenv("R_PACKRAT_LIBPATHS"), add = TRUE)
+
+  cran <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
+  options(repos = c(CRAN = cran), pkgType = "source", warn = 0)
+  force(expr)
 }

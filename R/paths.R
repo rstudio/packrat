@@ -168,17 +168,24 @@ libExtDir <- function(project = NULL) {
 
 startsWithBytes <- function(x, y) {
   Encoding(x) <- Encoding(y) <- "bytes"
-  return(substring(x, 1, nchar(y, type = "bytes")) == x)
+  return(substring(x, 1, nchar(y, type = "bytes")) == y)
 }
 
-prettyLibDir <- function(project = NULL) {
+prettyDir <- function(project = NULL, ...) {
   project <- getProjectDir(project)
   homeDir <- path.expand("~/")
   if (startsWithBytes(project, homeDir))
     project <- gsub(homeDir, "~/", project, fixed = TRUE)
-  file.path(project, .packrat$packratFolderName, "lib")
+  file.path(project, ...)
 }
 
+prettyProjectDir <- function(project = NULL) {
+  prettyDir(project = project)
+}
+
+prettyLibDir <- function(project = NULL) {
+  prettyDir(project = project, "packrat/lib")
+}
 
 ##' @rdname packrat-external
 ##' @name packrat-external

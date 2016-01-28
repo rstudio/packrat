@@ -90,7 +90,15 @@ excludeRecommendedPackages <- function(packages) {
 }
 
 dropSystemPackages <- function(packages) {
-  excludeBasePackages(excludeRecommendedPackages(packages))
+
+  # always exclude base packages
+  packages <- excludeBasePackages(packages)
+
+  # exclude recommended packages if desired by user
+  if (!isTRUE(packrat::opts$snapshot.recommended.packages()))
+    packages <- excludeRecommendedPackages(packages)
+
+  packages
 }
 
 recursivePackageDependencies <- function(pkgs, lib.loc,

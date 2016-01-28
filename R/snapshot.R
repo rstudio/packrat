@@ -54,7 +54,7 @@ snapshot <- function(project = NULL,
   if (is.null(available))
   {
     available <- if (dry.run)
-      suppressWarnings(available.packages(""))
+      availablePackagesSkeleton()
     else
       available.packages()
   }
@@ -80,7 +80,8 @@ snapshot <- function(project = NULL,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run)
 
-  if (dry.run) return(invisible(snapshotResult))
+  if (dry.run)
+    return(invisible(snapshotResult))
 
 }
 
@@ -97,6 +98,10 @@ snapshot <- function(project = NULL,
 #'   locally installed version is unavailable?
 #' @param snapshot.sources Download the tarball associated with a particular
 #'   package?
+#' @param implicit.packrat.dependency Include \code{packrat} as an implicit
+#'   dependency of this project, if not otherwise discovered? This should be
+#'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
+#'   via other means when attempting to load this project.
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
@@ -109,12 +114,13 @@ snapshot <- function(project = NULL,
                           auto.snapshot = FALSE,
                           verbose = TRUE,
                           fallback.ok = FALSE,
-                          snapshot.sources = TRUE) {
+                          snapshot.sources = TRUE,
+                          implicit.packrat.dependency = TRUE) {
 
   if (is.null(available))
   {
     available <- if (dry.run)
-      suppressWarnings(available.packages(""))
+      availablePackagesSkeleton()
     else
       available.packages()
   }
@@ -134,10 +140,13 @@ snapshot <- function(project = NULL,
 
   ## If we are using packrat alongside an R package, then we should
   ## ignore the package itself
+  ignore <- NULL
   if (isRPackage(project = project)) {
-    ignore <- unname(readDcf(file.path(project, "DESCRIPTION"))[, "Package"])
-  } else {
-    ignore <- NULL
+    desc <- readDcf(file.path(project, "DESCRIPTION"))
+    if ("Package" %in% colnames(desc)) {
+      # R packages are not guaranteed to have a "Package" field (see isRPackge)
+      ignore <- unname(desc[, "Package"])
+    }
   }
 
   ## rstudio, manipulate needs ignoring
@@ -145,7 +154,8 @@ snapshot <- function(project = NULL,
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
   inferredPkgs <- sort_c(appDependencies(project,
-                                         available.packages = available))
+                                         available.packages = available,
+                                         implicit.packrat.dependency = implicit.packrat.dependency))
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
@@ -219,32 +229,42 @@ snapshot <- function(project = NULL,
                    'Modifying these packages already present in packrat:')
   }
 
-  if (all(is.na(diffs))) {
-    if (!verbose) message("Already up to date.")
-    if (is.null(lib.loc) ||
-          all(installedByPackrat(pkgNames(allRecordsFlat), lib.loc, FALSE))) {
-      # If none of the packages/versions differ, and all of the packages in the
-      # private library were installed by packrat, then we can short-circuit.
-      # If the package/versions differ, we obviously need to continue, so we can
-      # write the new lockfile. If packages were installed NOT by packrat, we
-      # need to mark them as installed by packrat so they no longer are
-      # considered "dirty" changes in need of snapshotting.
-
-      # Write a lockfile containing no packages if there is no lockfile.
-      if (!file.exists(lockFilePath(project))) {
-        writeLockFile(
-          lockFilePath(project),
-          allRecords
-        )
-      }
-
-      return()
-    }
-  }
-
   ## For use by automatic snapshotting -- only perform the automatic snapshot
   ## if it's a 'safe' action; ie, escape early if we would have prompted
-  if (mustConfirm && isTRUE(auto.snapshot)) return(invisible())
+  if (mustConfirm && isTRUE(auto.snapshot))
+    return(invisible())
+
+  ## Short-circuit if we know that there is nothing to be updated.
+  if (file.exists(lockFilePath(project)) && all(is.na(diffs))) {
+
+    # Check to see if the current repositories + the snapshotted
+    # repositories are in sync.
+    lockfile <- readLockFile(lockFilePath(project))
+    lockfileRepos <- lockfile$repos
+    reposInSync <- identical(sort_c(getOption("repos")),
+                             sort_c(lockfileRepos))
+
+    # Check to see whether all of the installed packages are currently
+    # tracked by packrat.
+    if (!reposInSync) {
+
+      allTracked <-
+        is.null(lib.loc) ||
+        all(installedByPackrat(pkgNames(allRecordsFlat), lib.loc, FALSE))
+
+      if (allTracked) {
+
+        # Ensure a packrat lockfile is available
+        if (!file.exists(lockFilePath(project)))
+          writeLockFile(lockFilePath(project), allRecords)
+        else if (verbose)
+          message("Already up to date.")
+
+        return()
+
+      }
+    }
+  }
 
   if (prompt && mustConfirm) {
     answer <- readline('Do you want to continue? [Y/n]: ')
@@ -292,17 +312,7 @@ snapshot <- function(project = NULL,
 snapshotImpl <- .snapshotImpl
 
 getBiocRepos <- function() {
-
-  rVersion <- unlist(getRversion())
-  rv <- paste(rVersion[[1]], rVersion[[2]], sep = ".")
-  prefix <- sprintf("http://bioconductor.org/packages/%s", rv)
-
-  c(
-    BioCsoft  = file.path(prefix, "bioc"),
-    BioCann   = file.path(prefix, "data/annotation"),
-    BioCexp   = file.path(prefix, "data/experiment"),
-    BioCextra = file.path(prefix, "extra")
-  )
+  BiocInstaller::biocinstallRepos()
 }
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the

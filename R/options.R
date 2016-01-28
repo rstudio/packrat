@@ -1,6 +1,6 @@
 ## When adding new options, be sure to update the VALID_OPTIONS list
 ## (define your own custom validators by assigning a function)
-## and update the initOptions + documentation below
+## and update the default_opts() function + documentation in 'get_opts()' below
 
 VALID_OPTIONS <- list(
   auto.snapshot = function(x) x %in% c(TRUE, FALSE),
@@ -14,7 +14,12 @@ VALID_OPTIONS <- list(
   local.repos = function(x) {
     is.null(x) || is.character(x)
   },
-  load.external.packages.on.startup = list(TRUE, FALSE)
+  load.external.packages.on.startup = list(TRUE, FALSE),
+  ignored.packages = function(x) {
+    is.null(x) || is.character(x)
+  },
+  quiet.package.installation = list(TRUE, FALSE),
+  snapshot.recommended.packages = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -26,7 +31,10 @@ default_opts <- function() {
     vcs.ignore.src = FALSE,
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
     local.repos = "",
-    load.external.packages.on.startup = TRUE
+    load.external.packages.on.startup = TRUE,
+    ignored.packages = NULL,
+    quiet.package.installation = TRUE,
+    snapshot.recommended.packages = FALSE
   )
 }
 
@@ -72,6 +80,17 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' \item \code{load.external.packages.on.startup}:
 ##'   Load any packages specified within \code{external.packages} on startup?
 ##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##' \item \code{ignored.packages}:
+##'   Prevent packrat from tracking certain packages. Dependencies of these packages
+##'   will also not be tracked.
+##' \item \code{quiet.package.installation}:
+##'   Emit output during package installation?
+##' \item \code{snapshot.recommended.packages}:
+##'   Should 'recommended' packages discovered in the system library be
+##'   snapshotted? See the \code{Priority} field of \code{available.packages()}
+##'   for more information -- 'recommended' packages are those normally bundled
+##'   with CRAN releases of R on OS X and Windows, but new releases are also
+##'   available on the CRAN server.
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
@@ -119,28 +138,32 @@ get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
 
 make_setter <- function(name) {
   force(name)
-  return( function(x) {
+  function(x, persist = TRUE) {
     if (missing(x)) return(get_opts(name))
-    else do.call(set_opts, setNames(list(x), name))
-  })
+    else setOptions(setNames(list(x), name), persist = persist)
+  }
 }
 
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
 set_opts <- function(..., project = NULL) {
+  setOptions(list(...), project = project)
+}
+
+setOptions <- function(options, project = NULL, persist = TRUE) {
 
   project <- getProjectDir(project)
   optsPath <- packratOptionsFilePath(project)
 
-  if (!file.exists(optsPath)) {
+  if (persist && !file.exists(optsPath)) {
     dir.create(dirname(optsPath), recursive = TRUE, showWarnings = FALSE)
     file.create(optsPath)
   }
-  dots <- list(...)
-  validateOptions(dots)
-  keys <- names(dots)
-  values <- dots
+
+  validateOptions(options)
+  keys <- names(options)
+  values <- options
   opts <- read_opts(project = project)
   for (i in seq_along(keys)) {
     if (is.null(values[[i]]))
@@ -148,8 +171,12 @@ set_opts <- function(..., project = NULL) {
     else
       opts[[keys[[i]]]] <- values[[i]]
   }
-  write_opts(opts, project = project)
-  updateSettings(project)
+
+  write_opts(opts, project = project, persist = persist)
+
+  if (persist)
+    updateSettings(project)
+
   invisible(opts)
 }
 
@@ -204,13 +231,20 @@ readOptsFile <- function(path) {
   result
 }
 
-## Read and parse an options file
+## Read and parse an options file. Returns the default set
+## of options if no options available.
 read_opts <- function(project = NULL) {
+
   project <- getProjectDir(project)
   path <- packratOptionsFilePath(project)
-  if (!file.exists(path)) return(invisible(NULL))
+
+  if (!file.exists(path))
+    return(default_opts())
+
   opts <- readOptsFile(path)
-  if (!length(opts)) return(list())
+  if (!length(opts))
+    return(default_opts())
+
   opts[] <- lapply(opts, function(x) {
     if (identical(x, "TRUE")) {
       return(TRUE)
@@ -222,10 +256,12 @@ read_opts <- function(project = NULL) {
       x
     }
   })
+
   opts
 }
 
-write_opts <- function(options, project = NULL) {
+write_opts <- function(options, project = NULL, persist = TRUE) {
+
   project <- getProjectDir(project)
   if (!is.list(options))
     stop("Expecting options as an R list of values")
@@ -254,6 +290,10 @@ write_opts <- function(options, project = NULL) {
 
   # Update the in-memory options cache
   assign("options", options, envir = .packrat)
+
+  # Write options to disk
+  if (!persist)
+    return(invisible(TRUE))
 
   sep <- ifelse(
     unlist(lapply(options, length)) > 1,
