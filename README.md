@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/rstudio/packrat.png)](https://travis-ci.org/rstudio/packrat)
+[![Coverage Status](https://codecov.io/github/rstudio/packrat/coverage.svg?branch=master)](https://codecov.io/github/rstudio/packrat?branch=master)
+
 # packrat
 
 Packrat is a dependency management system for R.

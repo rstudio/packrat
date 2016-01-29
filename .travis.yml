@@ -22,3 +22,7 @@ notifications:
   email:
     on_success: change
     on_failure: change
+
+after_success:
+  - ./travis-tool.sh install_github jimhester/covr
+  - Rscript -e 'covr::codecov()'
