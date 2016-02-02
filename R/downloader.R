@@ -79,6 +79,11 @@ downloadFile <- function(url,
 
     if (!grepl("\\b-f\\b", extra))
       extra <- paste(extra, "-f")
+
+    # Also, redirect stderr to stdout, just for nicer
+    # printing in RStudio.
+    if (!grepl("\\b--stderr -\\b", extra))
+      extra <- paste(extra, "--stderr -")
   }
 
   # Catch warnings in the call.
