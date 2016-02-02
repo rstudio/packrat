@@ -59,7 +59,7 @@ hash <- function(path, descLookup = installedDescLookup) {
     else if (is.character(linkingToDesc) && !file.exists(linkingToDesc))
       return(NULL)
     else
-      hash(linkingToDesc)
+      hash(linkingToDesc, descLookup = descLookup)
   })
 
   missingLinkingToPkgs <- linkingToPkgs[vapply(linkingToHashes, is.null, logical(1))]
