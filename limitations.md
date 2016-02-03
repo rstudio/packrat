@@ -1,6 +1,6 @@
 ---
 layout: home
-title: Limitations and caveats
+title: Limitations and Caveats
 ---
 
 Here are a couple of things to be aware of as you begin to use packrat.
@@ -42,6 +42,16 @@ After doing this, packages from these repositories can be installed with
 
 and Packrat will automatically discover the package `lassoTools` within the
 local repository.
+
+Another alternative, if you're comfortable with excluding a particular package
+from Packrat's dependency management, is to simply ignore it -- you can ignore
+a set of packages on `packrat::init()` with something like:
+
+    packrat::init(options = list(ignored.packages = c(<pkgs>)))
+
+Or, set the ignored packages for an active packrat project with:
+
+    packrat::opts$ignored.packages(c(<pkgs>))
 
 ### Building packages
 
