@@ -52,45 +52,50 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
-##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##'   (logical; defaults to \code{TRUE})
 ##' \item \code{use.cache}:
 ##'   Install packages into a global cache, which is then shared across projects? The
 ##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
-##'   (EXPERIMENTAL; defaults to \code{FALSE})
+##'   (logical; defaults to \code{FALSE})
 ##' \item \code{print.banner.on.startup}:
 ##'   Print the banner on startup? Can be one of \code{TRUE} (always print),
 ##'   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
 ##'   (defaults to \code{"auto"})
 ##' \item \code{vcs.ignore.lib}:
 ##'   Add the packrat private library to your version control system ignore?
-##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##'   (logical; defaults to \code{TRUE})
 ##' \item \code{vcs.ignore.src}:
 ##'   Add the packrat private sources to your version control system ignore?
-##'   (\code{TRUE} / \code{FALSE}; defaults to \code{FALSE})
+##'   (logical; defaults to \code{FALSE})
 ##' \item \code{external.packages}:
 ##'   Packages which should be loaded from the user library. This can be useful for
 ##'   very large packages which you don't want duplicated across multiple projects,
 ##'   e.g. BioConductor annotation packages, or for package development scenarios
 ##'   wherein you want to use e.g. \code{devtools} and \code{roxygen2} for package
 ##'   development, but do not want your package to depend on these packages.
-##'   (EXPERIMENTAL; defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
+##'   (character; defaults to \code{Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES")})
 ##' \item \code{local.repos}:
 ##'   Ad-hoc local 'repositories'; i.e., directories containing package sources within
-##'   sub-directories. (Character vector; empty by default)
+##'   sub-directories.
+##'   (character; empty by default)
 ##' \item \code{load.external.packages.on.startup}:
 ##'   Load any packages specified within \code{external.packages} on startup?
-##'   (\code{TRUE} / \code{FALSE}; defaults to \code{TRUE})
+##'   (logical; defaults to \code{TRUE})
 ##' \item \code{ignored.packages}:
 ##'   Prevent packrat from tracking certain packages. Dependencies of these packages
-##'   will also not be tracked.
+##'   will also not be tracked (unless these packages are encountered as dependencies
+##'   in a separate context from the ignored package).
+##'   (character; empty by default)
 ##' \item \code{quiet.package.installation}:
 ##'   Emit output during package installation?
+##'   (logical; defaults to \code{TRUE})
 ##' \item \code{snapshot.recommended.packages}:
 ##'   Should 'recommended' packages discovered in the system library be
 ##'   snapshotted? See the \code{Priority} field of \code{available.packages()}
 ##'   for more information -- 'recommended' packages are those normally bundled
 ##'   with CRAN releases of R on OS X and Windows, but new releases are also
 ##'   available on the CRAN server.
+##'   (logical; defaults to \code{FALSE})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
