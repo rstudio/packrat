@@ -112,12 +112,13 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     })
     type <- "local"
-  } else if (isFromCranlikeRepo(pkgRecord) &&
-               pkgRecord$name %in% rownames(availablePkgs)) {
-    currentVersion <- availablePkgs[pkgRecord$name,"Version"]
+  } else if (isFromCranlikeRepo(pkgRecord)){
+    currentVersion <- if (pkgRecord$name %in% rownames(availablePkgs)) availablePkgs[pkgRecord$name,"Version"] else "not available"
     # Is the source for this version of the package on CRAN and/or a
     # Bioconductor repo?
-    if (identical(pkgRecord$version, currentVersion)) {
+    if (pkgRecord$name %in% rownames(availablePkgs) && identical(pkgRecord$version, currentVersion)) {
+
+
       # Get the source package
       # NOTE: we cannot use 'availablePkgs' as it might have been used to
       # generate an available package listing for _binary_ packages,
