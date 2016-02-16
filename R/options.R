@@ -30,7 +30,7 @@ default_opts <- function() {
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE,
     external.packages = Sys.getenv("R_PACKRAT_EXTERNAL_PACKAGES", unset = ""),
-    local.repos = "",
+    local.repos = NULL,
     load.external.packages.on.startup = TRUE,
     ignored.packages = NULL,
     quiet.package.installation = TRUE,

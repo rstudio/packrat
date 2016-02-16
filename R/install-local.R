@@ -28,7 +28,7 @@ install_local <- function(pkgs,
 findLocalRepoForPkg <- function(pkg,
                                 repos = get_opts("local.repos"),
                                 fatal = TRUE) {
-  if (!length(repos)) return(character())
+  if (!length(repos) || identical(repos, "")) return(character())
   # Search through the local repositories for a suitable package
   hasPackage <- unlist(lapply(repos, function(repo) {
     file.exists(file.path(repo, pkg))
@@ -57,7 +57,7 @@ install_local_single <- function(pkg,
                                  fatal = TRUE,
                                  ...) {
 
-  if (!length(repos))
+  if (!length(repos) || identical(repos, ""))
     stop("No local repositories have been defined. ",
          "Use 'packrat::set_opts(local.repos = ...)' to add local repositories.",
          call. = FALSE)
