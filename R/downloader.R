@@ -68,7 +68,9 @@ downloadFile <- function(url,
   # If the download method we're using matches the current option for
   # 'download.file.method', then propagate 'extra' options.
   if (identical(getOption("download.file.method"), method))
-    extra <- getOption("download.file.extra")
+    extra <- getOption("download.file.extra", default = "")
+
+  if (!length(extra)) extra <- ""
 
   # If we're using 'curl', we need to set '-L' to follow
   # redirects, and '-f' to ensure HTTP error codes are treated
