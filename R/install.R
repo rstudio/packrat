@@ -543,7 +543,7 @@ version_info <- list(
 rtools_needed <- function() {
   r_version <- getRversion()
 
-  for(i in rev(seq_along(version_info))) {
+  for (i in rev(seq_along(version_info))) {
     version <- names(version_info)[i]
     info <- version_info[[i]]
     ok <- r_version >= info$version_min && r_version <= info$version_max

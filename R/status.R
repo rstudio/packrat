@@ -32,7 +32,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   stopIfNotPackified(project)
 
   projectDefault <- identical(project, '.')
-  project <- normalizePath(project, winslash='/', mustWork=TRUE)
+  project <- normalizePath(project, winslash = '/', mustWork = TRUE)
 
   ### Step 1: Collect packages from three sources: packrat.lock, code inspection
   ### (using lib.loc and getLibPaths() to find packages/dependencies), and by

@@ -58,7 +58,7 @@ getPackageRecordsInstalledFromSource <- function(pkgs, lib.loc) {
       version = dcf$Version,
       source_path = dcf$InstallSourcePath,
       hash = hash(file.path(loc, "DESCRIPTION"))
-    ), class=c('packageRecord', 'source'))
+    ), class = c('packageRecord', 'source'))
   })
 }
 
@@ -84,7 +84,7 @@ getPackageRecordsLocalReposImpl <- function(pkg, repos, fatal = TRUE) {
     version = dcf$Version,
     source_path = file.path(repoToUse, pkg),
     hash = hash(file.path(repoToUse, pkg, "DESCRIPTION"))
-  ), class=c('packageRecord', 'source'))
+  ), class = c('packageRecord', 'source'))
 }
 
 getPackageRecordsExternalSource <- function(pkgNames,
@@ -273,7 +273,7 @@ inferPackageRecord <- function(df) {
       name = name,
       source = 'CRAN',
       version = ver
-    ), class=c('packageRecord', 'CRAN')))
+    ), class = c('packageRecord', 'CRAN')))
   } else if (!is.null(df$GithubRepo)) {
     # It's GitHub!
     return(structure(c(list(
@@ -285,7 +285,7 @@ inferPackageRecord <- function(df) {
       gh_ref = as.character(df$GithubRef),
       gh_sha1 = as.character(df$GithubSHA1)),
       c(gh_subdir = as.character(df$GithubSubdir))
-    ), class=c('packageRecord', 'github')))
+    ), class = c('packageRecord', 'github')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
@@ -295,21 +295,21 @@ inferPackageRecord <- function(df) {
       name = name,
       source = 'Bioconductor',
       version = ver
-    ), class=c('packageRecord', 'Bioconductor')))
+    ), class = c('packageRecord', 'Bioconductor')))
   } else if (!is.null(df$Repository) && df$Repository %in% names(repos)) {
     # It's a package from a custom CRAN-like repo!
     return(structure(list(
       name = name,
       source = as.character(df$Repository),
       version = ver
-    ), class=c("packageRecord", "CustomCRANLikeRepository")))
+    ), class = c("packageRecord", "CustomCRANLikeRepository")))
   } else if (identical(as.character(df$InstallSource), "source")) {
     # It's a local source package!
     return(structure(list(
       name = name,
       source = 'source',
       version = ver
-    ), class=c('packageRecord', 'source')))
+    ), class = c('packageRecord', 'source')))
   } else if ((identical(name, "manipulate") || identical(name, "rstudio")) &&
                identical(as.character(df$Author), "RStudio")) {
     # The 'manipulate' and 'rstudio' packages are auto-installed by RStudio
@@ -338,7 +338,7 @@ inferPackageRecord <- function(df) {
       name = name,
       source = 'unknown',
       version = ver
-    ), class='packageRecord'))
+    ), class = 'packageRecord'))
   }
 }
 
@@ -370,7 +370,7 @@ getSourcePackageInfoImpl <- function(path) {
   data.frame(
     name = as.character(desc$Package),
     version = as.character(desc$Version),
-    path = normalizePath(path, winslash='/'),
+    path = normalizePath(path, winslash = '/'),
     stringsAsFactors = FALSE
   )
 
@@ -452,7 +452,7 @@ searchPackages <- function(packages, packageNames) {
 # Returns a linear list of package records, sorted by name, with all dependency
 # information removed (or, optionally, reduced to names)
 flattenPackageRecords <- function(packageRecords, depInfo = FALSE, sourcePath = FALSE) {
-  visited <- new.env(parent=emptyenv())
+  visited <- new.env(parent = emptyenv())
   visit <- function(pkgRecs) {
     for (rec in pkgRecs) {
       if (isTRUE(depInfo)) {

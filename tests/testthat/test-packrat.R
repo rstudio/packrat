@@ -124,10 +124,10 @@ withTestContext({
     repos <- getOption("repos")
     pkgType <- getOption("pkgType")
     on.exit({
-      options("repos"= repos)
+      options("repos" = repos)
       options("pkgType" = pkgType)
     }, add = TRUE)
-    options(repos=c(CRAN=getOption("repos"), custom=getOption("repos")))
+    options(repos = c(CRAN = getOption("repos"), custom = getOption("repos")))
 
     projRoot <- cloneTestProject("empty")
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))

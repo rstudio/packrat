@@ -227,7 +227,7 @@ deserializePackages <- function(df) {
   topoSorted <- topoSort(graph)
 
   # It's now safe to drop the requires info since it's encoded in the graph
-  df <- df[, names(df) != 'requires', drop=FALSE]
+  df <- df[, names(df) != 'requires', drop = FALSE]
 
   sortedPackages <- lapply(topoSorted, function(pkgName) {
     pkg <- as.list(df[df$name == pkgName,])

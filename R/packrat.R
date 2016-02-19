@@ -374,7 +374,7 @@ restore <- function(project = NULL,
   # overwrite.dirty flag. Dirty packages that are not represented in the snapshot
   # (like git untracked) will be silently ignored in all cases.
 
-  libPkgNames <- rownames(installed.packages(libDir, noCache=TRUE))
+  libPkgNames <- rownames(installed.packages(libDir, noCache = TRUE))
   dirty <- !installedByPackrat(libPkgNames, libDir, TRUE)
   dirtyPackageNames <- libPkgNames[dirty]
 

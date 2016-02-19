@@ -19,7 +19,7 @@ forceUnload <- function(pkg) {
   pkgDLL <- getLoadedDLLs()[[pkgName]]
   if (!is.null(pkgDLL)) {
     suppressWarnings({
-      pkgDir <- system.file(package=pkgName)
+      pkgDir <- system.file(package = pkgName)
       if (nzchar(pkgDir))
         try(library.dynam.unload(pkgName, pkgDir), silent = TRUE)
     })
@@ -194,7 +194,7 @@ startswith <- function(str1, str2) {
 
 # does str1 end with str2?
 endswith <- function(str1, str2) {
-  if (!length(str2) == 1) stop ("expecting a length 1 string for 'str2'")
+  if (!length(str2) == 1) stop("expecting a length 1 string for 'str2'")
   n2 <- nchar(str2)
   sapply(str1, function(x) {
     nx <- nchar(x)

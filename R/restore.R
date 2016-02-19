@@ -172,10 +172,10 @@ getSourceForPkgRecord <- function(pkgRecord,
                         pkgRecord$gh_repo, "/archive/", pkgRecord$gh_sha1,
                         ".tar.gz", sep = "")
 
-    srczip <- tempfile(fileext='.tar.gz')
+    srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
       if (file.exists(srczip))
-        unlink(srczip, recursive=TRUE)
+        unlink(srczip, recursive = TRUE)
     })
 
     if (!downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")) {
@@ -187,11 +187,11 @@ getSourceForPkgRecord <- function(pkgRecord,
       scratchDir <- tempfile()
       on.exit({
         if (file.exists(scratchDir))
-          unlink(scratchDir, recursive=TRUE)
+          unlink(scratchDir, recursive = TRUE)
       })
       # untar can emit noisy warnings (e.g. "skipping pax global extended
       # headers"); hide those
-      suppressWarnings(untar(srczip, exdir=scratchDir, tar="internal"))
+      suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
       # Find the base directory
       basedir <- if (length(dir(scratchDir)) == 1)
         file.path(scratchDir, dir(scratchDir))
@@ -215,15 +215,15 @@ getSourceForPkgRecord <- function(pkgRecord,
       appendToDcf(file.path(basedir, 'DESCRIPTION'), ghinfo)
 
       file.create(file.path(pkgSrcDir, pkgSrcFile))
-      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash='/')
+      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
 
       # R's internal tar (which we use here for cross-platform consistency)
       # emits warnings when there are > 100 characters in the path, due to the
       # resulting incompatibility with older implementations of tar. This isn't
       # relevant for our purposes, so suppress the warning.
       in_dir(dirname(basedir),
-             suppressWarnings(tar(tarfile=dest, files=basename(basedir),
-                                  compression='gzip', tar='internal'))
+             suppressWarnings(tar(tarfile = dest, files = basename(basedir),
+                                  compression = 'gzip', tar = 'internal'))
       )
     })
 

@@ -26,10 +26,10 @@
 #' library rather than the project private library.
 #'
 #' @export
-install_github <-function(repo,
-                          ...,
-                          build_vignettes = FALSE,
-                          dependencies = NA) {
+install_github <- function(repo,
+                           ...,
+                           build_vignettes = FALSE,
+                           dependencies = NA) {
 
   # look for devtools in the original libs and prompt to install if necessary
   origLibPaths <- .packrat_mutables$get("origLibPaths")

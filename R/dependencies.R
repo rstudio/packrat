@@ -100,7 +100,7 @@ appDependencies <- function(project = NULL,
 
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
-  dir <- normalizePath(dir, winslash='/')
+  dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
   pattern <- "\\.[rR]$|\\.[rR]md$|\\.[rR]nw$|\\.[rR]pres$"
@@ -135,18 +135,18 @@ dirDependencies <- function(dir) {
 # ad-hoc dispatch based on the file extension
 fileDependencies <- function(file) {
   fileext <- tolower(gsub(".*\\.", "", file))
-  switch (fileext,
-          r = fileDependencies.R(file),
-          rmd = fileDependencies.Rmd(file),
-          rnw = fileDependencies.Rnw(file),
-          rpres = fileDependencies.Rpres(file),
-          stop("Unrecognized file type '", file, "'")
+  switch(fileext,
+         r = fileDependencies.R(file),
+         rmd = fileDependencies.Rmd(file),
+         rnw = fileDependencies.Rnw(file),
+         rpres = fileDependencies.Rpres(file),
+         stop("Unrecognized file type '", file, "'")
   )
 }
 
 hasYamlFrontMatter <- function(content) {
   lines <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
-  1 %in% lines && length(lines) >= 2 && grepl("^---\\s*$", content[1], perl=TRUE)
+  1 %in% lines && length(lines) >= 2 && grepl("^---\\s*$", content[1], perl = TRUE)
 }
 
 yamlDeps <- function(yaml) {

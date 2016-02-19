@@ -70,7 +70,10 @@ downloadFile <- function(url,
   if (identical(getOption("download.file.method"), method))
     extra <- getOption("download.file.extra", default = "")
 
-  if (!length(extra)) extra <- ""
+  extra <- if (is.character(extra))
+    paste(extra, collapse = " ")
+  else
+    ""
 
   # If we're using 'curl', we need to set '-L' to follow
   # redirects, and '-f' to ensure HTTP error codes are treated

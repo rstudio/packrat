@@ -10,7 +10,7 @@ ends_with_newline <- function(path) {
 
 appendToDcf <- function(path, records) {
   if (!ends_with_newline(path))
-    cat('\n', sep='', file=path, append=TRUE)
+    cat('\n', sep = '', file = path, append = TRUE)
   write_dcf(records, path, append = TRUE)
 }
 

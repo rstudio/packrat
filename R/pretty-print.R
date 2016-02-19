@@ -3,7 +3,7 @@ prettyPrint <- function(packages, header, footer = NULL) {
   if (length(packages) > 0) {
     cat('\n')
     if (!is.null(header)) {
-      cat(paste(header, collapse=''))
+      cat(paste(header, collapse = ''))
       cat('\n')
     }
     print.simple.list(lapply(packages, function(pkg) {
@@ -14,7 +14,7 @@ prettyPrint <- function(packages, header, footer = NULL) {
     }))
     if (!is.null(footer)) {
       cat('\n')
-      cat(paste(footer, collapse=''))
+      cat(paste(footer, collapse = ''))
     }
     cat('\n')
   }
@@ -70,11 +70,11 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
 
     cat('\n')
     if (!is.null(header)) {
-      cat(paste(header, collapse=''))
+      cat(paste(header, collapse = ''))
       cat('\n')
     }
 
-    pickVersion <- pick("version", defaultValue="NA")
+    pickVersion <- pick("version", defaultValue = "NA")
     df <- data.frame(paste(" ", sapply(packagesFrom, pickVersion)),
                      paste(" ", sapply(packagesTo, pickVersion)))
     names(df) <- c(paste(" ", fromLabel), paste(" ", toLabel))
@@ -83,7 +83,7 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
 
     if (!is.null(footer)) {
       cat('\n')
-      cat(paste(footer, collapse=''))
+      cat(paste(footer, collapse = ''))
     }
     cat('\n')
   }
@@ -93,13 +93,13 @@ prettyPrintNames <- function(packageNames, header, footer = NULL) {
   if (length(packageNames) > 0) {
     cat('\n')
     if (!is.null(header)) {
-      cat(paste(header, collapse=''))
+      cat(paste(header, collapse = ''))
       cat('\n')
     }
     cat(paste("    ", packageNames, sep = '', collapse = '\n'))
     cat('\n')
     if (!is.null(footer)) {
-      cat(paste(footer, collapse=''))
+      cat(paste(footer, collapse = ''))
     }
     cat('\n')
   }
