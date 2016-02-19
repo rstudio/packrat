@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/rstudio/packrat.png)](https://travis-ci.org/rstudio/packrat)
+[![Build Status](https://travis-ci.org/rstudio/packrat.svg?branch=master)](https://travis-ci.org/rstudio/packrat)
 [![Coverage Status](https://codecov.io/github/rstudio/packrat/coverage.svg?branch=master)](https://codecov.io/github/rstudio/packrat?branch=master)
 
 # packrat
