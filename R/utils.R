@@ -369,20 +369,8 @@ getUserLibPaths <- function() {
 
 ## Get the default library paths (those that would be used upon
 ## starting a new R session)
-getDefaultLibPaths <- function(use.cache = TRUE) {
-
-  if (use.cache && length(.packrat$default.libPaths))
-    return(.packrat$default.libPaths)
-
-  with_dir(tempdir(), {
-    R <- file.path(R.home("bin"), "R")
-    code <- shQuote("cat(.libPaths(), sep = '|||')")
-    cmd <- paste(shQuote(R), "--slave", "-e", code)
-    interned <- system(cmd, intern = TRUE)
-    result <- strsplit(interned[length(interned)], "|||", fixed = TRUE)[[1]]
-    .packrat$default.libPaths <- result
-    result
-  })
+getDefaultLibPaths <- function() {
+  getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
 }
 
 getInstalledPkgInfo <- function(packages, installed.packages, ...) {

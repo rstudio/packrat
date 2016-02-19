@@ -15,6 +15,11 @@ ensurePkgTypeNotBoth <- function() {
 
 beforePackratModeOn <- function(project) {
 
+  # Ensure that we leave packrat mode before transfering
+  # to a new project.
+  if (isPackratModeOn())
+    off(print.banner = FALSE)
+
   project <- getProjectDir(project)
 
   ## Check and see if we need to generate default options
