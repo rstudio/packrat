@@ -233,8 +233,11 @@ getPackageRecords <- function(pkgNames,
     fallbackPkgRecords
   )
 
+  # Remove any null records
+  allRecords <- dropNull(allRecords)
+
   # Remove any duplicate records, reorder
-  allRecords <- dropNull(allRecords[origPkgNames])
+  allRecords <- allRecords[origPkgNames]
 
   # Now get recursive package dependencies if necessary
   if (recursive) {
