@@ -187,7 +187,7 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
   path <- normalize.path(basename(package))
 
   contribUrl <- sub(reFilePrefix(), "", file.path(repoPath, "src", "contrib"))
-  if (!file.copy(path, contribUrl))
+  if (!file.copy(path, contribUrl, overwrite = TRUE))
     stop("failed to upload package '", basename(package), "' to '", contribUrl, "'")
 
   tools::write_PACKAGES(contribUrl, type = "source")

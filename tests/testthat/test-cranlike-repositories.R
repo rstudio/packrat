@@ -1,7 +1,7 @@
 context("CRAN")
 
 test_that("We can create and 'upload' an example package", {
-  skip_on_cran()
+  skip_on_cran() && skip_on_travis()
 
   dir <- tempdir()
   owd <- getwd()
