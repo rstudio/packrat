@@ -35,6 +35,14 @@
 #
 download <- function(url, method = inferAppropriateDownloadMethod(url), ...) {
 
+  # If this is a path to a GitHub URL, attempt to download with authentication,
+  # so that private GitHub repositories can be handled.
+  if (isGitHubURL(url) && canUseGitHubDownloader()) {
+    result <- try(githubDownload(url, ...), silent = TRUE)
+    if (!inherits(result, "try-error"))
+      return(result)
+  }
+
   # When on Windows using an 'internal' method, we need to call
   # 'setInternet2' to set some appropriate state.
   if (is.windows() && method == "internal") {

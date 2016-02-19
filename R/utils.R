@@ -622,3 +622,8 @@ isUsingExternalTar <- function() {
 
   TRUE
 }
+
+# sneakily get a function
+yoink <- function(package, symbol) {
+  eval(call(":::", package, symbol))
+}
