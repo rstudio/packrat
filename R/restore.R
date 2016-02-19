@@ -112,9 +112,15 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     })
     type <- "local"
-  } else if (isFromCranlikeRepo(pkgRecord) &&
-               pkgRecord$name %in% rownames(availablePkgs)) {
-    currentVersion <- availablePkgs[pkgRecord$name,"Version"]
+  } else if (isFromCranlikeRepo(pkgRecord)) {
+
+    # Attempt to detect if this is the current version of a package
+    # on a CRAN-like repository
+    currentVersion <- if (pkgRecord$name %in% rownames(availablePkgs))
+      availablePkgs[pkgRecord$name, "Version"]
+    else
+      NA
+
     # Is the source for this version of the package on CRAN and/or a
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {
@@ -163,8 +169,14 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
       if (!foundVersion) {
         message("FAILED")
-        stop("Couldn't find source for version ", pkgRecord$version, " of ",
-             pkgRecord$name, " (", currentVersion, " is current)")
+        stopMsg <- sprintf("Couldn't find source for version %s of %s",
+                           pkgRecord$version,
+                           pkgRecord$name)
+
+        if (!is.na(currentVersion))
+          stopMsg <- paste(stopMsg, sprintf("(%s is current)", currentVersion))
+
+        stop(stopMsg)
       }
     }
   } else if (identical(pkgRecord$source, "github")) {
