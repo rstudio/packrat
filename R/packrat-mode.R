@@ -187,16 +187,20 @@ afterPackratModeOn <- function(project,
     options(repos = repos)
   }
 
-  # Set a secure download method if any of the repos URLs use https
-  if (any(grepl("^https", repos))) {
-    method <- secureDownloadMethod()
-    if (is.null(method)) {
-      secureRepos <- grep("^https", repos, value = TRUE)
-      pasted <- paste("-", shQuote(secureRepos), collapse = "\n")
-      warning("The following repositories require a secure download method but ",
-              "none could be found:\n", pasted)
+  # Set a secure download method if any of the repos URLs use https and
+  # a secure download method has not already been set
+  if (any(grepl("^(?:ht|f)tps", repos))) {
+    downloadMethod <- getOption("download.file.method")
+    if (is.null(downloadMethod) || identical(downloadMethod, "internal")) {
+      method <- secureDownloadMethod()
+      if (is.null(method)) {
+        secureRepos <- grep("^https", repos, value = TRUE)
+        pasted <- paste("-", shQuote(secureRepos), collapse = "\n")
+        warning("The following repositories require a secure download method, but ",
+                "no such method could be selected:\n", pasted)
+      }
+      options(download.file.method = method)
     }
-    options(download.file.method = method)
   }
 
   # Update settings

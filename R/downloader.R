@@ -213,7 +213,7 @@ secureDownloadMethod <- function() {
     return("libcurl")
 
   # Otherwise, fall back to 'wget' or 'curl' (preferring 'wget')
-  candidates <- c("wget", "curl")
+  candidates <- c("curl", "wget")
   for (candidate in candidates)
     if (isProgramOnPath(candidate))
       return(candidate)
