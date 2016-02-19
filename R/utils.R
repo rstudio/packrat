@@ -553,6 +553,10 @@ reFilePrefix <- function() {
   paste("^", filePrefix(), sep = "")
 }
 
+vecdiff <- function(x, y) {
+  x[match(x, y, 0L) == 0L]
+}
+
 # Call 'available.packages()' with an invalid URL to get the
 # 'skeleton' output of 'available.packages()' (ie, an empty matrix
 # with all appropriate fields populated)
