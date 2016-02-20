@@ -22,7 +22,7 @@ getPackratDir <- function(project = NULL) {
   project <- getProjectDir(project)
   file.path(
     project,
-    .packrat$packratFolderName
+    "packrat"
   )
 }
 
@@ -47,7 +47,7 @@ libDir <- function(project = NULL) {
 
 relLibDir <- function() {
   file.path(
-    .packrat$packratFolderName,
+    "packrat",
     relativeLibDir('lib')
   )
 }
@@ -57,14 +57,14 @@ libraryRootDir <- function(project = NULL) {
   project <- getProjectDir(project)
   file.path(
     project,
-    .packrat$packratFolderName,
+    "packrat",
     'lib'
   )
 }
 
 relLibraryRootDir <- function() {
   file.path(
-    .packrat$packratFolderName,
+    "packrat",
     'lib'
   )
 }
@@ -87,7 +87,7 @@ newLibraryDir <- function(project = NULL) {
 
 relNewLibraryDir <- function() {
   file.path(
-    .packrat$packratFolderName,
+    "packrat",
     'library.new'
   )
 }
@@ -101,7 +101,7 @@ oldLibraryDir <- function(project = NULL) {
 
 relOldLibraryDir <- function() {
   file.path(
-    .packrat$packratFolderName,
+    "packrat",
     'library.old'
   )
 }
@@ -115,7 +115,7 @@ srcDir <- function(project = NULL) {
 
 relSrcDir <- function() {
   file.path(
-    .packrat$packratFolderName,
+    "packrat",
     'src'
   )
 }

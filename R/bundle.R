@@ -228,12 +228,12 @@ bundle_external <- function(project = NULL,
   # Exclude the packrat folder at this stage -- we re-add the components we
   # need piece by piece
   projectFiles <- projectFiles[
-    !startswith(projectFiles, .packrat$packratFolderName)
+    !startswith(projectFiles, "packrat")
   ]
 
   # Make sure we add packrat
   basePackratFiles <- list_files(
-    .packrat$packratFolderName,
+    "packrat",
     all.files = TRUE,
     recursive = FALSE,
     full.names = TRUE

@@ -19,7 +19,7 @@ snapshotHook <- function(expr, value, ok, visible) {
       if (is.null(project)) {
         file = "" ## to stdout
       } else {
-        file = file.path(project, .packrat$packratFolderName, "packrat.log")
+        file = file.path(project, "packrat", "packrat.log")
       }
 
       if (inherits(e, "simpleError")) {

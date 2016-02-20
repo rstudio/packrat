@@ -37,10 +37,10 @@ migrate <- function(project = ".", ask = TRUE) {
   }
 
   ## Create the project local packrat dir
-  if (file.exists(.packrat$packratFolderName)) {
+  if (file.exists("packrat")) {
     stop("A local packrat directory already exists!")
   }
-  dir.create(.packrat$packratFolderName)
+  dir.create("packrat")
 
   ## Clean up on fail if we are generating the new library directory but
   ## copying fails
@@ -75,7 +75,7 @@ migrate <- function(project = ".", ask = TRUE) {
   })
 
   ## Copy the lock file
-  if (!file.copy("packrat.lock", file.path(.packrat$packratFolderName, "packrat.lock"))) {
+  if (!file.copy("packrat.lock", file.path("packrat", "packrat.lock"))) {
     stop("Failed to copy the packrat lock file")
   }
 
@@ -116,7 +116,7 @@ migrate <- function(project = ".", ask = TRUE) {
   ## Add in the init.R script
   file.copy(
     system.file(package = "packrat", "resources", "init.R"),
-    file.path(.packrat$packratFolderName, "init.R")
+    file.path("packrat", "init.R")
   )
   message("- packrat/init.R successfully updated")
 

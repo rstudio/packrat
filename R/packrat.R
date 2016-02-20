@@ -211,7 +211,7 @@ init <- function(project = '.',
       # Copy init.R so a user can 'start from zero' with a project
       file.copy(
         instInitFilePath(),
-        file.path(project, .packrat$packratFolderName, "init.R")
+        file.path(project, "packrat", "init.R")
       )
 
       # Update project settings -- this also involves updating the .gitignore,
@@ -565,7 +565,7 @@ packify <- function(project = NULL, quiet = FALSE) {
   ## Copy in packrat/init.R
   file.copy(
     instInitFilePath(),
-    file.path(project, .packrat$packratFolderName, "init.R"),
+    file.path(project, "packrat", "init.R"),
     overwrite = TRUE
   )
 

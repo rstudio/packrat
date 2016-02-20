@@ -113,7 +113,7 @@ dirDependencies <- function(dir) {
 
   ## Avoid anything within the packrat directory itself -- all inference
   ## should be done on user code
-  packratDirRegex <- paste("^", .packrat$packratFolderName, sep = "")
+  packratDirRegex <- paste("^", "packrat", sep = "")
   R_files <- grep(packratDirRegex, R_files, invert = TRUE, value = TRUE)
 
 
