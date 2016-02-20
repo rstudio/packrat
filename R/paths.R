@@ -14,23 +14,20 @@ getProjectDir <- function(project = NULL) {
   }
 
   file.path(
-    normalizePath(project, winslash = '/', mustWork = TRUE)
+    normalizePath(project, winslash = "/", mustWork = TRUE)
   )
 }
 
 getPackratDir <- function(project = NULL) {
   project <- getProjectDir(project)
-  file.path(
-    project,
-    "packrat"
-  )
+  file.path(project, "packrat")
 }
 
-## We differentiate between the 'libDir' -- the actual architecture-specific
-## directory containing libraries for the current system, and the 'libraryRootDir'
-## containing all libraries for a given project (which may want to be copied around
-## -- unlikely since we encourage people to build from snapshots, but we leave it
-## possible)
+# We differentiate between the 'libDir' -- the actual architecture-specific
+# directory containing libraries for the current system, and the 'libraryRootDir'
+# containing all libraries for a given project (which may want to be copied around
+# -- unlikely since we encourage people to build from snapshots, but we leave it
+# possible)
 libDir <- function(project = NULL) {
 
   envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
@@ -46,85 +43,50 @@ libDir <- function(project = NULL) {
 }
 
 relLibDir <- function() {
-  file.path(
-    "packrat",
-    relativeLibDir('lib')
-  )
+  file.path("packrat", relativeLibDir("lib"))
 }
 
 ## The root library directory for a project, e.g. <proj>/<packrat>/lib
 libraryRootDir <- function(project = NULL) {
   project <- getProjectDir(project)
-  file.path(
-    project,
-    "packrat",
-    'lib'
-  )
+  file.path(project, "packrat/lib")
 }
 
 relLibraryRootDir <- function() {
-  file.path(
-    "packrat",
-    'lib'
-  )
+  "packrat/lib"
 }
 
 relativeLibDir <- function(libraryRoot) {
-  file.path(
-    libraryRoot,
-    R.version$platform,
-    getRversion()
-  )
+  file.path(libraryRoot, R.version$platform, getRversion())
 }
 
 # Temporary library directory when modifying an in-use library
 newLibraryDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'library.new'
-  )
+  file.path(getPackratDir(project), "library.new")
 }
 
 relNewLibraryDir <- function() {
-  file.path(
-    "packrat",
-    'library.new'
-  )
+  file.path("packrat", "library.new")
 }
 
 oldLibraryDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'library.old'
-  )
+  file.path(getPackratDir(project), "library.old")
 }
 
 relOldLibraryDir <- function() {
-  file.path(
-    "packrat",
-    'library.old'
-  )
+  "packrat/library.old"
 }
 
 srcDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'src'
-  )
+  file.path(getPackratDir(project), "src")
 }
 
 relSrcDir <- function() {
-  file.path(
-    "packrat",
-    'src'
-  )
+  "packrat/stc"
 }
 
 bundlesDir <- function(project = NULL) {
-  file.path(
-    getPackratDir(project),
-    'bundles'
-  )
+  file.path(getPackratDir(project), "bundles")
 }
 
 lockFilePath <- function(project = NULL) {
@@ -135,7 +97,7 @@ snapshotLockFilePath <- function(project = NULL) {
   file.path(getPackratDir(project), "snapshot.lock")
 }
 
-## Use a file instead of env. variables as it's better handled across
+## Use a file instead of env. variables as it"s better handled across
 ## multiple R sessions
 packratModeFilePath <- function(project = NULL) {
   packratDir <- getPackratDir(project)
@@ -143,15 +105,15 @@ packratModeFilePath <- function(project = NULL) {
 }
 
 instInitFilePath <- function() {
-  file.path(system.file(package = "packrat"), "resources", "init.R")
+  file.path(system.file(package = "packrat"), "resources/init.R")
 }
 
 instInitRprofileFilePath <- function() {
-  file.path(system.file(package = "packrat"), "resources", "init-rprofile.R")
+  file.path(system.file(package = "packrat"), "resources/init-rprofile.R")
 }
 
 instMacRUserlibFilePath <- function() {
-  file.path(system.file(package = "packrat"), "resources", "mac_r_userlib.sh")
+  file.path(system.file(package = "packrat"), "resources/mac_r_userlib.sh")
 }
 
 packratOptionsFilePath <- function(project = NULL) {
@@ -187,9 +149,9 @@ prettyLibDir <- function(project = NULL) {
   prettyDir(project = project, "packrat/lib")
 }
 
-##' @rdname packrat-external
-##' @name packrat-external
-##' @export
+#' @rdname packrat-external
+#' @name packrat-external
+#' @export
 user_lib <- function() {
   libraries <- unlist(strsplit(Sys.getenv("R_LIBS_USER"), .Platform$path.sep, fixed = TRUE))
   normalizePath(libraries, winslash = "/", mustWork = FALSE)
@@ -197,15 +159,15 @@ user_lib <- function() {
 
 userLib <- user_lib
 
-##' @rdname packrat-external
-##' @name packrat-external
-##' @export
+#' @rdname packrat-external
+#' @name packrat-external
+#' @export
 packrat_lib <- function() {
   project <- getProjectDir()
   libDir(project)
 }
 
-## A location where 'global' packrat data is stored, e.g. the library cache
+## A location where "global" packrat data is stored, e.g. the library cache
 appDataDir <- function() {
   Sys.getenv("R_PACKRAT_CACHE_DIR",
              unset = defaultAppDataDir())
