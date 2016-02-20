@@ -82,7 +82,7 @@ srcDir <- function(project = NULL) {
 }
 
 relSrcDir <- function() {
-  "packrat/stc"
+  "packrat/src"
 }
 
 bundlesDir <- function(project = NULL) {
