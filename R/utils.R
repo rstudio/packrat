@@ -243,7 +243,7 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
 }
 
-updateRBuildIgnore <- function(project = NULL, options) {
+updateRBuildIgnore <- function(project = NULL) {
 
   add <- c(
     "^packrat/",
