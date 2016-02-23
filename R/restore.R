@@ -207,7 +207,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     on.exit({
       if (file.exists(srczip))
         unlink(srczip, recursive = TRUE)
-    })
+    }, add = TRUE)
 
     if (!downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")) {
       message("FAILED")

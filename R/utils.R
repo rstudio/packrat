@@ -614,3 +614,23 @@ isUsingExternalTar <- function() {
 join <- function(..., sep = "", collapse = NULL) {
   paste(..., sep = sep, collapse = collapse)
 }
+
+# sneakily get a function
+yoink <- function(package, symbol) {
+  eval(call(":::", package, symbol))
+}
+
+enumerate <- function(list, fn) {
+  keys <- names(list)
+  values <- list
+  sapply(seq_along(keys), function(i) {
+    fn(keys[[i]], values[[i]])
+  })
+}
+
+packageVersionInstalled <- function(...) {
+  enumerate(list(...), function(package, version) {
+    result <- try(packageVersion(package), silent = TRUE)
+    !inherits(result, "try-error") && result >= version
+  })
+}
