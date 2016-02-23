@@ -610,3 +610,7 @@ isUsingExternalTar <- function() {
 
   TRUE
 }
+
+join <- function(..., sep = "", collapse = NULL) {
+  paste(..., sep = sep, collapse = collapse)
+}

@@ -180,9 +180,28 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     }
   } else if (identical(pkgRecord$source, "github")) {
-    archiveUrl <- paste("http://github.com/", pkgRecord$gh_username, "/",
-                        pkgRecord$gh_repo, "/archive/", pkgRecord$gh_sha1,
-                        ".tar.gz", sep = "")
+
+    # Prefer using https if possible. Note that 'wininet'
+    # can fail if attempting to download from an 'http'
+    # URL that redirects to an 'https' URL.
+    # https://github.com/rstudio/packrat/issues/269
+    method <- tryCatch(
+      secureDownloadMethod(),
+      error = function(e) "internal"
+    )
+
+    protocol <- if (identical(method, "internal"))
+      "http"
+    else
+      "https"
+
+    hostname <- "www.github.com"
+    path <- file.path(pkgRecord$gh_username,
+                      pkgRecord$gh_repo,
+                      "archive",
+                      join(pkgRecord$gh_sha1, ".tar.gz"))
+
+    archiveUrl <- join(protocol, "://", hostname, "/", path)
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
