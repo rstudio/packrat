@@ -3,8 +3,7 @@ isGitHubURL <- function(url) {
 }
 
 canUseGitHubDownloader <- function() {
-  result <- try(packageVersion("devtools"), silent = TRUE)
-  !inherits(result, "try-error") && result >= "1.9.1"
+  all(packageVersionInstalled(devtools = "1.9.1", httr = "1.0.0"))
 }
 
 githubDownload <- function(url, destfile, ...) {
