@@ -4,7 +4,7 @@ test_that("we can use devtools:::download to retrieve GitHub archives", {
 
   skip("run manually for now")
 
-  if (!canUseDevtoolsDownloader())
+  if (!canUseGitHubDownloader())
     skip("requires devtools")
 
   url <- "https://github.com/rstudio/packrat/archive/cd0f9a4dae7ea0c79966b6784b44d7e4e4edadad.zip"
