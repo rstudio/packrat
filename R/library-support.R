@@ -15,11 +15,12 @@ symlinkSystemPackages <- function(project = NULL) {
   if (!file.exists(libRdir))
     dir.create(libRdir, recursive = TRUE)
 
+  ## Generate symlinks for each package
   for (pkg in sysPkgNames) {
     source <- file.path(sysLibPath, pkg)
     target <- file.path(libRdir, pkg)
     if (!ensurePackageSymlink(source, target))
-      stop(sprintf("Failed to symlink package '%s' to '%s'", source, target))
+      return(FALSE)
   }
 
   TRUE
@@ -39,11 +40,14 @@ ensurePackageSymlink <- function(source, target) {
       return(TRUE)
 
     # Remove the old symlink.
-    if (is.symlink(target))
-      unlink(target)
-    else
-      unlink(target, recursive = TRUE)
+    unlink(target)
   }
+
+  # If, for some reason, the target directory
+  # still exists, bail as otehrwise symlinking
+  # will not work as desired.
+  if (file.exists(target))
+    stop("Target '", target, "' already exists and is not a symlink")
 
   # Perform the symlink.
   symlink(source, target)
