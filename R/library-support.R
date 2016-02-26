@@ -3,6 +3,7 @@
 symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
+  # Get the path to the base R library installation
   sysLibPath <- R.home("library")
 
   ## Get the system packages
@@ -26,6 +27,26 @@ symlinkSystemPackages <- function(project = NULL) {
   TRUE
 }
 
+isPathToSamePackage <- function(source, target) {
+
+  # When not on Windows, we can just check that the normalized
+  # paths resolve to the same location.
+  if (!is.windows())
+    return(normalizePath(source) == normalizePath(target))
+
+  # On Windows, junction points are not resolved by 'normalizePath()',
+  # so we need an alternate strategy for determining if the junction
+  # point is up to date. We ensure that the 'DESCRIPTION' files at
+  # both locations are equivalent.
+  lhsPath <- file.path(source, "DESCRIPTION")
+  rhsPath <- file.path(target, "DESCRIPTION")
+
+  lhsContents <- readChar(lhsPath, file.info(lhsPath)$size, TRUE)
+  rhsContents <- readChar(rhsPath, file.info(rhsPath)$size, TRUE)
+
+  identical(lhsContents, rhsContents)
+}
+
 ensurePackageSymlink <- function(source, target) {
 
   # If we have a symlink already active in the
@@ -34,12 +55,11 @@ ensurePackageSymlink <- function(source, target) {
   # R session.
   if (file.exists(target)) {
 
-    # If the resolved path is the same as the source path, accept it.
-    resolved <- normalizePath(target, winslash = "/", mustWork = TRUE)
-    if (resolved == normalizePath(source, winslash = "/", mustWork = FALSE))
+    if (isPathToSamePackage(source, target))
       return(TRUE)
 
-    # Remove the old symlink.
+    # Remove the old symlink. Both junction points and symlinks
+    # are safely removed with a simple, non-recursive unlink.
     unlink(target)
   }
 
@@ -52,6 +72,7 @@ ensurePackageSymlink <- function(source, target) {
   # Perform the symlink.
   symlink(source, target)
 
+  # Success if the file now exists
   file.exists(target)
 }
 
