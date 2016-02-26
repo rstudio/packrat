@@ -2,7 +2,8 @@
 ## Returns TRUE/FALSE, indicating whether the symlinking was successful
 symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
-  sysLibPath <- getSysLibPath()
+
+  sysLibPath <- R.home("library")
 
   ## Get the system packages
   sysPkgs <- utils::installed.packages(sysLibPath)
@@ -11,78 +12,43 @@ symlinkSystemPackages <- function(project = NULL) {
 
   ## Make a directory where we can symlink these libraries
   libRdir <- libRdir(project = project)
+  if (!file.exists(libRdir))
+    dir.create(libRdir, recursive = TRUE)
 
-  ## Only bash the old symlinks if the version of R running is not
-  ## equal to the R version of 'base' in lib-R.
-  if (file.exists(libRdir)) {
-    ## Get the DESCRIPTION for 'base'
-    baseDescriptionPath <- file.path(libRdir, "base", "DESCRIPTION")
-    if (file.exists(baseDescriptionPath)) {
-      tryCatch({
-        DESCRIPTION <- readDcf(baseDescriptionPath, all = TRUE)
-        libRVersion <- package_version(DESCRIPTION$Version)
-        rVersion <- getRversion()
-        if (libRVersion != rVersion) {
-          message("Updating system packages ('", libRVersion, "' -> '", rVersion, "')")
-          unlink(libRdir, recursive = TRUE)
-        }
-      }, error = function(e) {
-        warning("Unable to read DESCRIPTION file associated with 'base' package")
-      })
-    }
-  }
-  dir.create(libRdir, recursive = TRUE, showWarnings = FALSE)
-
-
-
-  ## Perform the symlinking -- we symlink individual packages because we don't
-  ## want to capture any user libraries that may have been installed in the 'system'
-  ## library directory
-  ##
-  ## NOTE: On Windows, we use junction points rather than symlinks to achieve the same
-  ## effect
-  results <- suppressWarnings(vapply(rownames(sysPkgsBase), function(pkg) {
-
-    from <- file.path(sysLibPath, pkg)
-    to <- file.path(libRdir, pkg)
-
-    # Bash old symlinks just to ensure this session will be non-stale.
-    # TODO: What if multiple R sessions want to run with a single packrat project?
-    if (file.exists(to) && is.symlink(to))
-      unlink(to)
-
-    # TODO: For some reason, empty directories rather than junction points can
-    # get generated on Windows.
-    if (file.exists(to))
-      unlink(to, recursive = TRUE)
-
-    symlink(from, to)
-  }, logical(1)))
-
-  # symlink returns FALSE if there was a failure
-  if (!all(results)) {
-    # clean up the libRdir if it's empty
-    if (!length(list.files(libRdir)))
-      unlink(libRdir, recursive = TRUE)
-    return(FALSE)
+  for (pkg in sysPkgNames) {
+    source <- file.path(sysLibPath, pkg)
+    target <- file.path(libRdir, pkg)
+    if (!ensurePackageSymlink(source, target))
+      stop(sprintf("Failed to symlink package '%s' to '%s'", source, target))
   }
 
-  ## Clean up recursive symlinks if necessary -- it is possible that, e.g.
-  ## within a base package directory:
-  ##
-  ##     /Library/Frameworks/R.framework/Versions/3.2/library/MASS
-  ##
-  ## there will be a link to MASS within MASS; we try to be friendly and
-  ## remove those.
-  recursiveSymlinks <- file.path(sysLibPath, sysPkgNames, sysPkgNames)
-  invisible(lapply(recursiveSymlinks, function(file) {
-    if (is.symlink(file)) {
-      unlink(file)
-    }
-  }))
+  TRUE
+}
 
-  return(TRUE)
+ensurePackageSymlink <- function(source, target) {
 
+  # If we have a symlink already active in the
+  # target location, check that it points to the
+  # library corresponding to the current running
+  # R session.
+  if (file.exists(target)) {
+
+    # If the resolved path is the same as the source path, accept it.
+    resolved <- normalizePath(target, winslash = "/", mustWork = TRUE)
+    if (resolved == normalizePath(source, winslash = "/", mustWork = FALSE))
+      return(TRUE)
+
+    # Remove the old symlink.
+    if (is.symlink(target))
+      unlink(target)
+    else
+      unlink(target, recursive = TRUE)
+  }
+
+  # Perform the symlink.
+  symlink(source, target)
+
+  file.exists(target)
 }
 
 symlinkExternalPackages <- function(project = NULL) {
@@ -165,17 +131,4 @@ is.symlink <- function(path) {
 useSymlinkedSystemLibrary <- function(project = NULL) {
   project <- getProjectDir(project)
   replaceLibrary(".Library", libRdir(project = project))
-}
-
-getSysLibPath <- function() {
-  # Just return .Library if it lies within R.home
-  if (identical(R.home("library"), .Library))
-    return(.Library)
-
-  # Otherwise, use a cached version of .Library
-  libPath <- .packrat_mutables$get(".Library")
-  if (!is.null(libPath))
-    return(libPath)
-
-  stop("Failed to ascertain the system library path", call. = FALSE)
 }
