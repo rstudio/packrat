@@ -44,7 +44,7 @@ ensurePackageSymlink <- function(source, target) {
   }
 
   # If, for some reason, the target directory
-  # still exists, bail as otehrwise symlinking
+  # still exists, bail as otherwise symlinking
   # will not work as desired.
   if (file.exists(target))
     stop("Target '", target, "' already exists and is not a symlink")
