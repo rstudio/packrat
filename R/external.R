@@ -30,12 +30,12 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
   local({
 
     tryCatch({
+
       ## Record the search path, then load the libraries
       oldSearch <- search()
 
-      libPaths <- .packrat_mutables$get("origLibPaths")
-      if (!length(libPaths))
-        libPaths <- getDefaultLibPaths()
+      ## Search within the default libpaths for a session
+      libPaths <- getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
 
       for (package in packages) {
         library(package, character.only = TRUE, lib.loc = libPaths, warn.conflicts = FALSE)

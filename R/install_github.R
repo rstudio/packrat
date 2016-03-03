@@ -32,7 +32,7 @@ install_github <- function(repo,
                            dependencies = NA) {
 
   # look for devtools in the original libs and prompt to install if necessary
-  origLibPaths <- .packrat_mutables$get("origLibPaths")
+  origLibPaths <- getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
   if (length(find.package("devtools", lib.loc = origLibPaths, quiet = TRUE)) == 0) {
     if (interactive()) {
       message("Installing packages from GitHub requires the devtools package.")

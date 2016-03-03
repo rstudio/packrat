@@ -4,8 +4,8 @@ getProjectDir <- function(project = NULL) {
 
   ## If project is NULL, and .packrat$project is NULL, then we should look
   ## in the current working directory
-  cachedDir <- .packrat_mutables$get("project")
   if (is.null(project)) {
+  cachedDir <- getenv(.packrat.env$R_PACKRAT_PROJECT_DIR, unset = NULL)
     if (is.null(cachedDir)) {
       project <- getwd()
     } else {
@@ -13,9 +13,7 @@ getProjectDir <- function(project = NULL) {
     }
   }
 
-  file.path(
-    normalizePath(project, winslash = "/", mustWork = TRUE)
-  )
+  normalizePath(project, winslash = "/", mustWork = TRUE)
 }
 
 getPackratDir <- function(project = NULL) {

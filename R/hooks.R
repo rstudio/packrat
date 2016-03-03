@@ -14,7 +14,7 @@ snapshotHook <- function(expr, value, ok, visible) {
     # TODO: How should we handle an automatic snapshot fail?
     error = function(e) {
 
-      project <- .packrat_mutables$get("project")
+      project <- getenv(.packrat.env$R_PACKRAT_PROJECT_DIR, unset = NULL)
 
       if (is.null(project)) {
         file = "" ## to stdout

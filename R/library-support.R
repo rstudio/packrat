@@ -104,7 +104,7 @@ symlinkExternalPackages <- function(project = NULL) {
   # for those libraries
   lib.loc <- NULL
   if (isPackratModeOn())
-    lib.loc <- .packrat_mutables$get("origLibPaths")
+    lib.loc <- getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS, unset = NULL)
 
   ## Although this shouldn't occur in practice, there can be intermediate states
   ## where e.g. packrat mode is 'on' but this state has been lost -- .libPaths()
@@ -171,5 +171,5 @@ is.symlink <- function(path) {
 
 useSymlinkedSystemLibrary <- function(project = NULL) {
   project <- getProjectDir(project)
-  replaceLibrary(".Library", libRdir(project = project))
+  replaceBinding(".Library", libRdir(project = project))
 }

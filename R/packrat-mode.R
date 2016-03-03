@@ -28,32 +28,17 @@ beforePackratModeOn <- function(project) {
 
   # Ensure that 'pkgType' is not set to 'both', since its defaults are
   # confusing and set up in such a way that packrat just breaks.
-  oldPkgType <- ensurePkgTypeNotBoth()
+  pkgType <- ensurePkgTypeNotBoth()
 
-  # If someone is going from packrat mode on in project A, to packrat mode on
-  # in project B, then we only want to update the 'project' in the state --
-  # we should just carry forward the other state variables
-  if (!isPackratModeOn(project = project)) {
-    state <- list(
-      origLibPaths = getLibPaths(),
-      .Library = .Library,
-      .Library.site = .Library.site,
-      project = project,
-      oldPkgType = oldPkgType
-    )
-  } else {
-    state <- .packrat_mutables$get()
-    state$project <- project
-  }
-
-  state
+  # Update project-specific state
+  setenv(.packrat.env$R_PACKRAT_PKGTYPE, pkgType)
+  setenv(.packrat.env$R_PACKRAT_PROJECT_DIR, project)
 
 }
 
 afterPackratModeOn <- function(project,
                                auto.snapshot,
                                clean.search.path,
-                               state,
                                print.banner) {
 
   project <- getProjectDir(project)
@@ -121,7 +106,7 @@ afterPackratModeOn <- function(project,
   }
 
   # Hide the site libraries
-  hideSiteLibraries()
+  replaceBinding(".Library.site", character())
 
   ## Symlink system libraries if possible; otherwise don't touch .Library
   if (symlinkSystemPackages(project = project)) {
@@ -174,13 +159,6 @@ afterPackratModeOn <- function(project,
     }
   }
 
-  # Finally, update state in the current packrat package made available
-  # Because we may have reloaded packrat, we make sure that we update the state
-  # for whichever packrat we now have as a loaded namespace (which may not be
-  # the version of packrat executing this function call!)
-  mutables <- get(".packrat_mutables", envir = asNamespace("packrat"))
-  mutables$set(state)
-
   # Set the repositories
   repos <- lockInfo(project = project, property = "repos", fatal = FALSE)
   if (length(repos)) {
@@ -215,42 +193,33 @@ setPackratModeOn <- function(project = NULL,
                              clean.search.path = TRUE,
                              print.banner = TRUE) {
 
-  state <- beforePackratModeOn(project = project)
+  beforePackratModeOn(project = project)
   setPackratModeEnvironmentVar()
   afterPackratModeOn(project = project,
                      auto.snapshot = auto.snapshot,
                      clean.search.path = clean.search.path,
-                     state = state,
                      print.banner = print.banner)
 
 }
 
-setPackratModeOff <- function(project = NULL,
-                              print.banner = TRUE) {
-
-  # Restore .Library.site
-  if (isPackratModeOn()) {
-    restoreSiteLibraries()
-    restoreLibrary(".Library")
-  }
+setPackratModeOff <- function(project = NULL, print.banner = TRUE) {
 
   Sys.unsetenv("R_PACKRAT_MODE")
+
+  # Restore old library bindings
+  replaceBinding(".Library", getenv(.packrat.env$R_PACKRAT_LIBRARY))
+  replaceBinding(".Library.site", getenv(.packrat.env$R_PACKRAT_LIBRARY_SITE))
 
   # Disable hooks that were turned on before
   removeTaskCallback("packrat.snapshotHook")
 
   # Reset the library paths
-  libPaths <- .packrat_mutables$get("origLibPaths")
-  if (is.null(libPaths))
-    libPaths <- getDefaultLibPaths()
-
-  if (length(libPaths))
-    setLibPaths(libPaths)
+  libPaths <- getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
+  .libPaths(libPaths)
 
   # Reset 'pkgType'
-  oldPkgType <- .packrat_mutables$get("oldPkgType")
-  if (!is.null(oldPkgType))
-    options(pkgType = oldPkgType)
+  pkgType <- getenv(.packrat.env$R_PACKRAT_PKGTYPE)
+  options(pkgType = pkgType)
 
   # Turn off packrat mode
   if (interactive() && print.banner) {
@@ -263,8 +232,8 @@ setPackratModeOff <- function(project = NULL,
   }
 
   # Default back to the current working directory for packrat function calls
-  .packrat_mutables$set(project = NULL)
-  .packrat_mutables$set(origLibPaths = NULL)
+  unsetenv(.packrat.env$R_PACKRAT_PROJECT_DIR)
+  unsetenv(.packrat.env$R_PACKRAT_PKGTYPE)
 
   invisible(getLibPaths())
 

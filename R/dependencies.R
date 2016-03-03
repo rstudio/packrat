@@ -46,11 +46,9 @@ appDependencies <- function(project = NULL,
   ## in the recursive dependency lookup; hence we take a large (ordered) union
   ## of library paths. The ordering ensures that we search the private library first,
   ## and fall back to the local / global library (necessary for `packrat::init`)
-  libPaths <- c(
-    libDir(project),
-    .libPaths(),
-    .packrat_mutables$origLibPaths
-  )
+  libPaths <- c(libDir(project),
+                .libPaths(),
+                getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS))
 
   ## For R packages, we only use the DESCRIPTION file
   if (isRPackage(project)) {

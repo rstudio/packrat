@@ -1,4 +1,4 @@
-replaceLibrary <- function(lib, value) {
+replaceBinding <- function(name, value) {
 
   ## Need to clobber in package:base, namespace:base
   envs <- c(
@@ -7,36 +7,9 @@ replaceLibrary <- function(lib, value) {
   )
 
   for (env in envs) {
-    do.call("unlockBinding", list(lib, env))
-    assign(lib, value, envir = env)
-    lockBinding(lib, env)
+    do.call("unlockBinding", list(name, env))
+    assign(name, value, envir = env)
+    lockBinding(name, env)
   }
 
-}
-
-
-hideLibrary <- function(lib) {
-  replaceLibrary(lib, character())
-}
-
-restoreLibrary <- function(lib) {
-
-  cachedLib <- .packrat_mutables$get(lib)
-  if (is.null(cachedLib)) {
-    warning("packrat did not properly save the library state; cannot restore")
-    return(invisible(NULL))
-  }
-
-  replaceLibrary(lib, cachedLib)
-
-}
-
-## Remove the site-library libraries from unix-alikes
-hideSiteLibraries <- function() {
-  hideLibrary(".Library.site")
-}
-
-## Restore the site-library libraries
-restoreSiteLibraries <- function() {
-  restoreLibrary(".Library.site")
 }

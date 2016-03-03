@@ -312,7 +312,10 @@ snapshot <- function(project = NULL,
 snapshotImpl <- .snapshotImpl
 
 getBiocRepos <- function() {
-  BiocInstaller::biocinstallRepos()
+  tryCatch(
+    BiocInstaller::biocinstallRepos(),
+    error = function(e) character()
+  )
 }
 
 # Returns a vector of all active repos, including CRAN (with a fallback to the

@@ -321,7 +321,7 @@ inferPackageRecord <- function(df) {
     # NOTE: Not all projects with DESCRIPTION files are R packages!
     pkgName <- NULL
     if (isPackratModeOn()) {
-      projectPath <- .packrat_mutables$get("project")
+      projectPath <- getenv(.packrat.env$R_PACKRAT_PROJECT_DIR, unset = NULL)
       if (!is.null(projectPath) && isRPackage(projectPath)) {
         pkgName <- tryCatch(
           unname(readDcf(file.path(projectPath, "DESCRIPTION"))[, "Package"]),
