@@ -29,12 +29,26 @@ getenv <- function(x, unset = "") {
 }
 
 setenv <- function(name, value, overwrite = TRUE) {
+
+  # Don't overwrite unless specified
   if (!overwrite && !is.na(Sys.getenv(name, unset = NA)))
     return(FALSE)
+
+  # For zero-length (or NULL) variables, just unset
+  # the environment variable
+  if (!length(value)) {
+    unsetenv(name)
+    return(TRUE)
+  }
+
+  # Build a call to Sys.setenv, escaping the
+  # environment variable value
   value <- paste(surround(escape(value, "\""), "\""), collapse = ",")
   call <- list(value)
   names(call) <- name
   do.call(Sys.setenv, call)
+
+  # Return true to indicate success
   return(TRUE)
 }
 
