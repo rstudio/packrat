@@ -93,29 +93,15 @@ ensurePackageSymlink <- function(source, target) {
 }
 
 symlinkExternalPackages <- function(project = NULL) {
+
+  external.packages <- opts$external.packages()
+  if (!length(external.packages))
+    return(invisible(NULL))
+
   project <- getProjectDir(project)
 
-  # Bash any old symlinks that might exist
-  unlink(libExtDir(project), recursive = TRUE)
-  dir.create(libExtDir(project), recursive = TRUE)
-
-  # Find the user libraries -- if packrat mode is off, this is presumedly
-  # just the .libPaths(); if we're in packrat mode we have to ask packrat
-  # for those libraries
-  lib.loc <- NULL
-  if (isPackratModeOn())
-    lib.loc <- .packrat_mutables$get("origLibPaths")
-
-  ## Although this shouldn't occur in practice, there can be intermediate states
-  ## where e.g. packrat mode is 'on' but this state has been lost -- .libPaths()
-  ## is usually where we want to look for external packages, anyhow
-  if (!length(lib.loc))
-    lib.loc <- .libPaths()
-
-  # Get the external packages as well as their dependencies (these need
-  # to be symlinked in so that imports and so on can be correctly resolved)
-  external.packages <- opts$external.packages()
-  if (!length(external.packages)) return(invisible(NULL))
+  # Get the default (non-packrat) library paths
+  lib.loc <- getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
   pkgDeps <- recursivePackageDependencies(
     external.packages,
     lib.loc = lib.loc,
@@ -142,10 +128,9 @@ symlinkExternalPackages <- function(project = NULL) {
   # Symlink the packages that were found
   loc <- loc[sapply(loc, function(x) length(x) > 0)]
   results <- lapply(loc, function(x) {
-    symlink(
-      x,
-      file.path(libExtDir(project), basename(x))
-    )
+    source <- x
+    target <- file.path(libExtDir(project), basename(x))
+    ensurePackageSymlink(source, target)
   })
 
   failedSymlinks <- results[sapply(results, Negate(isTRUE))]

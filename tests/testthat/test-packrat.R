@@ -149,7 +149,7 @@ withTestContext({
     skip_on_os("windows")
 
     projRoot <- cloneTestProject("sated")
-    init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+    packrat::init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
     list.files(projRoot, all.files = TRUE, recursive = TRUE)
     expect_true(file.exists(file.path(projRoot, ".Rprofile")))
     packrat::disable(projRoot, restart = FALSE)
@@ -183,7 +183,6 @@ withTestContext({
     content <- readLines(file.path(projRoot, ".Rprofile"))
     packrat::disable(projRoot, restart = FALSE)
     expect_false(file.exists(file.path(projRoot, ".Rprofile")))
-
   })
 
   test_that("status does not fail", {
