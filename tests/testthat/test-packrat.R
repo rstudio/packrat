@@ -152,7 +152,7 @@ withTestContext({
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
     list.files(projRoot, all.files = TRUE, recursive = TRUE)
     expect_true(file.exists(file.path(projRoot, ".Rprofile")))
-    disable(projRoot)
+    packrat::disable(projRoot, restart = FALSE)
     expect_false(file.exists(file.path(projRoot, ".Rprofile")))
 
     unlink(projRoot, recursive = TRUE)
