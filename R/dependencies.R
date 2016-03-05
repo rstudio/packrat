@@ -160,6 +160,15 @@ fileDependencies.Rmd <- function(file) {
 
   deps <- "rmarkdown"
 
+  # check whether the default output format references a package
+  if (requireNamespace("rmarkdown", quietly = TRUE)) {
+    format <- rmarkdown::default_output_format(file)
+    components <- strsplit(format$name, "::")[[1]]
+    if (length(components) == 2) {
+      deps <- c(deps, components[[1]])
+    }
+  }
+
   # We need to check for and parse YAML frontmatter if necessary
   yamlDeps <- NULL
   content <- readLines(file)
