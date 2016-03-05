@@ -134,6 +134,7 @@ dirDependencies <- function(dir) {
 
 # ad-hoc dispatch based on the file extension
 fileDependencies <- function(file) {
+  file <- normalizePath(file, winslash = "/", mustWork = TRUE)
   fileext <- tolower(gsub(".*\\.", "", file))
   switch(fileext,
          r = fileDependencies.R(file),
