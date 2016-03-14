@@ -1,5 +1,5 @@
 isGitHubURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://www.github.com", url, perl = TRUE)
+  is.string(url) && grepl("^http(?:s)?://(?:www|api).github.com", url, perl = TRUE)
 }
 
 canUseGitHubDownloader <- function() {
@@ -8,12 +8,12 @@ canUseGitHubDownloader <- function() {
 
 githubDownload <- function(url, destfile, ...) {
   github_pat      <- yoink("devtools", "github_pat")
-  github_auth     <- yoink("devtools", "github_auth")
+  authenticate    <- yoink("httr", "authenticate")
   GET             <- yoink("httr", "GET")
   content         <- yoink("httr", "content")
 
-  pat <- github_pat(quiet = TRUE)
-  auth <- github_auth(pat)
+  token <- github_pat(quiet = TRUE)
+  auth <- authenticate(token, "x-oauth-basic", "basic")
   request <- GET(url, auth)
   writeBin(content(request, "raw"), destfile)
   if (file.exists(destfile)) 0 else 1
