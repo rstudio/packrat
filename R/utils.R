@@ -601,3 +601,7 @@ defer <- function(expr, envir = parent.frame()) {
   # the exit handlrs of the selected frame
   do.call("on.exit", list(substitute(call), add = TRUE), envir = envir)
 }
+
+transpose <- function(x, ...) {
+  do.call(Map, c(c, list, USE.NAMES = FALSE))
+}

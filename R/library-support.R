@@ -148,7 +148,40 @@ symlinkExternalPackages <- function(project = NULL) {
   }
 }
 
+listJunctionPoints <- function(dir) {
+
+  dir <- gsub("\\\\+$", "", normalizePath(dir, mustWork = TRUE))
+
+  cmd <- Sys.which("cmd.exe")
+  if (!nzchar(cmd))
+    stop("Failed to discover 'cmd.exe' on PATH")
+
+  command <- paste(cmd, "/C dir /A:L", shQuote(dir))
+  interned <- system(command, intern = TRUE)
+
+  junctions <- grep("<JUNCTION>", interned, fixed = TRUE, value = TRUE)
+  splat <- strsplit(junctions, "\\s{2,}", perl = TRUE)
+  transposed <- transpose(splat)
+  paths <- transposed[[4]]
+  splat <- transpose(strsplit(paths, "\\s*\\[", perl = TRUE))
+
+  splat[[1]]
+}
+
+isFileLinkWindows <- function(path, junctions = NULL) {
+
+  if (is.null(junctions)) {
+    dir <- normalizePath(dirname(path))
+    junctions <- listJunctionPoints(dir)
+  }
+
+  basename(path) %in% junctions
+}
+
 is.symlink <- function(path) {
+
+  if (is.windows())
+    return(isFileLinkWindows(path))
 
   ## Strip trailing '/'
   path <- gsub("/*$", "", path)
