@@ -22,4 +22,4 @@ Suggests:
 Enhances: BiocInstaller
 URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 5.0.0

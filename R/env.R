@@ -16,6 +16,8 @@ unsetenv <- function(name) {
 
 # for autocompletion
 .packrat.env <- list(
-  "R_PACKRAT_DEFAULT_LIBPATHS"
+  "R_PACKRAT_DEFAULT_LIBPATHS",
+  "R_PACKRAT_SYSTEM_LIBRARY",
+  "R_PACKRAT_SITE_LIBRARY"
 )
 names(.packrat.env) <- unlist(.packrat.env)
