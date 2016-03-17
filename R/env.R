@@ -1,10 +1,10 @@
 # Tools for storing state in environment variables.
 getenv <- function(x) {
-  strsplit(Sys.getenv(x, unset = ""), "|||", fixed = TRUE)[[1]]
+  strsplit(Sys.getenv(x, unset = ""), .Platform$path.sep, fixed = TRUE)[[1]]
 }
 
 setenv <- function(name, value) {
-  value <- paste(value, collapse = "|||")
+  value <- paste(value, collapse = .Platform$path.sep)
   call <- list(value)
   names(call) <- name
   do.call(Sys.setenv, call)
