@@ -1,5 +1,8 @@
 # Packrat 0.4.7
 
+- Packrat now always uses R's internal `tar` method when bundling a
+  project, for cross-platform consistency.
+
 - The 'use.cache' option is disabled on Windows -- this may be revisited
   in the future once we have a reliable mechanism for detecting whether
   a particular directory is a reparse point without the use of compiled
