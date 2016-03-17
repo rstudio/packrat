@@ -167,7 +167,8 @@ setOptions <- function(options, project = NULL, persist = TRUE) {
     file.create(optsPath)
   }
 
-  validateOptions(options)
+  options <- validateOptions(options)
+
   keys <- names(options)
   values <- options
   opts <- read_opts(project = project)
@@ -210,8 +211,20 @@ validateOptions <- function(opts) {
         stop("'", value, "' is not a valid setting for packrat option '", key, "'", call. = FALSE)
       }
     }
-
   }
+
+  # Disable caching on Windows until we can efficiently and reliably
+  # detect whether a particular directory is a reparse point.
+  if (is.windows() && "use.cache" %in% names(opts)) {
+    use.cache <- opts[["use.cache"]]
+    if (isTRUE(use.cache)) {
+      warning("Caching is not yet enabled on Windows with packrat -- ",
+              "forcing 'use.cache = FALSE'", call. = FALSE)
+      opts[["use.cache"]] <- FALSE
+    }
+  }
+
+  opts
 }
 
 ## Read an options file with fields unparsed
