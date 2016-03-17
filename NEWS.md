@@ -1,3 +1,41 @@
+# Packrat 0.4.7
+
+- The 'use.cache' option is disabled on Windows -- this may be revisited
+  in the future once we have a reliable mechanism for detecting whether
+  a particular directory is a reparse point without the use of compiled
+  code within packrat.
+  
+- Packrat uses `devtools` + `httr` (when available) to download files and
+  directories from GitHub URLs. This should enable users to allow packrat
+  to access private GitHub repositories as long as the `GITHUB_PAT`
+  environment variable is set to an appropriate private access token.
+  See `?devtools::install_github` for more details on setting up a private
+  access token.
+  
+- The `install_github()` shim from packrat has been removed -- please
+  use `devtools::install_github()`, either by taking an explicit dependency
+  on the `devtools` package, or by loading it from the user library with
+  the packrat option `packrat::opts$external.packages("devtools")`.
+  
+- Packrat is now smarter when managing symlinks within the project library
+  (when package caching is enabled). This should allow multiple R processes
+  to use the same packrat project at the same time. (Previously, there was
+  risk that one R session might clear / refresh symlinks while another process
+  attempted to access them).
+  
+- Packrat no longer erroneously generates recursive symlinks (and attempts
+  to clean up any recursive symlinks discovered as appropriate).
+  
+- Packrat now records the original library paths within its `.onLoad()`
+  handler, and uses these library paths when attempting to load packages
+  from the user library.
+  
+- Fixed a bug where recursive hashing of a package's LinkingTo dependencies
+  could fail.
+
+- Fixed a bug where `with_extlib()` could force a promise in the wrong
+  environment.
+  
 # Packrat 0.4.6
 
 - Packrat gains the option `snapshot.recommended.packages()`, to control
