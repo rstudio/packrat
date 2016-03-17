@@ -97,19 +97,34 @@ makeLibrariesProject <- function() {
 }
 
 # Sets up repositories etc. for a test context, and restores them when done.
-withTestContext <- function(expr) {
+beginTestContext <- function() {
 
   fields <- c("repos", "pkgType", "warn")
-  opts <- setNames(lapply(fields, getOption), fields)
-  on.exit(do.call(base::options, opts), add = TRUE)
+  options <- setNames(lapply(fields, getOption), fields)
 
   Sys.setenv(R_PACKRAT_TESTING = "yes")
-  on.exit(Sys.unsetenv("R_PACKRAT_TESTING"), add = TRUE)
-
   Sys.setenv(R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep))
-  on.exit(Sys.unsetenv("R_PACKRAT_LIBPATHS"), add = TRUE)
 
-  cran <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
-  options(repos = c(CRAN = cran), pkgType = "source", warn = 0)
+  CRAN <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
+
+  options(repos = c(CRAN = CRAN), pkgType = "source", warn = 0)
+  assign("test.options", options, envir = .packrat)
+}
+
+endTestContext <- function() {
+  Sys.unsetenv("R_PACKRAT_TESTING")
+  Sys.unsetenv("R_PACKRAT_LIBPATHS")
+  options <- get("test.options", envir = .packrat)
+  do.call(base::options, options)
+}
+
+withTestContext <- function(expr) {
+  beginTestContext()
   force(expr)
+  endTestContext()
+}
+
+scopeTestContext <- function() {
+  beginTestContext()
+  defer(endTestContext(), parent.frame())
 }

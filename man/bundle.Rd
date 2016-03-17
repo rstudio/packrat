@@ -46,10 +46,5 @@ The project is bundled as a gzipped tarball (\code{.tar.gz}), which can
 be unbundled either with \code{packrat::\link{unbundle}} (which
 restores the project as well), \R's own \code{utils::\link{untar}}, or
 through most system \code{tar} implementations.
-
-The \code{tar} implementation chosen is based on the \code{"TAR"} environment
-variable; this is in contrast to \code{utils::\link{tar}()}, which uses the
-\code{"tar"} environment variable (note that, depending on the platform,
-these may be distinct).
 }
 

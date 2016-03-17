@@ -7,11 +7,6 @@
 #' restores the project as well), \R's own \code{utils::\link{untar}}, or
 #' through most system \code{tar} implementations.
 #'
-#' The \code{tar} implementation chosen is based on the \code{"TAR"} environment
-#' variable; this is in contrast to \code{utils::\link{tar}()}, which uses the
-#' \code{"tar"} environment variable (note that, depending on the platform,
-#' these may be distinct).
-#'
 #' @param project The project directory. Defaults to the currently activate
 #'  project. By default, the current project active under \code{packratMode}
 #'  is checked.
@@ -39,41 +34,6 @@ bundle <- function(project = NULL,
                    overwrite = FALSE,
                    omit.cran.src = FALSE,
                    ...) {
-
-  if (isUsingExternalTar()) {
-    bundle_external(project = project,
-                    file = file,
-                    include.src = include.src,
-                    include.lib = include.lib,
-                    include.bundles = include.bundles,
-                    include.vcs.history = include.vcs.history,
-                    overwrite = overwrite,
-                    omit.cran.src = omit.cran.src,
-                    ...)
-  } else {
-    bundle_internal(project = project,
-                    file = file,
-                    include.src = include.src,
-                    include.lib = include.lib,
-                    include.bundles = include.bundles,
-                    include.vcs.history = include.vcs.history,
-                    overwrite = overwrite,
-                    omit.cran.src = omit.cran.src,
-                    ...)
-
-  }
-
-}
-
-bundle_internal <- function(project = NULL,
-                            file = NULL,
-                            include.src = TRUE,
-                            include.lib = FALSE,
-                            include.bundles = TRUE,
-                            include.vcs.history = TRUE,
-                            overwrite = FALSE,
-                            omit.cran.src = FALSE,
-                            ...) {
 
   project <- getProjectDir(project)
   stopIfNotPackified(project)
@@ -174,146 +134,6 @@ bundle_internal <- function(project = NULL,
   }
   message("The packrat project has been bundled at:\n- \"", file, "\"")
   invisible(file)
-}
-
-bundle_external <- function(project = NULL,
-                   file = NULL,
-                   include.src = TRUE,
-                   include.lib = FALSE,
-                   include.bundles = TRUE,
-                   include.vcs.history = TRUE,
-                   overwrite = FALSE,
-                   omit.cran.src = FALSE,
-                   ...) {
-
-  stopifnot(isUsingExternalTar())
-
-  project <- getProjectDir(project)
-  stopIfNotPackified(project)
-
-  # If file is NULL, write to a local file with the current date
-  if (is.null(file)) {
-    tarName <- paste(basename(project), Sys.Date(), sep = "-")
-    tarName <- paste(tarName, ".tar.gz", sep = "")
-    bundlesDir <- bundlesDir(project)
-    if (!file.exists(bundlesDir)) {
-      dir.create(bundlesDir, recursive = TRUE)
-    }
-    file <- file.path(bundlesDir(project), tarName)
-  }
-
-  file <- file.path(
-    normalizePath(dirname(file), mustWork = FALSE),
-    basename(file)
-  )
-
-  # Make sure we're in the project dir so relative paths are properly set
-  owd <- getwd()
-  on.exit(setwd(owd), add = TRUE)
-  setwd(project)
-
-  # Blacklist certain files / folders
-  blackList <- c(
-    "^\\.Rproj\\.user"
-  )
-
-  # Collect all files and folders we want to zip up. We list all
-  # files and directories within the project root, excluding packrat
-  # -- which we add back in piecemeal later.
-  projectFiles <- list.files(all.files = TRUE, no.. = TRUE)
-  for (item in blackList) {
-    projectFiles <- grep(item, projectFiles, perl = TRUE, invert = TRUE, value = TRUE)
-  }
-
-  # Exclude the packrat folder at this stage -- we re-add the components we
-  # need piece by piece
-  projectFiles <- projectFiles[
-    !startswith(projectFiles, "packrat")
-  ]
-
-  # Make sure we add packrat
-  basePackratFiles <- list_files(
-    "packrat",
-    all.files = TRUE,
-    recursive = FALSE,
-    full.names = TRUE
-  )
-
-  filesToZip <- c(projectFiles, basePackratFiles)
-
-  # These need to be relative paths
-  if (include.src) {
-    filesToZip <- c(
-      filesToZip,
-      file.path(
-        relSrcDir(),
-        list.files(relSrcDir(), recursive = TRUE)
-      )
-    )
-  }
-
-  if (include.lib) {
-    filesToZip <- c(filesToZip, relLibDir())
-  }
-
-  if (!include.vcs.history) {
-    filesToZip <- grep("^\\.(git|svn)", filesToZip, invert = TRUE, value = TRUE)
-  }
-
-  if (file.exists(file) && !overwrite) {
-    stop("A file already exists at file location '", file, "'.")
-  }
-
-  ## Remove any CRAN packages if 'omit.cran.src' was specified.
-  if (omit.cran.src) {
-    lockfile <- readLockFilePackages(lockFilePath(project))
-    pkgs <- vapply(lockfile, `[[`, FUN.VALUE = character(1), "name", USE.NAMES = FALSE)
-    isCRAN <- vapply(lockfile, FUN.VALUE = logical(1), function(x) {
-      x[["source"]] == "CRAN"
-    })
-    cranPkgs <- pkgs[isCRAN]
-    srcPkgs <- list.files(srcDir(project = file.path(tempdir(), basename(project))),
-                          full.names = TRUE,
-                          recursive = TRUE)
-    srcPkgsRelative <- file.path(
-      relSrcDir(),
-      list.files(recursive = TRUE,
-        srcDir(project = file.path(tempdir(), basename(project)))
-      )
-    )
-
-    for (i in seq_along(srcPkgs)) {
-      srcPkg <- srcPkgs[[i]]
-      srcPkgRelative <- srcPkgsRelative[[i]]
-
-      isPathToCranPkg <- any(unlist(lapply(cranPkgs, function(cranPkg) {
-        grepl(cranPkg, basename(srcPkg))
-      })))
-
-      if (isPathToCranPkg) {
-        filesToZip <- setdiff(filesToZip, srcPkgRelative)
-      }
-
-    }
-
-  }
-
-  ## Make sure the base folder name is inheritted from the project name
-  ## NOTE: logic earlier sends us back to original directory
-  setwd("../")
-  result <- tar(file,
-                files = file.path(basename(project), filesToZip),
-                compression = "gzip",
-                tar = Sys.getenv("TAR"),
-                ...)
-
-  if (result != 0) {
-    stop("Failed to bundle the packrat project.")
-  }
-
-  message("The packrat project has been bundled at:\n- \"", file, "\"")
-  invisible(file)
-
 }
 
 extractProjectNameFromBundlePath <- function(bundlePath) {
