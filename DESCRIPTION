@@ -2,7 +2,7 @@ Package: packrat
 Type: Package
 Title: A Dependency Management System for Projects and their R Package
     Dependencies
-Version: 0.4.7-1
+Version: 0.4.7-2
 Author: Kevin Ushey, Jonathan McPherson, Joe Cheng, Aron Atkins, JJ Allaire
 Maintainer: Kevin Ushey <kevin@rstudio.com>
 Description: Manage the R packages your project depends
