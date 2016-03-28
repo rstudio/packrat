@@ -45,7 +45,7 @@ library(packrat)
   # Try installing the package as normal
   tempLib <- file.path(dir, "library")
   dir.create(tempLib)
-  install.packages("sashimi", lib = tempLib)
+  install.packages("sashimi", lib = tempLib, type = "source")
 
   # avoid bogus warning from R CMD check
   eval(call("library", "sashimi", lib.loc = tempLib))
