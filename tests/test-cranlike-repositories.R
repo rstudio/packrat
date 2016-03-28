@@ -4,9 +4,11 @@ library(packrat)
 
   # Disable R_TESTS within this scope (we don't want the R
   # subprocess to attempt to call startup.Rs)
-  R_TESTS <- Sys.getenv("R_TESTS")
-  Sys.unsetenv("R_TESTS")
-  on.exit(Sys.setenv(R_TESTS = R_TESTS), add = TRUE)
+  R_TESTS <- Sys.getenv("R_TESTS", unset = NA)
+  if (!is.na(R_TESTS)) {
+    Sys.unsetenv("R_TESTS")
+    on.exit(Sys.setenv(R_TESTS = R_TESTS), add = TRUE)
+  }
 
   dir <- tempdir()
   owd <- setwd(dir)
