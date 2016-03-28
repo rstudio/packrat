@@ -21,6 +21,7 @@ library(packrat)
   # Create the local repo
   localCRAN <- file.path(dir, "sushi")
   packrat::repos_create(localCRAN)
+  on.exit(unlink(localCRAN, recursive = TRUE), add = TRUE)
 
   # Use only the 'sushi' repository
   options(repos = getOption("repos")["sushi"])
@@ -31,6 +32,7 @@ library(packrat)
   suppressMessages(
     utils::package.skeleton("sashimi", path = dir, environment = env)
   )
+  on.exit(unlink(file.path(dir, "sashimi"), recursive = TRUE), add = TRUE)
 
   # tidy up the broken package
   unlink(file.path(dir, "sashimi/man"), recursive = TRUE)
@@ -46,7 +48,10 @@ library(packrat)
 
   # Try installing the package as normal
   tempLib <- file.path(dir, "library")
-  dir.create(tempLib)
+  if (!file.exists(tempLib)) {
+    dir.create(tempLib)
+    on.exit(unlink(tempLib, recursive = TRUE), add = TRUE)
+  }
   install.packages("sashimi", lib = tempLib, type = "source")
 
   # avoid bogus warning from R CMD check
