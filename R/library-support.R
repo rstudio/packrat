@@ -70,9 +70,13 @@ ensurePackageSymlink <- function(source, target) {
   # library corresponding to the current running
   # R session.
   if (file.exists(target)) {
-
-    if (isPathToSamePackage(source, target))
-      return(TRUE)
+    fail <- TRUE
+    try({
+      if (suppressWarnings(packrat:::isPathToSamePackage(source, target)))
+        return(TRUE)
+      fail <- FALSE
+    },TRUE)
+    if(fail) return(FALSE)
 
     # Remove the old symlink. Both junction points and symlinks
     # are safely removed with a simple, non-recursive unlink.
