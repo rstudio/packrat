@@ -42,6 +42,10 @@ isPathToSamePackage <- function(source, target) {
   lhsPath <- file.path(source, "DESCRIPTION")
   rhsPath <- file.path(target, "DESCRIPTION")
 
+  # If either of these files do not exist, bail
+  if (!(file.exists(lhsPath) && file.exists(rhsPath)))
+    return(FALSE)
+
   lhsContents <- readChar(lhsPath, file.info(lhsPath)$size, TRUE)
   rhsContents <- readChar(rhsPath, file.info(rhsPath)$size, TRUE)
 

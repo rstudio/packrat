@@ -1,3 +1,8 @@
+# Packrat 0.4.8 (unreleased)
+
+- Fixed an issue where attempting to form junction points to separate
+  drives on Windows could fail. (@raubreywhite, #288)
+
 # Packrat 0.4.7
 
 - Packrat now always uses R's internal `tar` method when bundling a
