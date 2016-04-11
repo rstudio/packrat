@@ -105,7 +105,7 @@ ensurePackageSymlink <- function(source, target) {
   symlink(source, target)
 
   # Success if the file now exists
-  file.exists(target)
+  file.exists(file.path(target, "DESCRIPTION"))
 }
 
 symlinkExternalPackages <- function(project = NULL) {
