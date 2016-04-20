@@ -109,12 +109,17 @@ readLockFile <- function(file) {
     )
   }
 
+  packages <- if (nrow(df) > 1)
+    deserializePackages(utils::tail(df, -1))
+  else
+    list()
+
   list(
     packrat_format = df[1, 'PackratFormat'],
     packrat_version = df[1, 'PackratVersion'],
     r_version = df[1, 'RVersion'],
     repos = repos,
-    packages = deserializePackages(utils::tail(df, -1))
+    packages = packages
   )
 }
 
