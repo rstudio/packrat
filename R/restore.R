@@ -195,7 +195,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     else
       "https"
 
-    hostname <- "www.github.com"
+    hostname <- "api.github.com"
     path <- file.path(pkgRecord$gh_username,
                       pkgRecord$gh_repo,
                       "archive",
