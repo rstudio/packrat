@@ -266,15 +266,7 @@ inferPackageRecord <- function(df) {
   ver <- as.character(df$Version)
   repos <- getOption('repos')
 
-  if (!is.null(df$Repository) &&
-        identical(as.character(df$Repository), 'CRAN')) {
-    # It's CRAN!
-    return(structure(list(
-      name = name,
-      source = 'CRAN',
-      version = ver
-    ), class = c('packageRecord', 'CRAN')))
-  } else if (!is.null(df$GithubRepo)) {
+  if (!is.null(df$GithubRepo)) {
     # It's GitHub!
     return(structure(c(list(
       name = name,
@@ -296,6 +288,13 @@ inferPackageRecord <- function(df) {
       source = 'Bioconductor',
       version = ver
     ), class = c('packageRecord', 'Bioconductor')))
+  } else if (!is.null(df$Repository) && identical(as.character(df$Repository), 'CRAN')) {
+    # It's CRAN!
+    return(structure(list(
+      name = name,
+      source = 'CRAN',
+      version = ver
+    ), class = c('packageRecord', 'CRAN')))
   } else if (!is.null(df$Repository) && df$Repository %in% names(repos)) {
     # It's a package from a custom CRAN-like repo!
     return(structure(list(
