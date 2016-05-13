@@ -4,5 +4,4 @@ language: r
 sudo: false
 cache: packages
 after-success:
-    - ./travis-tool.sh install_github jimhester/covr
     - Rscript -e 'covr::codecov()'
