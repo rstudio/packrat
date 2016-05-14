@@ -41,7 +41,7 @@ library**. Any packages you install from inside a packrat project are only
 available to that project; and packages you install outside of the project are
 not available to the project.
 
-This is what we mean by "isolation" and it's Very Good Thing, as it means that
+This is what we mean by "isolation" and it's a Very Good Thing, as it means that
 upgrading a package for one project won't break a totally different project
 that just happens to reside on the same machine, even if that package contained
 incompatible changes.
