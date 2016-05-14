@@ -28,8 +28,7 @@ new in Packrat.
 
 Start by installing Packrat:
 
-    if (!require("devtools")) install.packages("devtools")
-    devtools::install_github("rstudio/packrat")
+    install.packages("packrat")
 
 Then, start a new R session at the base directory of your project and type:
 
