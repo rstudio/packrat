@@ -83,18 +83,26 @@ downloadFile <- function(url,
   else
     ""
 
-  # If we're using 'curl', we need to set '-L' to follow
-  # redirects, and '-f' to ensure HTTP error codes are treated
-  # as errors.
   if (method == "curl") {
+
+    # use '-L' to follow redirects
     if (!grepl("\\b-L\\b", extra))
       extra <- paste(extra, "-L")
 
+    # switch off the curl globbing parser
+    if (!grepl("\\b-g\\b", extra))
+      extra <- paste(extra, "-g")
+
+    # use '-f' to ensure we fail on server errors
     if (!grepl("\\b-f\\b", extra))
       extra <- paste(extra, "-f")
 
-    # Also, redirect stderr to stdout, just for nicer
-    # printing in RStudio.
+    # make curl quiet -- avoid polluting console with e.g.
+    # curl: (22) The requested URL returned error: 404 Not Found
+    if (!grepl("\\b-s\\b", extra))
+      extra <- paste(extra, "-s")
+
+    # redirect stderr to stdout, for nicer output in RStudio
     if (!grepl("\\b--stderr -\\b", extra))
       extra <- paste(extra, "--stderr -")
   }
