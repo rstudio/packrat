@@ -149,6 +149,9 @@ snapshot <- function(project = NULL,
     }
   }
 
+  ## respect project ignores
+  ignore <- c(ignore, packrat::opts$ignored.packages())
+
   ## rstudio, manipulate needs ignoring
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
