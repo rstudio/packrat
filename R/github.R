@@ -13,7 +13,10 @@ githubDownload <- function(url, destfile, ...) {
   content         <- yoink("httr", "content")
 
   token <- github_pat(quiet = TRUE)
-  auth <- authenticate(token, "x-oauth-basic", "basic")
+  auth <- if (!is.null(token))
+    authenticate(token, "x-oauth-basic", "basic")
+  else
+    list()
   request <- GET(url, auth)
   writeBin(content(request, "raw"), destfile)
   if (file.exists(destfile)) 0 else 1
