@@ -591,7 +591,11 @@ restoreImpl <- function(project,
                         restart = TRUE) {
 
   # We also ignore restores for packages specified in external.packages
-  pkgsToIgnore <- c(pkgsToIgnore, opts$external.packages())
+  pkgsToIgnore <- c(
+    pkgsToIgnore,
+    packrat::opts$external.packages(),
+    packrat::opts$ignored.packages()
+  )
 
   installedPkgs <- rownames(installed.packages(lib.loc = lib))
   installedPkgs <- setdiff(installedPkgs, c("manipulate", "rstudio"))
