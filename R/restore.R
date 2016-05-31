@@ -196,13 +196,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       "https"
 
     # TODO: construct paths using api.github.com as appropriate
-    hostname <- "www.github.com"
-    path <- file.path(pkgRecord$gh_username,
-                      pkgRecord$gh_repo,
-                      "archive",
-                      join(pkgRecord$gh_sha1, ".tar.gz"))
-
-    archiveUrl <- join(protocol, "://", hostname, "/", path)
+    fmt <- "%s://api.github.com/repos/%s/%s/zipball/%s"
+    archiveUrl <- sprintf(fmt, protocol, pkgRecord$gh_username, pkgRecord$gh_repo, pkgRecord$gh_sha1)
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
