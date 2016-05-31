@@ -121,6 +121,18 @@ getSourceForPkgRecord <- function(pkgRecord,
     else
       NA
 
+    # Is the reported package version from 'available.packages()'
+    # newer than that reported from CRAN? If so, we may be attempting
+    # to install a package version not compatible with this version of
+    # R.
+    if (!is.na(currentVersion) && is.character(pkgRecord$version)) {
+      compared <- utils::compareVersion(currentVersion, pkgRecord$version)
+      if (compared == -1) {
+        warning("Package version '%s' is newer than the latest version reported ",
+                "by CRAN ('%s') -- packrat may be unable to retrieve package sources.")
+      }
+    }
+
     # Is the source for this version of the package on CRAN and/or a
     # Bioconductor repo?
     if (identical(pkgRecord$version, currentVersion)) {

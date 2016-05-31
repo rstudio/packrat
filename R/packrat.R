@@ -356,6 +356,8 @@ restore <- function(project = NULL,
     on.exit(Sys.setenv("CYGWIN" = cygwin), add = TRUE)
   }
 
+  # Validate the version of R used when restoring this project, and
+  # warn if the versions don't match.
   packages <- lockInfo(project)
   r_version <- lockInfo(project, 'r_version')
   if (!identical(as.character(getRversion()), r_version)) {
