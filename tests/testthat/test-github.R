@@ -7,8 +7,8 @@ test_that("we can use devtools:::download to retrieve GitHub archives", {
   if (!canUseGitHubDownloader())
     skip("requires devtools")
 
-  url <- "https://github.com/rstudio/packrat/archive/cd0f9a4dae7ea0c79966b6784b44d7e4e4edadad.zip"
-  destination <- tempfile("packrat-test-gh-", fileext = ".zip")
+  url <- "https://api.github.com/repos/rstudio/packrat/tarball/cd0f9a4dae7ea0c79966b6784b44d7e4e4edadad"
+  destination <- tempfile("packrat-test-gh-", fileext = ".tar.gz")
   result <- githubDownload(url, destination)
   expect_true(result == 0)
   expect_true(file.exists(destination))
