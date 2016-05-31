@@ -338,6 +338,7 @@ restore <- function(project = NULL,
   # .libPaths() to be persistent -- so we unset them at the conclusion
   # of the restore. This is done to ensure downstream calls to e.g.
   # `system.file()` are successful.
+  libDir <- libDir(project)
   if (!file.exists(libDir(project)))
     dir.create(libDir(project), recursive = TRUE)
 
@@ -360,12 +361,6 @@ restore <- function(project = NULL,
   if (!identical(as.character(getRversion()), r_version)) {
     warning('The most recent snapshot was generated using R version ',
             r_version)
-  }
-
-  # Make sure the library directory exists
-  libDir <- libDir(project)
-  if (!file.exists(libDir)) {
-    dir.create(libDir, recursive = TRUE)
   }
 
   # See if any of the packages that are currently in the library are dirty.
