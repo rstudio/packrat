@@ -239,7 +239,7 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
   newContent <- union(content, add)
   newContent <- setdiff(content, remove)
   if (!setequal(content, newContent)) {
-    cat(content, file = path, sep = "\n")
+    cat(newContent, file = path, sep = "\n")
   }
   return(invisible())
 
