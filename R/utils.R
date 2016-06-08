@@ -237,7 +237,7 @@ updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
   ## If it already exists, add and remove as necessary, otherwise do nothing
   content <- readLines(path)
   newContent <- union(content, add)
-  newContent <- setdiff(content, remove)
+  newContent <- setdiff(newContent, remove)
   if (!setequal(content, newContent)) {
     cat(newContent, file = path, sep = "\n")
   }
