@@ -153,8 +153,8 @@ make_setter <- function(name) {
 ##' @rdname packrat-options
 ##' @name packrat-options
 ##' @export
-set_opts <- function(..., project = NULL) {
-  setOptions(list(...), project = project)
+set_opts <- function(..., project = NULL, persist = TRUE) {
+  setOptions(list(...), project = project, persist = persist)
 }
 
 setOptions <- function(options, project = NULL, persist = TRUE) {
