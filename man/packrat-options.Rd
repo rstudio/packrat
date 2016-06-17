@@ -10,7 +10,7 @@
 \usage{
 get_opts(options = NULL, simplify = TRUE, project = NULL)
 
-set_opts(..., project = NULL)
+set_opts(..., project = NULL, persist = TRUE)
 
 opts
 }
@@ -24,6 +24,8 @@ a single option.}
 otherwise, defaults to the current working directory.}
 
 \item{...}{Entries of the form \code{key = value}, used for setting packrat project options.}
+
+\item{persist}{Boolean; persist these options for future sessions?}
 }
 \description{
 Get and set options for the current packrat-managed project.

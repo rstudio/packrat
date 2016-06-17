@@ -104,6 +104,7 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   a single option.
 ##' @param project The project directory. When in packrat mode, defaults to the current project;
 ##'   otherwise, defaults to the current working directory.
+##' @param persist Boolean; persist these options for future sessions?
 ##' @param ... Entries of the form \code{key = value}, used for setting packrat project options.
 ##' @rdname packrat-options
 ##' @name packrat-options
