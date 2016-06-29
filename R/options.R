@@ -99,6 +99,9 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   with CRAN releases of R on OS X and Windows, but new releases are also
 ##'   available on the CRAN server.
 ##'   (logical; defaults to \code{FALSE})
+##' \item \code{dependencies.fields}:
+##'   Which type of dependencies will be searched?
+##'   (character; defaults to \code{c("Imports", "Depends", "LinkingTo")})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
