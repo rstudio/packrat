@@ -19,7 +19,8 @@ VALID_OPTIONS <- list(
     is.null(x) || is.character(x)
   },
   quiet.package.installation = list(TRUE, FALSE),
-  snapshot.recommended.packages = list(TRUE, FALSE)
+  snapshot.recommended.packages = list(TRUE, FALSE),
+  dependencies.fields = list("Imports", "Depends", "LinkingTo")
 )
 
 default_opts <- function() {
@@ -34,7 +35,8 @@ default_opts <- function() {
     load.external.packages.on.startup = TRUE,
     ignored.packages = NULL,
     quiet.package.installation = TRUE,
-    snapshot.recommended.packages = FALSE
+    snapshot.recommended.packages = FALSE,
+    dependencies.fields = c("Imports", "Depends", "LinkingTo")
   )
 }
 
