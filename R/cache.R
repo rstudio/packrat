@@ -94,6 +94,56 @@ normalizeForHash <- function(item) {
   gsub("[[:space:]]", "", paste(unlist(item), collapse = ""))
 }
 
+copyInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
+
+  # ensure cache directory
+  if (!file.exists(cacheLibDir()))
+    dir.create(cacheLibDir(), recursive = TRUE)
+
+  # TODO: this logic assumes the package folder, and package name,
+  # are the same (seems to always be true in practice, but in theory
+  # they could be different?)
+  descPath <- file.path(packagePath, "DESCRIPTION")
+  if (!file.exists(descPath))
+    stop("no DESCRIPTION file at path '", descPath, "' (not a package?)")
+
+  hash <- hash(descPath)
+  packageName <- basename(packagePath)
+  cachedPackagePath <- cacheLibDir(packageName, hash, packageName)
+  tmpPackagePath <- paste(cachedPackagePath, "backup", sep = "_")
+
+  # check for existence of package in cache
+  if (file.exists(cachedPackagePath) && !overwrite)
+    stop("cached package already exists at path '", cachedPackagePath, "'")
+
+  if (file.exists(cachedPackagePath)) {
+
+    # back up the package in the cache (move to tempory location)
+    if (!file.rename(cachedPackagePath, tmpPackagePath))
+      stop("failed to back up package '", packageName, "'; cannot safely copy to cache")
+
+    on.exit(unlink(tmpPackagePath, recursive = TRUE), add = TRUE)
+  }
+
+  # try to copy from package path to cache
+  if (!all(dir_copy(packagePath, cachedPackagePath))) {
+
+    # if we failed, clean up any leftovers in cache path
+    if (file.exists(cachedPackagePath))
+      unlink(cachedPackagePath, recursive = TRUE)
+
+    # attempt to restore old cached package
+    if (!file.rename(tmpPackagePath, cachedPackagePath))
+      stop("failed to restore package '", packageName, "' in cache; package may be lost from cache")
+
+    # return failure
+    stop("failed to copy package '", packageName, "' to cache")
+  }
+
+  # return package path on success
+  cachedPackagePath
+}
+
 moveInstalledPackagesToCache <- function(project = NULL) {
   project <- getProjectDir(project)
 
