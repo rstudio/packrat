@@ -160,23 +160,17 @@ moveInstalledPackagesToCache <- function(project = NULL) {
 
   needsMove <- installedPkgPaths[sapply(installedPkgPaths, Negate(is.symlink))]
 
-  ## for each package installed that is not a symlink, we migrate it to the cache
+  # for each package installed that is not a symlink, we migrate it to the cache
   for (package in needsMove) {
-    hash <- hash(file.path(package, "DESCRIPTION"))
-    cachedPackagePath <- cacheLibDir(basename(package), hash, basename(package))
 
-    ## if the package doesn't exist in the cache, copy it there
-    if (!file.exists(cacheLibDir(basename(package), hash)))
-      dir_copy(package, cachedPackagePath)
+    # copy package into cache
+    cachedPackagePath <- copyInstalledPackageToCache(package)
 
-    ## replace the local package with a symlink
+    # replace the local package with a symlink
     if (!is.symlink(package))
       unlink(package, recursive = TRUE)
 
-    symlink(
-      normalizePath(cachedPackagePath),
-      package
-    )
+    symlink(normalizePath(cachedPackagePath), package)
   }
 
 }
