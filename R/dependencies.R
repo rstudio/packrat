@@ -13,7 +13,8 @@
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
 #'   via other means when attempting to load this project.
-#'
+#' @param fields Which type of dependencies will be searched
+#' 
 #' @details Dependencies are determined by parsing application source code and
 #'   looking for calls to \code{library}, \code{require}, \code{::}, and
 #'   \code{:::}.
@@ -35,7 +36,7 @@
 #' @keywords internal
 appDependencies <- function(project = NULL,
                             available.packages = NULL,
-                            fields = c("Imports", "Depends", "LinkingTo"),
+                            fields = get_opts("dependencies.fields"),
                             implicit.packrat.dependency = TRUE) {
 
   if (is.null(available.packages)) available.packages <- available.packages()
