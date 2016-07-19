@@ -728,10 +728,10 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
   if (is.null(overlayDir))
     overlayDir <- Sys.getenv("R_PACKRAT_SRC_OVERLAY")
 
-  overlayDir <- normalizePath(overlayDir, winslash = "/", mustWork = TRUE)
   if (!is.character(overlayDir) || !is.directory(overlayDir))
     return()
 
+  overlayDir <- normalizePath(overlayDir, winslash = "/", mustWork = TRUE)
   sources <- list.files(
     overlayDir,
     recursive = TRUE,
