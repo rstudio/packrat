@@ -741,6 +741,7 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
   )
 
   lapply(sources, function(source) {
+    source <- file.path(overlayDir, source)
     target <- file.path(srcDir, source)
 
     # skip if this tarball already exists in the target directory
