@@ -80,6 +80,10 @@ Get and set options for the current packrat-managed project.
   with CRAN releases of R on OS X and Windows, but new releases are also
   available on the CRAN server.
   (logical; defaults to \code{FALSE})
+\item \code{snapshot.fields}:
+  What fields of a package's DESCRIPTION file should be used when discovering
+  dependencies?
+  (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
 }
 }
 \examples{

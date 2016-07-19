@@ -35,7 +35,7 @@
 #' @keywords internal
 appDependencies <- function(project = NULL,
                             available.packages = NULL,
-                            fields = c("Imports", "Depends", "LinkingTo"),
+                            fields = opts$snapshot.fields(),
                             implicit.packrat.dependency = TRUE) {
 
   if (is.null(available.packages)) available.packages <- available.packages()

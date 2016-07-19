@@ -5,8 +5,7 @@
 \title{Detect Application Dependencies}
 \usage{
 appDependencies(project = NULL, available.packages = NULL,
-  fields = c("Imports", "Depends", "LinkingTo"),
-  implicit.packrat.dependency = TRUE)
+  fields = opts$snapshot.fields(), implicit.packrat.dependency = TRUE)
 }
 \arguments{
 \item{project}{Directory containing application. Defaults to current working

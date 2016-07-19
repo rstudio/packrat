@@ -19,7 +19,10 @@ VALID_OPTIONS <- list(
     is.null(x) || is.character(x)
   },
   quiet.package.installation = list(TRUE, FALSE),
-  snapshot.recommended.packages = list(TRUE, FALSE)
+  snapshot.recommended.packages = list(TRUE, FALSE),
+  snapshot.fields = function(x) {
+    is.null(x) || is.character(x)
+  }
 )
 
 default_opts <- function() {
@@ -34,7 +37,8 @@ default_opts <- function() {
     load.external.packages.on.startup = TRUE,
     ignored.packages = NULL,
     quiet.package.installation = TRUE,
-    snapshot.recommended.packages = FALSE
+    snapshot.recommended.packages = FALSE,
+    snapshot.fields = c("Imports", "Depends", "LinkingTo")
   )
 }
 
@@ -97,6 +101,10 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   with CRAN releases of R on OS X and Windows, but new releases are also
 ##'   available on the CRAN server.
 ##'   (logical; defaults to \code{FALSE})
+##' \item \code{snapshot.fields}:
+##'   What fields of a package's DESCRIPTION file should be used when discovering
+##'   dependencies?
+##'   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
