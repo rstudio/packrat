@@ -78,7 +78,10 @@ relOldLibraryDir <- function() {
 }
 
 srcDir <- function(project = NULL) {
-  file.path(getPackratDir(project), "src")
+  Sys.getenv(
+    "R_PACKRAT_SRC_DIR",
+    unset = file.path(getPackratDir(project), "src")
+  )
 }
 
 relSrcDir <- function() {
