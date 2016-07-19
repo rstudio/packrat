@@ -747,7 +747,8 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
     if (file.exists(target)) next
 
     # attempt to symlink source to target
-    if (!dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE))
+    dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
+    if (!is.directory(dirname(target)))
       stop("failed to create directory '", dirname(target), "'")
 
     # generate symlink
