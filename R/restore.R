@@ -588,7 +588,10 @@ restoreImpl <- function(project,
                         pkgsToIgnore = character(),
                         prompt = interactive(),
                         dry.run = FALSE,
-                        restart = TRUE) {
+                        restart = TRUE)
+{
+  # optionally overlay the 'src' directory from a custom location
+  overlaySourcePackages(srcDir(project))
 
   # We also ignore restores for packages specified in external.packages
   pkgsToIgnore <- c(
@@ -721,3 +724,41 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
   TRUE
 }
 
+overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
+  if (is.null(overlayDir))
+    overlayDir <- Sys.getenv("R_PACKRAT_SRC_OVERLAY")
+
+  if (!is.character(overlayDir) || !is.directory(overlayDir))
+    return()
+
+  # move to overlay directory (so we can easily get relative paths
+  # from the following list.files call)
+  owd <- setwd(overlayDir)
+  on.exit(setwd(owd), add = TRUE)
+
+  sources <- list.files(
+    overlayDir,
+    recursive = TRUE,
+    full.names = FALSE,
+    no.. = TRUE,
+    include.dirs = FALSE,
+    pattern = "\\.tar\\.gz$"
+  )
+
+  lapply(sources, function(source) {
+    target <- file.path(srcDir, source)
+
+    # skip if this tarball already exists in the target directory
+    if (file.exists(target)) next
+
+    # attempt to symlink source to target
+    if (!dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE))
+      stop("failed to create directory '", dirname(target), "'")
+
+    # generate symlink
+    symlink(source, target)
+
+    # report success
+    file.exists(target)
+  })
+}
