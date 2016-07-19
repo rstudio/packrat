@@ -728,6 +728,7 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
   if (is.null(overlayDir))
     overlayDir <- Sys.getenv("R_PACKRAT_SRC_OVERLAY")
 
+  overlayDir <- normalizePath(overlayDir, winslash = "/", mustWork = TRUE)
   if (!is.character(overlayDir) || !is.directory(overlayDir))
     return()
 
@@ -741,8 +742,8 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
   )
 
   lapply(sources, function(source) {
-    source <- file.path(overlayDir, source)
     target <- file.path(srcDir, source)
+    source <- file.path(overlayDir, source)
 
     # skip if this tarball already exists in the target directory
     if (file.exists(target)) next
