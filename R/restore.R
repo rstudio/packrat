@@ -731,11 +731,6 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
   if (!is.character(overlayDir) || !is.directory(overlayDir))
     return()
 
-  # move to overlay directory (so we can easily get relative paths
-  # from the following list.files call)
-  owd <- setwd(overlayDir)
-  on.exit(setwd(owd), add = TRUE)
-
   sources <- list.files(
     overlayDir,
     recursive = TRUE,
