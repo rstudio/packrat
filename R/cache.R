@@ -94,7 +94,7 @@ normalizeForHash <- function(item) {
   gsub("[[:space:]]", "", paste(unlist(item), collapse = ""))
 }
 
-copyInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
+moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
 
   # ensure cache directory
   if (!file.exists(cacheLibDir()))
@@ -105,43 +105,40 @@ copyInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
   # they could be different?)
   descPath <- file.path(packagePath, "DESCRIPTION")
   if (!file.exists(descPath))
-    stop("no DESCRIPTION file at path '", descPath, "' (not a package?)")
+    stop("no DESCRIPTION file at path '", descPath, "' (not an R package?)")
 
   hash <- hash(descPath)
   packageName <- basename(packagePath)
   cachedPackagePath <- cacheLibDir(packageName, hash, packageName)
-  tmpPackagePath <- paste(cachedPackagePath, "backup", sep = "_")
+  backupPackagePath <- tempfile(tmpdir = dirname(cachedPackagePath))
 
   # check for existence of package in cache
   if (file.exists(cachedPackagePath) && !overwrite)
     stop("cached package already exists at path '", cachedPackagePath, "'")
 
+  # back up a pre-existing cached package (restore on failure)
   if (file.exists(cachedPackagePath)) {
-
-    # back up the package in the cache (move to tempory location)
-    if (!file.rename(cachedPackagePath, tmpPackagePath))
+    if (!file.rename(cachedPackagePath, backupPackagePath))
       stop("failed to back up package '", packageName, "'; cannot safely copy to cache")
-
-    on.exit(unlink(tmpPackagePath, recursive = TRUE), add = TRUE)
+    on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
   }
 
-  # try to copy from package path to cache
-  if (!all(dir_copy(packagePath, cachedPackagePath))) {
+  # attempt to rename to cache
+  if (suppressWarnings(file.rename(packagePath, cachedPackagePath)))
+    return(cachedPackagePath)
 
-    # if we failed, clean up any leftovers in cache path
-    if (file.exists(cachedPackagePath))
-      unlink(cachedPackagePath, recursive = TRUE)
-
-    # attempt to restore old cached package
-    if (!file.rename(tmpPackagePath, cachedPackagePath))
-      stop("failed to restore package '", packageName, "' in cache; package may be lost from cache")
-
-    # return failure
-    stop("failed to copy package '", packageName, "' to cache")
+  # attempt to copy to cache
+  if (all(dir_copy(packagePath, cachedPackagePath))) {
+    unlink(packagePath, recursive = TRUE)
+    return(cachedPackagePath)
   }
 
-  # return package path on success
-  cachedPackagePath
+  # failed to insert package into cache -- clean up and return error
+  if (!file.rename(backupPackagePath, cachedPackagePath))
+    stop("failed to restore package '", packageName, "' in cache; package may be lost from cache")
+
+  # return failure
+  stop("failed to copy package '", packageName, "' to cache")
 }
 
 moveInstalledPackagesToCache <- function(project = NULL) {
@@ -164,13 +161,8 @@ moveInstalledPackagesToCache <- function(project = NULL) {
   for (package in needsMove) {
 
     # copy package into cache
-    cachedPackagePath <- copyInstalledPackageToCache(package)
-
-    # replace the local package with a symlink
-    if (!is.symlink(package))
-      unlink(package, recursive = TRUE)
-
-    symlink(normalizePath(cachedPackagePath), package)
+    cachedPackagePath <- moveInstalledPackageToCache(package)
+    symlink(normalizePath(cachedPackagePath, winslash = "/", mustWork = TRUE), package)
   }
 
 }
