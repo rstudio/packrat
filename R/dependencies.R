@@ -186,11 +186,19 @@ fileDependencies.Rmd <- function(file) {
     deps <- c(deps, yamlDeps)
 
     # Extract additional dependencies from YAML parameters.
-    if (requireNamespace("knitr", quietly = TRUE) &&
-        packageVersion("knitr") >= "1.10.18") {
+    if (packageVersion("knitr") >= "1.10.18" &&
+        requireNamespace("knitr", quietly = TRUE))
+    {
+      # attempt to extract knitr params from yaml
+      knitParams <- tryCatch(
+        knitr::knit_params_yaml(yaml, evaluate = FALSE),
+        error = function(e) {
+          warning(e)
+          NULL
+        }
+      )
 
-      knitParams <- knitr::knit_params_yaml(yaml, evaluate = FALSE)
-      if (length(knitParams) > 0) {
+      if (length(knitParams)) {
         deps <- c(deps, "shiny")
         for (param in knitParams) {
           if (!is.null(param$expr)) {
