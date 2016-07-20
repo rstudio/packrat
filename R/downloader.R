@@ -33,7 +33,25 @@
 #          "downloader.zip", mode = "wb")
 # }
 #
-download <- function(url, method = inferAppropriateDownloadMethod(url), ...) {
+download <- function(url,
+                     destfile,
+                     method = inferAppropriateDownloadMethod(url),
+                     ...)
+{
+  # download to temporary file, then attempt to move to required location
+  tempfile <- tempfile(tmpdir = dirname(destfile))
+  on.exit(unlink(tempfile))
+
+  # call downloadImpl -- returns '0' on success
+  status <- downloadImpl(url, destfile = tempfile, method = method, ...)
+  if (status) return(status)
+
+  # attempt to rename the downloaded file, and return 0 on success
+  success <- file.rename(tempfile, destfile)
+  if (success) 0 else 1
+}
+
+downloadImpl <- function(url, method, ...) {
 
   # If this is a path to a GitHub URL, attempt to download with authentication,
   # so that private GitHub repositories can be handled.
@@ -75,14 +93,13 @@ downloadFile <- function(url,
 {
   # If the download method we're using matches the current option for
   # 'download.file.method', then propagate 'extra' options.
-  if (identical(getOption("download.file.method"), method))
+  if (!nzchar(extra) && identical(getOption("download.file.method"), method))
     extra <- getOption("download.file.extra", default = "")
 
-  extra <- if (is.character(extra))
-    paste(extra, collapse = " ")
-  else
-    ""
+  # ensure 'extra' is a string
+  extra <- paste(extra, collapse = " ")
 
+  # pass extra arguments for 'curl' downloader
   if (method == "curl") {
 
     # use '-L' to follow redirects
@@ -107,7 +124,7 @@ downloadFile <- function(url,
       extra <- paste(extra, "--stderr -")
   }
 
-  # Catch warnings in the call.
+  # catch warnings in the call
   caughtWarning <- NULL
   result <- withCallingHandlers(
     download.file(url = url, method = method, extra = extra, ...),
@@ -130,19 +147,10 @@ downloadFile <- function(url,
 
 }
 
-# libcurl is broken in older versions of R as it does not
-# respect HTTP error codes (and instead just downloads the 404
-# page and returns a zero status code)
+# TODO: we cannot use libcurl until R no longer sends HEAD requests when
+# attempting to download files
 canUseLibCurlDownloadMethod <- function() {
-
-  if (!getRversion() >= "3.3.0")
-    return(FALSE)
-
-  svnRev <- R.version$`svn rev`
-  if (!svnRev >= 69197)
-    return(FALSE)
-
-  "libcurl" %in% names(capabilities()) && capabilities("libcurl")
+  FALSE
 }
 
 
