@@ -181,12 +181,12 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
       if (!foundVersion) {
         message("FAILED")
-        stopMsg <- sprintf("Couldn't find source for version %s of %s",
-                           pkgRecord$version,
-                           pkgRecord$name)
+        stopMsg <- sprintf("Failed to retrieve package sources for %s %s from CRAN (internet connectivity issue?)",
+                           pkgRecord$name,
+                           pkgRecord$version)
 
         if (!is.na(currentVersion))
-          stopMsg <- paste(stopMsg, sprintf("(%s is current)", currentVersion))
+          stopMsg <- paste(stopMsg, sprintf("[%s is current]", currentVersion))
 
         stop(stopMsg)
       }
