@@ -6,13 +6,13 @@ pkgSrcFilename <- function(pkgRecord) {
     paste(pkgRecord$name, "_", pkgRecord$version, ".tar.gz", sep = "")
 }
 
-# Given a package record, indicate whether the package exists on a CRAN-like
-# repository.
-isFromCranlikeRepo <- function(pkgRecord) {
+# Given a package record and a set of known repositories, indicate whether the
+# package exists on a CRAN-like repository.
+isFromCranlikeRepo <- function(pkgRecord, repos) {
   identical(pkgRecord$source, "CRAN") ||
   identical(pkgRecord$source, "Bioconductor") ||
   inherits(pkgRecord, "CustomCRANLikeRepository") ||
-  (length(pkgRecord$source) && pkgRecord$source %in% names(getOption("repos")))
+  (length(pkgRecord$source) && pkgRecord$source %in% names(repos))
 }
 
 # Given a package record and a database of packages, check to see if
@@ -112,7 +112,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     })
     type <- "local"
-  } else if (isFromCranlikeRepo(pkgRecord)) {
+  } else if (isFromCranlikeRepo(pkgRecord, repos)) {
 
     # Attempt to detect if this is the current version of a package
     # on a CRAN-like repository
@@ -443,7 +443,7 @@ installPkg <- function(pkgRecord,
   }
 
   if (!(copiedFromCache) &&
-        isFromCranlikeRepo(pkgRecord) &&
+        isFromCranlikeRepo(pkgRecord, repos) &&
         pkgRecord$name %in% rownames(availablePkgs) &&
         versionMatchesDb(pkgRecord, availablePkgs) &&
         !identical(getOption("pkgType"), "source")) {
