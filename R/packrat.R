@@ -390,9 +390,17 @@ restore <- function(project = NULL,
     pkgsToIgnore <- dirtyPackageNames[!dirtyPackageNames %in% pkgNames(packages)]
   }
 
+  # Configure repos globally to avoid explicitly passing the repos list to all
+  # downstream function calls.
+  repos <- lockInfo(project, 'repos')
+  externalRepos <- getOption('repos')
+  options(repos = repos)
+  on.exit({
+    options(repos = externalRepos)
+    }, add = TRUE)
+
   # Install each package from CRAN or github, from binaries when available and
   # then from sources.
-  repos <- lockInfo(project, 'repos')
   restoreImpl(project, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt,
               dry.run = dry.run,
