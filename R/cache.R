@@ -94,6 +94,10 @@ normalizeForHash <- function(item) {
   gsub("[[:space:]]", "", paste(unlist(item), collapse = ""))
 }
 
+isVerboseCache <- function() {
+  return(isTRUE(getOption("packrat.verbose.cache")))
+}
+
 moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
 
   # ensure cache directory
@@ -123,6 +127,10 @@ moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
     on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
   }
 
+  if (isVerboseCache()) {
+    message("Caching ", packageName, ".")
+  }
+  
   # attempt to rename to cache
   if (suppressWarnings(file.rename(packagePath, cachedPackagePath)))
     return(cachedPackagePath)
@@ -157,9 +165,12 @@ moveInstalledPackagesToCache <- function(project = NULL) {
 
   needsMove <- installedPkgPaths[sapply(installedPkgPaths, Negate(is.symlink))]
 
+  if (isVerboseCache()) {
+    message("Promoting newly installed packages to the package cache.")
+  }
+
   # for each package installed that is not a symlink, we migrate it to the cache
   for (package in needsMove) {
-
     # copy package into cache
     cachedPackagePath <- moveInstalledPackageToCache(package)
     symlink(normalizePath(cachedPackagePath, winslash = "/", mustWork = TRUE), package)
