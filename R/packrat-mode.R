@@ -181,6 +181,9 @@ afterPackratModeOn <- function(project,
   mutables <- get(".packrat_mutables", envir = asNamespace("packrat"))
   mutables$set(state)
 
+  # Record the active project.
+  setenv(.packrat.env$R_PACKRAT_PROJECT_DIR, project)
+
   # Set the repositories
   repos <- lockInfo(project = project, property = "repos", fatal = FALSE)
   if (length(repos)) {
@@ -264,10 +267,9 @@ setPackratModeOff <- function(project = NULL,
 
   # Default back to the current working directory for packrat function calls
   .packrat_mutables$set(project = NULL)
-  .packrat_mutables$set(origLibPaths = NULL)
+  unsetenv(.packrat.env$R_PACKRAT_PROJECT_DIR)
 
   invisible(getLibPaths())
-
 }
 
 checkPackified <- function(project = NULL, quiet = FALSE) {

@@ -2,19 +2,13 @@
 
 getProjectDir <- function(project = NULL) {
 
-  ## If project is NULL, and .packrat$project is NULL, then we should look
-  ## in the current working directory
-  cachedDir <- .packrat_mutables$get("project")
-  if (is.null(project)) {
-    if (is.null(cachedDir)) {
-      project <- getwd()
-    } else {
-      project <- cachedDir
-    }
-  }
+  if (!is.null(project))
+    return(normalizePath(project, winslash = "/", mustWork = TRUE))
 
-  file.path(
-    normalizePath(project, winslash = "/", mustWork = TRUE)
+  packratOption(
+    .packrat.env$R_PACKRAT_PROJECT_DIR,
+    "packrat.project.dir",
+    normalizePath(project %||% getwd(), winslash = "/", mustWork = TRUE)
   )
 }
 
@@ -29,16 +23,10 @@ getPackratDir <- function(project = NULL) {
 # -- unlikely since we encourage people to build from snapshots, but we leave it
 # possible)
 libDir <- function(project = NULL) {
-
-  envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
-  if (!is.na(envLibDir))
-    return(envLibDir)
-
-  project <- getProjectDir(project)
-  file.path(
-    libraryRootDir(project),
-    R.version$platform,
-    getRversion()
+  packratOption(
+    .packrat.env$R_PACKRAT_LIB_DIR,
+    "packrat.lib.dir",
+    file.path(libraryRootDir(project), R.version$platform, getRversion())
   )
 }
 
@@ -78,9 +66,10 @@ relOldLibraryDir <- function() {
 }
 
 srcDir <- function(project = NULL) {
-  Sys.getenv(
-    "R_PACKRAT_SRC_DIR",
-    unset = file.path(getPackratDir(project), "src")
+  packratOption(
+    .packrat.env$R_PACKRAT_SRC_DIR,
+    "packrat.src.dir",
+    file.path(getPackratDir(project), "src")
   )
 }
 
@@ -172,8 +161,11 @@ packrat_lib <- function() {
 
 ## A location where "global" packrat data is stored, e.g. the library cache
 appDataDir <- function() {
-  Sys.getenv("R_PACKRAT_CACHE_DIR",
-             unset = defaultAppDataDir())
+  packratOption(
+    .packrat.env$R_PACKRAT_CACHE_DIR,
+    "packrat.cache.dir",
+    defaultAppDataDir()
+  )
 }
 
 defaultAppDataDir <- function() {

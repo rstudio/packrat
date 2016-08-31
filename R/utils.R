@@ -636,3 +636,16 @@ packageVersionInstalled <- function(...) {
     !inherits(result, "try-error") && result >= version
   })
 }
+
+packratOption <- function(envName, optionName, defaultValue) {
+
+  envValue <- Sys.getenv(envName, unset = NA)
+  if (!is.na(envValue))
+    return(envValue)
+
+  optionValue <- getOption(optionName)
+  if (!is.null(optionValue))
+    return(optionValue)
+
+  defaultValue
+}
