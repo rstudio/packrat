@@ -29,16 +29,10 @@ getPackratDir <- function(project = NULL) {
 # -- unlikely since we encourage people to build from snapshots, but we leave it
 # possible)
 libDir <- function(project = NULL) {
-
-  envLibDir <- Sys.getenv("R_PACKRAT_LIB_DIR", unset = NA)
-  if (!is.na(envLibDir))
-    return(envLibDir)
-
-  project <- getProjectDir(project)
-  file.path(
-    libraryRootDir(project),
-    R.version$platform,
-    getRversion()
+  packratOption(
+    .packrat.env$R_PACKRAT_LIB_DIR,
+    "packrat.lib.dir",
+    file.path(libraryRootDir(project), R.version$platform, getRversion())
   )
 }
 
@@ -78,9 +72,10 @@ relOldLibraryDir <- function() {
 }
 
 srcDir <- function(project = NULL) {
-  Sys.getenv(
-    "R_PACKRAT_SRC_DIR",
-    unset = file.path(getPackratDir(project), "src")
+  packratOption(
+    .packrat.env$R_PACKRAT_SRC_DIR,
+    "packrat.src.dir",
+    file.path(getPackratDir(project), "src")
   )
 }
 
@@ -172,8 +167,11 @@ packrat_lib <- function() {
 
 ## A location where "global" packrat data is stored, e.g. the library cache
 appDataDir <- function() {
-  Sys.getenv("R_PACKRAT_CACHE_DIR",
-             unset = defaultAppDataDir())
+  packratOption(
+    .packrat.env$R_PACKRAT_CACHE_DIR,
+    "packrat.cache.dir",
+    defaultAppDataDir()
+  )
 }
 
 defaultAppDataDir <- function() {
