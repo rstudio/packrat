@@ -161,9 +161,19 @@ fileDependencies.Rmd <- function(file) {
 
   deps <- "rmarkdown"
 
+  # we don't know this file's encoding, so presume the default encoding
+  encoding <- getOption("encoding")
+  format <- NULL
+
   # check whether the default output format references a package
   if (requireNamespace("rmarkdown", quietly = TRUE)) {
-    format <- rmarkdown::default_output_format(file)
+    tryCatch({
+      format <- rmarkdown::default_output_format(file)
+    }, error = function(e) {
+      # if we can't parse the YAML header with the default encoding, try UTF-8
+      encoding <<- "UTF-8"
+      format <<- rmarkdown::default_output_format(file, encoding)
+    })
     components <- strsplit(format$name, "::")[[1]]
     if (length(components) == 2) {
       deps <- c(deps, components[[1]])
@@ -172,7 +182,7 @@ fileDependencies.Rmd <- function(file) {
 
   # We need to check for and parse YAML frontmatter if necessary
   yamlDeps <- NULL
-  content <- readLines(file)
+  content <- readLines(file, encoding = encoding, warn = FALSE)
   if (hasYamlFrontMatter(content)) {
 
     # Extract the YAML frontmatter.
@@ -216,7 +226,6 @@ fileDependencies.Rmd <- function(file) {
     }
   }
 
-
   # Escape hatch for empty .Rmd files
   if (!length(content) || identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")) {
     return(deps)
@@ -237,7 +246,7 @@ fileDependencies.Rmd <- function(file) {
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
     tryCatch(silent(
-      knitr::knit(file, output = tempfile, tangle = TRUE)
+      knitr::knit(file, output = tempfile, tangle = TRUE, encoding = encoding)
     ), error = function(e) {
       message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
