@@ -1,5 +1,64 @@
 # Packrat 0.4.8 (unreleased)
 
+- Packrat better handles UTF-8 encoded R Markdown documents on Windows.
+  (#329, @jmcphers)
+
+- The source directory for a Packrat project can now be over-ridden either by
+  setting the `R_PACKRAT_SRC_DIR` environment variable, or the 'packrat.src.dir'
+  R option. Clever use of this should allow multiple projects to share a cache
+  of downloaded package sources.
+
+- The library directory for a Packrat project can now be over-ridden either by
+  setting the `R_PACKRAT_LIB_DIR` environment variable, or the `packrat.lib.dir`
+  R option. This can be used if you'd like the library directory for a project
+  to be stored in an alternate location -- this can be useful for Packrat projects
+  stored in e.g. Dropbox folders. A similar treatment is supplied for the Packrat
+  bundles directory, with the `R_PACKRAT_BUNDLES_DIR` environment variable and
+  the `packrat.bundles.dir` project option.
+
+- Packrat now stores the active project as an environment variable,
+  `R\_PACKRAT\_PROJECT\_DIR`. This should help in situations where R
+  sub-processes are launched while a packrat project is active, and those
+  sub-processes need to access the active packrat library.
+
+- Packrat now respects the 'repos' field used in the Packrat lockfile when
+  restoring a project. (#316)
+
+- Packrat better reports download failures, mentioning lack of internet
+  connectivity as a potential culprit. (#306)
+
+- Packrat no longer treats YAML parse failures (when attempting to scour R Markdown
+  documents for R package dependencies) as fatal errors. (#312)
+
+- Packrat now first attempts to move folders to the cache, and falls back to a
+  directory copy when this fails. This should improve caching performance in
+  the cases where the Packrat cache lies on the same volume as the active
+  project.
+
+- `packrat::set_opts()` gains an argument, 'persist', controlling whether newly
+  set options should be persisted. This allows session-temporary project
+  options to be set.
+
+- Packrat now only updates ignore files (e.g., '.gitignore') when they have
+  actually changed. (#303, @mdshw5)
+
+- Packrat now passes '-s' when invoking 'curl', thereby ensuring quiet output
+  when downloading fails. This should resolve issues where attempts to use
+  packrat without internet connectivity caused spurious messages of the form
+  'curl: (22) The requested URL returned error: 404 Not Found' to be printed.
+
+- Packrat now passes '-g' when invoking 'curl', thereby disabling curl's
+  globbing parser. This should help ensure that URLs containing e.g. '[' and
+  ']' characters can be successfully downloaded as expected.
+
+- Packrat now queries 'api.github.com', rather than 'www.github.com', when
+  attempting to download package sources.
+
+- Packrat now properly respects the 'packrat::opts$ignored.packages()' project
+  option when restoring a project.
+
+- Packrat handles lockfiles with no packages available. (#294)
+
 - Fixed an issue where attempting to form junction points to separate
   drives on Windows could fail. (@raubreywhite, #288)
 
