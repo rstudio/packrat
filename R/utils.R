@@ -66,7 +66,8 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
   on.exit(setwd(owd), add = TRUE)
 
   # Make sure we're doing sane things
-  if (!is_dir(from)) stop("'", from, "' is not a directory.")
+  if (!is_dir(from))
+    stop("'", from, "' is not a directory.")
 
   if (file.exists(to)) {
     if (overwrite) {
@@ -77,6 +78,24 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
                   " already exists at path '", to, "'."
       ))
     }
+  }
+
+  # if we're just copying a directory from one path to another, we should
+  # avoid the overhead of a file-by-file copy -- short-circuit and just
+  # call cp
+  if (all.files && is.null(pattern) && !is.windows() && nzchar(Sys.which("cp"))) {
+
+    # construct shell-safe paths
+    shellFrom <- shQuote(path.expand(from))
+    shellTo   <- shQuote(path.expand(to))
+
+    # copy directory using shell
+    status    <- system(paste("cp", "-R", shellFrom, shellTo))
+    if (status)
+      stop("failed to copy directory '", from)
+
+    # report success
+    return(TRUE)
   }
 
   success <- dir.create(to, recursive = TRUE)
