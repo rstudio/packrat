@@ -78,7 +78,11 @@ relSrcDir <- function() {
 }
 
 bundlesDir <- function(project = NULL) {
-  file.path(getPackratDir(project), "bundles")
+  packratOption(
+    "R_PACKRAT_BUNDLES_DIR",
+    "packrat.bundles.dir",
+    file.path(getPackratDir(project), "bundles")
+  )
 }
 
 lockFilePath <- function(project = NULL) {
