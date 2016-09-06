@@ -119,6 +119,11 @@ downloadFile <- function(url,
     if (!grepl("\\b-s\\b", extra))
       extra <- paste(extra, "-s")
 
+    # lower connection timeout
+    connect.timeout <- getOption("packrat.connect.timeout")
+    if (!is.null(connect.timeout) && !grepl("\\b--connect-timeout\\b", extra))
+      extra <- paste(extra, "--connect-timeout", connect.timeout)
+
     # redirect stderr to stdout, for nicer output in RStudio
     if (!grepl("\\b--stderr -\\b", extra))
       extra <- paste(extra, "--stderr -")
