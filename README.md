@@ -65,7 +65,7 @@ CRAN-like repositories):
   repository.
 
 For example, suppose I have the (unzipped) package sources for
-[`digest`](http://cran.r-project.org/package=digest) located
+[`digest`](https://cran.r-project.org/package=digest) located
 within the folder`~/git/R/digest/`. To install this package, you can use:
 
     packrat::set_opts(local.repos = "~/git/R")
