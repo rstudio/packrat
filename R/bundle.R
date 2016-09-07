@@ -81,7 +81,12 @@ bundle <- function(project = NULL,
   bundlePath <- file.path(tempdir(), "packrat-bundles")
   from <- getwd()
   to <- file.path(bundlePath, basename(project))
-  dir_copy(from = from, to = to, pattern = pattern, overwrite = TRUE)
+  dir_copy(
+    from = from,
+    to = to,
+    pattern = pattern,
+    overwrite = TRUE
+  )
 
   ## Clean up after ourselves
   on.exit(unlink(to, recursive = TRUE), add = TRUE)
