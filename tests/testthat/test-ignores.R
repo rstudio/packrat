@@ -67,3 +67,23 @@ test_that("updateGitIgnore works", {
   unlink(dir, recursive = TRUE)
 
 })
+
+test_that("updateIgnoreFile preserves old structure of file", {
+
+  contents <- c(
+    "# This is a comment.",
+    "ignore/path",
+    "",
+    "# This is a comment.",
+    "ignore/path"
+  )
+
+  file <- tempfile()
+  on.exit(unlink(file))
+  cat(contents, file = file, sep = "\n")
+
+  updateIgnoreFile(project = tempdir(), file = basename(file), add = c("packrat/lib*/"))
+  updated <- readLines(file)
+  expect_identical(updated, c(contents, "packrat/lib*/"))
+
+})

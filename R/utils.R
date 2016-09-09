@@ -218,31 +218,38 @@ stopIfNotPackified <- function(project) {
   }
 }
 
-## Expected to be used with .Rbuildignore, .Rinstignore
-## .gitignore + SVN ignore have their own (similar) logical, but
-## need to handle options specially
+# Expected to be used with .Rbuildignore, .Rinstignore
+# .gitignore + SVN ignore have their own (similar) logical, but
+# need to handle options specially
 updateIgnoreFile <- function(project = NULL, file, add = NULL, remove = NULL) {
 
   project <- getProjectDir(project)
 
-  ## If the file doesn't exist and we have content, create and fill it
+  # if no ignore file exists, populate it
   path <- file.path(project, file)
   if (!file.exists(path)) {
-    if (length(add) > 0) {
+    if (length(add) > 0)
       cat(add, file = path, sep = "\n")
-    }
     return(invisible())
   }
 
-  ## If it already exists, add and remove as necessary, otherwise do nothing
-  content <- readLines(path)
-  newContent <- union(content, add)
-  newContent <- setdiff(newContent, remove)
-  if (!setequal(content, newContent)) {
-    cat(newContent, file = path, sep = "\n")
-  }
-  return(invisible())
+  # read ignore file and track changes
+  oldContent <- readLines(path)
+  newContent <- oldContent
 
+  # add items to end of ignore file (avoid duplication of entries)
+  if (length(add))
+    newContent <- c(newContent, setdiff(add, newContent))
+
+  # remove items from ignore file
+  if (length(remove))
+    newContent <- newContent[!(newContent %in% remove)]
+
+  # only mutate ignore file if contents have indeed changed
+  if (!identical(oldContent, newContent))
+    cat(newContent, file = path, sep = "\n")
+
+  return(invisible())
 }
 
 updateRBuildIgnore <- function(project = NULL) {

@@ -1,4 +1,8 @@
-# Packrat 0.4.8 (unreleased)
+# Packrat 0.4.9 (unreleased)
+
+- Packrat better preserves the pre-existing contents of ignore files. (#332)
+
+# Packrat 0.4.8
 
 - Packrat better handles UTF-8 encoded R Markdown documents on Windows.
   (#329, @jmcphers)
