@@ -1,6 +1,6 @@
 # Packrat 0.4.9 (unreleased)
 
-- Users can now control whether Packrat snapshots sources using by setting the
+- Users can now control whether Packrat snapshots sources by setting the
   `R_PACKRAT_SNAPSHOT_SOURCES` environment variable to a 'truthy' value, or by
   setting the R option `packrat.snapshot.sources`.
 
