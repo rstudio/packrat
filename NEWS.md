@@ -1,5 +1,15 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now provides APIs for accessing the active paths to resource
+  directories, with:
+  
+  - `packrat::project_dir(project)`
+  - `packrat::src_dir(project)`
+  - `packrat::lib_dir(project)`
+  - `packrat::bundles_dir(project)`
+  
+  See `?packrat-resources` for more details.
+
 - Packrat better preserves the pre-existing contents of ignore files. (#332)
 
 # Packrat 0.4.8
@@ -21,7 +31,7 @@
   the `packrat.bundles.dir` project option.
 
 - Packrat now stores the active project as an environment variable,
-  `R\_PACKRAT\_PROJECT\_DIR`. This should help in situations where R
+  `R_PACKRAT_PROJECT_DIR`. This should help in situations where R
   sub-processes are launched while a packrat project is active, and those
   sub-processes need to access the active packrat library.
 
