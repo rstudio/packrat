@@ -279,6 +279,15 @@ snapshot <- function(project = NULL,
 
   if (!dry.run) {
 
+    # allow user to configure snapshot.sources through env / R option
+    if (missing(snapshot.sources)) {
+      snapshot.sources <- packratOptionBoolean(
+        "R_PACKRAT_SNAPSHOT_SOURCES",
+        "packrat.snapshot.sources",
+        snapshot.sources
+      )
+    }
+
     if (snapshot.sources)
       snapshotSources(project, activeRepos(project), allRecordsFlat)
 

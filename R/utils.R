@@ -656,3 +656,21 @@ packratOption <- function(envName, optionName, defaultValue) {
 
   defaultValue
 }
+
+packratOptionBoolean <- function(envName, optionName, defaultValue) {
+
+  option <- packratOption(envName, optionName, defaultValue)
+
+  if (is.character(option)) {
+    option <- if (!nzchar(option))
+      FALSE
+    else if (tolower(option) %in% c("t", "true", "y", "yes"))
+      TRUE
+    else if (tolower(option) %in% c("f", "false", "n", "no"))
+      FALSE
+    else
+      as.logical(eval(parse(text = option)))
+  }
+
+  as.logical(option)
+}
