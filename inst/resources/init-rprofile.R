@@ -1,3 +1,3 @@
-#### -- Packrat Autoloader (version 0.4.8-2) -- ####
+#### -- Packrat Autoloader (version 0.4.8-3) -- ####
 source("packrat/init.R")
 #### -- End Packrat Autoloader -- ####
