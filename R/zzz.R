@@ -1,10 +1,14 @@
 .onLoad <- function(libname, pkgname) {
-  if (!length(getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)))
-    setenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS, .libPaths())
 
-  if (!length(getenv(.packrat.env$R_PACKRAT_SYSTEM_LIBRARY)))
-    setenv(.packrat.env$R_PACKRAT_SYSTEM_LIBRARY, .Library)
+  mappings <- list(
+    "R_PACKRAT_DEFAULT_LIBPATHS" = .libPaths(),
+    "R_PACKRAT_SYSTEM_LIBRARY"   = .Library,
+    "R_PACKRAT_SITE_LIBRARY"     = .Library.site
+  )
 
-  if (!length(getenv(.packrat.env$R_PACKRAT_SITE_LIBRARY)))
-    setenv(.packrat.env$R_PACKRAT_SITE_LIBRARY, .Library.site)
+  enumerate(mappings, function(key, val) {
+    if (is.na(Sys.getenv(key, unset = NA)))
+      setenv(key, val)
+  })
+
 }

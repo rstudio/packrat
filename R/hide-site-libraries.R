@@ -22,9 +22,9 @@ hideLibrary <- function(lib) {
 restoreLibrary <- function(lib) {
 
   cachedLib <- if (lib == ".Library")
-    getenv(.packrat.env$R_PACKRAT_SYSTEM_LIBRARY)
+    getenv("R_PACKRAT_SYSTEM_LIBRARY")
   else if (lib == ".Library.site")
-    getenv(.packrat.env$R_PACKRAT_SITE_LIBRARY)
+    getenv("R_PACKRAT_SITE_LIBRARY")
 
   if (is.null(cachedLib)) {
     warning("packrat did not properly save the library state; cannot restore")

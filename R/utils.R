@@ -379,7 +379,7 @@ getUserLibPaths <- function() {
 ## Get the default library paths (those that would be used upon
 ## starting a new R session)
 getDefaultLibPaths <- function() {
-  getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
+  getenv("R_PACKRAT_DEFAULT_LIBPATHS")
 }
 
 getInstalledPkgInfo <- function(packages, installed.packages, ...) {

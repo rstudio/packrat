@@ -120,7 +120,7 @@ symlinkExternalPackages <- function(project = NULL) {
       stop("Failed to create 'lib-ext' packrat directory")
 
   # Get the default (non-packrat) library paths
-  lib.loc <- getenv(.packrat.env$R_PACKRAT_DEFAULT_LIBPATHS)
+  lib.loc <- getDefaultLibPaths()
   pkgDeps <- recursivePackageDependencies(
     external.packages,
     lib.loc = lib.loc,

@@ -226,7 +226,7 @@ packrat_lib <- function() {
 ## A location where "global" packrat data is stored, e.g. the library cache
 appDataDir <- function() {
   packratOption(
-    .packrat.env$R_PACKRAT_CACHE_DIR,
+    "R_PACKRAT_CACHE_DIR",
     "packrat.cache.dir",
     defaultAppDataDir()
   )
