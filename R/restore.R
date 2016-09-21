@@ -371,9 +371,8 @@ installPkg <- function(pkgRecord,
                        project,
                        availablePkgs,
                        repos,
-                       lib = libDir(project),
-                       cache) {
-
+                       lib = libDir(project))
+{
   pkgSrc <- NULL
   type <- "built source"
   needsInstall <- TRUE
@@ -407,7 +406,7 @@ installPkg <- function(pkgRecord,
   }
 
   cacheCopyStatus <- new.env(parent = emptyenv())
-  copiedFromCache <- restoreWithCopyFromCache(project, pkgRecord, cache, cacheCopyStatus)
+  copiedFromCache <- restoreWithCopyFromCache(project, pkgRecord, cacheCopyStatus)
   if (copiedFromCache) {
     type <- cacheCopyStatus$type
     needsInstall <- FALSE
@@ -508,10 +507,6 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   # from the repositories, and the local install list for comparison
   availablePkgs <- available.packages(contrib.url(repos))
 
-  # Get the set of hashes for cached packages
-  cachedPkgs <- list.files(cacheLibDir(), full.names = TRUE)
-  cache <- unlist(lapply(cachedPkgs, list.files))
-
   installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))
 
@@ -546,7 +541,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
       message("OK")
       next
     }
-    type <- installPkg(pkgRecord, project, availablePkgs, repos, lib, cache)
+    type <- installPkg(pkgRecord, project, availablePkgs, repos, lib)
     message("\tOK (", type, ")")
   }
   invisible()

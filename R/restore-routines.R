@@ -1,6 +1,5 @@
 restoreWithCopyFromCache <- function(project,
                                      pkgRecord,
-                                     cache,
                                      cacheCopyStatus)
 {
   # don't copy from cache if disabled for this project
@@ -14,10 +13,6 @@ restoreWithCopyFromCache <- function(project,
   # don't try to cache uncacheable packages (ie, packages that
   # need to be reinstalled each time for whatever reason)
   if (!isCacheable(pkgRecord$name))
-    return(FALSE)
-
-  # ensure that the hash exists in the cache
-  if (!(pkgRecord$hash %in% cache))
     return(FALSE)
 
   # ensure that the cache package path exists
