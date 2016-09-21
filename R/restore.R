@@ -498,6 +498,12 @@ installPkg <- function(pkgRecord,
   # Annotate DESCRIPTION file so we know we installed it
   annotatePkgDesc(pkgRecord, project, lib)
 
+  # copy package into cache if enabled
+  if (isUsingCache(project)) {
+    pkgPath <- file.path(lib, pkgRecord$name)
+    moveInstalledPackageToCache(packagePath = pkgPath)
+  }
+
   return(type)
 }
 
@@ -642,7 +648,6 @@ restoreImpl <- function(project,
   # Play the list, if there's anything to play
   if (!dry.run) {
     playActions(pkgRecords, actions, repos, project, targetLib)
-    moveInstalledPackagesToCache(project)
     if (restartNeeded) {
       if (!restart || !attemptRestart())
         message("You must restart R to finish applying these changes.")

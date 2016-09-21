@@ -98,8 +98,10 @@ isVerboseCache <- function() {
   return(isTRUE(getOption("packrat.verbose.cache")))
 }
 
-moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
-
+moveInstalledPackageToCache <- function(packagePath,
+                                        overwrite = TRUE,
+                                        fatal = FALSE)
+{
   ensureDirectory(cacheLibDir())
 
   # TODO: this logic assumes the package folder, and package name,
@@ -115,8 +117,15 @@ moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
   backupPackagePath <- tempfile(tmpdir = dirname(cachedPackagePath))
 
   # check for existence of package in cache
-  if (file.exists(cachedPackagePath) && !overwrite)
-    stop("cached package already exists at path '", cachedPackagePath, "'")
+  if (file.exists(cachedPackagePath)) {
+
+    if (fatal && !overwrite)
+      stop("cached package already exists at path '", cachedPackagePath, "'")
+
+    if (!fatal)
+      return(cachedPackagePath)
+  }
+
 
   # back up a pre-existing cached package (restore on failure)
   if (file.exists(cachedPackagePath)) {
@@ -160,11 +169,11 @@ moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
 moveInstalledPackagesToCache <- function(project = NULL) {
   project <- getProjectDir(project)
 
-  # Only do this is we're actually using the packrat cache
-  if (!isUsingCache(project)) return(invisible())
+  # check that cache is enabled for this project
+  if (!isUsingCache(project))
+    return(invisible())
 
-  if (!file.exists(cacheLibDir()))
-    dir.create(cacheLibDir(), recursive = TRUE)
+  ensureDirectory(cacheLibDir())
 
   ## All directories within the 'lib' directory which are not symlinks are fresh
   ## and may need to be moved
