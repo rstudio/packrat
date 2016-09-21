@@ -1,5 +1,9 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now properly checks whether a package exists in the cache
+  before attempting to copy / symlink that package to the active library
+  directory. (#335)
+
 - Users can now control whether Packrat snapshots sources by setting the
   `R_PACKRAT_SNAPSHOT_SOURCES` environment variable to a 'truthy' value, or by
   setting the R option `packrat.snapshot.sources`.
