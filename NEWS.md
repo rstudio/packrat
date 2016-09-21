@@ -1,5 +1,9 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now more eagerly caches packages during `packrat::restore()` --
+  packages will be immediately cached following successful installation,
+  rather than at the end of the restore process. (#324)
+
 - Packrat now better handles cases where multiple R processes attempt
   to write the same package to the cache at the same time. (#333)
 
