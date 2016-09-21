@@ -100,9 +100,7 @@ isVerboseCache <- function() {
 
 moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
 
-  # ensure cache directory
-  if (!file.exists(cacheLibDir()))
-    dir.create(cacheLibDir(), recursive = TRUE)
+  ensureDirectory(cacheLibDir())
 
   # TODO: this logic assumes the package folder, and package name,
   # are the same (seems to always be true in practice, but in theory
@@ -127,18 +125,20 @@ moveInstalledPackageToCache <- function(packagePath, overwrite = TRUE) {
     on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
   }
 
-  if (isVerboseCache()) {
+  if (isVerboseCache())
     message("Caching ", packageName, ".")
-  }
-  
+
   # attempt to rename to cache
   if (suppressWarnings(file.rename(packagePath, cachedPackagePath)))
     return(cachedPackagePath)
 
-  # attempt to copy to cache
-  if (all(dir_copy(packagePath, cachedPackagePath))) {
-    unlink(packagePath, recursive = TRUE)
-    return(cachedPackagePath)
+  # rename failed; copy to temporary destination in same directory
+  # and then attempt to rename from there
+  tempPath <- tempfile(tmpdir = dirname(cachedPackagePath))
+  on.exit(unlink(tempPath, recursive = TRUE), add = TRUE)
+  if (all(dir_copy(packagePath, tempPath))) {
+    if (suppressWarnings(file.rename(tempPath, cachedPackagePath)))
+      return(cachedPackagePath)
   }
 
   # failed to insert package into cache -- clean up and return error

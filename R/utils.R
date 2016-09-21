@@ -674,3 +674,16 @@ packratOptionBoolean <- function(envName, optionName, defaultValue) {
 
   as.logical(option)
 }
+
+ensureDirectory <- function(path) {
+
+  info <- file.info(path)
+  if (identical(info$isdir, TRUE))
+    return(path)
+  else if (identical(info$isdir, FALSE))
+    stop("path '", path, "' exists but is not a directory")
+  else if (!dir.create(path, recursive = TRUE))
+    stop("failed to create directory at path '", path, "'")
+
+  path
+}
