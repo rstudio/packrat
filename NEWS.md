@@ -1,5 +1,8 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now better handles cases where multiple R processes attempt
+  to write the same package to the cache at the same time. (#333)
+
 - Packrat now properly checks whether a package exists in the cache
   before attempting to copy / symlink that package to the active library
   directory. (#335)
