@@ -22,3 +22,10 @@ test_that("dependencies are properly resolved in expressions", {
   ))
 
 })
+
+
+test_that("dependencies are discovered in R Markdown documents using alternate engines", {
+  altEngineRmd <- file.path("resources", "alternate-engines.Rmd")
+  expect_true("testthat" %in% packrat:::fileDependencies(altEngineRmd))
+})
+
