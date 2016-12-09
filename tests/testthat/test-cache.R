@@ -1,6 +1,3 @@
-library(testthat)
-
-# Set up test context.
 context("Cache")
 
 withTestContext({
