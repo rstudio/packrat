@@ -1,0 +1,7 @@
+---
+title: "No Chunks"
+output: html_document
+---
+
+This R Markdown document does not have any chunks in it. It might as well be an
+ordinary Markdown document.
