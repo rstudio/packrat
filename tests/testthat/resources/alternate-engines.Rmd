@@ -1,0 +1,18 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{bash}
+echo "Shell we play a game?"
+```
+
+```{r}
+library(testthat)
+print("This code relies on testthat.")
+```
+
+```{bash}
+echo "I shell return."
+```
+

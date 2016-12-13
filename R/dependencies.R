@@ -157,6 +157,28 @@ yamlDeps <- function(yaml) {
   )
 }
 
+stripAltEngines <- function(file, encoding) {
+  contents <- readLines(file, encoding = encoding)
+
+  # generate a list of all the headers
+  engineHeaders <- which(grepl("^## --.*engine=", contents))
+  allHeaders <- c(which(grepl("^## --", contents)), length(contents))
+
+  # calculate the end of each alternate engine code block (the beginning of the
+  # very next code block)
+  engineEnds <- vapply(engineHeaders, function(x) {
+    allHeaders[min(which(allHeaders > x))] - 1
+  }, 0)
+
+  # exclude the alternate engine code block lines
+  regions <- rep.int(TRUE, length(contents))
+  for (h in seq_along(engineHeaders)) {
+    regions[engineHeaders[[h]]:engineEnds[[h]]] <- FALSE
+  }
+
+  writeLines(contents[regions], file)
+}
+
 fileDependencies.Rmd <- function(file) {
 
   deps <- "rmarkdown"
@@ -251,6 +273,7 @@ fileDependencies.Rmd <- function(file) {
       message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
     })
+    stripAltEngines(tempfile, encoding)
     c(deps, fileDependencies.R(tempfile))
   } else {
     warning("knitr is required to parse dependencies but is not available")
