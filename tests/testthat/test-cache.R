@@ -4,6 +4,7 @@ withTestContext({
   # https://github.com/rstudio/packrat/issues/345
   test_that("package installation when configured with a a cache uses the cache", {
     skip_on_cran()
+    skip_on_os("windows")
 
     projRoot <- cloneTestProject("healthy")
     libRoot <- file.path(projRoot,"packrat","lib")
@@ -27,10 +28,13 @@ withTestContext({
     expect_false(packrat:::is.symlink(package_dir), package_dir)
 
     Sys.setenv(R_PACKRAT_CACHE_DIR = theCache)
-    on.exit(Sys.unsetenv("R_PACKRAT_CACHE_DIR"))
+    on.exit(Sys.unsetenv("R_PACKRAT_CACHE_DIR"), add = TRUE)
 
     packrat::set_opts(use.cache = TRUE)
-    on.exit(packrat::set_opts(use.cache = FALSE))
+    on.exit(packrat::set_opts(use.cache = FALSE), add = TRUE)
+
+    options(packrat.verbose.cache = TRUE)
+    on.exit(options(packrat.verbose.cache = FALSE), add = TRUE)
 
     # Initial restore. Populates the cache and creates a symlink into it.
     unlink(libRoot, recursive = TRUE)
