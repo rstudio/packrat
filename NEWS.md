@@ -1,5 +1,10 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now performs a non-recursive dependency search when
+  `packrat::snapshot()` is invoked. This should greatly improve
+  the performance of snapshot in projects with a large number of
+  installed packages.
+
 - Packrat now more eagerly caches packages during `packrat::restore()` --
   packages will be immediately cached following successful installation,
   rather than at the end of the restore process. (#324)
