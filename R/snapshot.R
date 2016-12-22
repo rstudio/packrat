@@ -168,7 +168,8 @@ snapshot <- function(project = NULL,
   libPkgRecords <- getPackageRecords(libPkgs,
                                      project = project,
                                      available = available,
-                                     lib.loc = lib.loc)
+                                     lib.loc = lib.loc,
+                                     recursive = FALSE)
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
