@@ -1,5 +1,8 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat no longer automatically restores projects on startup when
+  Packrat is not detected within the library directory.
+
 - Packrat now performs a non-recursive dependency search when
   `packrat::snapshot()` is invoked. This should greatly improve
   the performance of snapshot in projects with a large number of
