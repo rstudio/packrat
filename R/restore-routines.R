@@ -91,7 +91,7 @@ restoreWithCopyFromUntrustedCache <- function(project,
   suppressWarnings(symlink(source, target))
   success <- file.exists(target)
   if (success) {
-    cacheCopyStatus$type <- "symlinked cache"
+    cacheCopyStatus$type <- "symlinked user cache"
     return(TRUE)
   }
 
@@ -102,11 +102,11 @@ restoreWithCopyFromUntrustedCache <- function(project,
   ))
 
   if (success) {
-    cacheCopyStatus$type <- "copied cache"
+    cacheCopyStatus$type <- "copied user cache"
     return(TRUE)
   }
 
   # failed to copy or symlink from cache; report warning and return false
-  warning("failed to symlink or copy package '", pkgRecord$name, "' from cache")
+  warning("failed to symlink or copy package '", pkgRecord$name, "' from user cache")
   return(FALSE)
 }
