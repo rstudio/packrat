@@ -72,7 +72,7 @@ restoreWithCopyFromUntrustedCache <- function(project,
   # attempt to find source tarball associated with passed-in
   # package record
   tarballName <- sprintf("%s_%s.tar.gz", pkgRecord$name, pkgRecord$version)
-  tarballPath <- file.path(srcDir(project), tarballName)
+  tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
   if (!file.exists(tarballPath))
     return(FALSE)
 
