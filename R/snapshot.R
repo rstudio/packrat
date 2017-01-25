@@ -305,8 +305,6 @@ snapshot <- function(project = NULL,
       }
     }
 
-    moveInstalledPackagesToCache(project)
-
     if (verbose) {
       message('Snapshot written to ',
               shQuote(normalizePath(lockFilePath(project), winslash = '/'))

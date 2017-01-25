@@ -132,22 +132,15 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
 # replacement of the cached content while overwrite=FALSE with fatal=FALSE
 # uses the cached package. Using overwrite=TRUE with fatal=TRUE will err.
 moveInstalledPackageToCache <- function(packagePath,
+                                        hash,
                                         overwrite = TRUE,
-                                        fatal = FALSE)
+                                        fatal = FALSE,
+                                        cacheDir = cacheLibDir())
 {
-  ensureDirectory(cacheLibDir())
+  ensureDirectory(cacheDir)
 
-  # TODO: this logic assumes the package folder, and package name,
-  # are the same (seems to always be true in practice, but in theory
-  # they could be different?)
-  descPath <- file.path(packagePath, "DESCRIPTION")
-  if (!file.exists(descPath)) {
-    stop("no DESCRIPTION file at path '", descPath, "' (not an R package?)")
-  }
-
-  hash <- hash(descPath)
   packageName <- basename(packagePath)
-  cachedPackagePath <- cacheLibDir(packageName, hash, packageName)
+  cachedPackagePath <- file.path(cacheDir, packageName, hash, packageName)
   backupPackagePath <- tempfile(tmpdir = dirname(cachedPackagePath))
 
   # check for existence of package in cache
@@ -204,35 +197,6 @@ moveInstalledPackageToCache <- function(packagePath,
 
   # return failure
   stop("failed to copy package '", packageName, "' to cache")
-}
-
-moveInstalledPackagesToCache <- function(project = NULL) {
-  project <- getProjectDir(project)
-
-  # check that cache is enabled for this project
-  if (!isUsingCache(project))
-    return(invisible())
-
-  ensureDirectory(cacheLibDir())
-
-  ## All directories within the 'lib' directory which are not symlinks are fresh
-  ## and may need to be moved
-  installedPkgPaths <- list.files(libDir(project), full.names = TRUE)
-  if (!length(installedPkgPaths)) return(invisible())
-
-  needsMove <- installedPkgPaths[sapply(installedPkgPaths, Negate(is.symlink))]
-
-  if (isVerboseCache()) {
-    message("Promoting newly installed packages to the package cache.")
-  }
-
-  # for each package installed that is not a symlink, we migrate it to the cache
-  for (package in needsMove) {
-    # copy package into cache
-    cachedPackagePath <- moveInstalledPackageToCache(package)
-    symlink(normalizePath(cachedPackagePath, winslash = "/", mustWork = TRUE), package)
-  }
-
 }
 
 # Pull out cached package information from the DESCRIPTION

@@ -405,6 +405,7 @@ installPkg <- function(pkgRecord,
     }
   }
 
+  # Try restoring the package from the global cache.
   cacheCopyStatus <- new.env(parent = emptyenv())
   copiedFromCache <- restoreWithCopyFromCache(project, pkgRecord, cacheCopyStatus)
   if (copiedFromCache) {
@@ -412,7 +413,14 @@ installPkg <- function(pkgRecord,
     needsInstall <- FALSE
   }
 
-  if (!(copiedFromCache) &&
+  # Try restoring the package from the 'unsafe' cache, if applicable.
+  copiedFromUntrustedCache <- restoreWithCopyFromUntrustedCache(project, pkgRecord, cacheCopyStatus)
+  if (copiedFromUntrustedCache) {
+    type <- cacheCopyStatus$type
+    needsInstall <- FALSE
+  }
+
+  if (!(copiedFromCache || copiedFromUntrustedCache) &&
         isFromCranlikeRepo(pkgRecord, repos) &&
         pkgRecord$name %in% rownames(availablePkgs) &&
         versionMatchesDb(pkgRecord, availablePkgs) &&
@@ -501,7 +509,35 @@ installPkg <- function(pkgRecord,
   # copy package into cache if enabled
   if (isUsingCache(project)) {
     pkgPath <- file.path(lib, pkgRecord$name)
-    moveInstalledPackageToCache(packagePath = pkgPath)
+
+    # copy into global cache if this is a trusted package
+    if (isTrustedPackage(pkgRecord$name)) {
+      descPath <- file.path(pkgPath, "DESCRIPTION")
+      if (!file.exists(descPath)) {
+        warning("cannot cache package: no DESCRIPTION file at path '", descPath, "'")
+      } else {
+        hash <- hash(descPath)
+        moveInstalledPackageToCache(
+          packagePath = pkgPath,
+          hash = hash,
+          cacheDir = cacheLibDir()
+        )
+      }
+    } else {
+      pkgPath <- file.path(lib, pkgRecord$name)
+      tarballName <- sprintf("%s_%s.tar.gz", pkgRecord$name, pkgRecord$version)
+      tarballPath <- file.path(srcDir(project), tarballName)
+      if (!file.exists(tarballPath)) {
+        warning("cannot cache untrusted package: source tarball not available")
+      } else {
+        hash <- hashTarball(tarballPath)
+        moveInstalledPackageToCache(
+          packagePath = pkgPath,
+          hash = hash,
+          cacheDir = untrustedCacheLibDir()
+        )
+      }
+    }
   }
 
   return(type)
