@@ -601,6 +601,8 @@ restoreImpl <- function(project,
   # optionally overlay the 'src' directory from a custom location
   overlaySourcePackages(srcDir(project))
 
+  discoverUntrustedPackages(srcDir(project))
+
   # We also ignore restores for packages specified in external.packages
   pkgsToIgnore <- c(
     pkgsToIgnore,
@@ -729,6 +731,12 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
   defer(library(pkg, lib.loc = libPaths, character.only = TRUE), parent.frame())
 
   TRUE
+}
+
+discoverUntrustedPackages <- function(srcDir) {
+  if (is.na(Sys.getenv("RSTUDIO_CONNECT", unset = NA)))
+    return()
+  options(packrat.untrusted.packages = list.files(srcDir))
 }
 
 overlaySourcePackages <- function(srcDir, overlayDir = NULL) {

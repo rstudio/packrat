@@ -59,6 +59,10 @@ test_that("packrat uses the untrusted cache when instructed", {
 
   scopeTestContext()
 
+  # pretend that we're RStudio Connect
+  Sys.setenv(RSTUDIO_CONNECT = 1)
+  on.exit(Sys.unsetenv("RSTUDIO_CONNECT"), add = TRUE)
+
   projRoot <- cloneTestProject("healthy")
   libRoot <- file.path(projRoot, "packrat", "lib")
   srcRoot <- file.path(projRoot, "packrat", "src")
@@ -67,9 +71,6 @@ test_that("packrat uses the untrusted cache when instructed", {
   ensureDirectory(theCache)
   Sys.setenv(R_PACKRAT_CACHE_DIR = theCache)
   on.exit(Sys.unsetenv("R_PACKRAT_CACHE_DIR"), add = TRUE)
-
-  options(packrat.untrusted.packages = "oatmeal")
-  on.exit(options(packrat.untrusted.packages = NULL), add = TRUE)
 
   init(projRoot, options = list(local.repos = "packages"), enter = FALSE)
 
