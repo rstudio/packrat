@@ -265,3 +265,7 @@ packratCacheVersion <- function() {
 cacheLibDir <- function(...) {
   file.path(appDataDir(), packratCacheVersion(), "library", ...)
 }
+
+untrustedCacheLibDir <- function(...) {
+  file.path(appDataDir(), packratCacheVersion(), "library-client", ...)
+}
