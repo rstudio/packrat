@@ -329,13 +329,20 @@ getBiocRepos <- function() {
 # Returns a vector of all active repos, including CRAN (with a fallback to the
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
 activeRepos <- function(project) {
+  project <- getProjectDir(project)
   repos <- getOption("repos")
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
 
   # Check to see whether Bioconductor is installed. Bioconductor maintains a
   # private set of repos, which we need to expose here so we can download
   # sources to Bioconducter packages.
-  if (isTRUE(nchar(find.package("BiocInstaller", quiet = TRUE)) > 0)) {
+  location <- find.package(
+    "BiocInstaller",
+    lib.loc = libDir(project),
+    quiet = TRUE
+  )
+
+  if (nzchar(location)) {
     biocRepos <- getBiocRepos()
     biocRepoNames <- names(biocRepos)
     oldRepos <- repos[!(names(repos) %in% biocRepoNames)]
