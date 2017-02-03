@@ -342,7 +342,7 @@ activeRepos <- function(project) {
     quiet = TRUE
   )
 
-  if (nzchar(location)) {
+  if (length(location) == 1 && file.exists(location)) {
     biocRepos <- getBiocRepos()
     biocRepoNames <- names(biocRepos)
     oldRepos <- repos[!(names(repos) %in% biocRepoNames)]
