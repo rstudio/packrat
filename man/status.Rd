@@ -37,4 +37,3 @@ Differences can also arise if one of your collaborators adds or removes
 packages from the packrat dependencies. In this case, you simply need to tell
 packrat to update your private package library using \code{\link{restore}}.
 }
-

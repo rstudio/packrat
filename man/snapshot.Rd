@@ -60,4 +60,3 @@ snapshot(dry.run = TRUE)
 \code{\link{status}} to view the differences between the most recent snapshot
 and the library.
 }
-

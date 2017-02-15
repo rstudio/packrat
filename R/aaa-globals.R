@@ -37,5 +37,6 @@ new_defaults = function(value = list()) {
 ## These should be set on entering, exiting packrat mode
 .packrat_mutables <- new_defaults(list(
   origLibPaths = NULL,
-  project = NULL
+  project = NULL,
+  read.only = FALSE
 ))

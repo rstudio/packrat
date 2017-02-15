@@ -22,7 +22,8 @@ VALID_OPTIONS <- list(
   snapshot.recommended.packages = list(TRUE, FALSE),
   snapshot.fields = function(x) {
     is.null(x) || is.character(x)
-  }
+  },
+  read.only = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -38,7 +39,8 @@ default_opts <- function() {
     ignored.packages = NULL,
     quiet.package.installation = TRUE,
     snapshot.recommended.packages = FALSE,
-    snapshot.fields = c("Imports", "Depends", "LinkingTo")
+    snapshot.fields = c("Imports", "Depends", "LinkingTo"),
+    read.only = FALSE
   )
 }
 

@@ -75,4 +75,3 @@ via \code{getOption("restart")}.
 \code{\link{status}} to view the differences between the most recent snapshot
 and the library.
 }
-

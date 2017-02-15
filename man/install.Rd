@@ -57,4 +57,3 @@ directory pristine.
 
 If the package is loaded, it will be reloaded after installation.
 }
-

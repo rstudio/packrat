@@ -26,4 +26,3 @@ This function will:
 \item Update the package \code{.Rprofile}.
 }
 }
-
