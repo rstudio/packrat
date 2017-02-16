@@ -18,4 +18,3 @@ directory name in which the reopsitory is created.}
 Generate a local CRAN-like repository which can be
 used to store and distribute \R packages.
 }
-

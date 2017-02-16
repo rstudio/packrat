@@ -15,4 +15,3 @@ unused_packages(project = NULL, lib.loc = libDir(project))
 Unused packages are those still contained within your project library, but
 are unused in your project.
 }
-

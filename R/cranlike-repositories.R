@@ -24,9 +24,12 @@ repos_create <- function(path, name = basename(path), add = TRUE) {
   ## Create the 'contrib' dirs
 
   # Create the 'src' dir and write PACKAGES
-  srcContribDir <- file.path(root, "src", "contrib")
-  dir.create(srcContribDir, recursive = TRUE)
-  tools::write_PACKAGES(srcContribDir, type = "source")
+  srcContribeDir <- file.path(root, "src", "contrib")
+  dir.create(srcContribeDir, recursive = TRUE)
+  tools::write_PACKAGES(srcContribeDir, type = "source")
+
+  # Create the 'Archive' directory
+  createArchiveDir(srcContribeDir)
 
   # Create the 'bin' dirs and write PACKAGES
   binContribDirs <- binContribDirs(root)
@@ -55,6 +58,59 @@ repos_create <- function(path, name = basename(path), add = TRUE) {
   URI
 }
 
+## createArchiveDir
+## @description Create the archive dir to store old package version
+## @param srcContribeDir Path to the src/contrib directory
+## @param packageName Name of the package to add to archive (if null only create the "Archive" directory)
+## @return string The path of the archive directory create
+createArchiveDir <- function(srcContribeDir, packageName=NULL){
+  name <- file.path(srcContribeDir, if(is.null(packageName)) "Archive" else file.path("Archive", packageName))
+  dir.create(name, recursive = TRUE, showWarnings = FALSE)
+  return(name)
+}
+
+## @name getPackageName
+## @description Get the package name by its path
+## @param packagePath Path to the package
+## @return string The name of the package, without version
+getPackageName <- function(packagePath){
+  return(sub("_.*", "", basename(packagePath)))
+}
+
+## @name getReposrcContribeDir
+## @description Get the path to the srcContribeDir
+## @param repoPath Path to the repository
+## @return string Path to the srcContribeDir of the repository
+getReposrcContribeDir <- function(repoPath){
+  return(normalize.path(sub(reFilePrefix(), "", file.path(repoPath, "src", "contrib"))))
+}
+
+## @name pushOldPackagesToArchive
+## @description If a version of the package is already in the repository, move it to the archive
+## @param packageName The name of the package
+## @param srcContribeDir Path to the srcContribeDir
+## @param quiet Be quiet
+pushOldPackagesToArchive <- function(package, srcContribeDir, quiet = FALSE){
+  # Get the name of the package
+  packageName <- getPackageName(package)
+
+  # Search old version of package in srcContribeDir
+  oldPackages <- list.files(srcContribeDir, pattern=paste0(packageName, "_"))
+
+  # Create the package directory in Archive
+  packageArchiveDir <- createArchiveDir(srcContribeDir = srcContribeDir, packageName = packageName)
+
+  # Move old package to Archive directory
+  for(pkg in oldPackages){
+    # Don't move the new version of the package
+    if(pkg != basename(package)){
+      if(!quiet)
+        message("Move package '", pkg, "' to archive '", packageArchiveDir, "'")
+      file.rename(file.path(srcContribeDir, pkg), file.path(packageArchiveDir, pkg))
+    }
+  }
+}
+
 binContribDirs <- function(root, rVersions = NULL) {
   # Add a number of empty R-version folders by default, just
   # so that these versions of R don't fail when attempting to query
@@ -79,9 +135,10 @@ binContribDirs <- function(root, rVersions = NULL) {
 #'   to the local repository.
 #' @param to The name of the CRAN-like repository. It (currently) must
 #'   be a local (on-disk) CRAN repository.
+#' @param archive Keep older version of the package in Archive directory like CRAN does
 #' @param ... Optional arguments passed to \code{R CMD build}.
 #' @export
-repos_upload <- function(package, to, ...) {
+repos_upload <- function(package, to, archive = FALSE, ...) {
 
   # validation
   if (!file.exists(package))
@@ -123,11 +180,20 @@ repos_upload <- function(package, to, ...) {
          "this version of packrat",
          call. = FALSE)
 
+  # Path to the upload package
+  uploadPkgPath <- ""
+
   # perform upload
   if (is.directory(package))
-    uploadPackageSourceDir(package, repoName, repoPath, ...)
+    uploadPkgPath <- uploadPackageSourceDir(package, repoName, repoPath, ...)
   else
-    uploadPackageTarball(package, repoName, repoPath)
+    uploadPkgPath <- uploadPackageTarball(package, repoName, repoPath)
+
+  # Move old package version to archive
+  if(archive)
+    pushOldPackagesToArchive(uploadPkgPath, getReposrcContribeDir(repoPath))
+
+  uploadPkgPath
 }
 
 uploadPackageSourceDir <- function(package, repoName, repoPath, ...) {
@@ -150,7 +216,7 @@ uploadPackageSourceDir <- function(package, repoName, repoPath, ...) {
   if (!file.exists(path))
     stop("failed to build source package")
 
-  contribUrl <- sub(reFilePrefix(), "", file.path(repoPath, "src", "contrib"))
+  contribUrl <- getReposrcContribeDir(repoPath)
   success <- file.copy(
     path,
     contribUrl
@@ -169,7 +235,7 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
   # Annotate the package DESCRIPTION with the repository
   tmpTarballPath <- file.path(tempdir(), "packrat-tarball-upload")
   untar(package, exdir = tmpTarballPath)
-  pkgName <- sub("_.*", "", basename(package))
+  pkgName <- getPackageName(package)
   untarredPath <- file.path(tmpTarballPath, pkgName)
   setRepositoryField(
     file.path(untarredPath, "DESCRIPTION"),
@@ -186,7 +252,7 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
 
   path <- normalize.path(basename(package))
 
-  contribUrl <- sub(reFilePrefix(), "", file.path(repoPath, "src", "contrib"))
+  contribUrl <- getReposrcContribeDir(repoPath)
   if (!file.copy(path, contribUrl, overwrite = TRUE))
     stop("failed to upload package '", basename(package), "' to '", contribUrl, "'")
 

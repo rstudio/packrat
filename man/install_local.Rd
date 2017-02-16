@@ -20,4 +20,3 @@ install_local(pkgs, ..., lib = .libPaths()[1],
 This function can be used to install a package from a local 'repository'; i.e.,
 a directory containing package tarballs and sources.
 }
-
