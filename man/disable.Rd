@@ -29,4 +29,3 @@ The \code{restart} parameter will only result in a restart of R when the R
 environment packrat is running within makes available a restart function via
 \code{getOption("restart")}.
 }
-

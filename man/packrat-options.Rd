@@ -2,10 +2,11 @@
 % Please edit documentation in R/options.R
 \docType{data}
 \name{packrat-options}
+\alias{packrat-options}
 \alias{get_opts}
-\alias{opts}
 \alias{packrat-options}
 \alias{set_opts}
+\alias{opts}
 \title{Get/set packrat project options}
 \usage{
 get_opts(options = NULL, simplify = TRUE, project = NULL)
@@ -84,8 +85,11 @@ Get and set options for the current packrat-managed project.
   What fields of a package's DESCRIPTION file should be used when discovering
   dependencies?
   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
+\item \code{snapshot.recursive.dependency}:
+  Make a recursive dependency search when doing a snapshot
 }
 }
+
 \examples{
 \dontrun{
 ## use 'devtools' and 'knitr' from the user library
@@ -102,4 +106,3 @@ packrat::opts$external.packages(c("devtools", "knitr"))
 }
 }
 \keyword{datasets}
-

@@ -19,4 +19,3 @@ after \code{unbundle}-ing the project?}
 \description{
 Unbundle a previously \code{\link{bundle}}d project.
 }
-

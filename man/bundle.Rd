@@ -47,4 +47,3 @@ be unbundled either with \code{packrat::\link{unbundle}} (which
 restores the project as well), \R's own \code{utils::\link{untar}}, or
 through most system \code{tar} implementations.
 }
-
