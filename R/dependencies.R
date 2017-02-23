@@ -359,10 +359,22 @@ identifyPackagesUsed <- function(call, env) {
     return()
 
   fn <- call[[1]]
-  if (!anyOf(fn, is.character, is.symbol))
-    return()
 
   fnString <- as.character(fn)
+
+  # brute check for pacman package loader. the match.call method doesn't work with pacman p_load . Instead we just scan as.character(call). Since all other parameters in p_load are logical, we can exclude them by simple pattern matching and get the package list.
+  # put code before the :: check because pacman::p_load is often used.
+  pacmanLoaders <- c("p_load")
+  if (pacmanLoaders %in% fnString) {
+    s <- as.character(call)
+    sParas <- s[2:length(s)]
+    filterOut <- c("TRUE", "FALSE", "T", "F")
+    pkgs <- sParas[!sParas %in% filterOut]
+    lapply(pkgs, function(x) env[[x]] <- TRUE)
+  }
+
+  if (!anyOf(fn, is.character, is.symbol))
+    return()
 
   # Check for '::', ':::'
   if (fnString %in% c("::", ":::")) {
