@@ -1,0 +1,18 @@
+# test pr for pacman support
+if (!require("pacman")) install.packages("pacman")
+# this doesn't work, use devtools before running instead.
+# pacman::p_load_gh("ctmm-initiative/ctmm")
+pacman::p_load(shiny, shinydashboard, DT, ctmm, ggplot2, scales, gridExtra, data.table, lubridate, markdown)
+
+pacman::p_load(stringr, units, install = FALSE)
+
+op <- TRUE
+pacman::p_load(shinyjs, install = op)
+
+pkgs <- c("dplyr", "tibble")
+pacman::p_load(pkgs, character.only = TRUE)
+
+library(bit64)
+
+pkg <- "ggmap"
+library(pkg, character.only = TRUE)
