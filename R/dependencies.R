@@ -362,7 +362,10 @@ identifyPackagesUsed <- function(call, env) {
 
   fnString <- as.character(fn)
 
-  # brute check for pacman package loader. the match.call method doesn't work with pacman p_load . Instead we just scan as.character(call). Since all other parameters in p_load are logical, we can exclude them by simple pattern matching and get the package list.
+  # adding support for pacman package loader
+  # https://github.com/rstudio/packrat/pull/360
+  # The method of line `matched <- match.call(loader, call)` doesn't work with p_load, because `p_load` doesn't have the package list as the named argument.
+ # Because all other arguments in `p_load` will be logical, supposedly be one of `True, False, T, F`, so I just scan `as.character(call)` to get the package name list.
   # put code before the :: check because pacman::p_load is often used.
   pacmanLoaders <- c("p_load")
   if (pacmanLoaders %in% fnString) {
