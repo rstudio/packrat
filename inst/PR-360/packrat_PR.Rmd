@@ -60,10 +60,12 @@ sParas[!sParas %in% filterOut]
 ```
 
 test
-The `test-pacman.R` doesn't follow the testthat rule, which is just a source file with different pacman syntax to test the code. Proper test code can be added later if needed.
+
+sample code is put inside a Rmarkdown because they are not suitable for regular testtaht folder.
+
 ```{r}
-packrat:::fileDependencies(file)
-packrat:::fileDependencies("tests/test-pacman.R")
+# packrat:::fileDependencies(file)
+packrat:::fileDependencies("inst/PR-360/test.Rmd")
 ```
 
 ## shiny deployment
