@@ -1,3 +1,9 @@
+Run test with
+`packrat:::fileDependencies("inst/PR-360/test.Rmd")`
+
+Note `rmarkdown` was added to list because this file is RMarkdown.
+
+```{r}
 # test pr for pacman support
 if (!require("pacman")) install.packages("pacman")
 # this doesn't work, use devtools before running instead.
@@ -16,3 +22,6 @@ library(bit64)
 
 pkg <- "ggmap"
 library(pkg, character.only = TRUE)
+
+```
+
