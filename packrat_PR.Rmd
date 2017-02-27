@@ -12,7 +12,7 @@ The method of line `matched <- match.call(loader, call)` doesn't work with p_loa
 
 Because all other arguments in `p_load` will be logical, supposedly be one of `True, False, T, F`, so I just scan `as.character(call)` to get the package name list.
 
-p_load_gh is not implemented because I had some problems with using it to install some github repo. I need to use devtools anyway.
+`p_load_gh` is not implemented because the github repo string could be quite complicated. Instead user just need to load that package in `p_load` again, which will make sure the packages be picked up by `packrat`, and there is no negative impact of this.
 
 note pacman package itself will be picked up by original code no matter what:
 if used pcaman::p_load, will pick up because of ::
