@@ -59,7 +59,7 @@ beforePackratModeOn <- function(project, read.only=get_opts("read.only")) {
   } else {
     state <- .packrat_mutables$get()
     state$project <- project
-    state$read.only = read.only
+    state$read.only <- read.only
   }
 
   state
@@ -299,6 +299,7 @@ setPackratModeOff <- function(project = NULL,
 
   # Default back to the current working directory for packrat function calls
   .packrat_mutables$set(project = NULL)
+  .packrat_mutables$set(read.only = FALSE)
   Sys.unsetenv("R_PACKRAT_PROJECT_DIR")
   invisible(getLibPaths())
 }
