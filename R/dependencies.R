@@ -183,6 +183,27 @@ fileDependencies.Rmd <- function(file) {
 
   deps <- "rmarkdown"
 
+  # try using an evaluate-based approach for dependencies
+  if (knitrHasEvaluateHook()) {
+
+    # attempt to load rmarkdown
+    isRmarkdownLoaded <- "rmarkdown" %in% loadedNamespaces()
+    if (requireNamespace("rmarkdown", quietly = TRUE)) {
+
+      # unload rmarkdown after we're done with it if it
+      # wasn't already loaded
+      if (!isRmarkdownLoaded) {
+        on.exit(
+          try(unloadNamespace("rmarkdown"), silent = TRUE),
+          add = TRUE
+        )
+      }
+
+      # render with a custom evaluate hook to discover dependencies
+      deps <- c(deps, fileDependencies.Rmd.evaluate(file))
+    }
+  }
+
   # we don't know this file's encoding, so presume the default encoding
   encoding <- getOption("encoding")
   format <- NULL
@@ -262,7 +283,7 @@ fileDependencies.Rmd <- function(file) {
     if (!knitrIsLoaded && "knitr" %in% loadedNamespaces()) {
       try(unloadNamespace("knitr"), silent = TRUE)
     }
-  })
+  }, add = TRUE)
 
   if (requireNamespace("knitr", quietly = TRUE)) {
     tempfile <- tempfile()
@@ -501,4 +522,47 @@ isShinyApp <- function(project) {
   }
 
   return(FALSE)
+}
+
+knitrHasEvaluateHook <- function() {
+  isKnitrLoaded <- "knitr" %in% loadedNamespaces()
+  if (!requireNamespace("knitr", quietly = TRUE))
+    return(FALSE)
+
+  if (!isKnitrLoaded) {
+    on.exit(
+      try(unloadNamespace("knitr"), silent = TRUE),
+      add = TRUE
+    )
+  }
+
+  hooks <- knitr::knit_hooks$get()
+  "evaluate" %in% names(hooks)
+}
+
+
+fileDependencies.Rmd.evaluate <- function(file) {
+
+  # discovered packages (to be updated by evaluate hook)
+  deps <- list()
+
+  # save old hook and install our custom hook
+  evaluate_hook <- knitr::knit_hooks$get("evaluate")
+  on.exit(knitr::knit_hooks$set(evaluate = evaluate_hook), add = TRUE)
+  knitr::knit_hooks$set(evaluate = function(code, ...) {
+    try(silent = TRUE, {
+      parsed <- parse(text = code, encoding = "UTF-8")
+      deps <<- c(deps, expressionDependencies(parsed))
+    })
+  })
+
+  # attempt to render document with our custom hook active
+  outfile <- tempfile()
+  tryCatch(
+    rmarkdown::render(file, output_file = outfile, quiet = TRUE),
+    error = identity
+  )
+  unlink(outfile)
+
+  unique(unlist(deps, recursive = TRUE))
 }
