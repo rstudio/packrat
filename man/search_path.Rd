@@ -10,4 +10,3 @@ search_path()
 Retrieve the packages on the search path, as well as the
 associated library location.
 }
-

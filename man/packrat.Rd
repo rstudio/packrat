@@ -63,6 +63,7 @@ version control system. Be sure to check in the \code{.Rprofile},
 feel free to check it in if you don't mind taking up some extra space in your
 repository).
 }
+
 \examples{
 \dontrun{
 # Create a new packrat project from an existing directory of \\R code
@@ -81,4 +82,3 @@ restore()
 \author{
 RStudio, Inc.
 }
-

@@ -65,4 +65,3 @@ packrat::init(options = list(local.repos = "~/projects/R"))
 \link{packrat} for a description of the files created by
   \code{init}.
 }
-

@@ -23,6 +23,8 @@
 #'   without confirmation. Potentially unintended changes include snapshotting
 #'   packages at an older version than the last snapshot, or missing despite
 #'   being present in the last snapshot.
+#' @param snapshot.sources Boolean; should package sources be downloaded during
+#'   snapshot?
 #'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
 #' the sources stored in the project's \code{packrat/src} directory. If you
@@ -49,7 +51,9 @@ snapshot <- function(project = NULL,
                      lib.loc = libDir(project),
                      ignore.stale = FALSE,
                      dry.run = FALSE,
-                     prompt = interactive()) {
+                     prompt = interactive(),
+                     snapshot.sources = TRUE)
+{
 
   if (is.null(available))
   {
@@ -78,7 +82,8 @@ snapshot <- function(project = NULL,
                                  lib.loc,
                                  dry.run,
                                  ignore.stale = ignore.stale,
-                                 prompt = prompt && !dry.run)
+                                 prompt = prompt && !dry.run,
+                                 snapshot.sources = snapshot.sources)
 
   if (dry.run)
     return(invisible(snapshotResult))

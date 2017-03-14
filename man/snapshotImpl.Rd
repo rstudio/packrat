@@ -57,4 +57,3 @@ This is the internal implementation for \code{\link{snapshot}}. Most users
 should prefer calling \code{\link{snapshot}}.
 }
 \keyword{internal}
-

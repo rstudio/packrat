@@ -25,4 +25,3 @@ source control, or were accidentally removed).
 You'll need to restart \R in the specified directory after running
 \code{packify} in order to start using the private package library.
 }
-

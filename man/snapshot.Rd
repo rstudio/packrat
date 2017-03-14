@@ -5,7 +5,8 @@
 \title{Capture and store the packages and versions in use}
 \usage{
 snapshot(project = NULL, available = NULL, lib.loc = libDir(project),
-  ignore.stale = FALSE, dry.run = FALSE, prompt = interactive())
+  ignore.stale = FALSE, dry.run = FALSE, prompt = interactive(),
+  snapshot.sources = TRUE)
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
@@ -33,6 +34,9 @@ changes that might be unintended; \code{FALSE} to perform these operations
 without confirmation. Potentially unintended changes include snapshotting
 packages at an older version than the last snapshot, or missing despite
 being present in the last snapshot.}
+
+\item{snapshot.sources}{Boolean; should package sources be downloaded during
+snapshot?}
 }
 \description{
 Finds the packages in use in the project, and stores a list
@@ -60,4 +64,3 @@ snapshot(dry.run = TRUE)
 \code{\link{status}} to view the differences between the most recent snapshot
 and the library.
 }
-

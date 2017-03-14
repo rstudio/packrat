@@ -2,10 +2,11 @@
 % Please edit documentation in R/options.R
 \docType{data}
 \name{packrat-options}
+\alias{packrat-options}
 \alias{get_opts}
-\alias{opts}
 \alias{packrat-options}
 \alias{set_opts}
+\alias{opts}
 \title{Get/set packrat project options}
 \usage{
 get_opts(options = NULL, simplify = TRUE, project = NULL)
@@ -86,6 +87,7 @@ Get and set options for the current packrat-managed project.
   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
 }
 }
+
 \examples{
 \dontrun{
 ## use 'devtools' and 'knitr' from the user library
@@ -102,4 +104,3 @@ packrat::opts$external.packages(c("devtools", "knitr"))
 }
 }
 \keyword{datasets}
-
