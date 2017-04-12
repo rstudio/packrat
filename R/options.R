@@ -22,7 +22,8 @@ VALID_OPTIONS <- list(
   snapshot.recommended.packages = list(TRUE, FALSE),
   snapshot.fields = function(x) {
     is.null(x) || is.character(x)
-  }
+  },
+  snapshot.recursive.dependency = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -38,7 +39,8 @@ default_opts <- function() {
     ignored.packages = NULL,
     quiet.package.installation = TRUE,
     snapshot.recommended.packages = FALSE,
-    snapshot.fields = c("Imports", "Depends", "LinkingTo")
+    snapshot.fields = c("Imports", "Depends", "LinkingTo"),
+    snapshot.recursive.dependency = FALSE
   )
 }
 
@@ -105,6 +107,8 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   What fields of a package's DESCRIPTION file should be used when discovering
 ##'   dependencies?
 ##'   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
+##' \item \code{snapshot.recursive.dependency}:
+##'   Make a recursive dependency search when doing a snapshot
 ##' }
 ##'
 ##' @param options A character vector of valid option names.

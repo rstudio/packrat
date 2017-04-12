@@ -107,6 +107,8 @@ snapshot <- function(project = NULL,
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
 #'   via other means when attempting to load this project.
+#' @param snapshot.recursive.dependency Perform a recursive dependency search,
+#'   to complete the "Require" field in the packrat.lock file
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
@@ -120,7 +122,8 @@ snapshot <- function(project = NULL,
                           verbose = TRUE,
                           fallback.ok = FALSE,
                           snapshot.sources = TRUE,
-                          implicit.packrat.dependency = TRUE) {
+                          implicit.packrat.dependency = TRUE,
+                          snapshot.recursive.dependency = get_opts("snapshot.recursive.dependency")) {
 
   if (is.null(available))
   {
@@ -174,7 +177,7 @@ snapshot <- function(project = NULL,
                                      project = project,
                                      available = available,
                                      lib.loc = lib.loc,
-                                     recursive = FALSE)
+                                     recursive = snapshot.recursive.dependency)
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible

@@ -85,6 +85,8 @@ Get and set options for the current packrat-managed project.
   What fields of a package's DESCRIPTION file should be used when discovering
   dependencies?
   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
+\item \code{snapshot.recursive.dependency}:
+  Make a recursive dependency search when doing a snapshot
 }
 }
 

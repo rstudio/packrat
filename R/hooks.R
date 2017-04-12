@@ -75,7 +75,8 @@ buildSnapshotHookCall <- function(project, debug = FALSE) {
   snapshotArgs <- paste(sep = ", ",
                         peq("project", surround(project, with = "'")),
                         peq("auto.snapshot", "TRUE"),
-                        peq("verbose", "FALSE")
+                        peq("verbose", "FALSE"),
+                        peq("snapshot.recursive.dependency", get_opts("snapshot.recursive.dependency"))
   )
 
   repos <- gsub("\"", "'", paste(deparse(getOption('repos'), width.cutoff = 500), collapse = ' '))
