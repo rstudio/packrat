@@ -4,7 +4,7 @@
 \alias{repos_upload}
 \title{Upload a Package to a Local CRAN-like Repository}
 \usage{
-repos_upload(package, to, ...)
+repos_upload(package, to, archive = FALSE, ...)
 }
 \arguments{
 \item{package}{Path to a package tarball. The tarball should be
@@ -15,6 +15,8 @@ to the local repository.}
 
 \item{to}{The name of the CRAN-like repository. It (currently) must
 be a local (on-disk) CRAN repository.}
+
+\item{archive}{Keep older version of the package in Archive directory like CRAN does}
 
 \item{...}{Optional arguments passed to \code{R CMD build}.}
 }
