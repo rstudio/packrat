@@ -26,4 +26,26 @@ withTestContext({
     })
   })
 
+  test_that("packrat::restore can load an old version", {
+    projRoot <- cloneTestProject('breakfastcereal')
+    repos <- getOption('repos')
+    options(repos = c(testrepo = paste0("file:///", normalizePath("repo"))))
+
+    ## Should be no warnings
+    expect_warning(packrat::restore(projRoot, restart=FALSE), regexp=NA)
+
+    options(repos = repos)
+  })
+
+  test_that("packrat can load packages without a repository label", {
+    projRoot <- cloneTestProject('breakfastyogurt')
+    repos <- getOption('repos')
+    options(repos = c(testrepo = paste0("file:///", normalizePath("repo"))))
+
+    ## Should be no warnings
+    expect_warning(packrat::init(projRoot, enter=FALSE), regexp=NA)
+
+    options(repos=repos)
+  })
+
 })

@@ -13,6 +13,13 @@ MD5sum: 9d20db306fb493f02677537bd99ec223
 NeedsCompilation: no
 Path: ./breakfast
 
+Package: cereal
+Version: 2.0.0
+License: GPL
+MD5sum: c3eb7a2c32b50002bc962c9b34ee8e39
+NeedsCompilation: no
+Path: ./cereal
+
 Package: oatmeal
 Version: 1.0.0
 License: GPL
@@ -34,4 +41,11 @@ License: GPL
 MD5sum: 94983eced5faba874146ebaf8f317627
 NeedsCompilation: no
 Path: ./toast
+
+Package: yogurt
+Version: 1.0.0
+License: GPL
+MD5sum: 6cbffb30b94319cfaa5303f5b9c1c140
+NeedsCompilation: no
+Path: ./yogurt
 
