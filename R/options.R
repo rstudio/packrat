@@ -27,7 +27,7 @@ VALID_OPTIONS <- list(
 
 default_opts <- function() {
   list(
-    auto.snapshot = TRUE,
+    auto.snapshot = FALSE,
     use.cache = FALSE,
     print.banner.on.startup = "auto",
     vcs.ignore.lib = TRUE,
@@ -56,7 +56,7 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'
 ##' \itemize{
 ##' \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
-##'   (logical; defaults to \code{TRUE})
+##'   (logical; defaults to \code{FALSE})
 ##' \item \code{use.cache}:
 ##'   Install packages into a global cache, which is then shared across projects? The
 ##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.

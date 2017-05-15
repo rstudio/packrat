@@ -36,7 +36,7 @@ Get and set options for the current packrat-managed project.
 
 \itemize{
 \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
-  (logical; defaults to \code{TRUE})
+  (logical; defaults to \code{FALSE})
 \item \code{use.cache}:
   Install packages into a global cache, which is then shared across projects? The
   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
