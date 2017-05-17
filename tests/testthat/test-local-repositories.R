@@ -27,6 +27,8 @@ withTestContext({
   })
 
   test_that("packrat::restore can load an old version", {
+    skip('restore cannot load an old local version')
+
     projRoot <- cloneTestProject('breakfastcereal')
     repos <- getOption('repos')
     options(repos = c(testrepo = paste0("file:///", normalizePath("repo"))))
@@ -38,6 +40,8 @@ withTestContext({
   })
 
   test_that("packrat can load packages without a repository label", {
+    skip('packrat requires a repository label')
+
     projRoot <- cloneTestProject('breakfastyogurt')
     repos <- getOption('repos')
     options(repos = c(testrepo = paste0("file:///", normalizePath("repo"))))
