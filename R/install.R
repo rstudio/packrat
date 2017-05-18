@@ -233,6 +233,22 @@ with_build_tools <- function(code) {
 }
 
 decompress <- function(src, target = tempdir()) {
+  tryCatch(
+    decompressImpl(src, target),
+    error = function(e) {
+      fmt <- paste(
+        "Failed to extract archive:",
+        "- '%s' => '%s'",
+        "Reason: %s",
+        sep = "\n"
+      )
+      msg <- sprintf(fmt, src, target, e$message)
+      message(msg, sep = "\n")
+    }
+  )
+}
+
+decompressImpl <- function(src, target = tempdir()) {
   stopifnot(file.exists(src))
 
   if (grepl("\\.zip$", src)) {
