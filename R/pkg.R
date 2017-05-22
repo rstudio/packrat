@@ -95,47 +95,62 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
   lapply(pkgNames, function(pkgName) {
 
-    pkgDescFile <- system.file('DESCRIPTION',
-                               package = pkgName,
-                               lib.loc = lib.loc)
-
-    # First, try inferring the package source from the DESCRIPTION file -- if it's unknown
-    # we might fall back to something in available.packages
+    # The actual package record that will be populated by below logic.
     result <- list()
-    if (nzchar(pkgDescFile)) {
+
+    # First, attempt to discover the actual installation for this package.
+    pkgDescFile <- system.file("DESCRIPTION", package = pkgName, lib.loc = lib.loc)
+    if (file.exists(pkgDescFile)) {
+
+      # If the package is currently installed, then we can return a package
+      # record constructed from the DESCRIPTION file.
       df <- as.data.frame(readDcf(pkgDescFile))
       result <- suppressWarnings(inferPackageRecord(df))
-    }
 
-    if (is.null(result$source))
-      result$source <- "unknown"
+      # Normalize NULL source vs. 'unknown' source.
+      if (is.null(result$source))
+        result$source <- "unknown"
 
-    # If this failed, try falling back to something of the same name in 'available'
-    if (!nzchar(pkgDescFile) || (result$source == "unknown" && fallback.ok)) {
-
-      # Let the user know if we're falling back to latest CRAN (because we failed
-      # to infer the source of a particular package)
-      if (result$source == "unknown" && fallback.ok) {
-        warning("Failed to infer source for package '", pkgName, "'; using ",
-                "latest available version on CRAN instead")
-      }
-
-      if (pkgName %in% rownames(available)) {
-        pkg <- available[pkgName,]
-        df <- data.frame(
-          Package = pkg[["Package"]],
-          Version = pkg[["Version"]],
-          Repository = "CRAN"
+      # If we don't know the package source, but the user has opted in
+      # to CRAN fallback, then warn the user and update the inferred source.
+      if (fallback.ok && result$source == "unknown") {
+        fmt <- paste(
+          "Package '%s %s' was installed from sources;",
+          "Packrat will assume this package is available from",
+          "a CRAN-like repository during future restores"
         )
-      } else {
-        return(missing.package(pkgName, lib.loc))
+        warning(sprintf(fmt, pkgName, result$version))
+        result$source <- "CRAN"
       }
+
+    } else if (fallback.ok && pkgName %in% rownames(available)) {
+
+      # The package is not currently installed, but is available on CRAN.
+      # Snapshot the latest available version for this package from CRAN.
+      warning("Failed to infer source for package '", pkgName, "'; using ",
+              "latest available version on CRAN instead")
+
+      # Construct the package record by hand -- generate the minimal
+      # bits of the DESCRIPTION file, and infer the package record
+      # from that.
+      pkg <- available[pkgName,]
+      df <- data.frame(
+        Package = pkg[["Package"]],
+        Version = pkg[["Version"]],
+        Repository = "CRAN"
+      )
+      record <- suppressWarnings(inferPackageRecord(df))
+
+    } else {
+      # We were unable to determine an appropriate package record
+      # for this package; invoke the 'missing.package' callback.
+      return(missing.package(pkgName, lib.loc))
     }
 
-    # Now, we have either collected a package record from source, or an external repo
-    result <- inferPackageRecord(df)
+    # Update the hash when available.
     if (nzchar(pkgDescFile))
       result$hash <- hash(pkgDescFile)
+
     result
   })
 
