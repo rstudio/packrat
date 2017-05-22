@@ -11,24 +11,44 @@ cloneTestProject <- function(projectName) {
 }
 
 # "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
-# Not run from tests.
-rebuildTestRepo <- function(testroot) {
-  wd <- getwd()
-  on.exit(setwd(wd))
-  src <- file.path(testroot, "packages")
-  setwd(src)
+rebuildTestRepo <- function(testroot = getwd()) {
+
+  owd <- getwd()
+  on.exit(setwd(owd))
+
+  # Move to the folder housing our dummy packages.
+  source <- file.path(testroot, "packages")
+  setwd(source)
+
+  # Create a dummy folder for the current version of Packrat.
+  dir.create("packrat", showWarnings = FALSE)
+  file.copy(
+    system.file("DESCRIPTION", package = "packrat"),
+    "packrat/DESCRIPTION",
+    overwrite = TRUE
+  )
+
+  # Force Packrat tests to believe the currently installed / tested
+  # version of Packrat is on CRAN.
+  cat("Repository: CRAN",
+      file = "packrat/DESCRIPTION",
+      sep = "\n",
+      append = TRUE)
+
+  # Copy in the dummy folders.
   target <- file.path(testroot, "repo", "src", "contrib")
   unlink(target, recursive = TRUE)
   dir.create(target, recursive = TRUE)
-  pkgs <- list.files(src)
+  pkgs <- list.files(source)
   for (pkg in pkgs) {
-    descfile <- as.data.frame(read.dcf(file.path(src, pkg, "DESCRIPTION")))
+    descfile <- as.data.frame(read.dcf(file.path(source, pkg, "DESCRIPTION")))
     tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
                      sep = "")
     tar(tarball, pkg, compression = "gzip", tar = "internal")
     dir.create(file.path(target, pkg))
-    file.rename(file.path(src, tarball), file.path(target, pkg, tarball))
+    file.rename(file.path(source, tarball), file.path(target, pkg, tarball))
   }
+
   tools::write_PACKAGES(target, subdirs = TRUE)
 }
 
@@ -128,3 +148,5 @@ scopeTestContext <- function() {
   beginTestContext()
   defer(endTestContext(), parent.frame())
 }
+
+rebuildTestRepo()
