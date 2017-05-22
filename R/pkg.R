@@ -310,7 +310,7 @@ inferPackageRecord <- function(df) {
       source = 'CRAN',
       version = ver
     ), class = c('packageRecord', 'CRAN')))
-  } else if (!is.null(df$Repository) && df$Repository %in% names(repos)) {
+  } else if (!is.null(df$Repository)) {
     # It's a package from a custom CRAN-like repo!
     return(structure(list(
       name = name,
