@@ -180,10 +180,10 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
   dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
 
   if (restore) {
-    setwd(dirName)
     if (length(dirName) != 1) {
       stop("Couldn't infer top-level directory name; cannot perform automatic restore")
     }
+    setwd(dirName)
     ## Ensure the (empty) library directory is present before restoring
     dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")
