@@ -174,7 +174,7 @@ snapshot <- function(project = NULL,
                                      project = project,
                                      available = available,
                                      lib.loc = lib.loc,
-                                     recursive = FALSE)
+                                     recursive = TRUE)
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
