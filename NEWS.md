@@ -1,5 +1,10 @@
 # Packrat 0.4.9 (unreleased)
 
+- The 'lib-R' and 'lib-ext' directories now use architecture-specific
+  sub-directories for their libraries. This should further help in cases
+  where multiple versions of R are operating within a Packrat project
+  at the same time.
+
 - Packrat now better handles cases where non-symlink files find their
   way into the 'lib-R' and 'lib-ext' folders.
 

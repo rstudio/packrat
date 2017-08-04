@@ -74,11 +74,15 @@ getPackratDir <- function(project = NULL) {
   file.path(project, "packrat")
 }
 
+platformRelDir <- function() {
+  file.path(R.version$platform, getRversion())
+}
+
 libDir <- function(project = NULL) {
   packratOption(
     "R_PACKRAT_LIB_DIR",
     "packrat.lib.dir",
-    file.path(libraryRootDir(project), R.version$platform, getRversion())
+    file.path(libraryRootDir(project), platformRelDir())
   )
 }
 
@@ -86,7 +90,7 @@ libRdir <- function(project = NULL) {
   packratOption(
     "R_PACKRAT_LIB_R_DIR",
     "packrat.lib-r.dir",
-    file.path(getPackratDir(project), "lib-R")
+    file.path(getPackratDir(project), "lib-R", platformRelDir())
   )
 }
 
@@ -94,7 +98,7 @@ libExtDir <- function(project = NULL) {
   packratOption(
     "R_PACKRAT_LIB_EXT_DIR",
     "packrat.lib-ext.dir",
-    file.path(getPackratDir(project), "lib-ext")
+    file.path(getPackratDir(project), "lib-ext", platformRelDir())
   )
 }
 
