@@ -78,21 +78,11 @@ ensurePackageSymlink <- function(source, target) {
     if (isPathToSamePackage(source, target))
       return(TRUE)
 
-    # Remove the old symlink. Both junction points and symlinks
-    # are safely removed with a simple, non-recursive unlink.
-    try(unlink(target), silent = TRUE)
-
-    # Sometimes, on Windows, a failed attempt to call
-    # Sys.junction() can leave an empty folder behind. We
-    # need a recursive deletion to handle this.
-    if (is.windows() &&
-        file.exists(target) &&
-        utils::file_test("-d", target))
-    {
-      children <- list.files(target)
-      if (!length(children))
-        unlink(target, recursive = TRUE)
-    }
+    # Remove the old symlink target (swallowing errors)
+    tryCatch(
+      unlink(target, recursive = !is.symlink(target)),
+      error = identity
+    )
   }
 
   # If, for some reason, the target directory

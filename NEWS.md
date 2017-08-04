@@ -1,5 +1,8 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now better handles cases where non-symlink files find their
+  way into the 'lib-R' and 'lib-ext' folders.
+
 - Packrat now better handles packages that contain trailing
   newlines in their DESCRIPTION file -- it now avoids
   inserting intervening blank lines between records, which
