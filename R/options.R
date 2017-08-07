@@ -60,7 +60,7 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' \item \code{use.cache}:
 ##'   Install packages into a global cache, which is then shared across projects? The
 ##'   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
-##'   Not yet implemented for Windows.
+##'   Windows support is currently experimental.
 ##'   (logical; defaults to \code{FALSE})
 ##' \item \code{print.banner.on.startup}:
 ##'   Print the banner on startup? Can be one of \code{TRUE} (always print),
