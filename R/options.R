@@ -222,17 +222,6 @@ validateOptions <- function(opts) {
     }
   }
 
-  # Disable caching on Windows until we can efficiently and reliably
-  # detect whether a particular directory is a reparse point.
-  if (is.windows() && "use.cache" %in% names(opts)) {
-    use.cache <- opts[["use.cache"]]
-    if (isTRUE(use.cache)) {
-      warning("Caching is not yet enabled on Windows with packrat -- ",
-              "forcing 'use.cache = FALSE'", call. = FALSE)
-      opts[["use.cache"]] <- FALSE
-    }
-  }
-
   opts
 }
 
