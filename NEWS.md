@@ -1,5 +1,8 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now screens out empty package names discovered during package
+  dependency discovery. (#314)
+  
 - The Packrat global cache is now enabled on Windows. Junction points
   (rather than symbolic links) are used to populate entries in the
   private Packrat library.

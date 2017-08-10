@@ -95,7 +95,12 @@ appDependencies <- function(project = NULL,
   if (is.null(result))
     return(character())
 
-  sort_c(result)
+  sorted <- sort_c(result)
+
+  # some users have seen empty package names discovered here
+  # although we don't know the underlying cause, we should
+  # just filter these out as we know they can't be valid
+  setdiff(sorted, "")
 }
 
 # detect all package dependencies for a directory of files
