@@ -1,5 +1,9 @@
 # Packrat 0.4.9 (unreleased)
 
+- The Packrat global cache is now enabled on Windows. Junction points
+  (rather than symbolic links) are used to populate entries in the
+  private Packrat library.
+
 - The 'lib-R' and 'lib-ext' directories now use architecture-specific
   sub-directories for their libraries. This should further help in cases
   where multiple versions of R are operating within a Packrat project
@@ -20,11 +24,6 @@
 
 - Packrat no longer automatically restores projects on startup when
   Packrat is not detected within the library directory.
-
-- Packrat now performs a non-recursive dependency search when
-  `packrat::snapshot()` is invoked. This should greatly improve
-  the performance of snapshot in projects with a large number of
-  installed packages.
 
 - Packrat now more eagerly caches packages during `packrat::restore()` --
   packages will be immediately cached following successful installation,
