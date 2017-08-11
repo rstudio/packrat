@@ -388,21 +388,19 @@ installPkg <- function(pkgRecord,
   # restore it if, for some reason, package installation failed.
   pkgInstallPath <- file.path(lib, pkgRecord$name)
 
-  if (file.exists(pkgInstallPath) && is.symlink(pkgInstallPath)) {
+  # NOTE: a symlink that points to a path that doesn't exist
+  # will return FALSE when queried by `file.exists()`!
+  if (file.exists(pkgInstallPath) || is.symlink(pkgInstallPath)) {
 
-    resolvedPath <- tryCatch(
-      normalizePath(pkgInstallPath, mustWork = TRUE),
-      error = function(e) NULL
-    )
+    temp <- tempfile(tmpdir = lib)
+    file.rename(pkgInstallPath, temp)
+    on.exit({
+      if (file.exists(pkgInstallPath))
+        unlink(temp, recursive = !is.symlink(temp))
+      else
+        file.rename(temp, pkgInstallPath)
+    }, add = TRUE)
 
-    if (!is.null(resolvedPath)) {
-      unlink(pkgInstallPath)
-      on.exit(add = TRUE, {
-        if (!file.exists(pkgInstallPath)) {
-          symlink(resolvedPath, pkgInstallPath)
-        }
-      })
-    }
   }
 
   # Try restoring the package from the global cache.
