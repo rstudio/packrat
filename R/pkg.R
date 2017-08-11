@@ -139,7 +139,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
         Version = pkg[["Version"]],
         Repository = "CRAN"
       )
-      record <- suppressWarnings(inferPackageRecord(df))
+      result <- suppressWarnings(inferPackageRecord(df))
 
     } else {
       # We were unable to determine an appropriate package record
