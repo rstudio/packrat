@@ -33,9 +33,18 @@ restoreWithCopyFromCache <- function(project,
 
   # attempt to form a symlink to the packrat library
   # (remove stale file if one exists)
-  target <- file.path(libDir(project), pkgRecord$name)
-  if (file.exists(target))
-    unlink(target, recursive = !is.symlink(target))
+  lib <- libDir(project)
+  target <- file.path(lib, pkgRecord$name)
+  if (file.exists(target)) {
+    temp <- tempfile(tmpdir = lib)
+    file.rename(target, temp)
+    on.exit({
+      if (file.exists(target))
+        unlink(temp, recursive = !is.symlink(temp))
+      else
+        file.rename(temp, target)
+    }, add = TRUE)
+  }
 
   suppressWarnings(symlink(source, target))
   success <- file.exists(target)
@@ -92,9 +101,18 @@ restoreWithCopyFromUntrustedCache <- function(project,
 
   # attempt to form a symlink to the packrat library
   # (remove stale file if one exists)
-  target <- file.path(libDir(project), pkgRecord$name)
-  if (file.exists(target))
-    unlink(target, recursive = !is.symlink(target))
+  lib <- libDir(project)
+  target <- file.path(lib, pkgRecord$name)
+  if (file.exists(target)) {
+    temp <- tempfile(tmpdir = lib)
+    file.rename(target, temp)
+    on.exit({
+      if (file.exists(target))
+        unlink(temp, recursive = !is.symlink(temp))
+      else
+        file.rename(temp, target)
+    }, add = TRUE)
+  }
 
   suppressWarnings(symlink(source, target))
   success <- file.exists(target)

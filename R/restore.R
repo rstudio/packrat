@@ -420,6 +420,22 @@ installPkg <- function(pkgRecord,
     needsInstall <- FALSE
   }
 
+  # if we still need to attempt an installation at this point,
+  # remove a prior installation / file from library (if necessary).
+  # we move the old directory out of the way temporarily, and then
+  # delete if if all went well, or restore it if installation failed
+  # for some reason
+  if (needsInstall && file.exists(pkgInstallPath)) {
+    pkgRenamePath <- tempfile(tmpdir = lib)
+    file.rename(pkgInstallPath, pkgRenamePath)
+    on.exit({
+      if (file.exists(pkgInstallPath))
+        unlink(pkgRenamePath, recursive = !is.symlink(pkgRenamePath))
+      else
+        file.rename(pkgRenamePath, pkgInstallPath)
+    }, add = TRUE)
+  }
+
   if (!(copiedFromCache || copiedFromUntrustedCache) &&
         isFromCranlikeRepo(pkgRecord, repos) &&
         pkgRecord$name %in% rownames(availablePkgs) &&
