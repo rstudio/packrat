@@ -260,12 +260,8 @@ fileDependencies.Rmd <- function(file) {
         deps <- c(deps, "shiny")
         for (param in knitParams) {
           if (!is.null(param$expr)) {
-            parsed <- tryCatch(
-              parse(text = param$expr),
-              error = function(e) NULL
-            )
-
-            if (length(parsed))
+            parsed <- quietly(parse(text = param$expr))
+            if (!inherits(parsed, "error"))
               deps <- c(deps, expressionDependencies(parsed))
           }
         }
@@ -336,21 +332,25 @@ fileDependencies.R <- function(file) {
   # build a list of package dependencies to return
   pkgs <- character()
 
-  # parse file and examine expressions
-  tryCatch({
-    # parse() generates a warning when the file has an incomplete last line, but
-    # it still parses the file correctly; ignore this and other warnings.
-    # We'll still halt when parsing fails.
-    exprs <- suppressWarnings(parse(file, n = -1L))
-    for (i in seq_along(exprs))
-      pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
-  }, error = function(e) {
+  # parse file and examine expressions -- first attempt to
+  # parse in system encoding, then try again with UTF-8
+  exprs <- quietly(parse(file, n = -1L))
+  if (inherits(exprs, "error"))
+    exprs <- quietly(parse(file, n = -1L, encoding = "UTF-8"))
+
+  # report parse errors to the user
+  if (inherits(exprs, "error")) {
     warning(paste("Failed to parse", file, "; dependencies in this file will",
                   "not be discovered."))
-  })
+    exprs <- NULL
+  }
+
+  # extract expression dependencies
+  for (i in seq_along(exprs))
+    pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
 
   # return packages
-  unique(pkgs)
+  setdiff(unique(pkgs), "")
 }
 
 anyOf <- function(object, ...) {

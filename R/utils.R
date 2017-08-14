@@ -687,3 +687,11 @@ ensureDirectory <- function(path) {
 
   path
 }
+
+quietly <- function(expr) {
+  withCallingHandlers(
+    tryCatch(expr = expr, error = identity),
+    warning = function(w) invokeRestart("muffleWarning"),
+    message = function(m) invokeRestart("muffleMessage")
+  )
+}

@@ -1,5 +1,10 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now attempts to parse scripts using UTF-8 encoding in addition to the
+  system encoding. This should primarily help users on Windows who (rightly)
+  save their documents using UTF-8 encoding rather than the default system
+  encoding.
+
 - Packrat now screens out empty package names discovered during package
   dependency discovery. (#314)
   
