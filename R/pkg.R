@@ -167,20 +167,30 @@ getPackageRecordsLockfile <- function(pkgNames, project) {
   }
 }
 
+error_not_installed <- function(package, lib.loc) {
+  stop(
+    'The package "',
+    package,
+    '" is not installed in ',
+    ifelse(is.null(lib.loc), 'the current libpath', lib.loc)
+  )
+}
+
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames,
                               project = NULL,
                               available = NULL,
                               recursive = TRUE,
                               lib.loc = NULL,
-                              missing.package = function(package, lib.loc) {
-                                stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
-                              },
+                              missing.package = error_not_installed,
                               check.lockfile = FALSE,
-                              fallback.ok = FALSE) {
-
+                              fallback.ok = FALSE)
+{
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
+
+  # screen out empty package names that might have snuck in
+  pkgNames <- setdiff(pkgNames, "")
 
   if (check.lockfile) {
     lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
