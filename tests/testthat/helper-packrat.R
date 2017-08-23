@@ -13,6 +13,22 @@ cloneTestProject <- function(projectName) {
 # "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
 rebuildTestRepo <- function(testroot = getwd()) {
 
+  # Try to guess where the DESCRIPTION file lives (for R CMD check
+  # and for interactive testing)
+  candidates <- c(
+    "DESCRIPTION",
+    "../../DESCRIPTION",
+    "../../00_pkg_src/packrat/DESCRIPTION",
+    "../../packrat/DESCRIPTION"
+  )
+
+  for (candidate in candidates) {
+    if (file.exists(candidate)) {
+      DESCRIPTION <- normalizePath(candidate, winslash = "/")
+      break
+    }
+  }
+
   owd <- getwd()
   on.exit(setwd(owd))
 
@@ -22,11 +38,7 @@ rebuildTestRepo <- function(testroot = getwd()) {
 
   # Create a dummy folder for the current version of Packrat.
   dir.create("packrat", showWarnings = FALSE)
-  file.copy(
-    system.file("DESCRIPTION", package = "packrat"),
-    "packrat/DESCRIPTION",
-    overwrite = TRUE
-  )
+  file.copy(DESCRIPTION, "packrat/DESCRIPTION", overwrite = TRUE)
 
   # Force Packrat tests to believe the currently installed / tested
   # version of Packrat is on CRAN.
