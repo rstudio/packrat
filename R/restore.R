@@ -369,7 +369,6 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord,
                        project,
-                       availablePkgs,
                        repos,
                        lib = libDir(project))
 {
@@ -434,11 +433,13 @@ installPkg <- function(pkgRecord,
     }, add = TRUE)
   }
 
+  # Try downloading a binary (when appropriate).
   if (!(copiedFromCache || copiedFromUntrustedCache) &&
+        !identical(getOption("pkgType"), "source") &&
         isFromCranlikeRepo(pkgRecord, repos) &&
-        pkgRecord$name %in% rownames(availablePkgs) &&
-        versionMatchesDb(pkgRecord, availablePkgs) &&
-        !identical(getOption("pkgType"), "source")) {
+        pkgRecord$name %in% rownames(availablePackagesBinary(repos = repos)) &&
+        versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
+  {
     tempdir <- tempdir()
     tryCatch({
       # install.packages emits both messages and standard output; redirect these
@@ -447,19 +448,12 @@ installPkg <- function(pkgRecord,
       # on windows, we need to detach the package before installation
       detachPackageForInstallationIfNecessary(pkgRecord$name)
 
-      # If pkgType is 'both', the availablePkgs inferred will be wrong.
-      # The default behaviour for `available.packages()`,
-      # when `pkgType == "both"`.
-      pkgType <- getOption("pkgType")
-      if (identical(pkgType, "both"))
-        availablePkgs <- NULL
-
       suppressMessages(
         capture.output(
           utils::install.packages(pkgRecord$name,
                                   lib = lib,
                                   repos = repos,
-                                  available = availablePkgs,
+                                  available = availablePackagesBinary(repos = repos),
                                   quiet = TRUE,
                                   dependencies = FALSE,
                                   verbose = FALSE)))
@@ -486,7 +480,7 @@ installPkg <- function(pkgRecord,
       # missing.)
       getSourceForPkgRecord(pkgRecord,
                             srcDir(project),
-                            availablePkgs,
+                            availablePackagesSource(repos = repos),
                             repos,
                             quiet = TRUE)
       if (!file.exists(pkgSrc)) {
@@ -559,10 +553,6 @@ installPkg <- function(pkgRecord,
 
 playActions <- function(pkgRecords, actions, repos, project, lib) {
 
-  # Get the list of available packages and the latest version of those packages
-  # from the repositories, and the local install list for comparison
-  availablePkgs <- available.packages(contrib.url(repos))
-
   installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))
 
@@ -597,7 +587,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
       message("OK")
       next
     }
-    type <- installPkg(pkgRecord, project, availablePkgs, repos, lib)
+    type <- installPkg(pkgRecord, project, repos, lib)
     message("\tOK (", type, ")")
   }
   invisible()
