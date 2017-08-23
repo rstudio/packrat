@@ -434,7 +434,6 @@ installPkg <- function(pkgRecord,
 
   # Try downloading a binary (when appropriate).
   if (!(copiedFromCache || copiedFromUntrustedCache) &&
-        !identical(getOption("pkgType"), "source") &&
         isFromCranlikeRepo(pkgRecord, repos) &&
         pkgRecord$name %in% rownames(availablePackagesBinary(repos = repos)) &&
         versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
