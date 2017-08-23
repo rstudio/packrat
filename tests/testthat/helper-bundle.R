@@ -13,7 +13,7 @@ bundle_test <- function(bundler, checker, ...) {
   setwd("packrat-test-bundle")
   suppressWarnings(packrat::init(enter = FALSE))
   bundler(file = "test-bundle.tar.gz", ...)
-  untar("test-bundle.tar.gz", exdir = "untarred", tar = "internal")
+  utils::untar("test-bundle.tar.gz", exdir = "untarred", tar = "internal")
 
   # run checker
   checker()

@@ -3,6 +3,9 @@
 # with all appropriate fields populated)
 availablePackagesSkeleton <- function() {
 
+  if (!is.null(.packrat$repos[["skeleton"]]))
+    return(.packrat$repos[["skeleton"]])
+
   # Use internal download file method just to ensure no errors leak.
   download.file.method <- getOption("download.file.method")
   on.exit(options(download.file.method = download.file.method), add = TRUE)
@@ -15,6 +18,7 @@ availablePackagesSkeleton <- function() {
     message = function(m) invokeRestart("muffleMessage")
   )
 
+  .packrat$repos[["skeleton"]] <- result
   result
 }
 
@@ -29,11 +33,21 @@ availablePackagesSource <- function(repos = getOption("repos")) {
 availablePackages <- function(repos = getOption("repos"),
                               type = getOption("pkgType"))
 {
+  # check cache for entry
   key <- paste(deparse(repos), deparse(type), sep = " ", collapse = " ")
   if (!is.null(.packrat$repos[[key]]))
     return(.packrat$repos[[key]])
 
-  result <- available.packages(repos = repos, type = type)
+  # catch errors related to e.g. missing PACKAGES file (could happen for
+  # source-only repositories, if we tried to query a binary repository)
+  result <- tryCatch(
+    available.packages(repos = repos, type = type),
+    error = function(e) {
+      availablePackagesSkeleton()
+    }
+  )
+
+  # cache and return
   .packrat$repos[[key]] <- result
   result
 }
