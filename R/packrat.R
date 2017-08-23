@@ -200,7 +200,6 @@ init <- function(project = '.',
 
       # Take a snapshot
       snapshotImpl(project,
-                   available.packages(contrib.url(activeRepos(project))),
                    lib.loc = NULL,
                    ignore.stale = TRUE,
                    fallback.ok = TRUE)

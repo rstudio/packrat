@@ -19,9 +19,21 @@ availablePackagesSkeleton <- function() {
 }
 
 availablePackagesBinary <- function(repos = getOption("repos")) {
-  available.packages(repos = repos, type = .Platform$pkgType)
+  availablePackages(repos = repos, type = .Platform$pkgType)
 }
 
 availablePackagesSource <- function(repos = getOption("repos")) {
-  available.packages(repos = repos, type = "source")
+  availablePackages(repos = repos, type = "source")
+}
+
+availablePackages <- function(repos = getOption("repos"),
+                              type = getOption("pkgType"))
+{
+  key <- paste(deparse(repos), deparse(type), sep = " ", collapse = " ")
+  if (!is.null(.packrat$repos[[key]]))
+    return(.packrat$repos[[key]])
+
+  result <- available.packages(repos = repos, type = type)
+  .packrat$repos[[key]] <- result
+  result
 }

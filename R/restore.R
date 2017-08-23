@@ -286,8 +286,7 @@ snapshotSources <- function(project, repos, pkgRecords) {
                        pkgRecords)
 
   # Get a list of source packages available on the repositories
-  availablePkgs <- available.packages(contrib.url(repos, "source"),
-                                      type = "source")
+  availablePkgs <- availablePackagesSource(repos = repos)
 
   # Find the source directory (create it if necessary)
   sourceDir <- srcDir(project)
