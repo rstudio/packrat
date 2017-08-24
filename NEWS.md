@@ -1,5 +1,8 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat no longer fails to download the current version of a package if
+  the binary and source branches of the active repositories are out of sync.
+
 - Packrat now attempts to parse scripts using UTF-8 encoding in addition to the
   system encoding. This should primarily help users on Windows who (rightly)
   save their documents using UTF-8 encoding rather than the default system

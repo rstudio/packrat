@@ -60,7 +60,7 @@ snapshot <- function(project = NULL,
     available <- if (dry.run)
       availablePackagesSkeleton()
     else
-      available.packages()
+      availablePackages()
   }
 
   project <- getProjectDir(project)
@@ -127,7 +127,7 @@ snapshot <- function(project = NULL,
     available <- if (dry.run)
       availablePackagesSkeleton()
     else
-      available.packages()
+      availablePackages()
   }
 
   # ensure packrat directory available

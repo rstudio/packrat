@@ -1,6 +1,6 @@
 getPackageDependencies <- function(pkgs,
                                    lib.loc,
-                                   available.packages = available.packages(),
+                                   available.packages = availablePackages(),
                                    fields = c("Depends", "Imports", "LinkingTo")) {
 
   if (isPackratModeOn()) {
@@ -102,7 +102,7 @@ dropSystemPackages <- function(packages) {
 }
 
 recursivePackageDependencies <- function(pkgs, lib.loc,
-                                         available.packages = available.packages(),
+                                         available.packages = availablePackages(),
                                          fields = c("Depends", "Imports", "LinkingTo")) {
 
   if (!length(pkgs)) return(NULL)

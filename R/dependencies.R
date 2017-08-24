@@ -38,7 +38,8 @@ appDependencies <- function(project = NULL,
                             fields = opts$snapshot.fields(),
                             implicit.packrat.dependency = TRUE) {
 
-  if (is.null(available.packages)) available.packages <- available.packages()
+  if (is.null(available.packages))
+    available.packages <- availablePackages()
 
   project <- getProjectDir(project)
 

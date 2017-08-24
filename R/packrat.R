@@ -129,8 +129,52 @@ NULL
 init <- function(project = '.',
                  options = NULL,
                  enter = TRUE,
-                 restart = enter) {
+                 restart = enter)
+{
+  ## Get the initial directory structure, so we can rewind if necessary
+  project <- normalizePath(project, winslash = '/', mustWork = TRUE)
+  message("Initializing packrat project in directory:\n- ", surround(prettyDir(project), "\""))
 
+  ## A set of files that packrat might generate as part of init -- we
+  ## enumerate them here to assist with later cleanup
+  prFiles <- c(
+    file.path(project, ".gitignore"),
+    file.path(project, ".Rprofile"),
+    file.path(project, "packrat"),
+    file.path(project, "packrat", "lib"),
+    file.path(project, "packrat", "lib-R"),
+    file.path(project, "packrat", "src"),
+    file.path(project, "packrat", "packrat.lock"),
+    file.path(project, "packrat", "packrat.opts")
+  )
+
+  priorStructure <- setNames(
+    file.exists(prFiles),
+    prFiles
+  )
+
+  withCallingHandlers(
+    initImpl(project, options, enter, restart),
+    error = function(e) {
+      # Undo any changes to the directory that did not exist previously
+      for (i in seq_along(priorStructure)) {
+        file <- names(priorStructure)[[i]]
+        fileExistedBefore <- priorStructure[[i]]
+        fileExistsNow <- file.exists(file)
+        if (!fileExistedBefore && fileExistsNow) {
+          unlink(file, recursive = TRUE)
+        }
+      }
+    }
+  )
+
+}
+
+initImpl <- function(project = getwd(),
+                     options = NULL,
+                     enter = TRUE,
+                     restart = enter)
+{
   opts <- get_opts(project = project)
   if (is.null(opts))
     opts <- default_opts()
@@ -158,100 +202,52 @@ init <- function(project = '.',
     }
   }
 
-  ## Get the initial directory structure, so we can rewind if necessary
-  project <- normalizePath(project,
-                           winslash = '/',
-                           mustWork = TRUE)
-  message("Initializing packrat project in directory:\n- ", surround(prettyDir(project), "\""))
+  # Force packrat mode off
+  if (isPackratModeOn())
+    off()
 
-  ## A set of files that packrat might generate as part of init -- we
-  ## enumerate them here to assist with later cleanup
-  prFiles <- c(
-    file.path(project, ".gitignore"),
-    file.path(project, ".Rprofile"),
-    file.path(project, "packrat"),
-    file.path(project, "packrat", "lib"),
-    file.path(project, "packrat", "lib-R"),
-    file.path(project, "packrat", "src"),
-    file.path(project, "packrat", "packrat.lock"),
-    file.path(project, "packrat", "packrat.opts")
+  # We always re-packify so that the current version of packrat present can
+  # insert the appropriate auto-loaders
+  packify(project = project, quiet = TRUE)
+
+  # Make sure the .Rprofile is up to date
+  augmentRprofile(project)
+  options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
+
+  # Take a snapshot
+  snapshotImpl(project,
+               lib.loc = NULL,
+               ignore.stale = TRUE,
+               fallback.ok = TRUE)
+
+  # Use the lockfile to copy sources and install packages to the library
+  restore(project, overwrite.dirty = TRUE, restart = FALSE)
+
+  # Copy init.R so a user can 'start from zero' with a project
+  file.copy(
+    instInitFilePath(),
+    file.path(project, "packrat", "init.R")
   )
 
-  priorStructure <- setNames(
-    file.exists(prFiles),
-    prFiles
-  )
+  # Update project settings -- this also involves updating the .gitignore,
+  # etc
+  updateSettings(project, options)
 
-  withCallingHandlers(
+  ## Symlink system libraries always
+  symlinkSystemPackages(project = project)
 
-    expr = {
+  message("Initialization complete!")
 
-      ## Force packrat mode off
-      if (isPackratModeOn())
-        off()
+  if (enter) {
 
-      ## We always re-packify so that the current version of packrat present can
-      ## insert the appropriate auto-loaders
-      packify(project = project, quiet = TRUE)
+    setwd(project)
 
-      ## Make sure the .Rprofile is up to date
-      augmentRprofile(project)
-      options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
+    # Restart R if the environment is capable of it (otherwise enter packrat mode)
+    if (!restart || !attemptRestart())
+      on(project = project, clean.search.path = TRUE)
+  }
 
-      # Take a snapshot
-      snapshotImpl(project,
-                   available.packages(contrib.url(activeRepos(project))),
-                   lib.loc = NULL,
-                   ignore.stale = TRUE,
-                   fallback.ok = TRUE)
-
-      # Use the lockfile to copy sources and install packages to the library
-      restore(project, overwrite.dirty = TRUE, restart = FALSE)
-
-      # Copy init.R so a user can 'start from zero' with a project
-      file.copy(
-        instInitFilePath(),
-        file.path(project, "packrat", "init.R")
-      )
-
-      # Update project settings -- this also involves updating the .gitignore,
-      # etc
-      updateSettings(project, options)
-
-      ## Symlink system libraries always
-      symlinkSystemPackages(project = project)
-
-      message("Initialization complete!")
-
-      if (enter) {
-
-        setwd(project)
-
-        # Restart R if the environment is capable of it (otherwise enter packrat mode)
-        if (!restart || !attemptRestart())
-          on(project = project, clean.search.path = TRUE)
-      }
-
-      invisible()
-
-    }, ## expr
-
-    error = function(e) {
-
-      # Undo any changes to the directory that did not exist previously
-      for (i in seq_along(priorStructure)) {
-        file <- names(priorStructure)[[i]]
-        fileExistedBefore <- priorStructure[[i]]
-        fileExistsNow <- file.exists(file)
-        if (!fileExistedBefore && fileExistsNow) {
-          unlink(file, recursive = TRUE)
-        }
-      }
-
-    } ## error
-
-  )
-
+  invisible()
 }
 
 #' Apply the most recent snapshot to the library
