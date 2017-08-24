@@ -181,7 +181,7 @@ local({
     ## an 'installed from source' version
 
     ## -- InstallAgent -- ##
-    installAgent <- 'InstallAgent: packrat 0.4.8-31'
+    installAgent <- 'InstallAgent: packrat 0.4.8-32'
 
     ## -- InstallSource -- ##
     installSource <- 'InstallSource: source'
