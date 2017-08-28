@@ -83,6 +83,21 @@ ensurePackageSymlink <- function(source, target) {
       unlink(target, recursive = !is.symlink(target)),
       error = identity
     )
+
+    # Check if the file still exists and warn if so
+    if (file.exists(target)) {
+
+      # request information on the existing file
+      info <- paste(capture.output(print(file.info(target))), collapse = "\n")
+      msg <- c(
+        sprintf("Packrat failed to remove a pre-existing file at '%s'.", target),
+        "Please report this issue at 'https://github.com/rstudio/packrat/issues'.",
+        "File info:",
+        info
+      )
+
+      warning(paste(msg, collapse = "\n"))
+    }
   }
 
   # If, for some reason, the target directory
