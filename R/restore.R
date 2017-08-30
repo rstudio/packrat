@@ -434,6 +434,7 @@ installPkg <- function(pkgRecord,
 
   # Try downloading a binary (when appropriate).
   if (!(copiedFromCache || copiedFromUntrustedCache) &&
+        hasBinaryRepositories() &&
         isFromCranlikeRepo(pkgRecord, repos) &&
         pkgRecord$name %in% rownames(availablePackagesBinary(repos = repos)) &&
         versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
@@ -455,7 +456,10 @@ installPkg <- function(pkgRecord,
                                   available = availablePackagesBinary(repos = repos),
                                   quiet = TRUE,
                                   dependencies = FALSE,
-                                  verbose = FALSE)))
+                                  verbose = FALSE)
+        )
+      )
+
       type <- "downloaded binary"
       needsInstall <- FALSE
     }, error = function(e) {
