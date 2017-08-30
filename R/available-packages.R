@@ -1,25 +1,20 @@
-# Call 'available.packages()' with an invalid URL to get the
-# 'skeleton' output of 'available.packages()' (ie, an empty matrix
-# with all appropriate fields populated)
 availablePackagesSkeleton <- function() {
 
-  if (!is.null(.packrat$repos[["skeleton"]]))
-    return(.packrat$repos[["skeleton"]])
+  default_fields <- yoink("tools", ".get_standard_repository_db_fields")
 
-  # Use internal download file method just to ensure no errors leak.
-  download.file.method <- getOption("download.file.method")
-  on.exit(options(download.file.method = download.file.method), add = TRUE)
-  options(download.file.method = "internal")
-
-  # Use 'available.packages()' to query a URL that doesn't exist
-  result <- withCallingHandlers(
-    available.packages("/no/such/path/here/i/hope/"),
-    warning = function(w) invokeRestart("muffleWarning"),
-    message = function(m) invokeRestart("muffleMessage")
+  fields <- c(
+    default_fields(),
+    "File",
+    "Repository"
   )
 
-  .packrat$repos[["skeleton"]] <- result
-  result
+  data <- array(
+    character(),
+    dim = c(0L, length(fields)),
+    dimnames = list(NULL, fields)
+  )
+
+  data
 }
 
 availablePackagesBinary <- function(repos = getOption("repos")) {
