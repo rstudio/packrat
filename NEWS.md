@@ -1,5 +1,8 @@
 # Packrat 0.4.9 (unreleased)
 
+- The infer.dependencies argument can now be used to switch off the scanning of 
+  code for dependencies when using packrat::init and packrat::snapshot.
+
 - Packrat no longer fails to download the current version of a package if
   the binary and source branches of the active repositories are out of sync.
 
