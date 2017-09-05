@@ -25,6 +25,8 @@
 #'   being present in the last snapshot.
 #' @param snapshot.sources Boolean; should package sources be downloaded during
 #'   snapshot?
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining the \R code.
 #'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
 #' the sources stored in the project's \code{packrat/src} directory. If you
@@ -109,6 +111,8 @@ snapshot <- function(project = NULL,
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
 #'   via other means when attempting to load this project.
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining the \R code.
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export

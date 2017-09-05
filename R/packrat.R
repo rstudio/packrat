@@ -82,7 +82,8 @@ NULL
 #' \enumerate{
 #'
 #' \item Application dependencies are computed by examining the \R code
-#' throughout the project for \code{library} and \code{require} calls.
+#' throughout the project for \code{library} and \code{require} calls (note this step can be
+#' switched off by setting infer.dependencies = FALSE).
 #'
 #' \item A snapshot is taken of the version of each package currently used by
 #' the project as described in \code{\link{snapshot}}, and each package's
@@ -110,6 +111,8 @@ NULL
 #'   \code{\link{packrat-options}}.
 #' @param enter Boolean, enter packrat mode for this project after finishing a init?
 #' @param restart If \code{TRUE}, restart the R session after init.
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining the \R code.
 #'
 #' @note
 #'
