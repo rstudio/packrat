@@ -52,7 +52,8 @@ snapshot <- function(project = NULL,
                      ignore.stale = FALSE,
                      dry.run = FALSE,
                      prompt = interactive(),
-                     snapshot.sources = TRUE)
+                     snapshot.sources = TRUE,
+                     infer.dependencies = TRUE)
 {
 
   if (is.null(available))
@@ -83,7 +84,8 @@ snapshot <- function(project = NULL,
                                  dry.run,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run,
-                                 snapshot.sources = snapshot.sources)
+                                 snapshot.sources = snapshot.sources,
+                                 infer.dependencies = infer.dependencies)
 
   if (dry.run)
     return(invisible(snapshotResult))
@@ -162,6 +164,7 @@ snapshot <- function(project = NULL,
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
+
   if (infer.dependencies) {
     inferredPkgs <- sort_c(appDependencies(project,
                                            available.packages = available,
