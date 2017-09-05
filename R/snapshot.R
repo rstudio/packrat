@@ -120,7 +120,8 @@ snapshot <- function(project = NULL,
                           verbose = TRUE,
                           fallback.ok = FALSE,
                           snapshot.sources = TRUE,
-                          implicit.packrat.dependency = TRUE) {
+                          implicit.packrat.dependency = TRUE,
+                          infer.dependencies = TRUE) {
 
   if (is.null(available))
   {
@@ -161,9 +162,14 @@ snapshot <- function(project = NULL,
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
-  inferredPkgs <- sort_c(appDependencies(project,
-                                         available.packages = available,
-                                         implicit.packrat.dependency = implicit.packrat.dependency))
+  if (infer.dependencies) {
+    inferredPkgs <- sort_c(appDependencies(project,
+                                           available.packages = available,
+                                           implicit.packrat.dependency = implicit.packrat.dependency))
+  } else {
+    # packrat is always a dependency
+    inferredPkgs <- 'packrat'
+  }
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 

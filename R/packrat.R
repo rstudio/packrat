@@ -129,7 +129,8 @@ NULL
 init <- function(project = '.',
                  options = NULL,
                  enter = TRUE,
-                 restart = enter)
+                 restart = enter,
+                 infer.dependencies = TRUE)
 {
   ## Get the initial directory structure, so we can rewind if necessary
   project <- normalizePath(project, winslash = '/', mustWork = TRUE)
@@ -154,7 +155,7 @@ init <- function(project = '.',
   )
 
   withCallingHandlers(
-    initImpl(project, options, enter, restart),
+    initImpl(project, options, enter, restart, infer.dependencies),
     error = function(e) {
       # Undo any changes to the directory that did not exist previously
       for (i in seq_along(priorStructure)) {
@@ -173,7 +174,8 @@ init <- function(project = '.',
 initImpl <- function(project = getwd(),
                      options = NULL,
                      enter = TRUE,
-                     restart = enter)
+                     restart = enter,
+                     infer.dependencies = TRUE)
 {
   opts <- get_opts(project = project)
   if (is.null(opts))
@@ -218,7 +220,8 @@ initImpl <- function(project = getwd(),
   snapshotImpl(project,
                lib.loc = NULL,
                ignore.stale = TRUE,
-               fallback.ok = TRUE)
+               fallback.ok = TRUE,
+               infer.dependencies = infer.dependencies)
 
   # Use the lockfile to copy sources and install packages to the library
   restore(project, overwrite.dirty = TRUE, restart = FALSE)
@@ -393,7 +396,7 @@ restore <- function(project = NULL,
   options(repos = repos)
   on.exit({
     options(repos = externalRepos)
-    }, add = TRUE)
+  }, add = TRUE)
 
   # Install each package from CRAN or github, from binaries when available and
   # then from sources.
@@ -589,4 +592,3 @@ lockInfo <- function(project, property='packages', fatal=TRUE) {
   }
   readLockFile(lockFilePath)[[property]]
 }
-
