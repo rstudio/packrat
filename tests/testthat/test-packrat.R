@@ -81,9 +81,7 @@ withTestContext({
     expect_false(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "toast")))
     installTestPkg("bread", "1.0.0", lib)
-    installTestPkg("toast", "1.0.0", lib)
     addTestDependency(projRoot, "toast")  # toast depends on bread
-    expect_true(file.exists(file.path(lib, "toast")))
     expect_true(file.exists(file.path(lib, "bread")))
 
     # Snapshot the new state and make sure we picked up both toast and its
