@@ -26,7 +26,9 @@
 #' @param snapshot.sources Boolean; should package sources be downloaded during
 #'   snapshot?
 #' @param infer.dependencies If \code{TRUE}, infer package dependencies by
-#'   examining the \R code.
+#'   examining \R code used within the project. This included the \R code
+#'   contained within \code{.R} files, as well as other multi-mode documents
+#'   (e.g. \code{.Rmd}).
 #'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
 #' the sources stored in the project's \code{packrat/src} directory. If you

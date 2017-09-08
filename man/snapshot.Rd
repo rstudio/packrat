@@ -39,7 +39,9 @@ being present in the last snapshot.}
 snapshot?}
 
 \item{infer.dependencies}{If \code{TRUE}, infer package dependencies by
-examining the \R code.}
+examining \R code used within the project. This included the \R code
+contained within \code{.R} files, as well as other multi-mode documents
+(e.g. \code{.Rmd}).}
 }
 \description{
 Finds the packages in use in the project, and stores a list

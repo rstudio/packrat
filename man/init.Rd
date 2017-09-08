@@ -29,8 +29,9 @@ Given a project directory, makes a new packrat project in the directory.
 \enumerate{
 
 \item Application dependencies are computed by examining the \R code
-throughout the project for \code{library} and \code{require} calls (note this step can be
-switched off by setting infer.dependencies = FALSE).
+throughout the project for \code{library} and \code{require} calls. You can
+opt out of this behavior by setting \code{infer.dependencies} to
+\code{FALSE}.
 
 \item A snapshot is taken of the version of each package currently used by
 the project as described in \code{\link{snapshot}}, and each package's
