@@ -128,8 +128,12 @@ getSourceForPkgRecord <- function(pkgRecord,
     if (!is.na(currentVersion) && is.character(pkgRecord$version)) {
       compared <- utils::compareVersion(currentVersion, pkgRecord$version)
       if (compared == -1) {
-        warning("Package version '%s' is newer than the latest version reported ",
-                "by CRAN ('%s') -- packrat may be unable to retrieve package sources.")
+        fmt <- paste(
+          "Package version '%s' is newer than the latest version reported",
+          "by CRAN ('%s') -- packrat may be unable to retrieve package sources."
+        )
+        msg <- sprintf(fmt, pkgRecord$version, currentVersion)
+        warning(msg)
       }
     }
 
