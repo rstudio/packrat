@@ -25,6 +25,8 @@
 #'   being present in the last snapshot.
 #' @param snapshot.sources Boolean; should package sources be downloaded during
 #'   snapshot?
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining the \R code.
 #'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
 #' the sources stored in the project's \code{packrat/src} directory. If you
@@ -52,7 +54,8 @@ snapshot <- function(project = NULL,
                      ignore.stale = FALSE,
                      dry.run = FALSE,
                      prompt = interactive(),
-                     snapshot.sources = TRUE)
+                     snapshot.sources = TRUE,
+                     infer.dependencies = TRUE)
 {
 
   if (is.null(available))
@@ -83,7 +86,8 @@ snapshot <- function(project = NULL,
                                  dry.run,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run,
-                                 snapshot.sources = snapshot.sources)
+                                 snapshot.sources = snapshot.sources,
+                                 infer.dependencies = infer.dependencies)
 
   if (dry.run)
     return(invisible(snapshotResult))
@@ -107,6 +111,8 @@ snapshot <- function(project = NULL,
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
 #'   via other means when attempting to load this project.
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining the \R code.
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
@@ -120,7 +126,8 @@ snapshot <- function(project = NULL,
                           verbose = TRUE,
                           fallback.ok = FALSE,
                           snapshot.sources = TRUE,
-                          implicit.packrat.dependency = TRUE) {
+                          implicit.packrat.dependency = TRUE,
+                          infer.dependencies = TRUE) {
 
   if (is.null(available))
   {
@@ -161,9 +168,15 @@ snapshot <- function(project = NULL,
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
-  inferredPkgs <- sort_c(appDependencies(project,
-                                         available.packages = available,
-                                         implicit.packrat.dependency = implicit.packrat.dependency))
+
+  if (infer.dependencies) {
+    inferredPkgs <- sort_c(appDependencies(project,
+                                           available.packages = available,
+                                           implicit.packrat.dependency = implicit.packrat.dependency))
+  } else {
+    # packrat is always a dependency
+    inferredPkgs <- 'packrat'
+  }
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
