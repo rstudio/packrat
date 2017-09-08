@@ -23,8 +23,8 @@
 #'   without confirmation. Potentially unintended changes include snapshotting
 #'   packages at an older version than the last snapshot, or missing despite
 #'   being present in the last snapshot.
-#' @param snapshot.sources Boolean; should package sources be downloaded during
-#'   snapshot?
+#' @param snapshot.sources If \code{TRUE}, download and store package sources as
+#'   part of the project's \code{packrat/src} folder during \code{snapshot()}.
 #' @param infer.dependencies If \code{TRUE}, infer package dependencies by
 #'   examining \R code used within the project. This included the \R code
 #'   contained within \code{.R} files, as well as other multi-mode documents
@@ -56,7 +56,7 @@ snapshot <- function(project = NULL,
                      ignore.stale = FALSE,
                      dry.run = FALSE,
                      prompt = interactive(),
-                     snapshot.sources = TRUE,
+                     snapshot.sources = FALSE,
                      infer.dependencies = TRUE)
 {
 
@@ -107,8 +107,8 @@ snapshot <- function(project = NULL,
 #' @param verbose Print output to the console while \code{snapshot}-ing?
 #' @param fallback.ok Fall back to the latest CRAN version of a package if the
 #'   locally installed version is unavailable?
-#' @param snapshot.sources Download the tarball associated with a particular
-#'   package?
+#' @param snapshot.sources If \code{TRUE}, download and store package sources as
+#'   part of the project's \code{packrat/src} folder during \code{snapshot()}.
 #' @param implicit.packrat.dependency Include \code{packrat} as an implicit
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
@@ -127,10 +127,10 @@ snapshot <- function(project = NULL,
                           auto.snapshot = FALSE,
                           verbose = TRUE,
                           fallback.ok = FALSE,
-                          snapshot.sources = TRUE,
+                          snapshot.sources = FALSE,
                           implicit.packrat.dependency = TRUE,
-                          infer.dependencies = TRUE) {
-
+                          infer.dependencies = TRUE)
+{
   if (is.null(available))
   {
     available <- if (dry.run)
@@ -176,8 +176,7 @@ snapshot <- function(project = NULL,
                                            available.packages = available,
                                            implicit.packrat.dependency = implicit.packrat.dependency))
   } else {
-    # packrat is always a dependency
-    inferredPkgs <- 'packrat'
+    inferredPkgs <- if (implicit.packrat.dependency) "packrat"
   }
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
@@ -350,7 +349,7 @@ getBiocRepos <- function() {
 # RStudio CRAN mirror if none is specified) and Bioconductor if installed.
 activeRepos <- function(project) {
   project <- getProjectDir(project)
-  repos <- getOption("repos")
+  repos <- as.character(getOption("repos"))
   repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
 
   # Check to see whether Bioconductor is installed. Bioconductor maintains a

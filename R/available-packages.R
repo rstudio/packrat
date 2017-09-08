@@ -32,6 +32,10 @@ hasBinaryRepositories <- function() {
 availablePackages <- function(repos = getOption("repos"),
                               type = getOption("pkgType"))
 {
+  # handle empty repos case (no internet access)
+  if (!length(repos))
+    return(availablePackagesSkeleton())
+
   # check cache for entry
   key <- paste(deparse(repos), deparse(type), sep = " ", collapse = " ")
   if (!is.null(.packrat$repos[[key]]))

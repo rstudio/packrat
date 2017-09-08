@@ -125,12 +125,15 @@ migrate <- function(project = ".", ask = TRUE) {
     lockFilePath()
   )
   repos <- getOption("repos")
-  lf[1, "Repos"] <- paste(
-    names(repos),
-    repos,
-    sep = "=",
-    collapse = ",\n"
-  )
+  if (length(repos)) {
+    lf[1, "Repos"] <- paste(
+      names(repos),
+      repos,
+      sep = "=",
+      collapse = ",\n"
+    )
+  }
+
   write_dcf(lf, lockFilePath())
 
   ## Initialize packrat options

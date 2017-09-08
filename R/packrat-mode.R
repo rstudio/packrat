@@ -186,9 +186,7 @@ afterPackratModeOn <- function(project,
 
   # Set the repositories
   repos <- lockInfo(project = project, property = "repos", fatal = FALSE)
-  if (length(repos)) {
-    options(repos = repos)
-  }
+  options(repos = repos)
 
   # Set a secure download method if any of the repos URLs use https and
   # a secure download method has not already been set

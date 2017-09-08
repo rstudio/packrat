@@ -112,6 +112,9 @@ NULL
 #'   \code{\link{packrat-options}}.
 #' @param enter Boolean, enter packrat mode for this project after finishing a init?
 #' @param restart If \code{TRUE}, restart the R session after init.
+#' @param snapshot.sources If \code{TRUE}, download and store package sources as
+#'   part of the project's \code{packrat/src} folder during
+#'   \code{\link{snapshot}()}.
 #' @param infer.dependencies If \code{TRUE}, infer package dependencies by
 #'   examining the \R code.
 #'
@@ -134,6 +137,7 @@ init <- function(project = '.',
                  options = NULL,
                  enter = TRUE,
                  restart = enter,
+                 snapshot.sources = FALSE,
                  infer.dependencies = TRUE)
 {
   ## Get the initial directory structure, so we can rewind if necessary
@@ -159,7 +163,7 @@ init <- function(project = '.',
   )
 
   withCallingHandlers(
-    initImpl(project, options, enter, restart, infer.dependencies),
+    initImpl(project, options, enter, restart, snapshot.sources, infer.dependencies),
     error = function(e) {
       # Undo any changes to the directory that did not exist previously
       for (i in seq_along(priorStructure)) {
@@ -179,6 +183,7 @@ initImpl <- function(project = getwd(),
                      options = NULL,
                      enter = TRUE,
                      restart = enter,
+                     snapshot.sources = FALSE,
                      infer.dependencies = TRUE)
 {
   opts <- get_opts(project = project)
@@ -225,6 +230,7 @@ initImpl <- function(project = getwd(),
                lib.loc = NULL,
                ignore.stale = TRUE,
                fallback.ok = TRUE,
+               snapshot.sources = snapshot.sources,
                infer.dependencies = infer.dependencies)
 
   # Use the lockfile to copy sources and install packages to the library
