@@ -1,5 +1,9 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now properly handles the plain 'http' protocol when using versions
+  R >= 3.2. (We now set `options(download.file.method = "wininet")` rather than
+  `options(download.file.method = "internal")` in such cases.)
+
 - The `infer.dependencies` argument can now be used to switch off the scanning of
   code for dependencies when using `packrat::init()` and `packrat::snapshot()`.
 
