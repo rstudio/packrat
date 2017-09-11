@@ -209,7 +209,7 @@ inferAppropriateDownloadMethod <- function(url) {
 
   
   # Use "wininet" as default for R >= 3.2
-  if (getRversion() >= "3.2")
+  if (is.windows() && getRversion() >= "3.2")
     return("wininet")
   
   # default
