@@ -47,10 +47,10 @@ Get and set options for the current packrat-managed project.
   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
   (defaults to \code{"auto"})
 \item \code{vcs.ignore.lib}:
-  Add the packrat private library to your version control system ignore?
+  If TRUE, version control configuration is modified to ignore packrat private libraries.
   (logical; defaults to \code{TRUE})
 \item \code{vcs.ignore.src}:
-  Add the packrat private sources to your version control system ignore?
+  If TRUE, version control configuration is modified to ignore packrat private sources.
   (logical; defaults to \code{FALSE})
 \item \code{external.packages}:
   Packages which should be loaded from the user library. This can be useful for
