@@ -1,5 +1,7 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat no longer includes the `.Rhistory` file when creating bundles. (#401)
+
 - Packrat now properly handles the plain 'http' protocol when using versions
   R >= 3.2. (We now set `options(download.file.method = "wininet")` rather than
   `options(download.file.method = "internal")` in such cases.)

@@ -66,6 +66,7 @@ bundle <- function(project = NULL,
   # Regex negation patterns that we use to selectively leave some items out
   pattern <- c(
     "^(?!\\.Rproj\\.user)",
+    "^(?!\\.Rhistory)",
     if (!include.src) "^(?!packrat/src/)",
     if (!include.lib) "^(?!packrat/lib.*)",
     if (!include.bundles) "^(?!packrat/bundles/)",
