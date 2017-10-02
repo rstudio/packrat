@@ -540,7 +540,7 @@ installPkg <- function(pkgRecord,
       }
     } else {
       pkgPath <- file.path(lib, pkgRecord$name)
-      tarballName <- sprintf("%s_%s.tar.gz", pkgRecord$name, pkgRecord$version)
+      tarballName <- pkgSrcFilename(pkgRecord)
       tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
       if (!file.exists(tarballPath)) {
         warning("cannot cache untrusted package: source tarball not available")
