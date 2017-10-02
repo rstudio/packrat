@@ -39,8 +39,14 @@ availablePackages <- function(repos = getOption("repos"),
 
   # catch errors related to e.g. missing PACKAGES file (could happen for
   # source-only repositories, if we tried to query a binary repository)
+  #
+  # NOTE: older versions of R don't support the 'repos' argument to
+  # available.packages
   result <- tryCatch(
-    available.packages(repos = repos, type = type),
+    available.packages(
+      contriburl = utils::contrib.url(repos, type),
+      type = type
+    ),
     error = function(e) {
       availablePackagesSkeleton()
     }
