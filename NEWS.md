@@ -1,5 +1,9 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now ignores all source files within a `packrat/` directory when
+  inferring dependencies, not just the `packrat/` directory discovered at
+  the top level. (#385)
+
 - Packrat no longer includes the `.Rhistory` file when creating bundles. (#401)
 
 - Packrat now properly handles the plain 'http' protocol when using versions

@@ -109,7 +109,7 @@ dirDependencies <- function(dir) {
   dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
-  pattern <- "\\.[rR]$|\\.[rR]md$|\\.[rR]nw$|\\.[rR]pres$"
+  pattern <- "[.](?:r|rmd|rnw|rpres)$"
   pkgs <- character()
   R_files <- list.files(dir,
                         pattern = pattern,
@@ -119,7 +119,7 @@ dirDependencies <- function(dir) {
 
   ## Avoid anything within the packrat directory itself -- all inference
   ## should be done on user code
-  packratDirRegex <- paste("^", "packrat", sep = "")
+  packratDirRegex <- "(?:^|/)packrat"
   R_files <- grep(packratDirRegex, R_files, invert = TRUE, value = TRUE)
 
 
