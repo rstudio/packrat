@@ -562,6 +562,11 @@ fileDependencies.Rmd.evaluate <- function(file) {
     })
   })
 
+  # need to override inline hook as well (don't bother parsing dependencies)
+  inline_hook <- knitr::knit_hooks$get("inline")
+  on.exit(knitr::knit_hooks$set(inline = inline_hook), add = TRUE)
+  knitr::knit_hooks$set(inline = function(x) "")
+
   # attempt to render document with our custom hook active
   outfile <- tempfile()
   tryCatch(
