@@ -747,7 +747,11 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
 discoverUntrustedPackages <- function(srcDir) {
   if (is.na(Sys.getenv("RSTUDIO_CONNECT", unset = NA)))
     return()
-  options(packrat.untrusted.packages = list.files(srcDir))
+
+  # set the 'packrat.untrusted.packages' option if
+  # it has not yet been specified
+  if (is.null(getOption("packrat.untrusted.packages")))
+    options("packrat.untrusted.packages" = list.files(srcDir))
 }
 
 overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
