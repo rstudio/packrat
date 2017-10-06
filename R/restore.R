@@ -145,14 +145,14 @@ getSourceForPkgRecord <- function(pkgRecord,
       # generate an available package listing for _binary_ packages,
       # rather than source packages. Leave it NULL and let R do the
       # right thing
-      fileLoc <- download.packages(pkgRecord$name,
-                                   destdir = pkgSrcDir,
-                                   repos = repos,
-                                   type = "source",
-                                   quiet = TRUE)
-      if (!nrow(fileLoc))
-        warning("Failed to download current version of ", pkgRecord$name,
-                "(", pkgRecord$version, ")")
+      fileLoc <- downloadPackagesWithRetries(pkgRecord$name,
+                                             destdir = pkgSrcDir,
+                                             repos = repos,
+                                             type = "source")
+      if (!nrow(fileLoc)) {
+        stop("Failed to download current version of ", pkgRecord$name,
+             "(", pkgRecord$version, ")")
+        }
 
       # If the file wasn't saved to the destination directory (which can happen
       # if the repo is local--see documentation in download.packages), copy it
