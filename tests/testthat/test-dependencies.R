@@ -39,3 +39,16 @@ test_that("dependencies are discovered in R Markdown documents with no chunks", 
   expect_true("rmarkdown" %in% packrat:::fileDependencies(chunklessRmd))
 })
 
+test_that("dependencies are discovered in inline R code", {
+
+  # ensure that we've restored 'inline_exec' properly at the end
+  inline_exec <- yoink("knitr", "inline_exec")
+  on.exit(
+    expect_identical(inline_exec, yoink("knitr", "inline_exec")),
+    add = TRUE
+  )
+
+  # run the regular test
+  emojiRmd <- file.path("resources", "emoji.Rmd")
+  expect_true("emo" %in% packrat:::fileDependencies(emojiRmd))
+})
