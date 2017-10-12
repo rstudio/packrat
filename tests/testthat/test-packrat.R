@@ -134,6 +134,18 @@ withTestContext({
     expect_false(file.exists(file.path(lib, "oatmeal")))
   })
 
+  test_that("dependencies in \"ignored.directories\" are ignored", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("partlyignored")
+    lib <- libDir(projRoot)
+    init(enter = FALSE, projRoot, options = list(ignored.directories="ignoreme"))
+
+    # This test project has a file called notignored.R that depends on bread, and
+    # another file called ignoreme/ignorethis.R that depends on toast.
+    expect_true(file.exists(file.path(lib, "bread")))
+    expect_false(file.exists(file.path(lib, "toast")))
+  })
+
   test_that("clean removes libraries and sources", {
     skip_on_cran()
     projRoot <- cloneTestProject("smallbreakfast")
