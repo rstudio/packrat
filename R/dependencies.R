@@ -562,10 +562,33 @@ fileDependencies.Rmd.evaluate <- function(file) {
     })
   })
 
-  # need to override inline hook as well (don't bother parsing dependencies)
-  inline_hook <- knitr::knit_hooks$get("inline")
-  on.exit(knitr::knit_hooks$set(inline = inline_hook), add = TRUE)
-  knitr::knit_hooks$set(inline = function(x) "")
+  # rudely override knitr's 'inline_exec' function so
+  # that we can detect dependencies within inline chunks
+  knitr <- asNamespace("knitr")
+  if (exists("inline_exec", envir = knitr)) {
+
+    inline_exec <- yoink("knitr", "inline_exec")
+    unlockBinding("inline_exec", knitr)
+    assign("inline_exec", function(block, ...) {
+
+      # do our own special stuff
+      try(silent = TRUE, {
+        code <- paste(block$code, collapse = "\n")
+        parsed <- parse(text = code, encoding = "UTF-8")
+        deps <<- c(deps, expressionDependencies(parsed))
+      })
+
+      # return block input without evaluating anything
+      block$input
+
+    }, envir = knitr)
+
+    on.exit({
+      assign("inline_exec", inline_exec, envir = knitr)
+      lockBinding("inline_exec", knitr)
+    }, add = TRUE)
+
+  }
 
   # attempt to render document with our custom hook active
   outfile <- tempfile()
