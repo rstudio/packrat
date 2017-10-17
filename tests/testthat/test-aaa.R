@@ -1,0 +1,2 @@
+context("Initialization")
+rebuildTestRepo()

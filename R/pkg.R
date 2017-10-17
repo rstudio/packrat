@@ -380,7 +380,7 @@ getSourcePackageInfoImpl <- function(path) {
   ## For tarballs, we unzip them to a temporary directory and then read from there
   tempdir <- file.path(tempdir(), "packrat", path)
   if (endswith(path, "tar.gz")) {
-    untar(path, exdir = tempdir)
+    untar(path, exdir = tempdir, tar = "internal")
     folderName <- list.files(tempdir, full.names = TRUE)[[1]]
   } else {
     folderName <- path

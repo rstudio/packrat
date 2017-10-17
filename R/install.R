@@ -251,6 +251,12 @@ decompress <- function(src, target = tempdir()) {
 decompressImpl <- function(src, target = tempdir()) {
   stopifnot(file.exists(src))
 
+  # force internal tar (otherwise bad things can happen on Windows if
+  # unexpected versions of tar.exe are on the PATH)
+  TAR <- Sys.getenv("TAR")
+  Sys.setenv(TAR = "internal")
+  on.exit(Sys.setenv(TAR = TAR), add = TRUE)
+
   if (grepl("\\.zip$", src)) {
     unzip(src, exdir = target, unzip = getOption("unzip"))
     outdir <- getrootdir(as.vector(unzip(src, list = TRUE)$Name))
