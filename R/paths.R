@@ -24,6 +24,8 @@
 #' \code{src_dir()}     \tab \code{R_PACKRAT_SRC_DIR}      \tab \code{packrat.src.dir}     \tab \code{"packrat/src"} \cr
 #' \code{lib_dir()}     \tab \code{R_PACKRAT_LIB_DIR}      \tab \code{packrat.lib.dir}     \tab \code{"packrat/lib"} \cr
 #' \code{bundles_dir()} \tab \code{R_PACKRAT_BUNDLES_DIR}  \tab \code{packrat.bundles.dir} \tab \code{"packrat/bundles"} \cr
+#' \emph{(none)}        \tab \code{R_PACKRAT_LIB_R_DIR}    \tab \code{packrat.lib-r.dir}   \tab \code{"packrat/lib-r"} \cr
+#' \emph{(none)}        \tab \code{R_PACKRAT_LIB_EXT_DIR}  \tab \code{packrat.lib-ext.dir} \tab \code{"packrat/lib-ext"} \cr
 #' }
 #'
 #' @param project The project directory.
