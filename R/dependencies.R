@@ -122,6 +122,27 @@ dirDependencies <- function(dir) {
   packratDirRegex <- "(?:^|/)packrat"
   R_files <- grep(packratDirRegex, R_files, invert = TRUE, value = TRUE)
 
+  ## Avoid anything on the list of ignored directories
+  ignoredDir <- get_opts("ignored.directories")
+  if (length(ignoredDir) > 0) {
+    # Make sure all the directories end with a slash...
+    ignoredDir <- ifelse(
+      substr(ignoredDir, nchar(ignoredDir), nchar(ignoredDir)) != "/",
+      paste0(ignoredDir, "/"),
+      ignoredDir
+    )
+
+    # Make a regex to match any of them.
+    ignoredDirRegex <- paste0(
+      "(?:^",
+      paste0(
+        ignoredDir,
+        collapse=")|(?:^"
+      ),
+      ")"
+    )
+    R_files <- grep(ignoredDirRegex, R_files, invert = TRUE, value = TRUE)
+  }
 
   sapply(R_files, function(file) {
     filePath <- file.path(dir, file)

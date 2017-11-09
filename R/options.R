@@ -18,6 +18,9 @@ VALID_OPTIONS <- list(
   ignored.packages = function(x) {
     is.null(x) || is.character(x)
   },
+  ignored.directories = function(x) {
+    is.null(x) || is.character(x)
+  },
   quiet.package.installation = list(TRUE, FALSE),
   snapshot.recommended.packages = list(TRUE, FALSE),
   snapshot.fields = function(x) {
@@ -36,6 +39,7 @@ default_opts <- function() {
     local.repos = NULL,
     load.external.packages.on.startup = TRUE,
     ignored.packages = NULL,
+    ignored.directories = c("data", "inst"),
     quiet.package.installation = TRUE,
     snapshot.recommended.packages = FALSE,
     snapshot.fields = c("Imports", "Depends", "LinkingTo")
@@ -90,6 +94,14 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   Prevent packrat from tracking certain packages. Dependencies of these packages
 ##'   will also not be tracked (unless these packages are encountered as dependencies
 ##'   in a separate context from the ignored package).
+##'   (character; empty by default)
+##' \item \code{ignored.directories}:
+##'   Prevent packrat from looking for dependencies inside certain directories of your
+##'   workspace. For example, if you have set your "local.repos" to be inside your local
+##'   workspace so that you can track custom packages as git submodules.
+##'   Each item should be the relative path to a directory in the workspace, e.g. "data",
+##'   "lib/gitsubmodule". Note that packrat already ignores any "invisible" files and
+##'   directories, such as those whose names start with a "." character.
 ##'   (character; empty by default)
 ##' \item \code{quiet.package.installation}:
 ##'   Emit output during package installation?
