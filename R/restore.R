@@ -9,10 +9,24 @@ pkgSrcFilename <- function(pkgRecord) {
 # Given a package record and a set of known repositories, indicate whether the
 # package exists on a CRAN-like repository.
 isFromCranlikeRepo <- function(pkgRecord, repos) {
-  identical(pkgRecord$source, "CRAN") ||
-  identical(pkgRecord$source, "Bioconductor") ||
-  inherits(pkgRecord, "CustomCRANLikeRepository") ||
-  (length(pkgRecord$source) && pkgRecord$source %in% names(repos))
+
+  # for package records inferred from a DESCRIPTION file, we know
+  # whether a package came from a CRAN-like repository
+  if (inherits(pkgRecord, "CustomCRANLikeRepository"))
+    return(TRUE)
+
+  # TODO: this shouldn't happen, but if it does we'll assume the package
+  # can be obtained from CRAN
+  source <- pkgRecord$source
+  if (!length(source))
+    return(TRUE)
+
+  # for records that do declare a source, ensure it's not 'source' or 'github'.
+  # in previous releases of packrat, we attempted to match the repository name
+  # with one of the existing repositories; however, this caused issues in
+  # certain environments (the names declared repositories in the lockfile, and
+  # the the names of the active repositories in the R session, may not match)
+  !tolower(source) %in% c("source", "github")
 }
 
 # Given a package record and a database of packages, check to see if
