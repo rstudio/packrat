@@ -1,4 +1,21 @@
-#' change packrat lockfile metadata manually
+#' Get / Set packrat lockfile metadata
+#'
+#' Get and set metadata in the current packrat-managed project lockfile \code{packrat.lock}
+#'
+#' Project's \code{packrat.lock} contains some metadata before packages
+#' dependencies informations. The project's lockfile is created and updated
+#' programmatically by \code{\link{snapshot}}. However it could be necessary sometimes to
+#' modify manually some of those values. For example, it could be useful to set another repository
+#' CRAN url when deploying to a offline environnement.
+#'
+#' @section available metadata :
+#'
+#' \itemize{
+#' \item \code{r_version}: R version the project depends on
+#' \item \code{repos}: Name of repos and their url recorded packages can be
+#' retrieve from. Only url is recommended to change if need. Name of repos is
+#' used in package records and must be identical
+#' }
 #'
 #' @param repos A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}
 #' @param rversion A one-length character vector with suitable numeric version
@@ -8,11 +25,29 @@
 #' @export
 #' @rdname lockfile-metadata
 #' @name lockfile-metadata
-#' @examples
+#' @examples \dontrun{
+#' # changes repos url
+#' repos <- old_repos <- get_lockfile_metadata("repos")
+#' repos
+#' repos["CRAN"] <- "https://cran.r-project.org/"
+#' set_lockfile_metadata(repos = repos)
+#' get_lockfile_metadata("repos")
+#' # setting back old state
+#' # set_lockfile_metadata(repos = old_repos)
+#'
+#' # changes R version
+#' rver <- old_rver <- get_lockfile_metadata("r_version")
+#' rver
+#' rver <- "3.4.1"
+#' set_lockfile_metadata(r_version = rver)
+#' get_lockfile_metadata("r_version")
+#' # Setting back old state
+#' # set_lockfile_metadata(r_version = old_rver)
+#' }
 set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL) {
   project <- getProjectDir(project)
   lf_filepath <- lockFilePath(project)
-  if (!file.exists(lockFilePath)) {
+  if (!file.exists(lf_filepath)) {
     stop(paste(lockFilePath, " is missing. Run packrat::init('",
                  project, "') to generate it.", sep = ""))
   }
