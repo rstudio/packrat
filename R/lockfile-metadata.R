@@ -40,9 +40,28 @@ set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL
 
 #' @rdname lockfile-metadata
 #' @name lockfile-metadata
-get_lockfile_metadata <- function(metadata = c("repos", "r_version"), project = NULL) {
-    metadata <- match.arg(metadata)
-    lockInfo(project = project, property = metadata, fatal = F)
+get_lockfile_metadata <- function(metadata = NULL, simplify = TRUE, project = NULL) {
+  project <- getProjectDir(project)
+  # Get and parse the lockfile
+  lockFilePath <- lockFilePath(project)
+  if (!file.exists(lockFilePath)) {
+      stop(paste(lockFilePath, " is missing. Run packrat::init('",
+                 project, "') to generate it.", sep = ""))
+  }
+  lf_metadata <- readLockFile(lockFilePath)[names(available_metadata)]
+  if (is.null(metadata)) {
+    lf_metadata
+  } else {
+    result <- lf_metadata[names(lf_metadata) %in% metadata]
+    if (simplify) unlist(unname(result))
+    else result
+  }
 }
+
+# lockfile metadata available for modification and r_aliases
+available_metadata <- c(
+  r_version = "RVersion",
+  repos = "Repos"
+)
 
 
