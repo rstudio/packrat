@@ -1,14 +1,15 @@
 #' change packrat lockfile metadata manually
 #'
 #' @param repos A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}
-#' @param rversion A one-legnth character vector with suitable numeric version
+#' @param rversion A one-length character vector with suitable numeric version
 #'   string. See \code{\link[base]{package_version}}
 #' @param project  The project directory. When in packrat mode, defaults to the current project;
 #'   otherwise, defaults to the current working directory.
 #' @export
-#'
+#' @rdname lockfile-metadata
+#' @name lockfile-metadata
 #' @examples
-set_lockfile_metadata <- function(repos = NULL, rversion = NULL, project = NULL) {
+set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL) {
   project <- getProjectDir(project)
   lf_filepath <- lockFilePath(project)
   if (!file.exists(lockFilePath)) {
@@ -26,15 +27,22 @@ set_lockfile_metadata <- function(repos = NULL, rversion = NULL, project = NULL)
   }
 
   # update rversion
-  if (!is.null(rversion)) {
-    if (length(rversion) > 1) {
+  if (!is.null(r_version)) {
+    if (length(r_version) > 1) {
       stop("RVersion metadata must contains one element only", call. = F)
     }
-    lf[1, "RVersion"] <- as.character(package_version(rversion))
+    lf[1, "RVersion"] <- as.character(package_version(r_version))
   }
   # write back the lockfile
   write_dcf(lf, lf_filepath)
   invisible()
+}
+
+#' @rdname lockfile-metadata
+#' @name lockfile-metadata
+get_lockfile_metadata <- function(metadata = c("repos", "r_version"), project = NULL) {
+    metadata <- match.arg(metadata)
+    lockInfo(project = project, property = metadata, fatal = F)
 }
 
 
