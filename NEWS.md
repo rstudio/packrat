@@ -1,5 +1,9 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat gained the `get_lockfile_metadata()` and `set_lockfile_metadata()`
+  functions, for changing metadata associated with a particular Packrat project;
+  e.g. the active R version, or the active set of repositories. (#429, @cderv)
+
 - Packrat now ignores all source files within a `packrat/` directory when
   inferring dependencies, not just the `packrat/` directory discovered at
   the top level. (#385)
