@@ -51,7 +51,7 @@ set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL
     stop(paste(lockFilePath, " is missing. Run packrat::init('",
                  project, "') to generate it.", sep = ""))
   }
-  lf <- as.data.frame(readDcf(lf_filepath), stringsAsFactors = F)
+  lf <- as.data.frame(readDcf(lf_filepath), stringsAsFactors = FALSE)
 
   # update repos
   if (!is.null(repos)) {
@@ -64,7 +64,7 @@ set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL
   # update rversion
   if (!is.null(r_version)) {
     if (length(r_version) > 1) {
-      stop("RVersion metadata must contains one element only", call. = F)
+      stop("RVersion metadata must contains one element only", call. = FALSE)
     }
     lf[1, "RVersion"] <- as.character(package_version(r_version))
   }
