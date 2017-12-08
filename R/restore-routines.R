@@ -28,7 +28,7 @@ restoreWithCopyFromCache <- function(project,
 
   # ensure that the cache package path exists
   source <- cacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
-  if (!dir.exists(source))
+  if (!file_test("-d", source))
     return(FALSE)
 
   # attempt to form a symlink to the packrat library
