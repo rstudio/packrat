@@ -50,7 +50,7 @@ Packrat functions:
 Share a Packrat project with `bundle` and `unbundle`:
 - `packrat::bundle()`: Bundle a packrat project, for easy sharing.
 - `packrat::unbundle()`: Unbundle a packrat project, generating a project
-  directory with libraries restored.
+  directory with libraries restored from the most recent snapshot.
 
 Navigate projects and set/get options with:
 - `packrat::on()`, `packrat::off()`: Toggle packrat mode on and off, for
