@@ -8,10 +8,10 @@ updateInit <- function() {
   source("R/aaa-globals.R")
 
   installAgentLine <- grep("## -- InstallAgent -- ##", init.R)
-  init.R[installAgentLine + 1] <- paste("    installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version)))
+  init.R[installAgentLine + 1] <- paste("    installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version), type = "cmd"))
 
   installSourceLine <- grep("## -- InstallSource -- ##", init.R)
-  init.R[installSourceLine + 1] <- paste("    installSource <-", shQuote(paste("InstallSource:", "source")))
+  init.R[installSourceLine + 1] <- paste("    installSource <-", shQuote(paste("InstallSource:", "source"), type = "cmd"))
 
   cat(init.R, file = file.path("inst", "resources", "init.R"), sep = "\n")
 
