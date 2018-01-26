@@ -278,10 +278,6 @@ inferPackageRecord <- function(df) {
       gh_sha1 = as.character(df$GithubSHA1)),
       #remote_ variables contains URLs for correct retrieval of git src
       remote_host = as.character(df$RemoteHost),
-      remote_repo = as.character(df$RemoteRepo),
-      remote_username = as.character(df$RemoteUsername),
-      remote_ref = as.character(df$RemoteRef),
-      remove_sha1 = as.character(df$RemoteSha),
       c(gh_subdir = as.character(df$GithubSubdir))
     ), class = c('packageRecord', 'github')))
   } else if (identical(as.character(df$Priority), 'base')) {
