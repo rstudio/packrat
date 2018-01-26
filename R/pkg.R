@@ -289,7 +289,6 @@ getPackageRecords <- function(pkgNames,
 inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
-  repos <- getOption('repos')
 
   if (!is.null(df$GithubRepo)) {
     # It's GitHub!
@@ -301,9 +300,8 @@ inferPackageRecord <- function(df) {
       gh_username = as.character(df$GithubUsername),
       gh_ref = as.character(df$GithubRef),
       gh_sha1 = as.character(df$GithubSHA1)),
-      #remote_ variables contains URLs for correct retrieval of git src
-      remote_host = as.character(df$RemoteHost),
-      c(gh_subdir = as.character(df$GithubSubdir))
+      c(gh_subdir = as.character(df$GithubSubdir)),
+      c(remote_host = as.character(df$RemoteHost))
     ), class = c('packageRecord', 'github')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
