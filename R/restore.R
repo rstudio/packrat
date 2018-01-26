@@ -202,13 +202,9 @@ getSourceForPkgRecord <- function(pkgRecord,
       error = function(e) "internal"
     )
 
-    protocol <- if (identical(method, "internal"))
-      "http"
-    else
-      "https"
+    fmt <- "%s/repos/%s/%s/tarball/%s"
 
-    fmt <- "%s://api.github.com/repos/%s/%s/tarball/%s"
-    archiveUrl <- sprintf(fmt, protocol, pkgRecord$gh_username, pkgRecord$gh_repo, pkgRecord$gh_sha1)
+    archiveUrl <- sprintf(fmt, pkgRecord$remote_host, pkgRecord$gh_username, pkgRecord$gh_repo, pkgRecord$gh_sha1)
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
@@ -216,8 +212,9 @@ getSourceForPkgRecord <- function(pkgRecord,
         unlink(srczip, recursive = TRUE)
     }, add = TRUE)
 
-    if (!downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")) {
-      message("FAILED")
+
+    if (githubDownload(archiveUrl, srczip)>0) {
+        message("FAILED")
       stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
     }
 
