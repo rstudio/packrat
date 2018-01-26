@@ -220,22 +220,29 @@ getSourceForPkgRecord <- function(pkgRecord,
       error = function(e) "internal"
     )
 
-    protocol <- if (identical(method, "internal"))
-      "http"
-    else
-      "https"
-
-    fmt <- "%s://api.github.com/repos/%s/%s/tarball/%s"
-    archiveUrl <- sprintf(fmt, protocol, pkgRecord$gh_username, pkgRecord$gh_repo, pkgRecord$gh_sha1)
-
+    if(!exists('pkgRecord$remote_host') || is.null(pkgRecord$remote_host) || pkgRecord$remote_host == ''){
+      message('devtools version < 1.13.5, downloading from api.github.com')
+      protocol <- if (identical(method, "internal"))
+        "http"
+      else
+        "https"
+      fmt <- paste(protocol,'://api.github.com/repos/%s/%s/tarball/%s',sep='')
+      archiveUrl <- sprintf(fmt, pkgRecord$gh_username, pkgRecord$gh_repo, pkgRecord$gh_sha1)
+    }
+    else {
+      fmt <- "%s/repos/%s/%s/tarball/%s"
+      archiveUrl <- sprintf(fmt, pkgRecord$remote_host, pkgRecord$gh_username, pkgRecord$gh_repo, pkgRecord$gh_sha1)
+    }
+    
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
       if (file.exists(srczip))
         unlink(srczip, recursive = TRUE)
     }, add = TRUE)
 
-    if (!downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")) {
-      message("FAILED")
+
+    if (githubDownload(archiveUrl, srczip)>0) {
+        message("FAILED")
       stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
     }
 
