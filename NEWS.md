@@ -1,5 +1,10 @@
 # Packrat 0.4.9 (unreleased)
 
+- Packrat now understands how to install R packages from private GitHub
+  repositories. (The `GITHUB_PAT` environment variable should be set with
+  an access token that provides access to the associated repositories.)
+  (#449, #448, @ras44)
+
 - Packrat gained the `get_lockfile_metadata()` and `set_lockfile_metadata()`
   functions, for changing metadata associated with a particular Packrat project;
   e.g. the active R version, or the active set of repositories. (#429, @cderv)
