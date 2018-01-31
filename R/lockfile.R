@@ -280,6 +280,9 @@ aliases <- c(
   GithubSha1 = "gh_sha1",
   GithubSubdir = "gh_subdir",
   RemoteHost = "remote_host",
+  RemoteRepo = "remote_repo",
+  RemoteUsername = "remote_username",
+  RemoteSha = "remote_sha",
   SourcePath = "source_path",
   Hash = "hash"
 )
