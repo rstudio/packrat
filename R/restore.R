@@ -238,9 +238,9 @@ getSourceForPkgRecord <- function(pkgRecord,
       fmt <- "%s/repos/%s/%s/tarball/%s"
       archiveUrl <- sprintf(fmt,
                             pkgRecord$remote_host,
-                            pkgRecord$gh_username,
-                            pkgRecord$gh_repo,
-                            pkgRecord$gh_sha1)
+                            pkgRecord$remote_username,
+                            pkgRecord$remote_repo,
+                            pkgRecord$remote_sha)
     }
 
     srczip <- tempfile(fileext = '.tar.gz')
