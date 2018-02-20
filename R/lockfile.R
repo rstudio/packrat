@@ -55,7 +55,7 @@ writeLockFile <- function(file, lockinfo) {
     fieldNames <- collectFieldNames(packages)
     packageInfo <- lapply(fieldNames, function(fieldName) {
       values <- data.frame(vapply(packages, function(pkg) {
-        if (!is.null(pkg[[fieldName]]))
+        if (length(pkg[[fieldName]]))
           pkg[[fieldName]]
         else
           NA_character_
