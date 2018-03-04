@@ -806,7 +806,8 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
     source <- file.path(overlayDir, source)
 
     # skip if this tarball already exists in the target directory
-    if (file.exists(target)) next
+    if (file.exists(target))
+      return(NULL)
 
     # attempt to symlink source to target
     dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
