@@ -589,7 +589,7 @@ fileDependencies.Rmd.evaluate <- function(file) {
   if (exists("inline_exec", envir = knitr)) {
 
     inline_exec <- yoink("knitr", "inline_exec")
-    unlockBinding("inline_exec", knitr)
+    do.call("unlockBinding", list("inline_exec", knitr))
     assign("inline_exec", function(block, ...) {
 
       # do our own special stuff
@@ -606,7 +606,7 @@ fileDependencies.Rmd.evaluate <- function(file) {
 
     on.exit({
       assign("inline_exec", inline_exec, envir = knitr)
-      lockBinding("inline_exec", knitr)
+      do.call("lockBinding", list("inline_exec", knitr))
     }, add = TRUE)
 
   }

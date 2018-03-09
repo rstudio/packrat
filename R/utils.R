@@ -675,3 +675,7 @@ quietly <- function(expr) {
     message = function(m) invokeRestart("muffleMessage")
   )
 }
+
+onError <- function(default, expr) {
+  tryCatch(expr, error = function(e) default)
+}

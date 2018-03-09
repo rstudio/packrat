@@ -9,7 +9,7 @@ replaceLibrary <- function(lib, value) {
   for (env in envs) {
     do.call("unlockBinding", list(lib, env))
     assign(lib, value, envir = env)
-    lockBinding(lib, env)
+    do.call("lockBinding", list(lib, env))
   }
 
 }

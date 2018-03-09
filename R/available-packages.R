@@ -1,12 +1,35 @@
+defaultRepositoryDbFields <- function() {
+  c(
+    "Package",
+    "Version",
+    "Priority",
+    "Depends",
+    "Imports",
+    "LinkingTo",
+    "Suggests",
+    "Enhances",
+    "License",
+    "License_is_FOSS",
+    "License_restricts_use",
+    "OS_type",
+    "Archs",
+    "MD5sum",
+    "NeedsCompilation"
+  )
+}
+
 availablePackagesSkeleton <- function() {
 
-  default_fields <- yoink("tools", ".get_standard_repository_db_fields")
-
-  fields <- c(
-    default_fields(),
-    "File",
-    "Repository"
+  tools <- asNamespace("tools")
+  defaults <- tryCatch(
+    tools$.get_standard_repository_db_fields(type = "source"),
+    error = identity
   )
+
+  if (inherits(defaults, "error"))
+    defaults <- defaultRepositoryDbFields()
+
+  fields <- c(defaults, "File", "Repository")
 
   data <- array(
     character(),
