@@ -1,4 +1,4 @@
-# Packrat 0.4.9 (unreleased)
+# Packrat 0.4.9
 
 - Packrat now understands how to install R packages from private GitHub
   repositories. (The `GITHUB_PAT` environment variable should be set with
