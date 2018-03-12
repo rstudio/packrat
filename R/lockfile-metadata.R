@@ -17,10 +17,10 @@
 #' used in package records and must be identical
 #' }
 #'
-#' @param repos A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}
-#' @param rversion A one-length character vector with suitable numeric version
-#'   string. See \code{\link[base]{package_version}}
-#' @param project  The project directory. When in packrat mode, defaults to the current project;
+#' @param repos A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}.
+#' @param r_version A length-one character vector with suitable numeric version
+#'   string. See \code{\link[base]{package_version}}.
+#' @param project The project directory. When in packrat mode, defaults to the current project;
 #'   otherwise, defaults to the current working directory.
 #' @export
 #' @rdname lockfile-metadata
@@ -73,8 +73,12 @@ set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL
   invisible()
 }
 
+#' @param metadata The lockfile field name(s) to draw from.
+#' @param simplify Boolean; if \code{TRUE} the returned metadata will be un-listed.
+#'
 #' @rdname lockfile-metadata
 #' @name lockfile-metadata
+#' @export
 get_lockfile_metadata <- function(metadata = NULL, simplify = TRUE, project = NULL) {
   project <- getProjectDir(project)
   # Get and parse the lockfile

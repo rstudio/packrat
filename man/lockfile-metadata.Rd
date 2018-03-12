@@ -12,13 +12,17 @@ set_lockfile_metadata(repos = NULL, r_version = NULL, project = NULL)
 get_lockfile_metadata(metadata = NULL, simplify = TRUE, project = NULL)
 }
 \arguments{
-\item{repos}{A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}}
+\item{repos}{A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}.}
+
+\item{r_version}{A length-one character vector with suitable numeric version
+string. See \code{\link[base]{package_version}}.}
 
 \item{project}{The project directory. When in packrat mode, defaults to the current project;
 otherwise, defaults to the current working directory.}
 
-\item{rversion}{A one-length character vector with suitable numeric version
-string. See \code{\link[base]{package_version}}}
+\item{metadata}{The lockfile field name(s) to draw from.}
+
+\item{simplify}{Boolean; if \code{TRUE} the returned metadata will be un-listed.}
 }
 \description{
 Get and set metadata in the current packrat-managed project lockfile \code{packrat.lock}
