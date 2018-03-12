@@ -47,7 +47,6 @@ test_that("404s are errors", {
 })
 
 test_that("The same content is returned regardless of download method", {
-
   skip_on_cran()
 
   URL <- "https://cran.rstudio.org/src/base/AUTHORS"
