@@ -1,3 +1,7 @@
+# Packrat 0.4.9-1
+
+- Fix test errors on CRAN.
+
 # Packrat 0.4.9
 
 - Packrat now understands how to install R packages from private GitHub

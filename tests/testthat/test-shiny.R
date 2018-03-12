@@ -1,6 +1,7 @@
 context("Shiny")
 
 test_that("projects which use shiny implicitly are detected", {
+  skip_on_cran()
 
   # Try checking to see if packrat believes all example shiny apps
   # are, in fact, shiny apps

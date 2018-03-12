@@ -1,6 +1,7 @@
 context("R Markdown")
 
 test_that("Rmd documents with parameters are analyzed", {
+  skip_on_cran()
 
   # we need to skip this test if we don't have an up-to-date version of knitr available
   if (packageVersion("knitr") < "1.11")
@@ -14,6 +15,7 @@ test_that("Rmd documents with parameters are analyzed", {
 })
 
 test_that("We can discover dependencies with an evaluate hook", {
+  skip_on_cran()
 
   path <- "resources/evaluate-deps.Rmd"
   deps <- fileDependencies.Rmd.evaluate(path)
