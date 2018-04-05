@@ -7,7 +7,7 @@ canUseGitHubDownloader <- function() {
 }
 
 githubDownload <- function(url, destfile, ...) {
-  onError(0, {
+  onError(1, {
     github_pat      <- yoink("devtools", "github_pat")
     authenticate    <- yoink("httr", "authenticate")
     GET             <- yoink("httr", "GET")

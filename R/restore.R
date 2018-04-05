@@ -249,10 +249,18 @@ getSourceForPkgRecord <- function(pkgRecord,
         unlink(srczip, recursive = TRUE)
     }, add = TRUE)
 
-    status <- githubDownload(archiveUrl, srczip)
-    if (status) {
-      message("FAILED")
-      stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+    if (canUseGitHubDownloader()) {
+      status <- githubDownload(archiveUrl, srczip)
+      if (status) {
+        message("FAILED")
+        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+      }
+    } else {
+      success <- downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
+      if (!success) {
+        message("FAILED")
+        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+      }
     }
 
     local({
