@@ -1,3 +1,8 @@
+# Packrat 0.4.9-2
+
+- Fix a regression where attempts to download packages from GitHub when
+  devtools is not available could fail. (#464)
+
 # Packrat 0.4.9-1
 
 - Fix test errors on CRAN.
