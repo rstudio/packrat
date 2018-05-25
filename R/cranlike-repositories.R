@@ -189,7 +189,13 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
   setwd(tmpTarballPath)
   on.exit(setwd(owd), add = TRUE)
 
-  success <- tar(basename(package), files = pkgName)
+  success <- tar(
+    basename(package),
+    files = pkgName,
+    compression = "gzip",
+    tar = "internal"
+  )
+
   if (success != 0)
     stop("Failed to re-tar package tarball")
 

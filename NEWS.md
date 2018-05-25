@@ -1,3 +1,8 @@
+# Packrat 0.5.0 (UNRELEASED)
+
+- Fixed an issue where `packrat::repos_upload()` would fail to re-compress
+  uploaded tarballs. (#474)
+
 # Packrat 0.4.9-2
 
 - Fix a regression where attempts to download packages from GitHub when
