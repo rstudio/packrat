@@ -1,4 +1,6 @@
-# Packrat 0.5.0 (UNRELEASED)
+# Packrat 0.4.9-3
+
+- Adjusted unit tests to accommodate new CRAN package checks.
 
 - Fixed an issue where `packrat::repos_upload()` would fail to re-compress
   uploaded tarballs. (#474)

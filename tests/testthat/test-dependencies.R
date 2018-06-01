@@ -4,8 +4,8 @@ test_that("dependencies are properly resolved in expressions", {
   skip_on_cran()
 
   expr <- quote({
-    library(dplyr)
-    library("plyr")
+    library(tools)
+    library("utils")
     requireNamespace(quietly = TRUE, package = "knitr")
 
     # Don't trip up on 'library(x, character.only = TRUE)'
@@ -18,7 +18,7 @@ test_that("dependencies are properly resolved in expressions", {
 
   dependencies <- expressionDependencies(expr)
   expect_true(setequal(
-    c("plyr", "dplyr", "stats", "knitr", "methods"),
+    c("tools", "utils", "stats", "knitr", "methods"),
     dependencies
   ))
 
