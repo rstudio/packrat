@@ -108,8 +108,8 @@ excludeRecommendedPackages <- function(packages) {
   ## this places an implicit dependency on the system-installed version of a package
   pkgs <- discoverBaseRecommendedPackages()
   rcmd <- pkgs$recommended
-  recommendedPkgsInSystemLib <- rcmd[rcmd %in% installedPkgsSystemLib]
-  recommendedPkgsInLocalLib  <- rcmd[rcmd %in% installedPkgsLocalLib]
+  recommendedPkgsInSystemLib <- intersect(installedPkgsSystemLib, rcmd)
+  recommendedPkgsInLocalLib <- intersect(installedPkgsLocalLib, rcmd)
   toExclude <- setdiff(recommendedPkgsInSystemLib, recommendedPkgsInLocalLib)
   setdiff(packages, toExclude)
 
