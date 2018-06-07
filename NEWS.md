@@ -1,3 +1,8 @@
+# Packrat 0.5.0 (UNRELEASED)
+
+- Fixed an issue where attempts to snapshot could fail when
+  the R libraries live on a network drive.
+
 # Packrat 0.4.9-3
 
 - Adjusted unit tests to accommodate new CRAN package checks.
