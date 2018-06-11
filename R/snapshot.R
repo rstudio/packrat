@@ -351,7 +351,7 @@ getBiocRepos <- function() {
 activeRepos <- function(project) {
   project <- getProjectDir(project)
   repos <- getOption("repos")
-  repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
+  repos[repos == "@CRAN@"] <- "https://cran.rstudio.com/"
 
   # Check to see whether Bioconductor is installed. Bioconductor maintains a
   # private set of repos, which we need to expose here so we can download
