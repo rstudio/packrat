@@ -497,8 +497,15 @@ write_dcf <- function(x, file = "", append = FALSE, indent = 4,
 }
 
 symlink <- function(from, to) {
-  if (is.windows()) Sys.junction(from, to)
-  else file.symlink(from, to)
+
+  # attempt to generating the symlink
+  if (is.windows())
+    Sys.junction(from, to)
+  else
+    file.symlink(from, to)
+
+  # check to see if the file was properly generated
+  file.exists(to)
 }
 
 with_dir <- function(dir, expr) {
