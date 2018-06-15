@@ -9,11 +9,12 @@
 \alias{off}
 \title{Packrat Mode}
 \usage{
-packrat_mode(on = NULL, project = NULL,
+packrat_mode(on = NULL, project = NULL, read.only = FALSE,
   auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE)
 
-on(project = NULL, auto.snapshot = get_opts("auto.snapshot"),
-  clean.search.path = TRUE, print.banner = TRUE)
+on(project = NULL, read.only = FALSE,
+  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE,
+  print.banner = TRUE)
 
 off(project = NULL, print.banner = TRUE)
 }
@@ -23,6 +24,8 @@ will be toggled.}
 
 \item{project}{The directory in which packrat mode is launched -- this is
 where local libraries will be used and updated.}
+
+\item{read.only}{Specfy that you want to use packrat in readonly mode (no modification can be done to the packrat in this mode)}
 
 \item{auto.snapshot}{Perform automatic, asynchronous snapshots?}
 

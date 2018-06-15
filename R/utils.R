@@ -216,6 +216,9 @@ stopIfNotPackified <- function(project) {
            call. = FALSE)
     }
   }
+  else if (isReadOnly() || isReadOnly(state = FALSE)) {
+    stop("Packrat is in readonly mode!", call. = FALSE)
+  }
 }
 
 # Expected to be used with .Rbuildignore, .Rinstignore

@@ -2,8 +2,22 @@ isPackratModeOn <- function(project = NULL) {
   !is.na(Sys.getenv("R_PACKRAT_MODE", unset = NA))
 }
 
-setPackratModeEnvironmentVar <- function() {
+# Check if packrat is in readonly mode
+# If state is TRUE, will use packrat state, if it's FALSE will use variable environnement
+isReadOnly <- function(state=TRUE) {
+  #mutables <- get(".packrat_mutables", envir = asNamespace("packrat"))
+  if(state){
+    state <- .packrat_mutables$get()
+    return(state$read.only)
+  }
+  else{
+    return(Sys.getenv("R_PACKRAT_READONLY_MODE") == "1")
+  }
+}
+
+setPackratModeEnvironmentVar <- function(read.only=get_opts("read.only")) {
   Sys.setenv("R_PACKRAT_MODE" = "1")
+  Sys.setenv("R_PACKRAT_READONLY_MODE" = if(read.only) "1" else "0")
 }
 
 ensurePkgTypeNotBoth <- function() {
@@ -13,7 +27,7 @@ ensurePkgTypeNotBoth <- function() {
   oldPkgType
 }
 
-beforePackratModeOn <- function(project) {
+beforePackratModeOn <- function(project, read.only=get_opts("read.only")) {
 
   # Ensure that we leave packrat mode before transfering
   # to a new project.
@@ -39,11 +53,13 @@ beforePackratModeOn <- function(project) {
       .Library = .Library,
       .Library.site = .Library.site,
       project = project,
-      oldPkgType = oldPkgType
+      oldPkgType = oldPkgType,
+      read.only = read.only
     )
   } else {
     state <- .packrat_mutables$get()
     state$project <- project
+    state$read.only <- read.only
   }
 
   state
@@ -59,60 +75,64 @@ afterPackratModeOn <- function(project,
   project <- getProjectDir(project)
   libRoot <- libraryRootDir(project)
   localLib <- libDir(project)
-  dir.create(libRoot, recursive = TRUE, showWarnings = FALSE)
 
-  # Override auto.snapshot if running under RStudio, as it has its own packrat
-  # file handlers
-  if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
-    auto.snapshot <- FALSE
-  }
+  if(!isReadOnly(state=FALSE))
+  {
+    dir.create(libRoot, recursive = TRUE, showWarnings = FALSE)
 
-  # If snapshot.lock exists, assume it's an orphan of an earlier, crashed
-  # R process -- remove it
-  if (file.exists(snapshotLockFilePath(project))) {
-    unlink(snapshotLockFilePath(project))
-  }
+    # Override auto.snapshot if running under RStudio, as it has its own packrat
+    # file handlers
+    if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
+      auto.snapshot <- FALSE
+    }
 
-  # If there's a new library (created to make changes to packages loaded in the
-  # last R session), remove the old library and replace it with the new one.
-  newLibRoot <- newLibraryDir(project)
-  if (file.exists(newLibRoot)) {
-    message("Applying Packrat library updates ... ", appendLF = FALSE)
-    succeeded <- FALSE
-    if (file.rename(libRoot, oldLibraryDir(project))) {
-      if (file.rename(newLibRoot, libRoot)) {
-        succeeded <- TRUE
+    # If snapshot.lock exists, assume it's an orphan of an earlier, crashed
+    # R process -- remove it
+    if (file.exists(snapshotLockFilePath(project))) {
+      unlink(snapshotLockFilePath(project))
+    }
+
+    # If there's a new library (created to make changes to packages loaded in the
+    # last R session), remove the old library and replace it with the new one.
+    newLibRoot <- newLibraryDir(project)
+    if (file.exists(newLibRoot)) {
+      message("Applying Packrat library updates ... ", appendLF = FALSE)
+      succeeded <- FALSE
+      if (file.rename(libRoot, oldLibraryDir(project))) {
+        if (file.rename(newLibRoot, libRoot)) {
+          succeeded <- TRUE
+        } else {
+          # Moved the old library out of the way but couldn't move the new
+          # in its place; move the old library back
+          file.rename(oldLibraryDir(project), libRoot)
+        }
+      }
+      if (succeeded) {
+        message("OK")
       } else {
-        # Moved the old library out of the way but couldn't move the new
-        # in its place; move the old library back
-        file.rename(oldLibraryDir(project), libRoot)
+        message("FAILED")
+        cat("Packrat was not able to make changes to its local library at\n",
+            localLib, ". Check this directory's permissions and run\n",
+            "packrat::restore() to try again.\n", sep = "")
       }
     }
-    if (succeeded) {
-      message("OK")
-    } else {
-      message("FAILED")
-      cat("Packrat was not able to make changes to its local library at\n",
-          localLib, ". Check this directory's permissions and run\n",
-          "packrat::restore() to try again.\n", sep = "")
+
+    # If the new library temporary folder exists, remove it now so we don't
+    # attempt to reapply the same failed changes
+    newLibDir <- newLibraryDir(project)
+    if (file.exists(newLibDir)) {
+      unlink(newLibDir, recursive = TRUE)
     }
-  }
 
-  # If the new library temporary folder exists, remove it now so we don't
-  # attempt to reapply the same failed changes
-  newLibDir <- newLibraryDir(project)
-  if (file.exists(newLibDir)) {
-    unlink(newLibDir, recursive = TRUE)
-  }
+    oldLibDir <- oldLibraryDir(project)
+    if (file.exists(oldLibDir)) {
+      unlink(oldLibDir, recursive = TRUE)
+    }
 
-  oldLibDir <- oldLibraryDir(project)
-  if (file.exists(oldLibDir)) {
-    unlink(oldLibDir, recursive = TRUE)
-  }
-
-  # If the library directory doesn't exist, create it
-  if (!file.exists(localLib)) {
-    dir.create(localLib, recursive = TRUE)
+    # If the library directory doesn't exist, create it
+    if (!file.exists(localLib)) {
+      dir.create(localLib, recursive = TRUE)
+    }
   }
 
   # Clean the search path up -- unload libraries that may have been loaded before
@@ -128,8 +148,10 @@ afterPackratModeOn <- function(project,
     useSymlinkedSystemLibrary(project = project)
   }
 
-  # Refresh the contents of 'lib-ext' if necessary
-  symlinkExternalPackages(project = project)
+  if(!isReadOnly(state=FALSE)){
+    # Refresh the contents of 'lib-ext' if necessary
+    symlinkExternalPackages(project = project)
+  }
 
   # Set the library
   if (!file.exists(libExtDir(project)))
@@ -137,7 +159,8 @@ afterPackratModeOn <- function(project,
   setLibPaths(c(localLib, libExtDir(project)))
 
   # Load any packages specified in external.packages
-  if (isTRUE(opts$load.external.packages.on.startup())) {
+  # Don't load external packages in read.only mode as the we don't own the packrat, is not sure that we can access to external package
+  if (isTRUE(opts$load.external.packages.on.startup()) && isFALSE(isReadOnly(state=FALSE))) {
     lapply(opts$external.packages(), function(x) {
       library(x, character.only = TRUE, quietly = TRUE)
     })
@@ -165,12 +188,15 @@ afterPackratModeOn <- function(project,
     message(msg)
   }
 
-  # Insert hooks to library modifying functions to auto.snapshot on change
-  if (interactive() && isTRUE(auto.snapshot)) {
-    if (file.exists(getPackratDir(project))) {
-      addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
-    } else {
-      warning("this project has not been packified; cannot activate automatic snapshotting")
+  if(!isReadOnly(state=FALSE))
+  {
+    # Insert hooks to library modifying functions to auto.snapshot on change
+    if (interactive() && isTRUE(auto.snapshot)) {
+      if (file.exists(getPackratDir(project))) {
+        addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
+      } else {
+        warning("this project has not been packified; cannot activate automatic snapshotting")
+      }
     }
   }
 
@@ -206,20 +232,23 @@ afterPackratModeOn <- function(project,
     }
   }
 
-  # Update settings
-  updateSettings(project = project)
-
+  if(!isReadOnly(state=FALSE))
+  {
+    # Update settings
+    updateSettings(project = project)
+  }
   invisible(getLibPaths())
 
 }
 
 setPackratModeOn <- function(project = NULL,
+                             read.only = get_opts("read.only"),
                              auto.snapshot = get_opts("auto.snapshot"),
                              clean.search.path = TRUE,
                              print.banner = TRUE) {
 
-  state <- beforePackratModeOn(project = project)
-  setPackratModeEnvironmentVar()
+  state <- beforePackratModeOn(project = project, read.only=read.only)
+  setPackratModeEnvironmentVar(read.only=read.only)
   afterPackratModeOn(project = project,
                      auto.snapshot = auto.snapshot,
                      clean.search.path = clean.search.path,
@@ -238,9 +267,12 @@ setPackratModeOff <- function(project = NULL,
   }
 
   Sys.unsetenv("R_PACKRAT_MODE")
+  Sys.unsetenv("R_PACKRAT_READONLY_MODE")
 
-  # Disable hooks that were turned on before
-  removeTaskCallback("packrat.snapshotHook")
+  if(!isReadOnly()){
+    # Disable hooks that were turned on before
+    removeTaskCallback("packrat.snapshotHook")
+  }
 
   # Reset the library paths
   libPaths <- .packrat_mutables$get("origLibPaths")
@@ -267,8 +299,8 @@ setPackratModeOff <- function(project = NULL,
 
   # Default back to the current working directory for packrat function calls
   .packrat_mutables$set(project = NULL)
+  .packrat_mutables$set(read.only = FALSE)
   Sys.unsetenv("R_PACKRAT_PROJECT_DIR")
-
   invisible(getLibPaths())
 }
 
@@ -295,6 +327,7 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##'   will be toggled.
 ##' @param project The directory in which packrat mode is launched -- this is
 ##'   where local libraries will be used and updated.
+##' @param read.only Specfy that you want to use packrat in readonly mode (no modification can be done to the packrat in this mode)
 ##' @param auto.snapshot Perform automatic, asynchronous snapshots?
 ##' @param clean.search.path Detach and unload any packages loaded from non-system
 ##'   libraries before entering packrat mode?
@@ -306,6 +339,7 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##' @export
 packrat_mode <- function(on = NULL,
                          project = NULL,
+                         read.only = FALSE,
                          auto.snapshot = get_opts("auto.snapshot"),
                          clean.search.path = TRUE) {
 
@@ -317,6 +351,7 @@ packrat_mode <- function(on = NULL,
                       clean.search.path = clean.search.path)
   } else if (identical(on, TRUE)) {
     setPackratModeOn(project = project,
+                     read.only = read.only,
                      auto.snapshot = auto.snapshot,
                      clean.search.path = clean.search.path)
   } else if (identical(on, FALSE)) {
@@ -331,6 +366,7 @@ packrat_mode <- function(on = NULL,
 ##' @name packrat-mode
 ##' @export
 on <- function(project = NULL,
+               read.only = FALSE,
                auto.snapshot = get_opts("auto.snapshot"),
                clean.search.path = TRUE,
                print.banner = TRUE) {
@@ -338,10 +374,15 @@ on <- function(project = NULL,
   project <- getProjectDir(project)
 
   # If there is no lockfile already, perform an init
-  if (!file.exists(lockFilePath(project = project)))
-    return(init(project = project))
+  if (!file.exists(lockFilePath(project = project))) {
+    if(read.only)
+      stop("You must specified a valid packrat path, I dont't find it in '", project, "'!")
+    else
+      return(init(project = project))
+  }
 
   setPackratModeOn(project = project,
+                   read.only = read.only,
                    auto.snapshot = auto.snapshot,
                    clean.search.path = clean.search.path,
                    print.banner = print.banner)
