@@ -1,5 +1,10 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- Added the project option `symlink.system.packages`: users can now configure
+  whether base R packages from the system library are symlinked into a private
+  library `packrat/lib-R`. Disabling this can be useful if you intentionally
+  want Packrat to use packages that have been installed into the system library.
+
 - Fixed an issue where attempts to snapshot could fail when
   the R libraries live on a network drive.
 
