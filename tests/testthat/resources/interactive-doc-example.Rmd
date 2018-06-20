@@ -6,7 +6,7 @@ output: html_document
 
 This R Markdown document is made interactive using Shiny. Unlike the more traditional workflow of creating static reports, you can now create documents that allow your readers to change the assumptions underlying your analysis and see the results immediately. 
 
-To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
+To learn more, see [Interactive Documents](https://rmarkdown.rstudio.com/authoring_shiny.html).
 
 ## Inputs and Outputs
 

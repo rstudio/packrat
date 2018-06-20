@@ -31,11 +31,11 @@ test_that("Repository is properly split by readLockFile", {
   lf <- readLockFile("lockfiles/lockfile-multipleRepos.txt")
   expect_equal(
     lf$repos,
-    c(CRAN = "http://cran.rstudio.org",
-      BioCsoft = "http://bioconductor.org/packages/3.0/bioc",
-      BioCann = "http://bioconductor.org/packages/3.0/data/annotation",
-      BioCexp = "http://bioconductor.org/packages/3.0/data/experiment",
-      BioCextra = "http://bioconductor.org/packages/3.0/extra"
+    c(CRAN = "https://cran.rstudio.org",
+      BioCsoft = "https://bioconductor.org/packages/3.0/bioc",
+      BioCann = "https://bioconductor.org/packages/3.0/data/annotation",
+      BioCexp = "https://bioconductor.org/packages/3.0/data/experiment",
+      BioCextra = "https://bioconductor.org/packages/3.0/extra"
     )
   )
 

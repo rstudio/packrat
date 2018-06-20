@@ -429,7 +429,7 @@
   `packrat::on()` and `packrat::off()`.
 
 - `.Rmd` files are now parsed for YAML dependencies (for
-  [`rmarkdown`](http://rmarkdown.rstudio.com/) dependencies).
+  [`rmarkdown`](https://rmarkdown.rstudio.com/) dependencies).
 
 - Recommended packages (e.g. `lattice`) are now only taken as Packrat
   dependencies if explicitly installed by the user -- for example, if you want

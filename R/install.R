@@ -518,7 +518,7 @@ rtools <- function(path, version) {
 }
 is.rtools <- function(x) inherits(x, "rtools")
 
-rtools_url <- "http://cran.r-project.org/bin/windows/Rtools/"
+rtools_url <- "https://cran.r-project.org/bin/windows/Rtools/"
 version_info <- list(
   "2.11" = list(
     version_min = "2.10.0",

@@ -122,7 +122,7 @@ migrate_packages <- function() {
   if (length(biocPkgs)) {
     message("> Installing BioC packages")
     try(unloadNamespace("BiocInstaller"), silent = TRUE)
-    source("http://bioconductor.org/biocLite.R")
+    source("https://bioconductor.org/biocLite.R")
     BiocInstaller::biocLite(biocPkgs, lib.loc = userLib)
   }
 
