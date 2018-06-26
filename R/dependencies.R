@@ -309,16 +309,24 @@ fileDependencies.Rmd <- function(file) {
   }, add = TRUE)
 
   if (requireNamespace("knitr", quietly = TRUE)) {
+
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
+
     tryCatch(silent(
       knitr::knit(file, output = tempfile, tangle = TRUE, encoding = encoding)
     ), error = function(e) {
       message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
     })
-    stripAltEngines(tempfile, encoding)
-    c(deps, fileDependencies.R(tempfile))
+
+    if (file.exists(tempfile)) {
+      stripAltEngines(tempfile, encoding)
+      c(deps, fileDependencies.R(tempfile))
+    } else {
+      deps
+    }
+
   } else {
     warning("knitr is required to parse dependencies but is not available")
     deps
