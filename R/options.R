@@ -25,7 +25,8 @@ VALID_OPTIONS <- list(
   snapshot.recommended.packages = list(TRUE, FALSE),
   snapshot.fields = function(x) {
     is.null(x) || is.character(x)
-  }
+  },
+  symlink.system.packages = list(TRUE, FALSE)
 )
 
 default_opts <- function() {
@@ -42,7 +43,8 @@ default_opts <- function() {
     ignored.directories = c("data", "inst"),
     quiet.package.installation = TRUE,
     snapshot.recommended.packages = FALSE,
-    snapshot.fields = c("Imports", "Depends", "LinkingTo")
+    snapshot.fields = c("Imports", "Depends", "LinkingTo"),
+    symlink.system.packages = TRUE
   )
 }
 
@@ -117,6 +119,11 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##'   What fields of a package's DESCRIPTION file should be used when discovering
 ##'   dependencies?
 ##'   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
+##' \tem \code{symlink.system.packages}:
+##'   Symlink base \R packages into a private \code{packrat/lib-R} directory?
+##'   This is done to further encapsulate the project from user packages that
+##'   have been installed into the \R system library.
+##'   (boolean, defaults to \code{TRUE})
 ##' }
 ##'
 ##' @param options A character vector of valid option names.
