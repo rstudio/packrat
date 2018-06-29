@@ -266,8 +266,8 @@ fileDependencies.Rmd <- function(file) {
     deps <- c(deps, yamlDeps)
 
     # Extract additional dependencies from YAML parameters.
-    if (packageVersion("knitr") >= "1.10.18" &&
-        requireNamespace("knitr", quietly = TRUE))
+    if (requireNamespace("knitr", quietly = TRUE) &&
+        packageVersion("knitr") >= "1.10.18")
     {
       # attempt to extract knitr params from yaml
       knitParams <- tryCatch(
