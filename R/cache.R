@@ -37,7 +37,7 @@ hash <- function(path, descLookup = installedDescLookup) {
   # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
   # it essentially makes packages installed from source un-recoverable, since they will get
   # built transiently and installed (and so that field could never be replicated).
-  fields <- c("Package", "Version", "GithubSHA1", "Depends", "Imports", "Suggests", "LinkingTo")
+  fields <- c("Package", "Version", "GithubSHA1", "RemoteSha", "Depends", "Imports", "Suggests", "LinkingTo")
   sub <- DESCRIPTION[names(DESCRIPTION) %in% fields]
 
   # Handle LinkingTo specially -- we need to discover what version of packages in LinkingTo
