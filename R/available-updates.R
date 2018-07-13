@@ -75,11 +75,79 @@ githubUpdates <- function(lib.loc = .libPaths()) {
   }))
 }
 
+
+bitbucketUpdates <- function(lib.loc = .libPaths()) {
+
+  do.call(rbind, enumerate(lib.loc, function(lib) {
+    pkgs <- list.files(lib, full.names = TRUE)
+    DESCRIPTIONS <- enumerate(pkgs, function(pkg) {
+      path <- file.path(pkg, "DESCRIPTION")
+      if (!file.exists(path)) return(NULL)
+      readDcf(path)
+    })
+    names(DESCRIPTIONS) <- pkgs
+    DESCRIPTIONS <-
+      Filter(function(x) "RemoteType" %in% colnames(x) && x[,"RemoteType"] == "bitbucket", DESCRIPTIONS)
+    if (!length(DESCRIPTIONS)) return(NULL)
+    if (!requireNamespace("httr")) stop("Need package 'httr' to check for Bitbucket updates")
+    do.call(rbind, enumerate(DESCRIPTIONS, function(x) {
+      url <- file.path("https://api.bitbucket.org",
+                       "2.0",
+                       "repositories",
+                       x[, "RemoteUsername"],
+                       x[, "RemoteRepo"],
+                       "refs",
+                       "branches")
+      response <- httr::GET(url)
+      status <- response$status
+      if (response$status == 403) {
+        warning("rejected by server", call. = FALSE)
+        sha <- NA
+      } else if (!response$status == 200) {
+        warning("failed to get tracking information for Bitbucket package '",
+                x[, "Package"],
+                "'; did its associated repository move?",
+                call. = FALSE)
+        sha <- NA
+      } else {
+        content <- httr::content(response, "parsed")
+        ## Find the index of the response with the appropriate name
+        index <- which(sapply(content$values, `[[`, "name") == x[, "RemoteRef"])
+        if (!length(index)) {
+          warning("no reference '", x[, "RemoteRef"],
+                  "' found associated with this repository; was the branch deleted?",
+                  call. = FALSE)
+          sha <- NA
+        } else {
+          sha <- content$values[[index]]$target$hash
+        }
+      }
+
+      data.frame(
+        stringsAsFactors = FALSE,
+        Package = unname(x[, "Package"]),
+        LibPath = lib,
+        Installed = unname(x[, "RemoteSha"]),
+        Built = gsub(";.*", "", x[, "Built"]),
+        ReposVer = sha,
+        Repository = file.path("https://bitbucket.org",
+                               x[, "RemoteUsername"],
+                               x[, "RemoteRepo"],
+                               "src",
+                               x[, "RemoteRef"])
+      )
+    }))
+  }))
+}
+
 available_updates <- function() {
   cranUpdates <- as.data.frame(old.packages(), stringsAsFactors = FALSE)
   githubUpdates <- githubUpdates()
+  bitbucketUpdates <- bitbucketUpdates()
+
   list(
     CRAN = cranUpdates,
-    GitHub = githubUpdates
+    GitHub = githubUpdates,
+    Bitbucket = bitbucketUpdates
   )
 }

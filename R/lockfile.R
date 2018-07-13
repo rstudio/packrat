@@ -282,7 +282,9 @@ aliases <- c(
   RemoteHost = "remote_host",
   RemoteRepo = "remote_repo",
   RemoteUsername = "remote_username",
+  RemoteRef = "remote_ref",
   RemoteSha = "remote_sha",
+  RemoteSubdir = "remote_subdir",
   SourcePath = "source_path",
   Hash = "hash"
 )
