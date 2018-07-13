@@ -1,5 +1,8 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- Packrat now supports R packages available on BitBucket, courtesy of a PR from
+  @mariamedp. (#481)
+
 - Added the project option `symlink.system.packages`: users can now configure
   whether base R packages from the system library are symlinked into a private
   library `packrat/lib-R`. Disabling this can be useful if you intentionally
