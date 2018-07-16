@@ -1,5 +1,8 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- Calling `packrat::init()` on a project that already contains a Packrat
+  lockfile no longer attempts to re-snapshot and restore the project.
+
 - Packrat now supports R packages available on BitBucket, courtesy of a PR from
   @mariamedp. (#481)
 

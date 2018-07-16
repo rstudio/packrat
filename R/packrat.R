@@ -220,15 +220,18 @@ initImpl <- function(project = getwd(),
   augmentRprofile(project)
   options <- initOptions(project, opts) ## writes out packrat.opts and returns generated list
 
-  # Take a snapshot
-  snapshotImpl(project,
-               lib.loc = NULL,
-               ignore.stale = TRUE,
-               fallback.ok = TRUE,
-               infer.dependencies = infer.dependencies)
+  # If we don't yet have a lockfile, take a snapshot and then build the Packrat library.
+  if (!file.exists(lockFilePath(project = project))) {
 
-  # Use the lockfile to copy sources and install packages to the library
-  restore(project, overwrite.dirty = TRUE, restart = FALSE)
+    snapshotImpl(project,
+                 lib.loc = NULL,
+                 ignore.stale = TRUE,
+                 fallback.ok = TRUE,
+                 infer.dependencies = infer.dependencies)
+
+    restore(project, overwrite.dirty = TRUE, restart = FALSE)
+
+  }
 
   # Copy init.R so a user can 'start from zero' with a project
   file.copy(
