@@ -93,6 +93,11 @@ Get and set options for the current packrat-managed project.
   What fields of a package's DESCRIPTION file should be used when discovering
   dependencies?
   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
+\item \code{symlink.system.packages}:
+  Symlink base \R packages into a private \code{packrat/lib-R} directory?
+  This is done to further encapsulate the project from user packages that
+  have been installed into the \R system library.
+  (boolean, defaults to \code{TRUE})
 }
 }
 
