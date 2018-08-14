@@ -3,6 +3,35 @@ isTrustedPackage <- function(package) {
   !package %in% untrusted
 }
 
+isCorruptPackageCacheEntry <- function(path) {
+
+  # if we don't have a cache entry, it's not corrupt
+  if (!file.exists(path))
+    return(FALSE)
+
+  # check for missing DESCRIPTION file
+  desc <- file.path(path, "DESCRIPTION")
+  if (!file.exists(desc)) {
+    fmt <- "Cache entry for package '%s' appears to be corrupt: no DESCRIPTION file"
+    warning(sprintf(fmt, basename(path)))
+    return(TRUE)
+  }
+
+  # check for empty DESCRIPTION file
+  info <- file.info(desc)
+  if (info$size == 0) {
+    fmt <- "Cache entry for package '%s' appears to be corrupt: DESCRIPTION file is empty"
+    warning(sprintf(fmt, basename(path)))
+    return(TRUE)
+  }
+
+  # TODO: other smoke tests?
+
+  # okay, everything looks good
+  return(FALSE)
+
+}
+
 hashTarball <- function(path) {
   # TODO: unpack, recursively hash, and combine? for now
   # we just hash the tarball as-is
@@ -31,10 +60,19 @@ restoreWithCopyFromCache <- function(project,
   if (!file_test("-d", source))
     return(FALSE)
 
+  # sanity check for cache corruption -- we've seen some cases where
+  # a cache entry exists, but it's just an empty folder
+  if (isCorruptPackageCacheEntry(source))
+    return(FALSE)
+
   # attempt to form a symlink to the packrat library
   # (remove stale file if one exists)
   lib <- libDir(project)
   target <- file.path(lib, pkgRecord$name)
+
+  # if we already have a directory at the target location, back it up
+  # and attempt to restore it if something goes wrong and we fail to
+  # copy from the cache
   if (file.exists(target)) {
     temp <- tempfile(tmpdir = lib)
     file.rename(target, temp)
@@ -46,6 +84,7 @@ restoreWithCopyFromCache <- function(project,
     }, add = TRUE)
   }
 
+  # attempt the symlink
   suppressWarnings(symlink(source, target))
   success <- file.exists(target)
   if (success) {

@@ -49,6 +49,24 @@ test_that("package installation when configured with a a cache uses the cache", 
           prompt = FALSE,
           restart = FALSE)
 
+  # Daisy-chain a test where we attempt to recover when
+  # a cache entry is corrupt. This test models some real-life
+  # situations we've seen where a cache's package entries seem
+  # to lose all files except for an empty DESCRIPTION.
+  pkgDir <- file.path(libDir(projRoot), "oatmeal")
+  cacheEntry <- system(paste("readlink", pkgDir), intern = TRUE)
+  unlink(cacheEntry, recursive = TRUE)
+  ensureDirectory(cacheEntry)
+  file.create(file.path(cacheEntry, "DESCRIPTION"))
+
+  unlink(libRoot, recursive = TRUE)
+  unlink(srcRoot, recursive = TRUE)
+
+  restore(projRoot,
+          overwrite.dirty = TRUE,
+          prompt = FALSE,
+          restart = FALSE)
+
   expect_true(file.exists(packageDir), packageDir)
   expect_true(is.symlink(packageDir), packageDir)
 })
