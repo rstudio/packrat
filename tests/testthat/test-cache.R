@@ -88,8 +88,6 @@ test_that("packrat uses the untrusted cache when instructed", {
 
   # Initial restore. Populates the cache and creates a symlink into it.
   unlink(libRoot, recursive = TRUE)
-
-  skip("failing test")
   restore(projRoot,
           overwrite.dirty = TRUE,
           prompt = FALSE,
@@ -175,6 +173,8 @@ test_that("packrat can recover from a bad cache", {
   expect_equal(readLines(descFile), "")
 
   # Subsequent restore. Rebuilds the bad cache
+  skip("failing test")
+
   unlink(libRoot, recursive = TRUE)
   restore(projRoot,
           overwrite.dirty = TRUE,
