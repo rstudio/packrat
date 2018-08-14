@@ -150,7 +150,39 @@ test_that("packrat can recover from a bad cache", {
   expect_true(file.exists(packageDir), packageDir)
   expect_true(is.symlink(packageDir), packageDir)
 
-  # Subsequent restore. Uses the cache.
+  # leave only an empty DESCRIPTION file in the oatmeal cache
+  allFiles <- dir(theCache, recursive = TRUE, include.dirs = TRUE)
+  whichDescFile <- grep("/oatmeal/.*/oatmeal/DESCRIPTION", allFiles)
+  whichNonDescFiles <- grep("/oatmeal/.*/oatmeal/.*", allFiles)
+  whichNonDescFiles <- whichNonDescFiles[!whichNonDescFiles %in% whichDescFile]
+
+  descFile <- paste(theCache, allFiles[whichDescFile][[1]], sep = "/")
+
+  unlink(
+    paste(theCache
+          , allFiles[whichNonDescFiles]
+          , sep = "/"
+          ),
+    recursive = TRUE
+  )
+  write(NULL, file = descFile)
+
+  remaining_files <- dir(theCache, recursive = TRUE, include.dirs = TRUE)
+  # only 2 files remaining: folder, and DESCRIPTION
+  expect_equal(sum(grepl("/oatmeal/.*/oatmeal", remaining_files)), 2)
+  expect_equal(readLines(descFile), "")
+
+  # Subsequent restore. Rebuilds the bad cache
+  unlink(libRoot, recursive = TRUE)
+  restore(projRoot,
+          overwrite.dirty = TRUE,
+          prompt = FALSE,
+          restart = FALSE)
+
+  expect_true(file.exists(packageDir), packageDir)
+  expect_true(is.symlink(packageDir), packageDir)
+
+  # Final restore. Uses the cache.
   unlink(libRoot, recursive = TRUE)
   restore(projRoot,
           overwrite.dirty = TRUE,
