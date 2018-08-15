@@ -95,47 +95,62 @@ getPackageRecordsExternalSource <- function(pkgNames,
 
   lapply(pkgNames, function(pkgName) {
 
-    pkgDescFile <- system.file('DESCRIPTION',
-                               package = pkgName,
-                               lib.loc = lib.loc)
-
-    # First, try inferring the package source from the DESCRIPTION file -- if it's unknown
-    # we might fall back to something in available.packages
+    # The actual package record that will be populated by below logic.
     result <- list()
-    if (nzchar(pkgDescFile)) {
+
+    # First, attempt to discover the actual installation for this package.
+    pkgDescFile <- system.file("DESCRIPTION", package = pkgName, lib.loc = lib.loc)
+    if (file.exists(pkgDescFile)) {
+
+      # If the package is currently installed, then we can return a package
+      # record constructed from the DESCRIPTION file.
       df <- as.data.frame(readDcf(pkgDescFile))
       result <- suppressWarnings(inferPackageRecord(df))
-    }
 
-    if (is.null(result$source))
-      result$source <- "unknown"
+      # Normalize NULL source vs. 'unknown' source.
+      if (is.null(result$source))
+        result$source <- "unknown"
 
-    # If this failed, try falling back to something of the same name in 'available'
-    if (!nzchar(pkgDescFile) || (result$source == "unknown" && fallback.ok)) {
-
-      # Let the user know if we're falling back to latest CRAN (because we failed
-      # to infer the source of a particular package)
-      if (result$source == "unknown" && fallback.ok) {
-        warning("Failed to infer source for package '", pkgName, "'; using ",
-                "latest available version on CRAN instead")
-      }
-
-      if (pkgName %in% rownames(available)) {
-        pkg <- available[pkgName,]
-        df <- data.frame(
-          Package = pkg[["Package"]],
-          Version = pkg[["Version"]],
-          Repository = "CRAN"
+      # If we don't know the package source, but the user has opted in
+      # to CRAN fallback, then warn the user and update the inferred source.
+      if (fallback.ok && result$source == "unknown") {
+        fmt <- paste(
+          "Package '%s %s' was installed from sources;",
+          "Packrat will assume this package is available from",
+          "a CRAN-like repository during future restores"
         )
-      } else {
-        return(missing.package(pkgName, lib.loc))
+        warning(sprintf(fmt, pkgName, result$version))
+        result$source <- "CRAN"
       }
+
+    } else if (fallback.ok && pkgName %in% rownames(available)) {
+
+      # The package is not currently installed, but is available on CRAN.
+      # Snapshot the latest available version for this package from CRAN.
+      warning("Failed to infer source for package '", pkgName, "'; using ",
+              "latest available version on CRAN instead")
+
+      # Construct the package record by hand -- generate the minimal
+      # bits of the DESCRIPTION file, and infer the package record
+      # from that.
+      pkg <- available[pkgName,]
+      df <- data.frame(
+        Package = pkg[["Package"]],
+        Version = pkg[["Version"]],
+        Repository = "CRAN"
+      )
+      result <- suppressWarnings(inferPackageRecord(df))
+
+    } else {
+      # We were unable to determine an appropriate package record
+      # for this package; invoke the 'missing.package' callback.
+      return(missing.package(pkgName, lib.loc))
     }
 
-    # Now, we have either collected a package record from source, or an external repo
-    result <- inferPackageRecord(df)
+    # Update the hash when available.
     if (nzchar(pkgDescFile))
       result$hash <- hash(pkgDescFile)
+
     result
   })
 
@@ -152,20 +167,30 @@ getPackageRecordsLockfile <- function(pkgNames, project) {
   }
 }
 
+error_not_installed <- function(package, lib.loc) {
+  stop(
+    'The package "',
+    package,
+    '" is not installed in ',
+    ifelse(is.null(lib.loc), 'the current libpath', lib.loc)
+  )
+}
+
 # Returns a package records for the given packages
 getPackageRecords <- function(pkgNames,
                               project = NULL,
                               available = NULL,
                               recursive = TRUE,
                               lib.loc = NULL,
-                              missing.package = function(package, lib.loc) {
-                                stop('The package "', package, '" is not installed in ', ifelse(is.null(lib.loc), 'the current libpath', lib.loc))
-                              },
+                              missing.package = error_not_installed,
                               check.lockfile = FALSE,
-                              fallback.ok = FALSE) {
-
+                              fallback.ok = FALSE)
+{
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
+
+  # screen out empty package names that might have snuck in
+  pkgNames <- setdiff(pkgNames, "")
 
   if (check.lockfile) {
     lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
@@ -259,12 +284,11 @@ getPackageRecords <- function(pkgNames,
 }
 
 # Reads a description file and attempts to infer where the package came from.
-# Currently works only for packages installed from CRAN or from GitHub using
+# Currently works only for packages installed from CRAN or from GitHub/Bitbucket using
 # devtools 1.4 or later.
 inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
-  repos <- getOption('repos')
 
   if (!is.null(df$GithubRepo)) {
     # It's GitHub!
@@ -276,8 +300,25 @@ inferPackageRecord <- function(df) {
       gh_username = as.character(df$GithubUsername),
       gh_ref = as.character(df$GithubRef),
       gh_sha1 = as.character(df$GithubSHA1)),
-      c(gh_subdir = as.character(df$GithubSubdir))
+      c(gh_subdir = as.character(df$GithubSubdir)),
+      c(remote_host = as.character(df$RemoteHost)),
+      c(remote_repo = as.character(df$RemoteRepo)),
+      c(remote_username = as.character(df$RemoteUsername)),
+      c(remote_sha = as.character(df$RemoteSha))
     ), class = c('packageRecord', 'github')))
+  } else if (!is.null(df$RemoteType) && df$RemoteType == "bitbucket") {
+    # It's Bitbucket!
+    return(structure(c(list(
+      name = name,
+      source = 'bitbucket',
+      version = ver,
+      remote_repo = as.character(df$RemoteRepo),
+      remote_username = as.character(df$RemoteUsername),
+      remote_ref = as.character(df$RemoteRef),
+      remote_sha = as.character(df$RemoteSha)),
+      c(remote_host = as.character(df$RemoteHost)),
+      c(remote_subdir = as.character(df$RemoteSubdir))
+    ), class = c('packageRecord', 'bitbucket')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
@@ -295,7 +336,7 @@ inferPackageRecord <- function(df) {
       source = 'CRAN',
       version = ver
     ), class = c('packageRecord', 'CRAN')))
-  } else if (!is.null(df$Repository) && df$Repository %in% names(repos)) {
+  } else if (!is.null(df$Repository)) {
     # It's a package from a custom CRAN-like repo!
     return(structure(list(
       name = name,
@@ -355,7 +396,7 @@ getSourcePackageInfoImpl <- function(path) {
   ## For tarballs, we unzip them to a temporary directory and then read from there
   tempdir <- file.path(tempdir(), "packrat", path)
   if (endswith(path, "tar.gz")) {
-    untar(path, exdir = tempdir)
+    untar(path, exdir = tempdir, tar = "internal")
     folderName <- list.files(tempdir, full.names = TRUE)[[1]]
   } else {
     folderName <- path

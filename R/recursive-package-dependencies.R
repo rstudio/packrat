@@ -1,6 +1,6 @@
 getPackageDependencies <- function(pkgs,
                                    lib.loc,
-                                   available.packages = available.packages(),
+                                   available.packages = availablePackages(),
                                    fields = c("Depends", "Imports", "LinkingTo")) {
 
   if (isPackratModeOn()) {
@@ -67,23 +67,49 @@ getPackageDependencies <- function(pkgs,
   else sort_c(unique(deps))
 }
 
+discoverBaseRecommendedPackages <- function() {
+
+  # First, attempt to ask 'tools' what the standard package
+  # names are. Since this function is unexported we are
+  # careful on how we query + use it.
+  tools <- asNamespace("tools")
+  pkgs <- tryCatch(tools$.get_standard_package_names(), error = identity)
+  ok <- is.list(pkgs) &&
+    all(c("base", "recommended") %in% names(pkgs)) &&
+    length(pkgs$base) &&
+    length(pkgs$recommended)
+  if (ok)
+    return(pkgs)
+
+  # Otherwise, fall back to installed.packages().
+  ip <- utils::installed.packages()
+  list(
+    base        = rownames(ip)[ip[, "Priority"] %in% "base"],
+    recommended = rownames(ip)[ip[, "Priority"] %in% "recommended"]
+  )
+
+}
+
 excludeBasePackages <- function(packages) {
-
-  installedPkgsSystemLib <- as.data.frame(utils::installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
-  basePkgs <- with(installedPkgsSystemLib, Package[Priority %in% "base"])
-  setdiff(packages, c("R", basePkgs))
-
+  pkgs <- discoverBaseRecommendedPackages()
+  setdiff(packages, c("R", pkgs$base))
 }
 
 excludeRecommendedPackages <- function(packages) {
 
-  installedPkgsSystemLib <- as.data.frame(utils::installed.packages(lib.loc = .Library), stringsAsFactors = FALSE)
-  installedPkgsLocalLib <- as.data.frame(utils::installed.packages(lib.loc = .libPaths()[1]), stringsAsFactors = FALSE)
+  # NOTE: becase utils::installed.packages() can fail in some
+  # scenarios, e.g. when libraries live on networked drives,
+  # we fall back to a simple listing of files in the associated
+  # library paths
+  installedPkgsSystemLib <- list.files(.Library)
+  installedPkgsLocalLib  <- list.files(.libPaths()[1])
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
-  recommendedPkgsInSystemLib <- with(installedPkgsSystemLib, Package[Priority %in% "recommended"])
-  recommendedPkgsInLocalLib <- with(installedPkgsLocalLib, Package[Priority %in% "recommended"])
+  pkgs <- discoverBaseRecommendedPackages()
+  rcmd <- pkgs$recommended
+  recommendedPkgsInSystemLib <- intersect(installedPkgsSystemLib, rcmd)
+  recommendedPkgsInLocalLib <- intersect(installedPkgsLocalLib, rcmd)
   toExclude <- setdiff(recommendedPkgsInSystemLib, recommendedPkgsInLocalLib)
   setdiff(packages, toExclude)
 
@@ -102,7 +128,7 @@ dropSystemPackages <- function(packages) {
 }
 
 recursivePackageDependencies <- function(pkgs, lib.loc,
-                                         available.packages = available.packages(),
+                                         available.packages = availablePackages(),
                                          fields = c("Depends", "Imports", "LinkingTo")) {
 
   if (!length(pkgs)) return(NULL)

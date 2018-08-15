@@ -11,24 +11,56 @@ cloneTestProject <- function(projectName) {
 }
 
 # "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
-# Not run from tests.
-rebuildTestRepo <- function(testroot) {
-  wd <- getwd()
-  on.exit(setwd(wd))
-  src <- file.path(testroot, "packages")
-  setwd(src)
+rebuildTestRepo <- function(testroot = getwd()) {
+
+  # Try to guess where the DESCRIPTION file lives (for R CMD check
+  # and for interactive testing)
+  candidates <- c(
+    "DESCRIPTION",
+    "../../DESCRIPTION",
+    "../../00_pkg_src/packrat/DESCRIPTION",
+    "../../packrat/DESCRIPTION"
+  )
+
+  for (candidate in candidates) {
+    if (file.exists(candidate)) {
+      DESCRIPTION <- normalizePath(candidate, winslash = "/")
+      break
+    }
+  }
+
+  owd <- getwd()
+  on.exit(setwd(owd))
+
+  # Move to the folder housing our dummy packages.
+  source <- file.path(testroot, "packages")
+  setwd(source)
+
+  # Create a dummy folder for the current version of Packrat.
+  dir.create("packrat", showWarnings = FALSE)
+  file.copy(DESCRIPTION, "packrat/DESCRIPTION", overwrite = TRUE)
+
+  # Force Packrat tests to believe the currently installed / tested
+  # version of Packrat is on CRAN.
+  cat("Repository: CRAN",
+      file = "packrat/DESCRIPTION",
+      sep = "\n",
+      append = TRUE)
+
+  # Copy in the dummy folders.
   target <- file.path(testroot, "repo", "src", "contrib")
   unlink(target, recursive = TRUE)
   dir.create(target, recursive = TRUE)
-  pkgs <- list.files(src)
+  pkgs <- list.files(source)
   for (pkg in pkgs) {
-    descfile <- as.data.frame(read.dcf(file.path(src, pkg, "DESCRIPTION")))
+    descfile <- as.data.frame(read.dcf(file.path(source, pkg, "DESCRIPTION")))
     tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
                      sep = "")
     tar(tarball, pkg, compression = "gzip", tar = "internal")
     dir.create(file.path(target, pkg))
-    file.rename(file.path(src, tarball), file.path(target, pkg, tarball))
+    file.rename(file.path(source, tarball), file.path(target, pkg, tarball))
   }
+
   tools::write_PACKAGES(target, subdirs = TRUE)
 }
 
@@ -127,4 +159,26 @@ withTestContext <- function(expr) {
 scopeTestContext <- function() {
   beginTestContext()
   defer(endTestContext(), parent.frame())
+}
+
+bundle_test <- function(bundler, checker, ...) {
+
+  # set and restore directory
+  owd <- setwd(tempdir())
+  on.exit(setwd(owd), add = TRUE)
+
+  # create temporary directory
+  dir <- file.path(tempdir(), "packrat-test-bundle")
+  dir.create(dir)
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  # enter, bundle and untar
+  setwd("packrat-test-bundle")
+  suppressWarnings(packrat::init(enter = FALSE))
+  bundler(file = "test-bundle.tar.gz", ...)
+  utils::untar("test-bundle.tar.gz", exdir = "untarred", tar = "internal")
+
+  # run checker
+  checker()
+
 }

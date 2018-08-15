@@ -7,17 +7,19 @@ canUseGitHubDownloader <- function() {
 }
 
 githubDownload <- function(url, destfile, ...) {
-  github_pat      <- yoink("devtools", "github_pat")
-  authenticate    <- yoink("httr", "authenticate")
-  GET             <- yoink("httr", "GET")
-  content         <- yoink("httr", "content")
+  onError(1, {
+    github_pat      <- yoink("devtools", "github_pat")
+    authenticate    <- yoink("httr", "authenticate")
+    GET             <- yoink("httr", "GET")
+    content         <- yoink("httr", "content")
 
-  token <- github_pat(quiet = TRUE)
-  auth <- if (!is.null(token))
-    authenticate(token, "x-oauth-basic", "basic")
-  else
-    list()
-  request <- GET(url, auth)
-  writeBin(content(request, "raw"), destfile)
-  if (file.exists(destfile)) 0 else 1
+    token <- github_pat(quiet = TRUE)
+    auth <- if (!is.null(token))
+      authenticate(token, "x-oauth-basic", "basic")
+    else
+      list()
+    request <- GET(url, auth)
+    writeBin(content(request, "raw"), destfile)
+    if (file.exists(destfile)) 0 else 1
+  })
 }

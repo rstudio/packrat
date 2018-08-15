@@ -7,7 +7,8 @@
 .snapshotImpl(project, available = NULL, lib.loc = libDir(project),
   dry.run = FALSE, ignore.stale = FALSE, prompt = interactive(),
   auto.snapshot = FALSE, verbose = TRUE, fallback.ok = FALSE,
-  snapshot.sources = TRUE, implicit.packrat.dependency = TRUE)
+  snapshot.sources = TRUE, implicit.packrat.dependency = TRUE,
+  infer.dependencies = TRUE)
 }
 \arguments{
 \item{project}{The project directory. Defaults to current working
@@ -51,6 +52,9 @@ package?}
 dependency of this project, if not otherwise discovered? This should be
 \code{FALSE} only if you can guarantee that \code{packrat} will be available
 via other means when attempting to load this project.}
+
+\item{infer.dependencies}{If \code{TRUE}, infer package dependencies by
+examining the \R code.}
 }
 \description{
 This is the internal implementation for \code{\link{snapshot}}. Most users

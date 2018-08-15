@@ -66,6 +66,7 @@ bundle <- function(project = NULL,
   # Regex negation patterns that we use to selectively leave some items out
   pattern <- c(
     "^(?!\\.Rproj\\.user)",
+    "^(?!\\.Rhistory)",
     if (!include.src) "^(?!packrat/src/)",
     if (!include.lib) "^(?!packrat/lib.*)",
     if (!include.bundles) "^(?!packrat/bundles/)",
@@ -176,14 +177,14 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
 
   whereFiles <- list.files()
   message("- Untarring '", basename(bundle), "' in directory '", where, "'...")
-  untar(bundle, exdir = where, ...)
+  untar(bundle, exdir = where, tar = "internal", ...)
   dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
 
   if (restore) {
-    setwd(dirName)
     if (length(dirName) != 1) {
       stop("Couldn't infer top-level directory name; cannot perform automatic restore")
     }
+    setwd(dirName)
     ## Ensure the (empty) library directory is present before restoring
     dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")

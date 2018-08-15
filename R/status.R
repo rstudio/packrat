@@ -89,7 +89,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   # it is in general necessary to have the set of `available.packages()` to fill in
   # broken links.
   availablePkgs <- if (hasCachedAvailablePackages())
-    available.packages()
+    availablePackages()
   else
     availablePackagesSkeleton()
 

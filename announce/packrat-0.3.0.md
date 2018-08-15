@@ -7,7 +7,7 @@ in this release:
    `install.packages` call, we can automatically update the lockfile to record
    any new packages),
 2. Packrat integration with the latest release of
-   [RStudio](http://www.rstudio.com/products/rstudio/download/) will make
+   [RStudio](https://www.rstudio.com/products/rstudio/download/) will make
    using Packrat with your projects easier than ever,
 3. Packrat projects now gain project-specific options, allowing you to control
    a number of features -- please see `?"packrat-options"` for more details;
@@ -56,7 +56,7 @@ A full set of NEWS items follows:
   `packrat::on()` and `packrat::off()`.
 
 - `.Rmd` files are now parsed for YAML dependencies (for
-  [`rmarkdown`](http://rmarkdown.rstudio.com/) dependencies).
+  [`rmarkdown`](https://rmarkdown.rstudio.com/) dependencies).
 
 - Recommended packages (e.g. `lattice`) are now only taken as Packrat
   dependencies if explicitly installed by the user -- for example, if you want

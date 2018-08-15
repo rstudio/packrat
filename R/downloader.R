@@ -61,6 +61,13 @@ downloadImpl <- function(url, method, ...) {
       return(result)
   }
 
+  # If this is a path to a Bitbucket URL, attempt to download.
+  if (isBitbucketURL(url) && canUseBitbucketDownloader()) {
+    result <- try(bitbucketDownload(url, ...), silent = TRUE)
+    if (!inherits(result, "try-error"))
+      return(result)
+  }
+
   # When on Windows using an 'internal' method, we need to call
   # 'setInternet2' to set some appropriate state.
   if (is.windows() && method == "internal") {
@@ -159,6 +166,29 @@ canUseLibCurlDownloadMethod <- function() {
 }
 
 
+# Attempt download.packages multiple times.
+#
+# Assumes we are downloading a single package.
+downloadPackagesWithRetries <- function(name, destdir, repos, type, maxTries = 5L) {
+  maxTries <- as.integer(maxTries)
+  stopifnot(maxTries > 0L)
+  stopifnot(length(name) > 0L)
+
+  fileLoc <- matrix(character(), 0L, 2L)
+  for (i in 1:maxTries) {
+    fileLoc <- download.packages(name,
+                                 destdir = destdir,
+                                 repos = repos,
+                                 type = type,
+                                 quiet = TRUE)
+    if (nrow(fileLoc)) {
+      break
+    }
+  }
+  fileLoc
+}
+
+
 # Download from a URL with a certain number of retries -- returns TRUE
 # if the download succeeded, and FALSE otherwise
 downloadWithRetries <- function(url, ..., maxTries = 5L) {
@@ -207,6 +237,12 @@ inferAppropriateDownloadMethod <- function(url) {
   if (is.linux() || is.mac() || isSecureWebProtocol)
     return(secureDownloadMethod())
 
+
+  # Use "wininet" as default for R >= 3.2
+  if (is.windows() && getRversion() >= "3.2")
+    return("wininet")
+
+  # default
   return("internal")
 }
 

@@ -38,7 +38,8 @@ appDependencies <- function(project = NULL,
                             fields = opts$snapshot.fields(),
                             implicit.packrat.dependency = TRUE) {
 
-  if (is.null(available.packages)) available.packages <- available.packages()
+  if (is.null(available.packages))
+    available.packages <- availablePackages()
 
   project <- getProjectDir(project)
 
@@ -95,7 +96,12 @@ appDependencies <- function(project = NULL,
   if (is.null(result))
     return(character())
 
-  sort_c(result)
+  sorted <- sort_c(result)
+
+  # some users have seen empty package names discovered here
+  # although we don't know the underlying cause, we should
+  # just filter these out as we know they can't be valid
+  setdiff(sorted, "")
 }
 
 # detect all package dependencies for a directory of files
@@ -103,7 +109,7 @@ dirDependencies <- function(dir) {
   dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
-  pattern <- "\\.[rR]$|\\.[rR]md$|\\.[rR]nw$|\\.[rR]pres$"
+  pattern <- "[.](?:r|rmd|rnw|rpres)$"
   pkgs <- character()
   R_files <- list.files(dir,
                         pattern = pattern,
@@ -113,9 +119,30 @@ dirDependencies <- function(dir) {
 
   ## Avoid anything within the packrat directory itself -- all inference
   ## should be done on user code
-  packratDirRegex <- paste("^", "packrat", sep = "")
+  packratDirRegex <- "(?:^|/)packrat"
   R_files <- grep(packratDirRegex, R_files, invert = TRUE, value = TRUE)
 
+  ## Avoid anything on the list of ignored directories
+  ignoredDir <- get_opts("ignored.directories")
+  if (length(ignoredDir) > 0) {
+    # Make sure all the directories end with a slash...
+    ignoredDir <- ifelse(
+      substr(ignoredDir, nchar(ignoredDir), nchar(ignoredDir)) != "/",
+      paste0(ignoredDir, "/"),
+      ignoredDir
+    )
+
+    # Make a regex to match any of them.
+    ignoredDirRegex <- paste0(
+      "(?:^",
+      paste0(
+        ignoredDir,
+        collapse=")|(?:^"
+      ),
+      ")"
+    )
+    R_files <- grep(ignoredDirRegex, R_files, invert = TRUE, value = TRUE)
+  }
 
   sapply(R_files, function(file) {
     filePath <- file.path(dir, file)
@@ -183,6 +210,27 @@ fileDependencies.Rmd <- function(file) {
 
   deps <- "rmarkdown"
 
+  # try using an evaluate-based approach for dependencies
+  if (knitrHasEvaluateHook()) {
+
+    # attempt to load rmarkdown
+    isRmarkdownLoaded <- "rmarkdown" %in% loadedNamespaces()
+    if (requireNamespace("rmarkdown", quietly = TRUE)) {
+
+      # unload rmarkdown after we're done with it if it
+      # wasn't already loaded
+      if (!isRmarkdownLoaded) {
+        on.exit(
+          try(unloadNamespace("rmarkdown"), silent = TRUE),
+          add = TRUE
+        )
+      }
+
+      # render with a custom evaluate hook to discover dependencies
+      deps <- c(deps, fileDependencies.Rmd.evaluate(file))
+    }
+  }
+
   # we don't know this file's encoding, so presume the default encoding
   encoding <- getOption("encoding")
   format <- NULL
@@ -218,8 +266,8 @@ fileDependencies.Rmd <- function(file) {
     deps <- c(deps, yamlDeps)
 
     # Extract additional dependencies from YAML parameters.
-    if (packageVersion("knitr") >= "1.10.18" &&
-        requireNamespace("knitr", quietly = TRUE))
+    if (requireNamespace("knitr", quietly = TRUE) &&
+        packageVersion("knitr") >= "1.10.18")
     {
       # attempt to extract knitr params from yaml
       knitParams <- tryCatch(
@@ -234,12 +282,8 @@ fileDependencies.Rmd <- function(file) {
         deps <- c(deps, "shiny")
         for (param in knitParams) {
           if (!is.null(param$expr)) {
-            parsed <- tryCatch(
-              parse(text = param$expr),
-              error = function(e) NULL
-            )
-
-            if (length(parsed))
+            parsed <- quietly(parse(text = param$expr))
+            if (!inherits(parsed, "error"))
               deps <- c(deps, expressionDependencies(parsed))
           }
         }
@@ -262,19 +306,27 @@ fileDependencies.Rmd <- function(file) {
     if (!knitrIsLoaded && "knitr" %in% loadedNamespaces()) {
       try(unloadNamespace("knitr"), silent = TRUE)
     }
-  })
+  }, add = TRUE)
 
   if (requireNamespace("knitr", quietly = TRUE)) {
+
     tempfile <- tempfile()
     on.exit(unlink(tempfile))
+
     tryCatch(silent(
       knitr::knit(file, output = tempfile, tangle = TRUE, encoding = encoding)
     ), error = function(e) {
       message("Unable to tangle file '", file, "'; cannot parse dependencies")
       character()
     })
-    stripAltEngines(tempfile, encoding)
-    c(deps, fileDependencies.R(tempfile))
+
+    if (file.exists(tempfile)) {
+      stripAltEngines(tempfile, encoding)
+      c(deps, fileDependencies.R(tempfile))
+    } else {
+      deps
+    }
+
   } else {
     warning("knitr is required to parse dependencies but is not available")
     deps
@@ -310,21 +362,25 @@ fileDependencies.R <- function(file) {
   # build a list of package dependencies to return
   pkgs <- character()
 
-  # parse file and examine expressions
-  tryCatch({
-    # parse() generates a warning when the file has an incomplete last line, but
-    # it still parses the file correctly; ignore this and other warnings.
-    # We'll still halt when parsing fails.
-    exprs <- suppressWarnings(parse(file, n = -1L))
-    for (i in seq_along(exprs))
-      pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
-  }, error = function(e) {
+  # parse file and examine expressions -- first attempt to
+  # parse in system encoding, then try again with UTF-8
+  exprs <- quietly(parse(file, n = -1L))
+  if (inherits(exprs, "error"))
+    exprs <- quietly(parse(file, n = -1L, encoding = "UTF-8"))
+
+  # report parse errors to the user
+  if (inherits(exprs, "error")) {
     warning(paste("Failed to parse", file, "; dependencies in this file will",
                   "not be discovered."))
-  })
+    exprs <- NULL
+  }
+
+  # extract expression dependencies
+  for (i in seq_along(exprs))
+    pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
 
   # return packages
-  unique(pkgs)
+  setdiff(unique(pkgs), "")
 }
 
 anyOf <- function(object, ...) {
@@ -501,4 +557,75 @@ isShinyApp <- function(project) {
   }
 
   return(FALSE)
+}
+
+knitrHasEvaluateHook <- function() {
+  isKnitrLoaded <- "knitr" %in% loadedNamespaces()
+  if (!requireNamespace("knitr", quietly = TRUE))
+    return(FALSE)
+
+  if (!isKnitrLoaded) {
+    on.exit(
+      try(unloadNamespace("knitr"), silent = TRUE),
+      add = TRUE
+    )
+  }
+
+  hooks <- knitr::knit_hooks$get()
+  "evaluate" %in% names(hooks)
+}
+
+
+fileDependencies.Rmd.evaluate <- function(file) {
+
+  # discovered packages (to be updated by evaluate hook)
+  deps <- list()
+
+  # save old hook and install our custom hook
+  evaluate_hook <- knitr::knit_hooks$get("evaluate")
+  on.exit(knitr::knit_hooks$set(evaluate = evaluate_hook), add = TRUE)
+  knitr::knit_hooks$set(evaluate = function(code, ...) {
+    try(silent = TRUE, {
+      parsed <- parse(text = code, encoding = "UTF-8")
+      deps <<- c(deps, expressionDependencies(parsed))
+    })
+  })
+
+  # rudely override knitr's 'inline_exec' function so
+  # that we can detect dependencies within inline chunks
+  knitr <- asNamespace("knitr")
+  if (exists("inline_exec", envir = knitr)) {
+
+    inline_exec <- yoink("knitr", "inline_exec")
+    do.call("unlockBinding", list("inline_exec", knitr))
+    assign("inline_exec", function(block, ...) {
+
+      # do our own special stuff
+      try(silent = TRUE, {
+        code <- paste(block$code, collapse = "\n")
+        parsed <- parse(text = code, encoding = "UTF-8")
+        deps <<- c(deps, expressionDependencies(parsed))
+      })
+
+      # return block input without evaluating anything
+      block$input
+
+    }, envir = knitr)
+
+    on.exit({
+      assign("inline_exec", inline_exec, envir = knitr)
+      do.call("lockBinding", list("inline_exec", knitr))
+    }, add = TRUE)
+
+  }
+
+  # attempt to render document with our custom hook active
+  outfile <- tempfile()
+  tryCatch(
+    rmarkdown::render(file, output_file = outfile, quiet = TRUE),
+    error = identity
+  )
+  unlink(outfile)
+
+  unique(unlist(deps, recursive = TRUE))
 }

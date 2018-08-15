@@ -28,6 +28,22 @@ withTestContext({
     expect_true(file.exists(file.path(lib, "toast")))
   })
 
+  test_that("init does not install dependencies when infer.dependencies is false", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("sated")
+    init(enter = FALSE, projRoot, options = list(local.repos = "packages"),
+         infer.dependencies=FALSE)
+    lib <- libDir(projRoot)
+    expect_true(file.exists(lockFilePath(projRoot)))
+    expect_true(file.exists(srcDir(projRoot)))
+    expect_true(file.exists(libDir(projRoot)))
+    expect_false(file.exists(file.path(lib, "breakfast")))
+    expect_false(file.exists(file.path(lib, "bread")))
+    expect_false(file.exists(file.path(lib, "oatmeal")))
+    expect_true(file.exists(file.path(lib, "packrat")))
+    expect_false(file.exists(file.path(lib, "toast")))
+  })
+
   test_that("restore ignores dirty packages", {
     skip_on_cran()
     projRoot <- cloneTestProject("carbs")
@@ -65,9 +81,7 @@ withTestContext({
     expect_false(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "toast")))
     installTestPkg("bread", "1.0.0", lib)
-    installTestPkg("toast", "1.0.0", lib)
     addTestDependency(projRoot, "toast")  # toast depends on bread
-    expect_true(file.exists(file.path(lib, "toast")))
     expect_true(file.exists(file.path(lib, "bread")))
 
     # Snapshot the new state and make sure we picked up both toast and its
@@ -81,6 +95,31 @@ withTestContext({
     expect_true("toast" %in% pkgs)
   })
 
+  test_that("snapshot captures new installed dependecies but not
+            inferred dependencies when infer.dependencies is FALSE", {
+              skip_on_cran()
+              projRoot <- cloneTestProject("healthy")
+              lib <- libDir(projRoot)
+              init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+
+              # Simulate the addition of a dependency
+              expect_false(file.exists(file.path(lib, "bread")))
+              expect_false(file.exists(file.path(lib, "toast")))
+              installTestPkg("bread", "1.0.0", lib)
+              addTestDependency(projRoot, "toast")  # toast depends on bread
+              expect_true(file.exists(file.path(lib, "bread")))
+
+              # Snapshot the new state and make sure we picked up both toast and its
+              # dependency, bread
+              pkgs <- pkgNames(lockInfo(projRoot))
+              expect_false("bread" %in% pkgs)
+              expect_false("toast" %in% pkgs)
+              snapshot(projRoot, infer.dependencies = FALSE)
+              pkgs <- pkgNames(lockInfo(projRoot))
+              expect_true("bread" %in% pkgs)
+              expect_false("toast" %in% pkgs)
+})
+
   test_that("dependencies in library directories are ignored", {
     skip_on_cran()
     makeLibrariesProject()
@@ -93,6 +132,18 @@ withTestContext({
     # depend on oatmeal.
     expect_true(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "oatmeal")))
+  })
+
+  test_that("dependencies in \"ignored.directories\" are ignored", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("partlyignored")
+    lib <- libDir(projRoot)
+    init(enter = FALSE, projRoot, options = list(ignored.directories="ignoreme"))
+
+    # This test project has a file called notignored.R that depends on bread, and
+    # another file called ignoreme/ignorethis.R that depends on toast.
+    expect_true(file.exists(file.path(lib, "bread")))
+    expect_false(file.exists(file.path(lib, "toast")))
   })
 
   test_that("clean removes libraries and sources", {

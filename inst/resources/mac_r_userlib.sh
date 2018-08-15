@@ -7,7 +7,7 @@ set -e
 # Date: January 14, 2014
 # Author: Joe Cheng <joe@rstudio.com>
 #
-# From http://cran.r-project.org/bin/macosx/RMacOSX-FAQ.html:
+# From https://cran.r-project.org/bin/macosx/RMacOSX-FAQ.html:
 #   The official CRAN binaries come pre-packaged in such a way that
 #   administrator have sufficient privileges to update R and install
 #   packages system-wide.
@@ -28,7 +28,7 @@ set -e
 # writable by root. This will ensure that future install.packages calls
 # will not add more packages to the system library.
 #
-# [0] http://rstudio.github.io/packrat/
+# [0] https://rstudio.github.io/packrat/
 
 
 # The system-wide library

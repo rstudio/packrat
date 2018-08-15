@@ -25,6 +25,10 @@
 #'   being present in the last snapshot.
 #' @param snapshot.sources Boolean; should package sources be downloaded during
 #'   snapshot?
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining \R code used within the project. This included the \R code
+#'   contained within \code{.R} files, as well as other multi-mode documents
+#'   (e.g. \code{.Rmd}).
 #'
 #' @note \code{snapshot} modifies the project's \code{packrat.lock} file, and
 #' the sources stored in the project's \code{packrat/src} directory. If you
@@ -52,7 +56,8 @@ snapshot <- function(project = NULL,
                      ignore.stale = FALSE,
                      dry.run = FALSE,
                      prompt = interactive(),
-                     snapshot.sources = TRUE)
+                     snapshot.sources = TRUE,
+                     infer.dependencies = TRUE)
 {
 
   if (is.null(available))
@@ -60,7 +65,7 @@ snapshot <- function(project = NULL,
     available <- if (dry.run)
       availablePackagesSkeleton()
     else
-      available.packages()
+      availablePackages()
   }
 
   project <- getProjectDir(project)
@@ -83,7 +88,8 @@ snapshot <- function(project = NULL,
                                  dry.run,
                                  ignore.stale = ignore.stale,
                                  prompt = prompt && !dry.run,
-                                 snapshot.sources = snapshot.sources)
+                                 snapshot.sources = snapshot.sources,
+                                 infer.dependencies = infer.dependencies)
 
   if (dry.run)
     return(invisible(snapshotResult))
@@ -107,6 +113,8 @@ snapshot <- function(project = NULL,
 #'   dependency of this project, if not otherwise discovered? This should be
 #'   \code{FALSE} only if you can guarantee that \code{packrat} will be available
 #'   via other means when attempting to load this project.
+#' @param infer.dependencies If \code{TRUE}, infer package dependencies by
+#'   examining the \R code.
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
@@ -120,14 +128,15 @@ snapshot <- function(project = NULL,
                           verbose = TRUE,
                           fallback.ok = FALSE,
                           snapshot.sources = TRUE,
-                          implicit.packrat.dependency = TRUE) {
+                          implicit.packrat.dependency = TRUE,
+                          infer.dependencies = TRUE) {
 
   if (is.null(available))
   {
     available <- if (dry.run)
       availablePackagesSkeleton()
     else
-      available.packages()
+      availablePackages()
   }
 
   # ensure packrat directory available
@@ -161,9 +170,15 @@ snapshot <- function(project = NULL,
   ignore <- c(ignore, c("manipulate", "rstudio"))
 
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
-  inferredPkgs <- sort_c(appDependencies(project,
-                                         available.packages = available,
-                                         implicit.packrat.dependency = implicit.packrat.dependency))
+
+  if (infer.dependencies) {
+    inferredPkgs <- sort_c(appDependencies(project,
+                                           available.packages = available,
+                                           implicit.packrat.dependency = implicit.packrat.dependency))
+  } else {
+    # packrat is always a dependency
+    inferredPkgs <- 'packrat'
+  }
 
   inferredPkgsNotInLib <- setdiff(inferredPkgs, libPkgs)
 
@@ -174,11 +189,11 @@ snapshot <- function(project = NULL,
                                      project = project,
                                      available = available,
                                      lib.loc = lib.loc,
-                                     recursive = FALSE)
+                                     recursive = TRUE)
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
-  # (CRAN, GitHub, source repository)
+  # (CRAN, GitHub, Bitbucket, source repository)
   inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
                                           project = project,
                                           available = available,
@@ -336,7 +351,7 @@ getBiocRepos <- function() {
 activeRepos <- function(project) {
   project <- getProjectDir(project)
   repos <- getOption("repos")
-  repos[repos == "@CRAN@"] <- "http://cran.rstudio.com/"
+  repos[repos == "@CRAN@"] <- "https://cran.rstudio.com/"
 
   # Check to see whether Bioconductor is installed. Bioconductor maintains a
   # private set of repos, which we need to expose here so we can download

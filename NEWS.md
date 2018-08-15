@@ -1,4 +1,84 @@
-# Packrat 0.4.9 (unreleased)
+# Packrat 0.5.0 (UNRELEASED)
+
+- A project is now only considered 'packified' if it has both a Packrat
+  lockfile as well as the associated autoloader in the project `.Rprofile`.
+
+- Calling `packrat::init()` on a project that already contains a Packrat
+  lockfile no longer attempts to re-snapshot and restore the project.
+
+- Packrat now supports R packages available on BitBucket, courtesy of a PR from
+  @mariamedp. (#481)
+
+- Added the project option `symlink.system.packages`: users can now configure
+  whether base R packages from the system library are symlinked into a private
+  library `packrat/lib-R`. Disabling this can be useful if you intentionally
+  want Packrat to use packages that have been installed into the system library.
+
+- Fixed an issue where attempts to snapshot could fail when
+  the R libraries live on a network drive.
+
+# Packrat 0.4.9-3
+
+- Adjusted unit tests to accommodate new CRAN package checks.
+
+- Fixed an issue where `packrat::repos_upload()` would fail to re-compress
+  uploaded tarballs. (#474)
+
+# Packrat 0.4.9-2
+
+- Fix a regression where attempts to download packages from GitHub when
+  devtools is not available could fail. (#464)
+
+# Packrat 0.4.9-1
+
+- Fix test errors on CRAN.
+
+# Packrat 0.4.9
+
+- Packrat now understands how to install R packages from private GitHub
+  repositories. (The `GITHUB_PAT` environment variable should be set with
+  an access token that provides access to the associated repositories.)
+  (#449, #448, @ras44)
+
+- Packrat gained the `get_lockfile_metadata()` and `set_lockfile_metadata()`
+  functions, for changing metadata associated with a particular Packrat project;
+  e.g. the active R version, or the active set of repositories. (#429, @cderv)
+
+- Packrat now ignores all source files within a `packrat/` directory when
+  inferring dependencies, not just the `packrat/` directory discovered at
+  the top level. (#385)
+
+- Packrat no longer includes the `.Rhistory` file when creating bundles. (#401)
+
+- Packrat now properly handles the plain 'http' protocol when using versions
+  R >= 3.2. (We now set `options(download.file.method = "wininet")` rather than
+  `options(download.file.method = "internal")` in such cases.)
+
+- The `infer.dependencies` argument can now be used to switch off the scanning of
+  code for dependencies when using `packrat::init()` and `packrat::snapshot()`.
+
+- Packrat no longer fails to download the current version of a package if
+  the binary and source branches of the active repositories are out of sync.
+
+- Packrat now attempts to parse scripts using UTF-8 encoding in addition to the
+  system encoding. This should primarily help users on Windows who (rightly)
+  save their documents using UTF-8 encoding rather than the default system
+  encoding.
+
+- Packrat now screens out empty package names discovered during package
+  dependency discovery. (#314)
+  
+- The Packrat global cache is now enabled on Windows. Junction points
+  (rather than symbolic links) are used to populate entries in the
+  private Packrat library.
+
+- The 'lib-R' and 'lib-ext' directories now use architecture-specific
+  sub-directories for their libraries. This should further help in cases
+  where multiple versions of R are operating within a Packrat project
+  at the same time.
+
+- Packrat now better handles cases where non-symlink files find their
+  way into the 'lib-R' and 'lib-ext' folders.
 
 - Packrat now better handles packages that contain trailing
   newlines in their DESCRIPTION file -- it now avoids
@@ -12,11 +92,6 @@
 
 - Packrat no longer automatically restores projects on startup when
   Packrat is not detected within the library directory.
-
-- Packrat now performs a non-recursive dependency search when
-  `packrat::snapshot()` is invoked. This should greatly improve
-  the performance of snapshot in projects with a large number of
-  installed packages.
 
 - Packrat now more eagerly caches packages during `packrat::restore()` --
   packages will be immediately cached following successful installation,
@@ -368,7 +443,7 @@
   `packrat::on()` and `packrat::off()`.
 
 - `.Rmd` files are now parsed for YAML dependencies (for
-  [`rmarkdown`](http://rmarkdown.rstudio.com/) dependencies).
+  [`rmarkdown`](https://rmarkdown.rstudio.com/) dependencies).
 
 - Recommended packages (e.g. `lattice`) are now only taken as Packrat
   dependencies if explicitly installed by the user -- for example, if you want

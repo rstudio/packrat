@@ -1,7 +1,6 @@
 context("GitHub")
 
 test_that("we can use devtools:::download to retrieve GitHub archives", {
-
   skip("run manually for now")
 
   if (!canUseGitHubDownloader())

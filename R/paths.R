@@ -24,6 +24,8 @@
 #' \code{src_dir()}     \tab \code{R_PACKRAT_SRC_DIR}      \tab \code{packrat.src.dir}     \tab \code{"packrat/src"} \cr
 #' \code{lib_dir()}     \tab \code{R_PACKRAT_LIB_DIR}      \tab \code{packrat.lib.dir}     \tab \code{"packrat/lib"} \cr
 #' \code{bundles_dir()} \tab \code{R_PACKRAT_BUNDLES_DIR}  \tab \code{packrat.bundles.dir} \tab \code{"packrat/bundles"} \cr
+#' \emph{(none)}        \tab \code{R_PACKRAT_LIB_R_DIR}    \tab \code{packrat.lib-r.dir}   \tab \code{"packrat/lib-R"} \cr
+#' \emph{(none)}        \tab \code{R_PACKRAT_LIB_EXT_DIR}  \tab \code{packrat.lib-ext.dir} \tab \code{"packrat/lib-ext"} \cr
 #' }
 #'
 #' @param project The project directory.
@@ -59,13 +61,13 @@ bundles_dir <- function(project = NULL) {
 
 getProjectDir <- function(project = NULL) {
 
-  if (!is.null(project))
+  if (!is.null(project) && length(project) > 0)
     return(normalizePath(project, winslash = "/", mustWork = TRUE))
 
   packratOption(
     "R_PACKRAT_PROJECT_DIR",
     "packrat.project.dir",
-    normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+    if (length(getwd()) > 0) normalizePath(getwd(), winslash = "/", mustWork = TRUE) else ""
   )
 }
 
@@ -74,11 +76,15 @@ getPackratDir <- function(project = NULL) {
   file.path(project, "packrat")
 }
 
+platformRelDir <- function() {
+  file.path(R.version$platform, getRversion())
+}
+
 libDir <- function(project = NULL) {
   packratOption(
     "R_PACKRAT_LIB_DIR",
     "packrat.lib.dir",
-    file.path(libraryRootDir(project), R.version$platform, getRversion())
+    file.path(libraryRootDir(project), platformRelDir())
   )
 }
 
@@ -86,7 +92,7 @@ libRdir <- function(project = NULL) {
   packratOption(
     "R_PACKRAT_LIB_R_DIR",
     "packrat.lib-r.dir",
-    file.path(getPackratDir(project), "lib-R")
+    file.path(getPackratDir(project), "lib-R", platformRelDir())
   )
 }
 
@@ -94,7 +100,7 @@ libExtDir <- function(project = NULL) {
   packratOption(
     "R_PACKRAT_LIB_EXT_DIR",
     "packrat.lib-ext.dir",
-    file.path(getPackratDir(project), "lib-ext")
+    file.path(getPackratDir(project), "lib-ext", platformRelDir())
   )
 }
 

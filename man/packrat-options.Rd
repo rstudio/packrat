@@ -36,21 +36,21 @@ Get and set options for the current packrat-managed project.
 
 \itemize{
 \item \code{auto.snapshot}: Perform automatic, asynchronous snapshots when running interactively?
-  (logical; defaults to \code{TRUE})
+  (logical; defaults to \code{FALSE})
 \item \code{use.cache}:
   Install packages into a global cache, which is then shared across projects? The
   directory to use is read through \code{Sys.getenv("R_PACKRAT_CACHE_DIR")}.
-  Not yet implemented for Windows.
+  Windows support is currently experimental.
   (logical; defaults to \code{FALSE})
 \item \code{print.banner.on.startup}:
   Print the banner on startup? Can be one of \code{TRUE} (always print),
   \code{FALSE} (never print), and \code{'auto'} (do the right thing)
   (defaults to \code{"auto"})
 \item \code{vcs.ignore.lib}:
-  Add the packrat private library to your version control system ignore?
+  If TRUE, version control configuration is modified to ignore packrat private libraries.
   (logical; defaults to \code{TRUE})
 \item \code{vcs.ignore.src}:
-  Add the packrat private sources to your version control system ignore?
+  If TRUE, version control configuration is modified to ignore packrat private sources.
   (logical; defaults to \code{FALSE})
 \item \code{external.packages}:
   Packages which should be loaded from the user library. This can be useful for
@@ -71,6 +71,14 @@ Get and set options for the current packrat-managed project.
   will also not be tracked (unless these packages are encountered as dependencies
   in a separate context from the ignored package).
   (character; empty by default)
+\item \code{ignored.directories}:
+  Prevent packrat from looking for dependencies inside certain directories of your
+  workspace. For example, if you have set your "local.repos" to be inside your local
+  workspace so that you can track custom packages as git submodules.
+  Each item should be the relative path to a directory in the workspace, e.g. "data",
+  "lib/gitsubmodule". Note that packrat already ignores any "invisible" files and
+  directories, such as those whose names start with a "." character.
+  (character; empty by default)
 \item \code{quiet.package.installation}:
   Emit output during package installation?
   (logical; defaults to \code{TRUE})
@@ -85,6 +93,11 @@ Get and set options for the current packrat-managed project.
   What fields of a package's DESCRIPTION file should be used when discovering
   dependencies?
   (character, defaults to \code{c("Imports", "Depends", "LinkingTo")})
+\item \code{symlink.system.packages}:
+  Symlink base \R packages into a private \code{packrat/lib-R} directory?
+  This is done to further encapsulate the project from user packages that
+  have been installed into the \R system library.
+  (boolean, defaults to \code{TRUE})
 }
 }
 

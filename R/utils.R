@@ -497,8 +497,15 @@ write_dcf <- function(x, file = "", append = FALSE, indent = 4,
 }
 
 symlink <- function(from, to) {
-  if (is.windows()) Sys.junction(from, to)
-  else file.symlink(from, to)
+
+  # attempt to generating the symlink
+  if (is.windows())
+    Sys.junction(from, to)
+  else
+    file.symlink(from, to)
+
+  # check to see if the file was properly generated
+  file.exists(to)
 }
 
 with_dir <- function(dir, expr) {
@@ -548,26 +555,6 @@ filePrefix <- function() {
 
 reFilePrefix <- function() {
   paste("^", filePrefix(), sep = "")
-}
-
-# Call 'available.packages()' with an invalid URL to get the
-# 'skeleton' output of 'available.packages()' (ie, an empty matrix
-# with all appropriate fields populated)
-availablePackagesSkeleton <- function() {
-
-  # Use internal download file method just to ensure no errors leak.
-  download.file.method <- getOption("download.file.method")
-  on.exit(options(download.file.method = download.file.method), add = TRUE)
-  options(download.file.method = "internal")
-
-  # Use 'available.packages()' to query a URL that doesn't exist
-  result <- withCallingHandlers(
-    available.packages("/no/such/path/here/i/hope/"),
-    warning = function(w) invokeRestart("muffleWarning"),
-    message = function(m) invokeRestart("muffleMessage")
-  )
-
-  result
 }
 
 isProgramOnPath <- function(program) {
@@ -686,4 +673,16 @@ ensureDirectory <- function(path) {
     stop("failed to create directory at path '", path, "'")
 
   path
+}
+
+quietly <- function(expr) {
+  withCallingHandlers(
+    tryCatch(expr = expr, error = identity),
+    warning = function(w) invokeRestart("muffleWarning"),
+    message = function(m) invokeRestart("muffleMessage")
+  )
+}
+
+onError <- function(default, expr) {
+  tryCatch(expr, error = function(e) default)
 }

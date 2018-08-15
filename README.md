@@ -17,7 +17,7 @@ Use packrat to make your R projects more:
   and ensures those exact versions are the ones that get installed wherever you
   go.
 
-See the [project page](http://rstudio.github.io/packrat/) for more information,
+See the [project page](https://rstudio.github.io/packrat/) for more information,
 or join the discussion at
 [packrat-discuss](https://groups.google.com/forum/#!forum/packrat-discuss).
 Read the [release
@@ -50,7 +50,7 @@ Packrat functions:
 Share a Packrat project with `bundle` and `unbundle`:
 - `packrat::bundle()`: Bundle a packrat project, for easy sharing.
 - `packrat::unbundle()`: Unbundle a packrat project, generating a project
-  directory with libraries restored.
+  directory with libraries restored from the most recent snapshot.
 
 Navigate projects and set/get options with:
 - `packrat::on()`, `packrat::off()`: Toggle packrat mode on and off, for
@@ -103,5 +103,5 @@ Packrat supports a set of common analytic workflows:
 # Setting up your own custom, CRAN-like repositories
 
 Please view the [set-up
-guide](http://rstudio.github.io/packrat/custom-repos.html) here for a simple
+guide](https://rstudio.github.io/packrat/custom-repos.html) here for a simple
 walkthrough in how you might set up your own, local, custom CRAN repository.

@@ -1,0 +1,18 @@
+---
+title: Hello, world!
+---
+
+```{r}
+library(abc)
+library(def)
+```
+
+```{r eval=FALSE}
+x + {}}
+```
+
+```{r}
+library(ghi)
+library(jkl)
+```
+

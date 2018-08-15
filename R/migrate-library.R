@@ -89,6 +89,9 @@ migrate_packages <- function() {
   githubPkgs <- pkgsToMigrate[sapply(descContent, function(x) {
     "GithubRepo" %in% colnames(x)
   })]
+  bitbucketPkgs <- pkgsToMigrate[sapply(descContent, function(x) {
+    "RemoteType" %in% colnames(x) && x[,"RemoteType"] == "bitbucket"
+  })]
   cranPkgs <- pkgsToMigrate[sapply(descContent, function(x) {
     "Repository" %in% colnames(x) && x[, "Repository"] == "CRAN"
   })]
@@ -96,7 +99,7 @@ migrate_packages <- function() {
     "biocViews" %in% colnames(x)
   })]
 
-  unknownPkgs <- setdiff(pkgsToMigrate, c(githubPkgs, cranPkgs, biocPkgs))
+  unknownPkgs <- setdiff(pkgsToMigrate, c(githubPkgs, bitbucketPkgs, cranPkgs, biocPkgs))
 
   # Ignore RStudio packages
   unknownPkgs <- setdiff(unknownPkgs, c("manipulate", "rstudio"))
@@ -118,11 +121,28 @@ migrate_packages <- function() {
     }
   }
 
+  ## Install packages from Bitbucket
+  if (length(bitbucketPkgs)) {
+    message("> Installing Bitbucket packages")
+    if (!requireNamespace("devtools")) {
+      install.packages("devtools", lib = userLib())
+    }
+    for (pkg in bitbucketPkgs) {
+      desc <- as.data.frame(descContent[[pkg]], stringsAsFactors = FALSE)
+      ref <- desc$RemoteSha %||% desc$RemoteRef %||% "master"
+      devtools::install_bitbucket(repo = desc$RemoteRepo,
+                                  username = desc$RemoteUsername,
+                                  ref = ref,
+                                  quick = TRUE
+      )
+    }
+  }
+
   ## Install packages from BioC
   if (length(biocPkgs)) {
     message("> Installing BioC packages")
     try(unloadNamespace("BiocInstaller"), silent = TRUE)
-    source("http://bioconductor.org/biocLite.R")
+    source("https://bioconductor.org/biocLite.R")
     BiocInstaller::biocLite(biocPkgs, lib.loc = userLib)
   }
 
@@ -148,6 +168,7 @@ migrate_packages <- function() {
     cran = cranPkgs,
     bioc = biocPkgs,
     github = githubPkgs,
+    bitbucket = bitbucketPkgs,
     missing = setdiff(failures, c("rstudio", "manipulate"))
   )
 

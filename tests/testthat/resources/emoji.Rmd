@@ -1,0 +1,6 @@
+---
+title: "missing package reference"
+output: html_document
+---
+
+`r emo::ji("see_no_evil")`

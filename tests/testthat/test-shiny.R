@@ -1,10 +1,11 @@
 context("Shiny")
 
 test_that("projects which use shiny implicitly are detected", {
+  skip_on_cran()
 
   # Try checking to see if packrat believes all example shiny apps
   # are, in fact, shiny apps
-  options(repos = c(CRAN = "http://cran.rstudio.org"))
+  options(repos = c(CRAN = "https://cran.rstudio.org"))
   if ("shiny" %in% rownames(installed.packages())) {
     examplesPath <- system.file("examples", package = "shiny")
     apps <- list.files(examplesPath, full.names = TRUE)

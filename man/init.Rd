@@ -4,7 +4,8 @@
 \alias{init}
 \title{Initialize Packrat on a new or existing \R project}
 \usage{
-init(project = ".", options = NULL, enter = TRUE, restart = enter)
+init(project = ".", options = NULL, enter = TRUE, restart = enter,
+  infer.dependencies = TRUE)
 }
 \arguments{
 \item{project}{The directory that contains the \R project.}
@@ -15,6 +16,9 @@ init(project = ".", options = NULL, enter = TRUE, restart = enter)
 \item{enter}{Boolean, enter packrat mode for this project after finishing a init?}
 
 \item{restart}{If \code{TRUE}, restart the R session after init.}
+
+\item{infer.dependencies}{If \code{TRUE}, infer package dependencies by
+examining the \R code.}
 }
 \description{
 Given a project directory, makes a new packrat project in the directory.
@@ -25,7 +29,9 @@ Given a project directory, makes a new packrat project in the directory.
 \enumerate{
 
 \item Application dependencies are computed by examining the \R code
-throughout the project for \code{library} and \code{require} calls.
+throughout the project for \code{library} and \code{require} calls. You can
+opt out of this behavior by setting \code{infer.dependencies} to
+\code{FALSE}.
 
 \item A snapshot is taken of the version of each package currently used by
 the project as described in \code{\link{snapshot}}, and each package's

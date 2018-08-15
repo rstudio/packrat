@@ -21,12 +21,21 @@ repos_create <- function(path, name = basename(path), add = TRUE) {
   dir.create(path, recursive = TRUE)
   root <- normalize.path(path)
 
+  # helper function for writing PACKAGES, PACKAGES.gz into a directory
+  # (as tools::write_PACKAGES does nothing if the directory is empty)
+  write_packages <- function(dir) {
+    file.create(file.path(dir, "PACKAGES"))
+    conn <- gzfile(file.path(dir, "PACKAGES.gz"), "wt")
+    write.dcf(data.frame(), conn)
+    close(conn)
+  }
+
   ## Create the 'contrib' dirs
 
   # Create the 'src' dir and write PACKAGES
   srcContribDir <- file.path(root, "src", "contrib")
   dir.create(srcContribDir, recursive = TRUE)
-  tools::write_PACKAGES(srcContribDir, type = "source")
+  write_packages(srcContribDir)
 
   # Create the 'bin' dirs and write PACKAGES
   binContribDirs <- binContribDirs(root)
@@ -39,7 +48,7 @@ repos_create <- function(path, name = basename(path), add = TRUE) {
         "mac.binary"
       else
         "source"
-      tools::write_PACKAGES(dir, type = type)
+      write_packages(dir)
     })
   })
 
@@ -60,7 +69,7 @@ binContribDirs <- function(root, rVersions = NULL) {
   # so that these versions of R don't fail when attempting to query
   # the PACKAGES file in the binary directory
   if (is.null(rVersions))
-    rVersions <- c("2.15", "2.16", "3.0", "3.1", "3.2", "3.3")
+    rVersions <- c("2.15", "2.16", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5")
 
   list(
     win.binary = file.path(root, "bin/windows/contrib", rVersions),
@@ -168,7 +177,7 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
 
   # Annotate the package DESCRIPTION with the repository
   tmpTarballPath <- file.path(tempdir(), "packrat-tarball-upload")
-  untar(package, exdir = tmpTarballPath)
+  untar(package, exdir = tmpTarballPath, tar = "internal")
   pkgName <- sub("_.*", "", basename(package))
   untarredPath <- file.path(tmpTarballPath, pkgName)
   setRepositoryField(
@@ -180,7 +189,13 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
   setwd(tmpTarballPath)
   on.exit(setwd(owd), add = TRUE)
 
-  success <- tar(basename(package), files = pkgName)
+  success <- tar(
+    basename(package),
+    files = pkgName,
+    compression = "gzip",
+    tar = "internal"
+  )
+
   if (success != 0)
     stop("Failed to re-tar package tarball")
 
