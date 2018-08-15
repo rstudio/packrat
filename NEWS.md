@@ -1,5 +1,11 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- A project is now only considered 'packified' if it has both a Packrat
+  lockfile as well as the associated autoloader in the project `.Rprofile`.
+
+- Calling `packrat::init()` on a project that already contains a Packrat
+  lockfile no longer attempts to re-snapshot and restore the project.
+
 - Packrat now supports R packages available on BitBucket, courtesy of a PR from
   @mariamedp. (#481)
 
