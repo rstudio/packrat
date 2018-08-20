@@ -8,7 +8,7 @@ test_that("with_extlib successfully works with no packages provided", {
 
   orig_libs <- packrat:::getLibPaths()
   .libPaths(c(file.path(getwd(), "packages"), orig_libs))
-  on.exit(.libPaths(orig_libs), add=TRUE)
+  on.exit(.libPaths(orig_libs), add = TRUE)
 
   expect_identical(packageVersion("bread"), package_version("1.0.0"))
 

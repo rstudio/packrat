@@ -26,7 +26,7 @@
 ##' with_extlib(expr = devtools::load_all("path/to/project"))
 ##' }
 ##' @export
-with_extlib <- function(packages=NULL, expr, envir = parent.frame()) {
+with_extlib <- function(packages = NULL, expr, envir = parent.frame()) {
 
   # need to force this promise now otherwise it will get evaluated
   # in the wrong context later on

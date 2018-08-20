@@ -11,7 +11,7 @@
 \alias{packrat_lib}
 \title{Managing External Libraries}
 \usage{
-with_extlib(packages, expr, envir = parent.frame())
+with_extlib(packages = NULL, expr, envir = parent.frame())
 
 extlib(packages)
 
@@ -20,8 +20,12 @@ user_lib()
 packrat_lib()
 }
 \arguments{
-\item{packages}{A set of package names (as a character vector) to load for
-the duration of evaluation of \code{expr}.}
+\item{packages}{An optional set of package names (as a character
+vector) to load for the duration of evaluation of \code{expr}.
+Whether \code{packages} is provided or \code{NULL} (the
+default), \code{expr} is evaluated in an environment where the
+external library path is in place, not the local (packrat)
+library path.}
 
 \item{expr}{An \R expression.}
 
@@ -36,5 +40,12 @@ libraries; that is, the libraries that would be available upon launching a new
 \examples{
 \dontrun{
 with_extlib("lattice", xyplot(1 ~ 1))
+with_extlib(expr = packageVersion("lattice"))
+# since devtools requires roxygen2 >= 5.0.0 for this step, this
+# should fail unless roxygen2 is available in the packrat lib.loc
+with_extlib("devtools", load_all("path/to/project"))
+# this method will work given roxygen2 is installed in the
+# non-packrat lib.loc with devtools
+with_extlib(expr = devtools::load_all("path/to/project"))
 }
 }
