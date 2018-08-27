@@ -205,6 +205,16 @@ endswith <- function(str1, str2) {
   })
 }
 
+stopIfNoLockfile <- function(project) {
+  path <- lockFilePath(project)
+  if (!file.exists(path)) {
+    stop("This project does not have a lockfile. (Have you called 'packrat::snapshot()' yet?)",
+         call. = FALSE)
+  }
+
+  invisible(TRUE)
+}
+
 stopIfNotPackified <- function(project) {
 
   if (!checkPackified(project, quiet = TRUE)) {

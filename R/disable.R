@@ -24,7 +24,6 @@ disable <- function(project = NULL, restart = TRUE) {
 
   # get the project
   project <- getProjectDir(project)
-  stopIfNotPackified(project)
 
   # remove packrat from the .Rprofile
   editRprofileAutoloader(project, "remove")

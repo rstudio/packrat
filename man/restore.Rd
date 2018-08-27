@@ -4,8 +4,8 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-restore(project = NULL, overwrite.dirty = FALSE, prompt = interactive(),
-  dry.run = FALSE, restart = !dry.run)
+restore(project = NULL, overwrite.dirty = FALSE,
+  prompt = interactive(), dry.run = FALSE, restart = !dry.run)
 }
 \arguments{
 \item{project}{The project directory. When in packrat mode, if this is \code{NULL},

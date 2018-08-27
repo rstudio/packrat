@@ -3,9 +3,7 @@
 \name{packrat-mode}
 \alias{packrat-mode}
 \alias{packrat_mode}
-\alias{packrat-mode}
 \alias{on}
-\alias{packrat-mode}
 \alias{off}
 \title{Packrat Mode}
 \usage{

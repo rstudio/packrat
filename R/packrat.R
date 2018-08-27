@@ -331,7 +331,7 @@ restore <- function(project = NULL,
                     restart = !dry.run) {
 
   project <- getProjectDir(project)
-  stopIfNotPackified(project)
+  stopIfNoLockfile(project)
 
   if (!dry.run) {
     callHook(project, "restore", TRUE)
@@ -448,7 +448,6 @@ clean <- function(packages = NULL,
                   force = FALSE) {
 
   project <- getProjectDir(project)
-  stopIfNotPackified(project)
 
   callHook(project, "clean", TRUE)
   on.exit(callHook(project, "clean", FALSE), add = TRUE)

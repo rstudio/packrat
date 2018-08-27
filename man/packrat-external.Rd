@@ -3,11 +3,8 @@
 \name{packrat-external}
 \alias{packrat-external}
 \alias{with_extlib}
-\alias{packrat-external}
 \alias{extlib}
-\alias{packrat-external}
 \alias{user_lib}
-\alias{packrat-external}
 \alias{packrat_lib}
 \title{Managing External Libraries}
 \usage{
