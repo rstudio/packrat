@@ -6,8 +6,8 @@
 \usage{
 bundle(project = NULL, file = NULL, include.src = TRUE,
   include.lib = FALSE, include.bundles = TRUE,
-  include.vcs.history = FALSE, overwrite = FALSE, omit.cran.src = FALSE,
-  ...)
+  include.vcs.history = FALSE, overwrite = FALSE,
+  omit.cran.src = FALSE, ...)
 }
 \arguments{
 \item{project}{The project directory. Defaults to the currently activate

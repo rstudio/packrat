@@ -4,7 +4,6 @@
 \name{packrat-options}
 \alias{packrat-options}
 \alias{get_opts}
-\alias{packrat-options}
 \alias{set_opts}
 \alias{opts}
 \title{Get/set packrat project options}

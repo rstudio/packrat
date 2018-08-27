@@ -3,15 +3,10 @@
 \name{repository-management}
 \alias{repository-management}
 \alias{repos_add}
-\alias{repository-management}
 \alias{repos_add_local}
-\alias{repository-management}
 \alias{repos_set}
-\alias{repository-management}
 \alias{repos_set_local}
-\alias{repository-management}
 \alias{repos_remove}
-\alias{repository-management}
 \alias{repos_list}
 \title{Add a Repository}
 \usage{

@@ -69,10 +69,6 @@ snapshot <- function(project = NULL,
   }
 
   project <- getProjectDir(project)
-
-  # Prompt the user to initialize if the project has not yet been initialized
-  stopIfNotPackified(project)
-
   if (file.exists(snapshotLockFilePath(project))) {
     stop("An automatic snapshot is currently in progress -- cannot proceed")
   }
