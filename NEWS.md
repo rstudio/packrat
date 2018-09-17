@@ -1,5 +1,10 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- `packrat::with_extlib()` now works with no `packages` provided;
+  both with and without this option, the new behavior is that `expr`
+  is executed in an environment where the original (not packrat)
+  library search path is in place.
+
 - A project is now only considered 'packified' if it has both a Packrat
   lockfile as well as the associated autoloader in the project `.Rprofile`.
 

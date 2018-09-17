@@ -5,23 +5,34 @@
 ##' libraries; that is, the libraries that would be available upon launching a new
 ##' \R session.
 ##'
-##' @param packages A set of package names (as a character vector) to load for
-##'   the duration of evaluation of \code{expr}.
+##' @param packages An optional set of package names (as a character
+##'   vector) to load for the duration of evaluation of \code{expr}.
+##'   Whether \code{packages} is provided or \code{NULL} (the
+##'   default), \code{expr} is evaluated in an environment where the
+##'   external library path is in place, not the local (packrat)
+##'   library path.
 ##' @param expr An \R expression.
 ##' @param envir An environment in which the expression is evaluated.
 ##' @name packrat-external
 ##' @rdname packrat-external
 ##' @examples \dontrun{
 ##' with_extlib("lattice", xyplot(1 ~ 1))
+##' with_extlib(expr = packageVersion("lattice"))
+##' # since devtools requires roxygen2 >= 5.0.0 for this step, this
+##' # should fail unless roxygen2 is available in the packrat lib.loc
+##' with_extlib("devtools", load_all("path/to/project"))
+##' # this method will work given roxygen2 is installed in the
+##' # non-packrat lib.loc with devtools
+##' with_extlib(expr = devtools::load_all("path/to/project"))
 ##' }
 ##' @export
-with_extlib <- function(packages, expr, envir = parent.frame()) {
+with_extlib <- function(packages = NULL, expr, envir = parent.frame()) {
 
   # need to force this promise now otherwise it will get evaluated
   # in the wrong context later on
   force(envir)
 
-  if (!is.character(packages)) {
+  if (!is.null(packages) && !is.character(packages)) {
     stop("'packages' should be a character vector of libraries", call. = FALSE)
   }
 
@@ -34,11 +45,13 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
       oldSearch <- search()
 
       libPaths <- .packrat_mutables$get("origLibPaths")
+      oldLibPaths <- .libPaths()
       if (!length(libPaths))
         libPaths <- getDefaultLibPaths()
+      .libPaths(libPaths)
 
       for (package in packages) {
-        library(package, character.only = TRUE, lib.loc = libPaths, warn.conflicts = FALSE)
+        library(package, character.only = TRUE, warn.conflicts = FALSE)
       }
 
       ## Evaluate the call
@@ -57,6 +70,7 @@ with_extlib <- function(packages, expr, envir = parent.frame()) {
       for (path in setdiff(newSearch, oldSearch)) {
         try(forceUnload(path))
       }
+      .libPaths(oldLibPaths)
     })
 
   })
