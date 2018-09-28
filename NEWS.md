@@ -1,5 +1,11 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- The scheme used for hashing packages that enter the Packrat cache has
+  changed -- now, a defined ordering of fields is used when hashing a
+  package's DESCRIPTION file. Note that this implies a package may need to be
+  re-cached on restore, in the case that its hash has changed. This change
+  should not affect any existing packages in the cache. (#505, @aronatkins)
+
 - `packrat::with_extlib()` now works with no `packages` provided;
   both with and without this option, the new behavior is that `expr`
   is executed in an environment where the original (not packrat)
