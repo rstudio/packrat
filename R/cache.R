@@ -50,15 +50,12 @@ hash <- function(path, descLookup = installedDescLookup) {
   # it essentially makes packages installed from source un-recoverable, since they will get
   # built transiently and installed (and so that field could never be replicated).
 
-  # Create a "sub" data frame with a consistently ordered set of columns by
-  # first ensuring that every column has a (blank) value and then selecting
-  # with the ordered columns.
+  # Create a "sub" data frame with a consistently ordered set of columns.
   #
   # This ensures that package hashing is not sensitive to DESCRIPTION field
   # order.
-  missing <- setdiff(fields, names(DESCRIPTION))
-  DESCRIPTION[missing] <- ""
-  sub <- DESCRIPTION[fields]
+  common <- intersect(fields, names(DESCRIPTION))
+  sub <- DESCRIPTION[common]
 
   # Handle LinkingTo specially -- we need to discover what version of packages in LinkingTo
   # were actually linked against in order to properly disambiguate e.g. httpuv 1.0 linked
