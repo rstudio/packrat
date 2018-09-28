@@ -38,14 +38,27 @@ hash <- function(path, descLookup = installedDescLookup) {
   remote_fields <- if ("GithubSHA1" %in% names(DESCRIPTION)) {
     "GithubSHA1"
   } else {
+    # Mirror the order used by devtools when augmenting the DESCRIPTION.
     c("RemoteType", "RemoteHost", "RemoteRepo", "RemoteUsername", "RemoteRef", "RemoteSha", "RemoteSubdir")
   }
+
+  # Mirror the order of DESCRIPTION fields produced by `package.skeleton` and
+  # `devtools::create_description`.
+  fields <- c("Package", "Version", "Depends", "Imports", "Suggests", "LinkingTo", remote_fields)
 
   # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
   # it essentially makes packages installed from source un-recoverable, since they will get
   # built transiently and installed (and so that field could never be replicated).
-  fields <- c("Package", "Version", remote_fields, "Depends", "Imports", "Suggests", "LinkingTo")
-  sub <- DESCRIPTION[names(DESCRIPTION) %in% fields]
+
+  # Create a "sub" data frame with a consistently ordered set of columns by
+  # first ensuring that every column has a (blank) value and then selecting
+  # with the ordered columns.
+  #
+  # This ensures that package hashing is not sensitive to DESCRIPTION field
+  # order.
+  missing <- setdiff(fields, names(DESCRIPTION))
+  DESCRIPTION[missing] <- ""
+  sub <- DESCRIPTION[fields]
 
   # Handle LinkingTo specially -- we need to discover what version of packages in LinkingTo
   # were actually linked against in order to properly disambiguate e.g. httpuv 1.0 linked
