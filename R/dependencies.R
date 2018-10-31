@@ -208,7 +208,7 @@ stripAltEngines <- function(file, encoding) {
 
 fileDependencies.Rmd <- function(file) {
 
-  if (!opts$fileDependencies.Rmd.evaluate) {
+  if (FALSE %in% options("fileDependencies.Rmd.evaluate")) {
     return(NULL);
   }
 
