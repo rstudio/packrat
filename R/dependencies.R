@@ -208,6 +208,10 @@ stripAltEngines <- function(file, encoding) {
 
 fileDependencies.Rmd <- function(file) {
 
+  if (!opts$fileDependencies.Rmd.evaluate) {
+    return(NULL);
+  }
+
   deps <- "rmarkdown"
 
   # try using an evaluate-based approach for dependencies
