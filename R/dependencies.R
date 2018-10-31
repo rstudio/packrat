@@ -144,11 +144,13 @@ dirDependencies <- function(dir) {
     R_files <- grep(ignoredDirRegex, R_files, invert = TRUE, value = TRUE)
   }
 
-  sapply(R_files, function(file) {
-    filePath <- file.path(dir, file)
-    pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
+  if (opts$fileDependencies.evaluate) {
+    sapply(R_files, function(file) {
+      filePath <- file.path(dir, file)
+      pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
 
-  })
+    })
+  }
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
