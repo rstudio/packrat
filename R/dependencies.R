@@ -144,7 +144,7 @@ dirDependencies <- function(dir) {
     R_files <- grep(ignoredDirRegex, R_files, invert = TRUE, value = TRUE)
   }
 
-  if (opts$fileDependencies.evaluate) {
+  if (!(FALSE %in% options("fileDependencies.evaluate"))) {
     sapply(R_files, function(file) {
       filePath <- file.path(dir, file)
       pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
