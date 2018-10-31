@@ -25,8 +25,7 @@ VALID_OPTIONS <- list(
   snapshot.recommended.packages = list(TRUE, FALSE),
   snapshot.fields = function(x) {
     is.null(x) || is.character(x)
-  },
-  fileDependencies.Rmd.evaluate = list(TRUE, FALSE)
+  }
 )
 
 default_opts <- function() {
@@ -43,8 +42,7 @@ default_opts <- function() {
     ignored.directories = c("data", "inst"),
     quiet.package.installation = TRUE,
     snapshot.recommended.packages = FALSE,
-    snapshot.fields = c("Imports", "Depends", "LinkingTo"),
-    fileDependencies.Rmd.evaluate = TRUE
+    snapshot.fields = c("Imports", "Depends", "LinkingTo")
   )
 }
 
