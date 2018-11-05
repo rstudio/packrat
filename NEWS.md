@@ -3,6 +3,11 @@
 - Packrat now supports both of BiocManager and BiocInstaller (as used for
   discovering the Bioconductor repositories active for the current project).
   BiocManager will be used for R >= 3.6.0; BiocInstaller will be used otherwise.
+
+- The R option `packrat.dependency.discovery.disabled` can be set to TRUE to
+  disable dependency discovery in projects. This can be useful if you find
+  Packrat's dependency discovery is slow (as it can be in projects containing
+  a large number of R Markdown files). (#513, @ras44)
   
 - The scheme used for hashing packages that enter the Packrat cache has
   changed -- now, a defined ordering of fields is used when hashing a
