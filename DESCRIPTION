@@ -19,7 +19,6 @@ Suggests:
     httr,
     knitr,
     rmarkdown
-Enhances: BiocInstaller
 URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 RoxygenNote: 6.1.0

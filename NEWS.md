@@ -1,5 +1,9 @@
 # Packrat 0.5.0 (UNRELEASED)
 
+- Packrat now supports both of BiocManager and BiocInstaller (as used for
+  discovering the Bioconductor repositories active for the current project).
+  BiocManager will be used for R >= 3.6.0; BiocInstaller will be used otherwise.
+  
 - The scheme used for hashing packages that enter the Packrat cache has
   changed -- now, a defined ordering of fields is used when hashing a
   package's DESCRIPTION file. Note that this implies a package may need to be
