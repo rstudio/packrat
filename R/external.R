@@ -81,10 +81,20 @@ with_extlib <- function(packages = NULL, expr, envir = parent.frame()) {
 ##' @rdname packrat-external
 ##' @export
 extlib <- function(packages) {
-  lib.loc <- getDefaultLibPaths()
-  for (package in packages) {
-    library(package, character.only = TRUE, lib.loc = lib.loc)
-  }
+
+  # place user library at front of library paths (we want to
+  # include both the user library and the packrat library just
+  # so that external packaegs can still load and depend on
+  # packages only installed within the private library as well)
+  oldLibPaths <- .libPaths()
+  newLibPaths <- c(getDefaultLibPaths(), .libPaths())
+
+  .libPaths(newLibPaths)
+  on.exit(.libPaths(oldLibPaths), add = TRUE)
+
+  for (package in packages)
+    library(package, character.only = TRUE)
+
 }
 
 loadExternalPackages <- function() {
