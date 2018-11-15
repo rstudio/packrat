@@ -1,4 +1,4 @@
-# Packrat 0.5.0 (UNRELEASED)
+# Packrat 0.5.0
 
 - Packrat now supports both of BiocManager and BiocInstaller (as used for
   discovering the Bioconductor repositories active for the current project).
