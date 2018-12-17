@@ -1,5 +1,8 @@
 # Packrat 0.5.1 (UNRELEASED)
 
+- Fixed an issue where newly-added project options did not get their correct
+  default value when no entry existed within the `packrat.opts` file. (#496)
+
 # Packrat 0.5.0
 
 - Packrat now supports both of BiocManager and BiocInstaller (as used for

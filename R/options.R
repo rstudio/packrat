@@ -293,6 +293,11 @@ read_opts <- function(project = NULL) {
     }
   })
 
+  # ensure that newly-added options have a default value
+  defaults <- default_opts()
+  missing <- setdiff(names(defaults), names(opts))
+  opts[missing] <- defaults[missing]
+
   opts
 }
 
