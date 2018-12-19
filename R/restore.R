@@ -250,6 +250,12 @@ getSourceForPkgRecord <- function(pkgRecord,
                             pkgRecord$remote_username,
                             pkgRecord$remote_repo,
                             pkgRecord$remote_sha)
+
+      # Ensure the protocol is prepended
+      if (!grepl("^http", archiveUrl)) {
+        protocol <- if (identical(method, "internal")) "http" else "https"
+        archiveUrl <- paste(protocol, archiveUrl, sep = "://")
+      }
     }
 
     srczip <- tempfile(fileext = '.tar.gz')
