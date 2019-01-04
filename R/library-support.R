@@ -4,7 +4,7 @@ symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
   # skip symlinking if requested by user
-  if (!packrat::opts$symlink.system.packages())
+  if (identical(opts$symlink.system.packages(), FALSE))
     return(FALSE)
 
   # Get the path to the base R library installation
