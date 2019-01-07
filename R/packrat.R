@@ -522,8 +522,8 @@ unused_packages <- function(project = NULL,
   orphans <- setdiff(installedPkgNames,
                      packagesInUse)
 
-  ## Exclude 'manipulate', 'rstudio'
-  orphans <- setdiff(orphans, c("manipulate", "rstudio"))
+  ## Exclude 'manipulate', 'rstudio', and ignored packages
+  orphans <- setdiff(orphans, c("manipulate", "rstudio", opts$ignored.packages()))
   orphanRecs <- getPackageRecords(orphans,
                                   project = project,
                                   available = NULL,

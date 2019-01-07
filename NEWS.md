@@ -1,5 +1,9 @@
 # Packrat 0.5.1 (UNRELEASED)
 
+- Fixed an issue where ignored packages would still be queried by
+  `packrat::unused_packages()`, which affected other APIs like `packrat::clean()`.
+  (#525)
+
 - Fixed an issue where newly-added project options did not get their correct
   default value when no entry existed within the `packrat.opts` file. (#496)
 
