@@ -1,5 +1,8 @@
 # Packrat 0.5.1 (UNRELEASED)
 
+- Packrat no longer sets `LC_ALL=C` when building source packages, as this can
+  lead to errors when building packages containing non-ASCII text. (#545)
+
 - Fixed an issue where ignored packages would still be queried by
   `packrat::unused_packages()`, which affected other APIs like `packrat::clean()`.
   (#525)

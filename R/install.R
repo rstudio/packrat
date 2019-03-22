@@ -130,7 +130,7 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
 }
 
 r_env_vars <- function() {
-  c("LC_ALL" = "C",
+  c(
     "R_LIBS" = paste(getLibPaths(), collapse = .Platform$path.sep),
     "CYGWIN" = "nodosfilewarning",
     # When R CMD check runs tests, it sets R_TESTS. When the tests
@@ -139,7 +139,8 @@ r_env_vars <- function() {
     # the R subprocesses. Unsetting it here avoids those problems.
     "R_TESTS" = "",
     "NOT_CRAN" = "true",
-    "TAR" = auto_tar())
+    "TAR" = auto_tar()
+  )
 }
 
 auto_tar <- function() {
