@@ -627,8 +627,8 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
   # discovered packages
   deps <- list()
 
-  # unique key to split R code with
-  key <- paste0("###--packrat", as.numeric(Sys.time()))
+  # unique key (line) to split R code with
+  key <- paste0("###--packrat", as.integer(Sys.time()), "\n")
 
   # rudely override knitr's 'label_code' function so
   # that we can detect dependencies within inline chunks
@@ -638,7 +638,7 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
     do.call("unlockBinding", list("label_code", knitr))
     assign("label_code", function(...) {
       # paste a known key to the end to split the code chunks with
-      paste0(label_code(...), key)
+      paste0(key, label_code(...))
     }, envir = knitr)
 
     on.exit({
@@ -667,6 +667,7 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
   # allows for some chunks to be _broken_ but not stop retrieving dependencies
   r_chunks <- strsplit(paste0(readLines(outfile), collapse = "\n"), key)[[1]]
   for(r_chunk in r_chunks) {
+    if (nchar(r_chunk) == 0) next
     try(silent = TRUE, {
       parsed <- parse(text = r_chunk, encoding = "UTF-8")
       deps <- c(deps, expressionDependencies(parsed))
