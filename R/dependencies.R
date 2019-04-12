@@ -311,28 +311,14 @@ fileDependencies.Rmd <- function(file) {
   }, add = TRUE)
 
   if (requireNamespace("knitr", quietly = TRUE)) {
-
-    tempfile <- tempfile()
-    on.exit(unlink(tempfile))
-
-    tryCatch(silent(
-      knitr::knit(file, output = tempfile, tangle = TRUE, encoding = encoding)
-    ), error = function(e) {
-      message("Unable to tangle file '", file, "'; cannot parse dependencies")
-      character()
-    })
-
-    if (file.exists(tempfile)) {
-      stripAltEngines(tempfile, encoding)
-      c(deps, fileDependencies.R(tempfile))
-    } else {
-      deps
-    }
-
+    deps <- c(
+      deps,
+      fileDependencies.Rmd.tangle(file, encoding = encoding)
+    )
   } else {
     warning("knitr is required to parse dependencies but is not available")
-    deps
   }
+  deps
 }
 
 fileDependencies.knitr <- function(...) {
@@ -628,6 +614,64 @@ fileDependencies.Rmd.evaluate <- function(file) {
     error = identity
   )
   unlink(outfile)
+
+  unique(unlist(deps, recursive = TRUE))
+}
+
+
+
+
+
+fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
+
+  # discovered packages
+  deps <- list()
+
+  # unique key to split R code with
+  key <- paste0("###--packrat", as.numeric(Sys.time()))
+
+  # rudely override knitr's 'label_code' function so
+  # that we can detect dependencies within inline chunks
+  knitr <- asNamespace("knitr")
+  if (exists("label_code", envir = knitr)) {
+    label_code <- yoink("knitr", "label_code")
+    do.call("unlockBinding", list("label_code", knitr))
+    assign("label_code", function(...) {
+      # paste a known key to the end to split the code chunks with
+      paste0(label_code(...), key)
+    }, envir = knitr)
+
+    on.exit({
+      assign("label_code", label_code, envir = knitr)
+      do.call("lockBinding", list("label_code", knitr))
+    }, add = TRUE)
+  }
+
+  # tangle out file
+  outfile <- tempfile()
+  on.exit({
+    unlink(outfile)
+  }, add = TRUE)
+
+  # attempt to tangle document with our custom hook active
+  x <- knitr::purl(file, output = outfile, quiet = TRUE, documentation = 1L)
+
+  if (!file.exists(outfile)) {
+    # nothing was created
+    return(NULL)
+  }
+
+  stripAltEngines(outfile, encoding)
+
+  # parse each r chunk independently to retrieve dependencies
+  # allows for some chunks to be _broken_ but not stop retrieving dependencies
+  r_chunks <- strsplit(paste0(readLines(outfile), collapse = "\n"), key)[[1]]
+  for(r_chunk in r_chunks) {
+    try(silent = TRUE, {
+      parsed <- parse(text = r_chunk, encoding = "UTF-8")
+      deps <- c(deps, expressionDependencies(parsed))
+    })
+  }
 
   unique(unlist(deps, recursive = TRUE))
 }
