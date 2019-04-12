@@ -318,7 +318,8 @@ fileDependencies.Rmd <- function(file) {
   } else {
     warning("knitr is required to parse dependencies but is not available")
   }
-  deps
+
+  unique(deps)
 }
 
 fileDependencies.knitr <- function(...) {
