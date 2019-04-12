@@ -669,7 +669,7 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
   for(r_chunk in r_chunks) {
     if (nchar(r_chunk) == 0) next
     try(silent = TRUE, {
-      parsed <- parse(text = r_chunk, encoding = "UTF-8")
+      parsed <- parse(text = r_chunk, encoding = encoding)
       deps <- c(deps, expressionDependencies(parsed))
     })
   }
