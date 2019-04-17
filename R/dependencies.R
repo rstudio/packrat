@@ -622,14 +622,16 @@ fileDependencies.Rmd.evaluate <- function(file) {
 
 
 
-
+# Extract dependencies per chunk rather than per file.
+# Packages like learnr have special R code chunks that are not evaluated at run time.
+# While the .Rmd file can be rendered with rmarkdown, a raw tangled R file may not be able to be processed.
 fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
 
   # discovered packages
   deps <- list()
 
   # unique key (line) to split R code with
-  key <- paste0("###--packrat", as.integer(Sys.time()), "\n")
+  key <- paste0("###--packrat-", paste0(sample(letters, 10, replace = TRUE), collapse = ""), "\n")
 
   # rudely override knitr's 'label_code' function so
   # that we can detect dependencies within inline chunks
@@ -638,7 +640,7 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
     label_code <- yoink("knitr", "label_code")
     do.call("unlockBinding", list("label_code", knitr))
     assign("label_code", function(...) {
-      # paste a known key to the end to split the code chunks with
+      # paste a known key to split the code chunks by
       paste0(key, label_code(...))
     }, envir = knitr)
 
@@ -655,7 +657,22 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
   }, add = TRUE)
 
   # attempt to tangle document with our custom hook active
-  x <- knitr::purl(file, output = outfile, quiet = TRUE, documentation = 1L)
+  tryCatch(silent(
+    knitr::purl(
+      file,
+      output = outfile, # tangled file location
+      quiet = TRUE,
+
+      # `An integer specifying the level of documentation to add
+      # to the tangled script. 1L (the default) means to add
+      # the chunk headers to the code`
+      documentation = 1L,
+      encoding = encoding
+    )
+ ), error = function(e) {
+   message("Unable to tangle file '", file, "'; cannot parse dependencies")
+   character()	
+ })
 
   if (!file.exists(outfile)) {
     # nothing was created
@@ -668,7 +685,6 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
   # allows for some chunks to be _broken_ but not stop retrieving dependencies
   r_chunks <- strsplit(paste0(readLines(outfile), collapse = "\n"), key)[[1]]
   for(r_chunk in r_chunks) {
-    if (nchar(r_chunk) == 0) next
     try(silent = TRUE, {
       parsed <- parse(text = r_chunk, encoding = encoding)
       deps <- c(deps, expressionDependencies(parsed))
