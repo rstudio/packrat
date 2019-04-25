@@ -57,3 +57,17 @@ test_that("dependencies are discovered in inline R code", {
   emojiRmd <- file.path("resources", "emoji.Rmd")
   expect_true("emo" %in% packrat:::fileDependencies(emojiRmd))
 })
+
+test_that("dependencies are discovered in R Markdown documents in independent R chunks", {
+  skip_on_cran()
+
+  someBrokenChunksRmd <- file.path("resources", "broken-chunks.Rmd")
+  brokenDeps <- packrat:::fileDependencies(someBrokenChunksRmd)
+
+  # shiny_prerendered file
+  expect_true("shiny" %in% brokenDeps)
+  # check for working chunks
+  expect_true(all(
+    c("pkgA", "pkgB", "pkgD", "pkgF", "pkgG") %in% brokenDeps
+  ))
+})

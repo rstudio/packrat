@@ -1,0 +1,42 @@
+---
+title: "Rmd with broken chunks"
+runtime: shiny_prerendered
+---
+
+This is an example document with broken chunks.
+
+### OK
+
+```{r}
+library(pkgA)
+library(pkgB)
+```
+
+
+### Broken
+
+```{r}
+library(pkgC)
+log(1
+```
+
+
+### Not Broken
+
+```{r}
+library(pkgD)
+```
+
+### Also Broken
+
+```{r}
+library(pkgE)
+log(1
+```
+
+### OK
+
+```{r}
+library(pkgF)
+library(pkgG)
+```

@@ -1,5 +1,9 @@
 # Packrat 0.5.1 (UNRELEASED)
 
+- Fixed an issue where tangled R code chunks containing invalid R code prevented 
+  Packrat from finding any dependencies.  Packrat will now look for package
+  dependencies within each code chunk independently. (#551)
+
 - Packrat no longer sets `LC_ALL=C` when building source packages, as this can
   lead to errors when building packages containing non-ASCII text. (#545)
 
