@@ -269,7 +269,7 @@ packratCacheVersion <- function() {
 }
 
 cacheLibDir <- function(...) {
-  file.path(appDataDir(), packratCacheVersion(), "library", ...)
+  file.path(appDataDir(), packratCacheVersion(), paste0(R.version$major, ".", R.version$minor), "library", ...)
 }
 
 untrustedCacheLibDir <- function(...) {
