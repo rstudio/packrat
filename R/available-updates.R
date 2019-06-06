@@ -152,7 +152,7 @@ gitlabUpdates <- function(lib.loc = .libPaths()) {
     names(DESCRIPTIONS) <- pkgs
     DESCRIPTIONS <-
       Filter(function(x) "RemoteType" %in% colnames(x) &&
-               x[,"RemoteType"] == "bitbucket", DESCRIPTIONS)
+               x[,"RemoteType"] == "gitlab", DESCRIPTIONS)
     if (!length(DESCRIPTIONS)) return(NULL)
     if (!requireNamespace("httr")) stop("Need package 'httr' to check for Gitlab updates")
     do.call(rbind, enumerate(DESCRIPTIONS, function(x) {
