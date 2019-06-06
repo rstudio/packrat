@@ -443,7 +443,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         unlink(srczip, recursive = TRUE)
     }, add = TRUE)
 
-    if (canUseGitlabownloader()) {
+    if (canUseGitlabDownloader()) {
       status <- gitlabDownload(archiveUrl, srczip)
       if (status) {
         message("FAILED")
