@@ -140,7 +140,7 @@ bitbucketUpdates <- function(lib.loc = .libPaths()) {
   }))
 }
 
-gitUpdates <- function(lib.loc = .libPaths()) {
+gitlabUpdates <- function(lib.loc = .libPaths()) {
 
   do.call(rbind, enumerate(lib.loc, function(lib) {
     pkgs <- list.files(lib, full.names = TRUE)
@@ -151,22 +151,24 @@ gitUpdates <- function(lib.loc = .libPaths()) {
     })
     names(DESCRIPTIONS) <- pkgs
     DESCRIPTIONS <-
-      Filter(function(x) any(grepl("^Github", colnames(x))), DESCRIPTIONS)
+      Filter(function(x) "RemoteType" %in% colnames(x) &&
+               x[,"RemoteType"] == "bitbucket", DESCRIPTIONS)
     if (!length(DESCRIPTIONS)) return(NULL)
-    if (!requireNamespace("httr")) stop("Need package 'httr' to check for GitHub updates")
+    if (!requireNamespace("httr")) stop("Need package 'httr' to check for Gitlab updates")
     do.call(rbind, enumerate(DESCRIPTIONS, function(x) {
-      url <- file.path("https://api.github.com",
-                       "repos",
-                       x[, "GithubUsername"],
-                       x[, "GithubRepo"],
-                       "branches")
+      url <- file.path("https://gitlab.com/",
+                       "api/v4/projects/",
+                       x[, "RemoteUsername"],
+                       x[, "RemoteRepo"],
+                       "repository",
+                       "archive.tar.gz")
       response <- httr::GET(url)
       status <- response$status
       if (response$status == 403) {
         warning("rejected by server", call. = FALSE)
         sha1 <- NA
       } else if (!response$status == 200) {
-        warning("failed to get tracking information for GitHub package '",
+        warning("failed to get tracking information for Gitlab package '",
                 x[, "Package"],
                 "'; did its associated repository move?",
                 call. = FALSE)
@@ -174,9 +176,9 @@ gitUpdates <- function(lib.loc = .libPaths()) {
       } else {
         content <- httr::content(response, "parsed")
         ## Find the index of the response with the appropriate name
-        index <- which(sapply(content, `[[`, "name") == x[, "GithubRef"])
+        index <- which(sapply(content, `[[`, "name") == x[, "RemoteRef"])
         if (!length(index)) {
-          warning("no reference '", x[, "GithubRef"],
+          warning("no reference '", x[, "RemoteRef"],
                   "' found associated with this repository; was the branch deleted?",
                   call. = FALSE)
           sha1 <- NA
@@ -189,14 +191,14 @@ gitUpdates <- function(lib.loc = .libPaths()) {
         stringsAsFactors = FALSE,
         Package = unname(x[, "Package"]),
         LibPath = lib,
-        Installed = unname(x[, "GithubSHA1"]),
+        Installed = unname(x[, "RemoteSha"]),
         Built = gsub(";.*", "", x[, "Built"]),
-        ReposVer = sha1,
-        Repository = file.path("https://github.com",
-                               x[, "GithubUsername"],
-                               x[, "GithubRepo"],
-                               "tree",
-                               x[, "GithubRef"])
+        ReposVer = sha,
+        Repository = file.path("https://gitlab.com",
+                               x[, "RemoteUsername"],
+                               x[, "RemoteRepo"],
+                               "src",
+                               x[, "RemoteRef"])
       )
     }))
   }))
