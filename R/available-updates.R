@@ -158,8 +158,9 @@ gitlabUpdates <- function(lib.loc = .libPaths()) {
     do.call(rbind, enumerate(DESCRIPTIONS, function(x) {
       url <- file.path("https://gitlab.com/",
                        "api/v4/projects/",
-                       x[, "RemoteUsername"],
-                       x[, "RemoteRepo"],
+                       paste0(x[, "RemoteUsername"],
+                              "%2F",
+                              x[, "RemoteRepo"]),
                        "repository",
                        "archive.tar.gz")
       response <- httr::GET(url)

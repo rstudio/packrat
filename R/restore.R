@@ -430,7 +430,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       pkgRecord$remote_host <- paste0(protocol, "://gitlab.com")
     }
 
-    fmt <- "%s/%s/%s/get/%s.tar.gz"
+    fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
     archiveUrl <- sprintf(fmt,
                           pkgRecord$remote_host,
                           pkgRecord$remote_username,
