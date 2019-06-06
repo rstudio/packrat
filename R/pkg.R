@@ -284,7 +284,7 @@ getPackageRecords <- function(pkgNames,
 }
 
 # Reads a description file and attempts to infer where the package came from.
-# Currently works only for packages installed from CRAN or from GitHub/Bitbucket using
+# Currently works only for packages installed from CRAN or from GitHub/Bitbucket/Gitlab using
 # devtools 1.4 or later.
 inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
@@ -320,6 +320,17 @@ inferPackageRecord <- function(df) {
       c(remote_host = as.character(df$RemoteHost)),
       c(remote_subdir = as.character(df$RemoteSubdir))
     ), class = c('packageRecord', 'bitbucket')))
+  } else if (!is.null(df$RemoteType) && df$RemoteType == "gitlab") {
+    return(structure(c(list(
+      name = name,
+      source = 'gitlab',
+      version = ver,
+      remote_repo = as.character(df$RemoteRepo),
+      remote_username = as.character(df$RemoteUsername),
+      remote_ref = as.character(df$RemoteRef),
+      remote_sha = as.character(df$RemoteSha)),
+      c(remote_host = as.character(df$RemoteHost))
+    ), class = c('packageRecord', 'gitlab')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)

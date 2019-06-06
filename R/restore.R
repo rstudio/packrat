@@ -2,7 +2,7 @@
 pkgSrcFilename <- function(pkgRecord) {
   if (identical(pkgRecord$source, "github"))
     paste(pkgRecord$gh_sha1, ".tar.gz", sep = "")
-  else if (identical(pkgRecord$source, "bitbucket"))
+  else if (pkgRecord$source %in% c("bitbucket", "gitlab"))
     paste(pkgRecord$remote_sha, ".tar.gz", sep = "")
   else
     paste(pkgRecord$name, "_", pkgRecord$version, ".tar.gz", sep = "")
@@ -23,12 +23,12 @@ isFromCranlikeRepo <- function(pkgRecord, repos) {
   if (!length(source))
     return(TRUE)
 
-  # for records that do declare a source, ensure it's not 'source', 'github' or 'bitbucket'.
+  # for records that do declare a source, ensure it's not 'source', 'github', 'bitbucket', or 'gitlab'.
   # in previous releases of packrat, we attempted to match the repository name
   # with one of the existing repositories; however, this caused issues in
   # certain environments (the names declared repositories in the lockfile, and
   # the the names of the active repositories in the R session, may not match)
-  !tolower(source) %in% c("source", "github", "bitbucket")
+  !tolower(source) %in% c("source", "github", "bitbucket", "gitlab")
 }
 
 # Given a package record and a database of packages, check to see if
@@ -37,7 +37,7 @@ versionMatchesDb <- function(pkgRecord, db) {
   versionMatch <-
     identical(pkgRecord$version, db[pkgRecord$name,"Version"])
 
-  # For GitHub and Bitbucket, we also need to check that the SHA1 is identical
+  # For GitHub, Bitbucket, and Gitlab, we also need to check that the SHA1 is identical
   # (the source may be updated even if the version hasn't been bumped)
   if (versionMatch && identical(pkgRecord$source, "github")) {
     pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
@@ -45,7 +45,7 @@ versionMatchesDb <- function(pkgRecord, db) {
       inferPackageRecord(as.data.frame(readDcf(pkgDescFile)))
     versionMatch <- identical(pkgRecord$gh_sha1,
                               installedPkgRecord$gh_sha1)
-  } else if (versionMatch && identical(pkgRecord$source, "bitbucket")) {
+  } else if (versionMatch && pkgRecord$source %in% c("gitlab", "bitbucket")) {
     pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
     installedPkgRecord <-
       inferPackageRecord(as.data.frame(readDcf(pkgDescFile)))
@@ -77,7 +77,8 @@ getSourceForPkgRecord <- function(pkgRecord,
   if (identical(pkgRecord$source, "unknown") && !quiet) {
     stop("No sources available for package ", pkgRecord$name, ". Packrat can ",
          "find sources for packages on CRAN-like repositories and packages ",
-         "installed using devtools::install_github or devtools::install_bitbucket. TODO: local repo")
+         "installed using devtools::install_github, devtools::install_gitlab",
+         "devtools::install_bitbucket. TODO: local repo")
   }
 
   # Create the directory in which to place this package's sources
@@ -366,6 +367,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     }
 
+
+
     local({
       scratchDir <- tempfile()
       on.exit({
@@ -411,6 +414,94 @@ getSourceForPkgRecord <- function(pkgRecord,
     })
 
     type <- "Bitbucket"
+  } else if (identical(pkgRecord$source, "gitlab")) {
+
+    # Prefer using https if possible. Note that 'wininet'
+    # can fail if attempting to download from an 'http'
+    # URL that redirects to an 'https' URL.
+    # https://github.com/rstudio/packrat/issues/269
+    method <- tryCatch(
+      secureDownloadMethod(),
+      error = function(e) "internal"
+    )
+
+    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
+      protocol <- if (identical(method, "internal")) "http" else "https"
+      pkgRecord$remote_host <- paste0(protocol, "://gitlab.com")
+    }
+
+    fmt <- "%s/%s/%s/get/%s.tar.gz"
+    archiveUrl <- sprintf(fmt,
+                          pkgRecord$remote_host,
+                          pkgRecord$remote_username,
+                          pkgRecord$remote_repo,
+                          pkgRecord$remote_sha)
+
+    srczip <- tempfile(fileext = '.tar.gz')
+    on.exit({
+      if (file.exists(srczip))
+        unlink(srczip, recursive = TRUE)
+    }, add = TRUE)
+
+    if (canUseGitlabownloader()) {
+      status <- gitlabDownload(archiveUrl, srczip)
+      if (status) {
+        message("FAILED")
+        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+      }
+    } else {
+      success <- downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
+      if (!success) {
+        message("FAILED")
+        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+      }
+    }
+
+    local({
+      scratchDir <- tempfile()
+      on.exit({
+        if (file.exists(scratchDir))
+          unlink(scratchDir, recursive = TRUE)
+      })
+      # untar can emit noisy warnings (e.g. "skipping pax global extended
+      # headers"); hide those
+      suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
+      # Find the base directory
+      basedir <- if (length(dir(scratchDir)) == 1)
+        file.path(scratchDir, dir(scratchDir))
+      else
+        scratchDir
+
+      if (!is.null(pkgRecord$remote_subdir))
+        basedir <- file.path(basedir, pkgRecord$remote_subdir)
+
+      if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
+        stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
+      }
+
+      remote_info <- as.data.frame(c(list(
+        RemoteRepo = pkgRecord$remote_repo,
+        RemoteUsername = pkgRecord$remote_username,
+        RemoteRef = pkgRecord$remote_ref,
+        RemoteSha = pkgRecord$remote_sha)),
+        c(RemoteSubdir = pkgRecord$remote_subdir)
+      )
+      appendToDcf(file.path(basedir, 'DESCRIPTION'), remote_info)
+
+      file.create(file.path(pkgSrcDir, pkgSrcFile))
+      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
+
+      # R's internal tar (which we use here for cross-platform consistency)
+      # emits warnings when there are > 100 characters in the path, due to the
+      # resulting incompatibility with older implementations of tar. This isn't
+      # relevant for our purposes, so suppress the warning.
+      in_dir(dirname(basedir),
+             suppressWarnings(tar(tarfile = dest, files = basename(basedir),
+                                  compression = 'gzip', tar = 'internal'))
+      )
+    })
+
+    type <- "Gitlab"
   }
   if (!quiet) {
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
@@ -614,7 +705,7 @@ installPkg <- function(pkgRecord,
   }
 
   if (is.null(pkgSrc)) {
-    # When installing from github/bitbucket or an older version, use the cached source
+    # When installing from github/bitbucket/gitlab or an older version, use the cached source
     # tarball or zip created in snapshotSources
     pkgSrc <- file.path(srcDir(project), pkgRecord$name,
                         pkgSrcFilename(pkgRecord))

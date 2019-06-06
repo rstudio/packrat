@@ -68,6 +68,13 @@ downloadImpl <- function(url, method, ...) {
       return(result)
   }
 
+  # If this is a path to a Gitlab URL, attempt to download.
+  if (isGitlabURL(url) && canUseGitlabDownloader()) {
+    result <- try(gitlabDownload(url, ...), silent = TRUE)
+    if (!inherits(result, "try-error"))
+      return(result)
+  }
+
   # When on Windows using an 'internal' method, we need to call
   # 'setInternet2' to set some appropriate state.
   if (is.windows() && method == "internal") {
