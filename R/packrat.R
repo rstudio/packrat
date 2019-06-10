@@ -405,7 +405,7 @@ restore <- function(project = NULL,
     options(repos = externalRepos)
   }, add = TRUE)
 
-  # Install each package from CRAN or github/bitbucket, from binaries when available and
+  # Install each package from CRAN or github/bitbucket/gitlab, from binaries when available and
   # then from sources.
   restoreImpl(project, repos, packages, libDir,
               pkgsToIgnore = pkgsToIgnore, prompt = prompt,

@@ -189,7 +189,7 @@ snapshot <- function(project = NULL,
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
-  # (CRAN, GitHub, Bitbucket, source repository)
+  # (CRAN, GitHub, Bitbucket, gitlab, source repository)
   inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
                                           project = project,
                                           available = available,
