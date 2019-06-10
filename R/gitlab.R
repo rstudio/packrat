@@ -8,35 +8,34 @@ canUseGitlabDownloader <- function() {
 
 gitlabDownload <- function(url, destfile, ...) {
   onError(1,{
-    gitlab_user    <- gitlab_user
-    gitlab_pwd     <- gitlab_pwd
     authenticate   <- yoink("httr", "authenticate")
     GET            <- yoink("httr", "GET")
     content        <- yoink("httr", "content")
 
     user <- gitlab_user(quiet = TRUE)
     pwd <- gitlab_pwd(quiet = TRUE)
-    auth <- if(!is.null(user) & !is.null(pwd)) {
+    auth <- if (!is.null(user) && !is.null(pwd)) {
       authenticate(user, pwd, type = "basic")
     } else {
       list()
     }
 
     request <- GET(url, auth)
-    if(request$status == 401) {
-      warning("Failed to download package from gitlab: not authorized. ",
+    if (request$status == 401) {
+      warning("Failed to download package from GitLab: not authorized. ",
               "Did you set GITLAB_USERNAME and GITLAB_PASSWORD env vars?",
               call. = FALSE)
       return(1)
     }
-    writeBin(content(request, "raw"), destfile)
+
+    if (request$status == 200) writeBin(content(request, "raw"), destfile)
     if (file.exists(destfile)) 0 else 1
   })
 }
 
-#' Retrieve Gitlab user.
+#' Retrieve GitLab user.
 #'
-#' A gitlab user
+#' A GitLab user
 #' Looks in env var \code{GITLAB_USERNAME}
 #'
 #' @keywords internal
@@ -45,7 +44,7 @@ gitlab_user <- function(quiet = FALSE) {
   user <- Sys.getenv("GITLAB_USERNAME")
   if (nzchar(user)) {
     if (!quiet) {
-      message("Using Gitlab username from envvar GITLAB_USERNAME")
+      message("Using GitLab username from envvar GITLAB_USERNAME")
     }
     return(user)
   }
@@ -53,9 +52,9 @@ gitlab_user <- function(quiet = FALSE) {
 }
 
 
-#' Retrieve Gitlab password
+#' Retrieve GitLab password
 #'
-#' A bitbucket password
+#' A GitLab password
 #' Looks in env var \code{GITLAB_PASSWORD}
 #'
 #' @keywords internal
@@ -64,7 +63,7 @@ gitlab_pwd <- function(quiet = FALSE) {
   pwd <- Sys.getenv("GITLAB_PASSWORD")
   if (nzchar(pwd)) {
     if (!quiet) {
-      message("Using Gitlab password from envvar GITLAB_PASSWORD")
+      message("Using GitLab password from envvar GITLAB_PASSWORD")
     }
     return(pwd)
   }
