@@ -1,5 +1,8 @@
 # Packrat 0.5.1 (UNRELEASED)
 
+- Added support for GitLab: packages downloaded from GitLab can now be
+  restored by Packrat. (#562, @akgold)
+
 - Fixed an issue where tangled R code chunks containing invalid R code prevented 
   Packrat from finding any dependencies.  Packrat will now look for package
   dependencies within each code chunk independently. (#551)
