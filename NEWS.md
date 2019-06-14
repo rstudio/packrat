@@ -1,5 +1,12 @@
-# Packrat 0.5.1 (UNRELEASED)
+# Packrat 0.6.0 (UNRELEASED)
 
+- BREAKING CHANGE: The default Packrat cache directory has changed, and now
+  includes an R version suffix. This helps avoid populating a single cache with
+  versions of packages compiled for different versions of R (as there is no
+  guarantee that packages compiled for e.g. R 3.4.x will work with R 3.5.x). If
+  you'd like to migrate your old Packrat cache directory, you can move the
+  directory at `dirname(packrat:::appDataDir())` to `packrat:::appDataDir()`.
+  
 - Added support for GitLab: packages downloaded from GitLab can now be
   restored by Packrat. (#562, @akgold)
 
