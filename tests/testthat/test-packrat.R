@@ -167,7 +167,6 @@ withTestContext({
     expect_true(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "oatmeal")))
     expect_true(file.exists(file.path(src, "bread")))
-    expect_false(file.exists(file.path(src, "oatmeal")))
   })
 
   test_that("init works with multiple repos", {
