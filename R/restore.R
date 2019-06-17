@@ -592,10 +592,8 @@ installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
   })))
 }
 
-# Removes one or more packages from the app's private library and cached
-# sources.
+# Removes one or more packages from the app's private library.
 removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
-  unlink(file.path(srcDir(project), pkgNames), recursive = TRUE)
   remove.packages(pkgNames, lib.loc)
   pkgNames
 }

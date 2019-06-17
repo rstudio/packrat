@@ -6,7 +6,9 @@
   guarantee that packages compiled for e.g. R 3.4.x will work with R 3.5.x). If
   you'd like to migrate your old Packrat cache directory, you can move the
   directory at `dirname(packrat:::appDataDir())` to `packrat:::appDataDir()`.
-  
+ 
+- Packrat no longer removes old source packages during a restore. (#560)
+
 - Added support for GitLab: packages downloaded from GitLab can now be
   restored by Packrat. (#562, @akgold)
 
