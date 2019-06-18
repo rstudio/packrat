@@ -235,7 +235,7 @@ with_build_tools <- function(code) {
 
 decompress <- function(src, target = tempdir()) {
   tryCatch(
-    decompressImpl(src, target),
+    suppressWarnings(decompressImpl(src, target)),
     error = function(e) {
       fmt <- paste(
         "Failed to extract archive:",

@@ -7,31 +7,32 @@ canUseBitbucketDownloader <- function() {
 }
 
 bitbucketDownload <- function(url, destfile, ...) {
-  onError(1, {
-    bitbucket_user  <- bitbucket_user
-    bitbucket_pwd   <- bitbucket_pwd
-    authenticate    <- yoink("httr", "authenticate")
-    GET             <- yoink("httr", "GET")
-    content         <- yoink("httr", "content")
+  onError(1, bitbucketDownloadImpl(url, destfile, ...))
+}
 
-    user <- bitbucket_user(quiet=TRUE)
-    pwd <- bitbucket_pwd(quiet=TRUE)
-    auth <- if (!is.null(user) & !is.null(pwd)) {
-      authenticate(user, pwd, type="basic")
-    } else {
-      list()
-    }
+bitbucketDownloadImpl <- function(url, destfile, ...) {
+  authenticate    <- yoink("httr", "authenticate")
+  GET             <- yoink("httr", "GET")
+  content         <- yoink("httr", "content")
 
-    request <- GET(url, auth)
-    if(request$status == 401) {
-      warning("Failed to download package from Bitbucket: not authorized. ",
-              "Did you set BITBUCKET_USERNAME and BITBUCKET_PASSWORD env vars?",
-              call. = FALSE)
-      return(1)
-    }
-    writeBin(content(request, "raw"), destfile)
-    if (file.exists(destfile)) 0 else 1
-  })
+  user <- bitbucket_user(quiet = TRUE)
+  pwd <- bitbucket_pwd(quiet = TRUE)
+  auth <- if (!is.null(user) & !is.null(pwd)) {
+    authenticate(user, pwd, type = "basic")
+  } else {
+    list()
+  }
+
+  request <- GET(url, auth)
+  if (request$status == 401) {
+    warning("Failed to download package from Bitbucket: not authorized. ",
+            "Did you set BITBUCKET_USERNAME and BITBUCKET_PASSWORD env vars?",
+            call. = FALSE)
+    return(1)
+  }
+
+  if (request$status == 200) writeBin(content(request, "raw"), destfile)
+  if (file.exists(destfile)) 0 else 1
 }
 
 

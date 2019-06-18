@@ -340,6 +340,11 @@ getSourceForPkgRecord <- function(pkgRecord,
       pkgRecord$remote_host <- paste0(protocol, "://bitbucket.org")
     }
 
+    # API URLs get recorded when packages are downloaded with devtools /
+    # remotes, but Packrat just wants to use 'plain' URLs when downloading
+    # package sources.
+    pkgRecord$remote_host <- sub("api.bitbucket.org/2.0", "bitbucket.org", pkgRecord$remote_host, fixed = TRUE)
+
     fmt <- "%s/%s/%s/get/%s.tar.gz"
     archiveUrl <- sprintf(fmt,
                           pkgRecord$remote_host,
