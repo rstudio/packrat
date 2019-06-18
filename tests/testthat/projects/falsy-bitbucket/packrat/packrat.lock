@@ -1,0 +1,14 @@
+PackratFormat: 1.4
+PackratVersion: 0.5.0.11
+RVersion: 3.5.1
+Repos: CRAN=https://cran.rstudio.com/
+
+Package: falsy
+Source: bitbucket
+Version: 1.0.1
+Hash: 97013d7da058d0be0595621449505494
+RemoteRepo: falsy
+RemoteUsername: rstudio_official
+RemoteRef: master
+RemoteSha: 26a36cf957a18569e311ef75b6f61f822de945ef
+RemoteHost: api.bitbucket.org/2.0

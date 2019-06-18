@@ -269,7 +269,7 @@ withTestContext({
                   snapshot.sources = FALSE)
   })
 
-  test_that("Packages restored from GitLab have RemoteType in their DESCRIPTION", {
+  test_that("Packages restored from GitLab have RemoteType+RemoteHost in their DESCRIPTION", {
     skip_on_cran()
     projRoot <- cloneTestProject("falsy-gitlab")
 
@@ -280,6 +280,21 @@ withTestContext({
     descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
     desc <- as.data.frame(readDcf(descpath), stringsAsFactors = FALSE)
     expect_true(desc$RemoteType == "gitlab")
+    expect_true(desc$RemoteHost == "gitlab.com")
+  })
+
+  test_that("Packages restored from GitLab have RemoteType+RemoteHost in their DESCRIPTION", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("falsy-bitbucket")
+
+    # ignore R version warnings
+    suppressWarnings(restore(projRoot))
+
+    # validate the installed package has properly annotated DESCRIPTION
+    descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
+    desc <- as.data.frame(readDcf(descpath), stringsAsFactors = FALSE)
+    expect_true(desc$RemoteType == "bitbucket")
+    expect_true(desc$RemoteHost == "api.bitbucket.org/2.0")
   })
 
 })
