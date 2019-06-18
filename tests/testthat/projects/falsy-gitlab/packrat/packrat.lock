@@ -1,0 +1,14 @@
+PackratFormat: 1.4
+PackratVersion: 0.5.0.11
+RVersion: 3.5.1
+Repos: CRAN=https://cran.rstudio.com/
+
+Package: falsy
+Source: gitlab
+Version: 1.0.1
+Hash: cd9f70fd26fa58a4b3070370b16b8660
+RemoteRepo: falsy
+RemoteUsername: jimhester
+RemoteRef: master
+RemoteSha: 26a36cf957a18569e311ef75b6f61f822de945ef
+RemoteHost: gitlab.com

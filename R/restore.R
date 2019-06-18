@@ -397,6 +397,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
 
       remote_info <- as.data.frame(c(list(
+        RemoteType = "bitbucket",
         RemoteRepo = pkgRecord$remote_repo,
         RemoteUsername = pkgRecord$remote_username,
         RemoteRef = pkgRecord$remote_ref,
@@ -485,6 +486,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
 
       remote_info <- as.data.frame(c(list(
+        RemoteType = "gitlab",
         RemoteRepo = pkgRecord$remote_repo,
         RemoteUsername = pkgRecord$remote_username,
         RemoteRef = pkgRecord$remote_ref,

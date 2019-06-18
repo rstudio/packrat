@@ -268,4 +268,18 @@ withTestContext({
     .snapshotImpl(projRoot, implicit.packrat.dependency = FALSE,
                   snapshot.sources = FALSE)
   })
+
+  test_that("Packages restored from GitLab have RemoteType in their DESCRIPTION", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("falsy-gitlab")
+
+    # ignore R version warnings
+    suppressWarnings(restore(projRoot))
+
+    # validate the installed package has properly annotated DESCRIPTION
+    descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
+    desc <- as.data.frame(readDcf(descpath), stringsAsFactors = FALSE)
+    expect_true(desc$RemoteType == "gitlab")
+  })
+
 })
