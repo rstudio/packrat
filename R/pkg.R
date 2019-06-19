@@ -442,20 +442,6 @@ pick <- function(property, package, defaultValue = NA) {
   }
 }
 
-# If called without a second argument, returns a curried function. If called
-# with a second argument then it returns the package without the indicated
-# properties.
-strip <- function(properties, package) {
-  func <- function(packageRecord) {
-    packageRecord[!names(packageRecord) %in% properties]
-  }
-  if (!missing(package)) {
-    return(func(package))
-  } else {
-    return(func)
-  }
-}
-
 # Returns a character vector of package names. Depends are ignored.
 pkgNames <- function(packageRecords) {
   if (length(packageRecords) == 0)
@@ -527,7 +513,20 @@ flattenPackageRecords <- function(packageRecords, depInfo = FALSE, sourcePath = 
   })
 }
 
-# States: NA (unchanged), remove, add, upgrade, downgrade, crossgrade
+diffableRecord <- function(record) {
+  ignoredFields <- c('depends', 'source_path', 'hash')
+  recordNames <- names(record)
+  recordNames <- setdiff(recordNames, ignoredFields)
+
+  # Remote SHA backwards compatible with cache v2: use 'GithubSHA1' if exists, otherwise all 'Remote' fields
+  if ("gh_sha1" %in% recordNames) {
+    # Remove all the Remote* fields when using GitHub.
+    recordNames <- recordNames[grep("^remote_", recordNames, invert = TRUE)]
+  }
+  record[recordNames]
+}
+
+# states: NA (unchanged), remove, add, upgrade, downgrade, crossgrade
 # (crossgrade means name and version was the same but something else was
 # different, i.e. different source or GitHub SHA1 hash or something)
 
@@ -546,9 +545,13 @@ diff <- function(packageRecordsA, packageRecordsB) {
       pkgA <- searchPackages(packageRecordsA, pkgName)[[1]]
       pkgB <- searchPackages(packageRecordsB, pkgName)[[1]]
 
-      if (identical(strip(c('depends', 'source_path', 'hash'), pkgA),
-                    strip(c('depends', 'source_path', 'hash'), pkgB)))
+      strippedA <- diffableRecord(pkgA)
+      strippedB <- diffableRecord(pkgB)
+
+      if (identical(strippedA, strippedB)) {
         return(NA)
+      }
+
       verComp <- compareVersion(pkgA$version, pkgB$version)
       if (verComp < 0)
         return('upgrade')
