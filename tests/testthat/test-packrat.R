@@ -297,4 +297,17 @@ withTestContext({
     expect_true(desc$RemoteHost == "api.bitbucket.org/2.0")
   })
 
+  test_that("packrat and remotes annotated descriptions are comparable", {
+    remotesDesc <- as.data.frame(readDcf("resources/descriptions/falsy.remotes"), stringsAsFactors = FALSE)
+    remotesRecord <- inferPackageRecord(remotesDesc)
+    packratDesc <- as.data.frame(readDcf("resources/descriptions/falsy.packrat"), stringsAsFactors = FALSE)
+    packratRecord <- inferPackageRecord(packratDesc)
+    diffed <- diff(list("falsy" = remotesRecord),
+                   list("falsy" = packratRecord))
+    expected <- c(
+      structure(rep.int('remove', 0), names = c()),
+      structure(rep.int('add', 0), names = c()),
+      structure(c(NA), names = c("falsy")))
+    expect_identical(diffed, expected)
+  })
 })

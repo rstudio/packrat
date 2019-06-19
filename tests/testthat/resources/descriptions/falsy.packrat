@@ -1,0 +1,27 @@
+Package: falsy
+Title: Define Truthy and Falsy Values
+Version: 1.0.1
+Authors@R: person("Gabor", "Csardi", , "csardi.gabor@gmail.com", role =
+    c("aut", "cre"))
+Description: A value is falsy if it is NULL, FALSE, the empty string,
+    zero, or an empty vector or list. Other values are truthy. The new
+    %&&% and %||% operators work with falsy and truthy values and can
+    be used for concise conditional execution.
+License: MIT + file LICENSE
+Suggests: testthat
+URL: https://github.com/gaborcsardi/falsy
+BugReports: https://github.com/gaborcsardi/falsy/issues
+NeedsCompilation: no
+Packaged: 2015-04-08 15:30:21 UTC; gaborcsardi
+Author: Gabor Csardi [aut, cre]
+Maintainer: Gabor Csardi <csardi.gabor@gmail.com>
+Repository: CRAN
+Date/Publication: 2015-04-09 00:36:26
+GithubRepo: falsy
+GithubUsername: cran
+GithubRef: master
+GithubSHA1: 26a36cf957a18569e311ef75b6f61f822de945ef
+Built: R 3.4.4; ; 2019-06-17 18:35:06 UTC; unix
+InstallAgent: packrat 0.5.0.11
+InstallSource: github
+Hash: 463f9bedd8d616a3cdb766e6fb524100
