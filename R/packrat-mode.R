@@ -317,7 +317,7 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 packrat_mode <- function(on = NULL,
                          project = NULL,
                          auto.snapshot = get_opts("auto.snapshot"),
-                         clean.search.path = TRUE) {
+                         clean.search.path = FALSE) {
 
   project <- getProjectDir(project)
 

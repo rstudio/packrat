@@ -7,6 +7,11 @@
   you'd like to migrate your old Packrat cache directory, you can move the
   directory at `dirname(packrat:::appDataDir())` to `packrat:::appDataDir()`.
 
+- Packrat no longer attempts to unload packages loaded from the user library
+  after calling `packrat::init()`, as this could fail in a myriad of cases.
+  (To ensure proper isolation of the session, you should still restart R after
+  invoking `packrat::init()`).
+
 - Packrat now properly annotates the RemoteType field when downloading packages
   from GitLab and Bitbucket. (#564)
 
