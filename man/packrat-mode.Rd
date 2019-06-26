@@ -8,7 +8,7 @@
 \title{Packrat Mode}
 \usage{
 packrat_mode(on = NULL, project = NULL,
-  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = TRUE)
+  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = FALSE)
 
 on(project = NULL, auto.snapshot = get_opts("auto.snapshot"),
   clean.search.path = TRUE, print.banner = TRUE)
