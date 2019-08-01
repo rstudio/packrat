@@ -105,7 +105,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
       # If the package is currently installed, then we can return a package
       # record constructed from the DESCRIPTION file.
       df <- as.data.frame(readDcf(pkgDescFile))
-      result <- suppressWarnings(inferPackageRecord(df))
+      result <- suppressWarnings(inferPackageRecord(df, available))
 
       # Normalize NULL source vs. 'unknown' source.
       if (is.null(result$source))
@@ -139,7 +139,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
         Version = pkg[["Version"]],
         Repository = "CRAN"
       )
-      result <- suppressWarnings(inferPackageRecord(df))
+      result <- suppressWarnings(inferPackageRecord(df, available))
 
     } else {
       # We were unable to determine an appropriate package record
@@ -286,7 +286,7 @@ getPackageRecords <- function(pkgNames,
 # Reads a description file and attempts to infer where the package came from.
 # Currently works only for packages installed from CRAN or from GitHub/Bitbucket/Gitlab using
 # devtools 1.4 or later.
-inferPackageRecord <- function(df) {
+inferPackageRecord <- function(df, available=available.packages()) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
 
@@ -337,6 +337,9 @@ inferPackageRecord <- function(df) {
   } else if (!is.null(df$Repository)) {
     # It's a package from a custom CRAN-like repo!
     return(record(name, as.character(df$Repository), ver, "CustomCRANLikeRepository"))
+  } else if (name %in% rownames(available)) {
+    # It's a package from a custom CRAN-like repo
+    return(record(name, 'CustomCRANLikeRepository', ver, "CustomCRANLikeRepository"))
   } else if (identical(as.character(df$InstallSource), "source")) {
     # It's a local source package!
     return(record(name, 'source', ver, 'source'))
