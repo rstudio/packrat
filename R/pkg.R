@@ -290,78 +290,56 @@ inferPackageRecord <- function(df) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
 
+  # Constructor function
+  record <- function(name, source, version, class, ...) {
+    structure(list(name = name, source = source, version = version, ...),
+              class = c('packageRecord', class))
+  }
+
   if (!is.null(df$GithubRepo)) {
     # It's GitHub!
-    return(structure(c(list(
-      name = name,
-      source = 'github',
-      version = ver,
-      gh_repo = as.character(df$GithubRepo),
-      gh_username = as.character(df$GithubUsername),
-      gh_ref = as.character(df$GithubRef),
-      gh_sha1 = as.character(df$GithubSHA1)),
-      c(gh_subdir = as.character(df$GithubSubdir)),
-      c(remote_host = as.character(df$RemoteHost)),
-      c(remote_repo = as.character(df$RemoteRepo)),
-      c(remote_username = as.character(df$RemoteUsername)),
-      c(remote_ref = as.character(df$RemoteRef)),
-      c(remote_sha = as.character(df$RemoteSha))
-    ), class = c('packageRecord', 'github')))
+    return(record(name, 'github', ver, 'github',
+                  gh_repo = as.character(df$GithubRepo),
+                  gh_username = as.character(df$GithubUsername),
+                  gh_ref = as.character(df$GithubRef),
+                  gh_sha1 = as.character(df$GithubSHA1),
+                  gh_subdir = as.character(df$GithubSubdir),
+                  remote_host = as.character(df$RemoteHost),
+                  remote_repo = as.character(df$RemoteRepo),
+                  remote_username = as.character(df$RemoteUsername),
+                  remote_ref = as.character(df$RemoteRef),
+                  remote_sha = as.character(df$RemoteSha)))
   } else if (!is.null(df$RemoteType) && df$RemoteType == "bitbucket") {
     # It's Bitbucket!
-    return(structure(c(list(
-      name = name,
-      source = 'bitbucket',
-      version = ver,
-      remote_repo = as.character(df$RemoteRepo),
-      remote_username = as.character(df$RemoteUsername),
-      remote_ref = as.character(df$RemoteRef),
-      remote_sha = as.character(df$RemoteSha)),
-      c(remote_host = as.character(df$RemoteHost)),
-      c(remote_subdir = as.character(df$RemoteSubdir))
-    ), class = c('packageRecord', 'bitbucket')))
+    return(record(name, 'bitbucket', ver, 'bitbucket',
+                  remote_repo = as.character(df$RemoteRepo),
+                  remote_username = as.character(df$RemoteUsername),
+                  remote_ref = as.character(df$RemoteRef),
+                  remote_sha = as.character(df$RemoteSha),
+                  remote_host = as.character(df$RemoteHost),
+                  remote_subdir = as.character(df$RemoteSubdir)))
   } else if (!is.null(df$RemoteType) && df$RemoteType == "gitlab") {
-    return(structure(c(list(
-      name = name,
-      source = 'gitlab',
-      version = ver,
-      remote_repo = as.character(df$RemoteRepo),
-      remote_username = as.character(df$RemoteUsername),
-      remote_ref = as.character(df$RemoteRef),
-      remote_sha = as.character(df$RemoteSha)),
-      c(remote_host = as.character(df$RemoteHost))
-    ), class = c('packageRecord', 'gitlab')))
+    return(record(name, 'gitlab', ver, 'gitlab',
+                  remote_repo = as.character(df$RemoteRepo),
+                  remote_username = as.character(df$RemoteUsername),
+                  remote_ref = as.character(df$RemoteRef),
+                  remote_sha = as.character(df$RemoteSha),
+                  remote_host = as.character(df$RemoteHost)))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
   } else if (!is.null(df$biocViews)) {
     # It's Bioconductor!
-    return(structure(list(
-      name = name,
-      source = 'Bioconductor',
-      version = ver
-    ), class = c('packageRecord', 'Bioconductor')))
+    return(record(name, 'Bioconductor', ver, 'Bioconductor'))
   } else if (!is.null(df$Repository) && identical(as.character(df$Repository), 'CRAN')) {
     # It's CRAN!
-    return(structure(list(
-      name = name,
-      source = 'CRAN',
-      version = ver
-    ), class = c('packageRecord', 'CRAN')))
+    return(record(name, 'CRAN', ver, 'CRAN'))
   } else if (!is.null(df$Repository)) {
     # It's a package from a custom CRAN-like repo!
-    return(structure(list(
-      name = name,
-      source = as.character(df$Repository),
-      version = ver
-    ), class = c("packageRecord", "CustomCRANLikeRepository")))
+    return(record(name, as.character(df$Repository), ver, "CustomCRANLikeRepository"))
   } else if (identical(as.character(df$InstallSource), "source")) {
     # It's a local source package!
-    return(structure(list(
-      name = name,
-      source = 'source',
-      version = ver
-    ), class = c('packageRecord', 'source')))
+    return(record(name, 'source', ver, 'source'))
   } else if ((identical(name, "manipulate") || identical(name, "rstudio")) &&
                identical(as.character(df$Author), "RStudio")) {
     # The 'manipulate' and 'rstudio' packages are auto-installed by RStudio
@@ -386,11 +364,7 @@ inferPackageRecord <- function(df) {
       warning("Couldn't figure out the origin of package ", name)
     }
 
-    return(structure(list(
-      name = name,
-      source = 'unknown',
-      version = ver
-    ), class = 'packageRecord'))
+    return(record(name, 'unknown', ver, NULL))
   }
 }
 
