@@ -194,7 +194,7 @@ gitlabUpdates <- function(lib.loc = .libPaths()) {
         LibPath = lib,
         Installed = unname(x[, "RemoteSha"]),
         Built = gsub(";.*", "", x[, "Built"]),
-        ReposVer = sha,
+        ReposVer = sha1,
         Repository = file.path("https://gitlab.com",
                                x[, "RemoteUsername"],
                                x[, "RemoteRepo"],
