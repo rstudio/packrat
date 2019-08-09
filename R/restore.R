@@ -95,7 +95,10 @@ getSourceForPkgRecord <- function(pkgRecord,
     message("Fetching sources for ", pkgRecord$name, " (", pkgRecord$version,
             ") ... ", appendLF = FALSE)
   }
+
   type <- pkgRecord$source
+  if (identical(type, "CustomCRANLikeRepository"))
+    type <- "CRAN"
 
   # If this is a local source path, compress the local sources rather than
   # trying to download from an external source

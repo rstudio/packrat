@@ -286,7 +286,7 @@ getPackageRecords <- function(pkgNames,
 # Reads a description file and attempts to infer where the package came from.
 # Currently works only for packages installed from CRAN or from GitHub/Bitbucket/Gitlab using
 # devtools 1.4 or later.
-inferPackageRecord <- function(df, available=available.packages()) {
+inferPackageRecord <- function(df, available = availablePackages()) {
   name <- as.character(df$Package)
   ver <- as.character(df$Version)
 
@@ -338,7 +338,7 @@ inferPackageRecord <- function(df, available=available.packages()) {
     # It's a package from a custom CRAN-like repo!
     return(record(name, as.character(df$Repository), ver, "CustomCRANLikeRepository"))
   } else if (name %in% rownames(available)) {
-    # It's a package from a custom CRAN-like repo
+    # It's available on CRAN, so get it from CRAN!
     return(record(name, 'CustomCRANLikeRepository', ver, "CustomCRANLikeRepository"))
   } else if (identical(as.character(df$InstallSource), "source")) {
     # It's a local source package!
