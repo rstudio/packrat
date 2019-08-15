@@ -296,7 +296,7 @@ inferPackageRecord <- function(df, available = availablePackages()) {
               class = c('packageRecord', class))
   }
 
-  if (!is.null(df$GithubRepo)) {
+  if (!is.null(df$GithubRepo) || identical(df$RemoteType, "github")) {
     # It's GitHub!
     return(record(name, 'github', ver, 'github',
                   gh_repo = as.character(df$GithubRepo),
@@ -309,7 +309,7 @@ inferPackageRecord <- function(df, available = availablePackages()) {
                   remote_username = as.character(df$RemoteUsername),
                   remote_ref = as.character(df$RemoteRef),
                   remote_sha = as.character(df$RemoteSha)))
-  } else if (!is.null(df$RemoteType) && df$RemoteType == "bitbucket") {
+  } else if (identical(df$RemoteType, "bitbucket")) {
     # It's Bitbucket!
     return(record(name, 'bitbucket', ver, 'bitbucket',
                   remote_repo = as.character(df$RemoteRepo),
@@ -318,7 +318,7 @@ inferPackageRecord <- function(df, available = availablePackages()) {
                   remote_sha = as.character(df$RemoteSha),
                   remote_host = as.character(df$RemoteHost),
                   remote_subdir = as.character(df$RemoteSubdir)))
-  } else if (!is.null(df$RemoteType) && df$RemoteType == "gitlab") {
+  } else if (identical(df$RemoteType, "gitlab")) {
     return(record(name, 'gitlab', ver, 'gitlab',
                   remote_repo = as.character(df$RemoteRepo),
                   remote_username = as.character(df$RemoteUsername),
