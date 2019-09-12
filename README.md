@@ -18,8 +18,9 @@ Use packrat to make your R projects more:
   go.
 
 See the [project page](https://rstudio.github.io/packrat/) for more information,
-or join the discussion at
-[packrat-discuss](https://groups.google.com/forum/#!forum/packrat-discuss).
+or join the discussion on the
+[RStudio Community forums](https://community.rstudio.com/c/general).
+
 Read the [release
 notes](https://github.com/rstudio/packrat/blob/master/NEWS.md) to learn what's
 new in Packrat.
