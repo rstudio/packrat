@@ -292,11 +292,11 @@ getSourceForPkgRecord <- function(pkgRecord,
       # headers"); hide those
       suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
       # Find the base directory
-      if (length(dir(scratchDir)) == 1)({
+      if (length(dir(scratchDir)) == 1){
 	      basedir <- file.path(scratchDir, dir(scratchDir))
       } else {
 	      basedir <- scratchDir
-      })
+      }
 	      
       print(basedir)
 
