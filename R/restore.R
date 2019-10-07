@@ -300,7 +300,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       print("All about that base!")
       print(basedir)
 
-      if (!is.null(pkgRecord$gh_subdir))
+      if (!is.null(pkgRecord$gh_subdir) && !identical(pkgRecord$gh_subdir, character(0)))
         basedir <- file.path(basedir, pkgRecord$gh_subdir)
       print(pkgRecord)
       print(basedir)
