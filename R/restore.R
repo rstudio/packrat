@@ -297,7 +297,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       } else {
 	      basedir <- scratchDir
       }
-	      
+      print("All about that base!")
       print(basedir)
 
       if (!is.null(pkgRecord$gh_subdir))
