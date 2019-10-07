@@ -302,7 +302,8 @@ getSourceForPkgRecord <- function(pkgRecord,
 
       if (!is.null(pkgRecord$gh_subdir))
         basedir <- file.path(basedir, pkgRecord$gh_subdir)
-
+      print(pkgRecord)
+      print(basedir)
       print(list.files(basedir))
 
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
