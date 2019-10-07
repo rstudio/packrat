@@ -11,6 +11,7 @@ normalizeDcf <- function(path) {
 
 appendToDcf <- function(path, records) {
   normalizeDcf(path)
+  records <- Filter(length, records)
   write_dcf(records, path, append = TRUE)
 }
 

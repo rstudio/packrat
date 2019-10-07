@@ -304,13 +304,15 @@ getSourceForPkgRecord <- function(pkgRecord,
         stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
       }
 
-      ghinfo <- as.data.frame(c(list(
-        GithubRepo = pkgRecord$gh_repo,
+      ghdata <- c(
+        GithubRepo     = pkgRecord$gh_repo,
         GithubUsername = pkgRecord$gh_username,
-        GithubRef = pkgRecord$gh_ref,
-        GithubSHA1 = pkgRecord$gh_sha1)),
-        c(GithubSubdir = pkgRecord$gh_subdir)
+        GithubRef      = pkgRecord$gh_ref,
+        GithubSHA1     = pkgRecord$gh_sha1,
+        GithubSubdir   = pkgRecord$gh_subdir
       )
+
+      ghinfo <- as.data.frame(as.list(ghdata), stringsAsFactors = FALSE)
       appendToDcf(file.path(basedir, 'DESCRIPTION'), ghinfo)
 
       file.create(file.path(pkgSrcDir, pkgSrcFile))
