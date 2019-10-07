@@ -303,6 +303,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       if (!is.null(pkgRecord$gh_subdir))
         basedir <- file.path(basedir, pkgRecord$gh_subdir)
 
+      print(list.files(basedir))
+
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
         stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
       }
