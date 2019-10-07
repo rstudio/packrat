@@ -292,13 +292,19 @@ getSourceForPkgRecord <- function(pkgRecord,
       # headers"); hide those
       suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
       # Find the base directory
-      basedir <- if (length(dir(scratchDir)) == 1)
-        file.path(scratchDir, dir(scratchDir))
-      else
-        scratchDir
+      if (length(dir(scratchDir)) == 1){
+	      basedir <- file.path(scratchDir, dir(scratchDir))
+      } else {
+	      basedir <- scratchDir
+      }
+      print("All about that base!")
+      print(basedir)
 
-      if (!is.null(pkgRecord$gh_subdir))
+      if (!is.null(pkgRecord$gh_subdir) && !identical(pkgRecord$gh_subdir, character(0)))
         basedir <- file.path(basedir, pkgRecord$gh_subdir)
+      print(pkgRecord)
+      print(basedir)
+      print(list.files(basedir))
 
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
         stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)

@@ -323,6 +323,11 @@ load_pkg_description <- function(path) {
     stop("No description at ", path_desc, call. = FALSE)
   }
 
+  # Check description is not empty
+  if (file.info(path_desc)$size == 0){
+    stop("Description filie is empty at ", path_desc, call. = FALSE)
+  }
+
   desc <- as.list(readDcf(path_desc)[1, ])
   names(desc) <- tolower(names(desc))
   desc$path <- path
