@@ -297,7 +297,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       else
         scratchDir
 
-      if (!is.null(pkgRecord$gh_subdir))
+      if (length(pkgRecord$gh_subdir))
         basedir <- file.path(basedir, pkgRecord$gh_subdir)
 
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
@@ -393,7 +393,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       else
         scratchDir
 
-      if (!is.null(pkgRecord$remote_subdir))
+      if (length(pkgRecord$remote_subdir))
         basedir <- file.path(basedir, pkgRecord$remote_subdir)
 
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
@@ -483,7 +483,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       else
         scratchDir
 
-      if (!is.null(pkgRecord$remote_subdir))
+      if (length(pkgRecord$remote_subdir))
         basedir <- file.path(basedir, pkgRecord$remote_subdir)
 
       if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {

@@ -296,7 +296,7 @@ inferPackageRecord <- function(df, available = availablePackages()) {
               class = c('packageRecord', class))
   }
 
-  if (!is.null(df$GithubRepo) || identical(df$RemoteType, "github")) {
+  if (length(df$GithubRepo) || identical(df$RemoteType, "github")) {
     # It's GitHub!
     return(record(name, 'github', ver, 'github',
                   gh_repo = as.character(df$GithubRepo),
@@ -328,13 +328,13 @@ inferPackageRecord <- function(df, available = availablePackages()) {
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
-  } else if (!is.null(df$biocViews)) {
+  } else if (length(df$biocViews)) {
     # It's Bioconductor!
     return(record(name, 'Bioconductor', ver, 'Bioconductor'))
-  } else if (!is.null(df$Repository) && identical(as.character(df$Repository), 'CRAN')) {
+  } else if (length(df$Repository) && identical(as.character(df$Repository), 'CRAN')) {
     # It's CRAN!
     return(record(name, 'CRAN', ver, 'CRAN'))
-  } else if (!is.null(df$Repository)) {
+  } else if (length(df$Repository)) {
     # It's a package from a custom CRAN-like repo!
     return(record(name, as.character(df$Repository), ver, "CustomCRANLikeRepository"))
   } else if (name %in% rownames(available)) {
