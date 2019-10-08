@@ -66,7 +66,7 @@ install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
   }
   opts <- paste(paste(opts, collapse = " "), paste(args, collapse = " "))
 
-  R(paste("CMD INSTALL ", shQuote(built_path), " ", opts, sep = ""),
+  R(paste("CMD INSTALL --preclean ", shQuote(built_path), " ", opts, sep = ""),
     quiet = quiet)
 
   if (reload) reload(pkg$package, quiet = quiet)
@@ -89,7 +89,7 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
   if (binary) {
     args <- c("--build", args)
-    cmd <- paste0("CMD INSTALL ", shQuote(pkg$path), " ",
+    cmd <- paste0("CMD INSTALL --preclean ", shQuote(pkg$path), " ",
                   paste0(args, collapse = " "))
     ext <- if (.Platform$OS.type == "windows") "zip" else "tgz"
   } else {
