@@ -279,12 +279,16 @@ withTestContext({
 
     # validate the installed package has properly annotated DESCRIPTION
     descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
-    desc <- as.data.frame(readDcf(descpath), stringsAsFactors = FALSE)
+    desc <- as.data.frame(readDcf(descpath))
     expect_true(desc$RemoteType == "gitlab")
     expect_true(desc$RemoteHost == "gitlab.com")
+
+    # confirm that packrat interprets this package as coming from gitlab.
+    record <- inferPackageRecord(desc)
+    expect_true(record$source == "gitlab")
   })
 
-  test_that("Packages restored from GitLab have RemoteType+RemoteHost in their DESCRIPTION", {
+  test_that("Packages restored from BitBucket have RemoteType+RemoteHost in their DESCRIPTION", {
     skip_on_cran()
     projRoot <- cloneTestProject("falsy-bitbucket")
 
@@ -293,15 +297,22 @@ withTestContext({
 
     # validate the installed package has properly annotated DESCRIPTION
     descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
-    desc <- as.data.frame(readDcf(descpath), stringsAsFactors = FALSE)
+    desc <- as.data.frame(readDcf(descpath))
     expect_true(desc$RemoteType == "bitbucket")
     expect_true(desc$RemoteHost == "api.bitbucket.org/2.0")
+
+    # confirm that packrat interprets this package as coming from bitbucket.
+    record <- inferPackageRecord(desc)
+    expect_true(record$source == "bitbucket")
+
+    # confirm remote subdir is not in the record (unused by this lockfile)
+    expect_false("remote_subdir" %in% names(record))
   })
 
   test_that("packrat and remotes annotated descriptions are comparable", {
-    remotesDesc <- as.data.frame(readDcf("resources/descriptions/falsy.remotes"), stringsAsFactors = FALSE)
+    remotesDesc <- as.data.frame(readDcf("resources/descriptions/falsy.remotes"))
     remotesRecord <- inferPackageRecord(remotesDesc)
-    packratDesc <- as.data.frame(readDcf("resources/descriptions/falsy.packrat"), stringsAsFactors = FALSE)
+    packratDesc <- as.data.frame(readDcf("resources/descriptions/falsy.packrat"))
     packratRecord <- inferPackageRecord(packratDesc)
     diffed <- diff(list("falsy" = remotesRecord),
                    list("falsy" = packratRecord))
