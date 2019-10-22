@@ -140,7 +140,7 @@ to a URI (in this case, the path on disk).
     
 Note on Windows you'll need to use
     
-    cranURI <- paste("file://", normalizePath(localCRAN, winslash = "/"), sep = "")
+    cranURI <- paste("file:", normalizePath(localCRAN, winslash = "/"), sep = "")
     
 
 If we've done this correctly, `install.packages()` will just 'know' how to
