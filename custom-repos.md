@@ -137,6 +137,11 @@ to a URI (in this case, the path on disk).
     oldRepos <- getOption("repos")
     cranURI <- paste("file://", normalizePath(localCRAN, winslash = "/"), sep = "")
     options(repos = c(oldRepos, sushi = cranURI))
+    
+Note on Windows you'll need to use
+    
+    cranURI <- paste("file://", normalizePath(localCRAN, winslash = "/"), sep = "")
+    
 
 If we've done this correctly, `install.packages()` will just 'know' how to
 install this package. Note that binaries won't be available for it (since
