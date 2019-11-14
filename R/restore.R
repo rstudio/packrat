@@ -741,6 +741,16 @@ installPkg <- function(pkgRecord,
       }
     }
 
+    # Infer package type; note that RSPM may deliver binary packages
+    # in archives with .tar.gz extension.
+    pkgType <- tryCatch(
+      archivePackageType(pkgSrc, quiet = TRUE),
+      error = identity
+    )
+
+    if (identical(pkgType, "binary"))
+      type <- "downloaded binary"
+
     local({
       # devtools does not install to any libraries other than the default, so
       # if the library we wish to install to is not the default, set as the
@@ -1035,4 +1045,49 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
     # report success
     file.exists(target)
   })
+}
+
+archivePackageType <- function(path, quiet = FALSE, default = "source") {
+
+  info <- file.info(path, extra_cols = FALSE)
+  if (is.na(info$isdir))
+    stopf("no package at path %s", shQuote(path, type = "cmd"))
+
+  # for directories, check for Meta
+  if (info$isdir) {
+    hasmeta <- file.exists(file.path(path, "Meta"))
+    type <- if (hasmeta) "binary" else "source"
+    return(type)
+  }
+
+  # otherwise, guess based on contents of package
+  methods <- list(
+    tar = function(path) untar(tarfile = path, list = TRUE),
+    zip = function(path) unzip(zipfile = path, list = TRUE)$Name
+  )
+
+  # try zip first for files ending with '.zip'
+  # (but attempt to be robust against mis-named files)
+  if (endswith(path, ".zip"))
+    methods <- methods[c("zip", "tar")]
+
+  for (method in methods) {
+
+    files <- tryCatch(method(path), error = identity)
+    if (inherits(files, "error"))
+      next
+
+    hasmeta <- any(grepl("^[^/]+/Meta/?$", files))
+    type <- if (hasmeta) "binary" else "source"
+    return(type)
+
+  }
+
+  if (!quiet) {
+    fmt <- "failed to determine type of package '%s'; assuming source"
+    warningf(fmt, shQuote(path, type = "cmd"))
+  }
+
+  default
+
 }
