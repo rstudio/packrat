@@ -1,6 +1,17 @@
 [![Build Status](https://travis-ci.org/rstudio/packrat.svg?branch=master)](https://travis-ci.org/rstudio/packrat)
 [![Coverage Status](https://codecov.io/github/rstudio/packrat/coverage.svg?branch=master)](https://codecov.io/github/rstudio/packrat?branch=master)
 
+## NOTE
+
+Packrat has been soft-deprecated and is now superceded by
+[renv](https://github.com/rstudio/renv).
+
+While we will continue maintaining Packrat, all new development will focus on
+`renv`. If you're interested in switching to `renv`, you can use
+`renv::migrate()` to migrate a project from Packrat to `renv`.
+
+---
+
 # packrat
 
 Packrat is a dependency management system for R.
