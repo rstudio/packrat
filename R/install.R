@@ -188,8 +188,10 @@ install_local_path_single <- function(path, subdir = NULL, before_install = NULL
 
   if (!file.info(path)$isdir) {
     bundle <- path
-    path <- decompress(path)
-    on.exit(unlink(path), add = TRUE)
+    target <- tempfile("packrat-install-")
+    dir.create(target)
+    path <- decompress(path, target)
+    on.exit(unlink(target, recursive = TRUE), add = TRUE)
   } else {
     bundle <- NULL
   }
