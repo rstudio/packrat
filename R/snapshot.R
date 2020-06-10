@@ -195,7 +195,7 @@ snapshot <- function(project = NULL,
                                           available = available,
                                           check.lockfile = TRUE,
                                           fallback.ok = fallback.ok,
-                                          recursive = getOption("packrat.RecursiveInference", default = T))
+                                          recursive = getOption("packrat.RecursiveInference", default = TRUE))
 
   allRecords <- c(
     libPkgRecords,
