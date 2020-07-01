@@ -32,13 +32,13 @@ set -e
 
 
 # The system-wide library
-RLIBDIR=`R --vanilla --slave -e "cat(tail(.libPaths(), 1))"`
+RLIBDIR=`R --vanilla -s -e "cat(tail(.libPaths(), 1))"`
 
 # The user library (which might not exist yet)
-RLIBSUSER=`R --vanilla --slave -e "cat(path.expand(head(Sys.getenv('R_LIBS_USER'), 1)))"`
+RLIBSUSER=`R --vanilla -s -e "cat(path.expand(head(Sys.getenv('R_LIBS_USER'), 1)))"`
 
 # The list of non-base, non-recommended packages in the system-wide library
-PKGS=`R --vanilla --slave -e "cat(with(as.data.frame(installed.packages(tail(.libPaths(), 1))), paste(Package[is.na(Priority)])))"`
+PKGS=`R --vanilla -s -e "cat(with(as.data.frame(installed.packages(tail(.libPaths(), 1))), paste(Package[is.na(Priority)])))"`
 
 if [ "$RLIBDIR" == "" ]; then
   echo "ERROR: Couldn't detect system library directory, aborting" >&2

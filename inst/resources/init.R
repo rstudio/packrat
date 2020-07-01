@@ -174,7 +174,7 @@ local({
     fullCmd <- paste(
       surround(file.path(R.home("bin"), "R"), with = "\""),
       "--vanilla",
-      "--slave",
+      "-s",
       "-f",
       surround(installFile, with = "\"")
     )
