@@ -135,7 +135,7 @@ snapshotHookImpl <- function(debug = FALSE) {
   fullCmd <- paste(buildSnapshotHookCall(project, debug = debug), collapse = "; ")
   file.create(snapshotLockPath, recursive = TRUE)
   r_path <- file.path(R.home("bin"), "R")
-  args <- paste("--vanilla", "--slave", "-e", surround(fullCmd, with = "\""))
+  args <- paste("--vanilla", "-s", "-e", surround(fullCmd, with = "\""))
   if (debug) {
     cat("Performing an automatic snapshot:\n\n")
     cat(paste(surround(r_path, with = "\""), args), "\n")
