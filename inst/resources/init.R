@@ -106,7 +106,7 @@ local({
       }
 
       ## Try downloading packrat from CRAN if available
-      else if ("packrat" %in% rownames(available.packages())) {
+      else if ("packrat" %in% available.packages()[, "Package"]) {
         message("> Installing packrat from CRAN")
         install.packages("packrat")
       }
