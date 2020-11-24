@@ -719,3 +719,23 @@ quietly <- function(expr) {
 onError <- function(default, expr) {
   tryCatch(expr, error = function(e) default)
 }
+
+
+# logger
+
+logTimestamper <- function() {
+  paste("[", as.character(Sys.time()), " packrat]", sep = "")
+}
+
+timestampedLog <- function(...) {
+  cat(paste(logTimestamper(), ..., "\n"))
+}
+
+# Returns a logging function when enabled, a noop function otherwise.
+verboseLogger <- function(verbose) {
+  if (verbose) {
+    timestampedLog
+  } else {
+    function(...) {}
+  }
+}

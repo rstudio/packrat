@@ -184,10 +184,17 @@ getPackageRecords <- function(pkgNames,
                               lib.loc = NULL,
                               missing.package = error_not_installed,
                               check.lockfile = FALSE,
-                              fallback.ok = FALSE)
+                              fallback.ok = FALSE,
+                              .recursion.level = 1,
+                              .visited.packages = new.env(parent = emptyenv()),
+                              verbose = FALSE)
 {
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
+
+  if (.recursion.level == 1) {
+    logger <- verboseLogger(verbose)
+  }
 
   # screen out empty package names that might have snuck in
   pkgNames <- setdiff(pkgNames, "")
@@ -257,13 +264,30 @@ getPackageRecords <- function(pkgNames,
   # Remove any null records
   allRecords <- dropNull(allRecords)
 
+  if (.recursion.level == 1) {
+    .nnn <- length(allRecords)
+    .iii <- 1
+  }
+
+
   # Now get recursive package dependencies if necessary
   if (recursive) {
     allRecords <- lapply(allRecords, function(record) {
+      if (.recursion.level == 1 && verbose) {
+        logger(sprintf("- getting dependency %3i of %3i %s", .iii, .nnn, record$name))
+        .iii <<- .iii + 1
+      }
       deps <- getPackageDependencies(pkgs = record$name,
                                      lib.loc = lib.loc,
                                      available.packages = available)
-      if (!is.null(deps)) {
+
+      new  <- setdiff(deps, ls(envir = .visited.packages))
+      for (pkg in new) {
+        .visited.packages[[pkg]] <- TRUE
+      }
+      deps <- new
+
+      if (!is.null(deps) && length(deps)) {
         record$depends <- getPackageRecords(
           deps,
           project = project,
@@ -272,7 +296,9 @@ getPackageRecords <- function(pkgNames,
           lib.loc = lib.loc,
           missing.package = missing.package,
           check.lockfile = check.lockfile,
-          fallback.ok = fallback.ok
+          fallback.ok = fallback.ok,
+          .recursion.level = .recursion.level + 1,
+          .visited.packages = .visited.packages
         )
       }
 
