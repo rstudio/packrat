@@ -279,7 +279,7 @@ getPackageRecords <- function(pkgNames,
           missing.package = missing.package,
           check.lockfile = check.lockfile,
           fallback.ok = fallback.ok,
-          .visited.packages
+          .visited.packages = .visited.packages
         )
       }
 
