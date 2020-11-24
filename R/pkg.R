@@ -184,13 +184,19 @@ getPackageRecords <- function(pkgNames,
                               lib.loc = NULL,
                               missing.package = error_not_installed,
                               check.lockfile = FALSE,
-                              fallback.ok = FALSE)
+                              fallback.ok = FALSE,
+                              .visited.packages = new.env(parent = emptyenv()))
 {
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
 
   # screen out empty package names that might have snuck in
   pkgNames <- setdiff(pkgNames, "")
+
+  # avoid visiting other packages that have been recursively visited
+  pkgNames <- setdiff(pkgNames, ls(envir = .visited.packages))
+  # ... and then remember that we have visited these packages.
+  for (pkg in pkgNames) { .visited.packages[[pkg]] <- TRUE }
 
   if (check.lockfile) {
     lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
@@ -272,7 +278,8 @@ getPackageRecords <- function(pkgNames,
           lib.loc = lib.loc,
           missing.package = missing.package,
           check.lockfile = check.lockfile,
-          fallback.ok = fallback.ok
+          fallback.ok = fallback.ok,
+          .visited.packages
         )
       }
 
