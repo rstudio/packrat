@@ -193,10 +193,15 @@ getPackageRecords <- function(pkgNames,
   # screen out empty package names that might have snuck in
   pkgNames <- setdiff(pkgNames, "")
 
-  # avoid visiting other packages that have been recursively visited
-  pkgNames <- setdiff(pkgNames, ls(envir = .visited.packages))
-  # ... and then remember that we have visited these packages.
-  for (pkg in pkgNames) { .visited.packages[[pkg]] <- TRUE }
+  # Prior recursive steps may have already computed this package record and
+  # its recursive dependencies. Avoid constructing this package record.
+  priorPkgRecords <- c()
+  for (pkgName in pkgNames) {
+    if (exists(pkgName, envir = .visited.packages)) {
+      append(priorPkgRecords, get(pkgName, envir = .visited.packages))
+    }
+  }
+  pkgNames <- setdiff(pkgNames, sapply(priorPkgRecords, "[[", "name"))
 
   if (check.lockfile) {
     lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
@@ -253,6 +258,7 @@ getPackageRecords <- function(pkgNames,
 
   # Collect the records together
   allRecords <- c(
+    priorPkgRecords,
     lockfilePkgRecords,
     srcPkgRecords,
     manualSrcPkgRecords,
@@ -266,24 +272,31 @@ getPackageRecords <- function(pkgNames,
   # Now get recursive package dependencies if necessary
   if (recursive) {
     allRecords <- lapply(allRecords, function(record) {
-      deps <- getPackageDependencies(pkgs = record$name,
-                                     lib.loc = lib.loc,
-                                     available.packages = available)
-      if (!is.null(deps)) {
-        record$depends <- getPackageRecords(
-          deps,
-          project = project,
-          available,
-          TRUE,
-          lib.loc = lib.loc,
-          missing.package = missing.package,
-          check.lockfile = check.lockfile,
-          fallback.ok = fallback.ok,
-          .visited.packages = .visited.packages
-        )
+      if (exists(record$name, envir = .visited.packages)) {
+        # We have already processed this package and computed its recursive
+        # dependencies. Avoid recursively computing its dependencies.
+        get(record$name, envir = .visited.packages)
+      } else {
+        # We have not already processed this package.
+        deps <- getPackageDependencies(pkgs = record$name,
+                                       lib.loc = lib.loc,
+                                       available.packages = available)
+        if (!is.null(deps)) {
+          record$depends <- getPackageRecords(
+            deps,
+            project = project,
+            available,
+            TRUE,
+            lib.loc = lib.loc,
+            missing.package = missing.package,
+            check.lockfile = check.lockfile,
+            fallback.ok = fallback.ok,
+            .visited.packages = .visited.packages
+          )
+        }
+        .visited.packages[[record$name]] <- record
+        record
       }
-
-      record
     })
   }
 
