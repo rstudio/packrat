@@ -277,14 +277,19 @@ getPackageRecords <- function(pkgNames,
         logger(sprintf("- getting dependency %3i of %3i %s", .iii, .nnn, record$name))
         .iii <<- .iii + 1
       }
+
       deps <- getPackageDependencies(pkgs = record$name,
                                      lib.loc = lib.loc,
                                      available.packages = available)
 
       new  <- setdiff(deps, ls(envir = .visited.packages))
+      # Add the newly discovered dependencies to  visited packages
       for (pkg in new) {
         .visited.packages[[pkg]] <- TRUE
       }
+      # Also add the top level package
+      .visited.packages[[record$name]] <- TRUE
+
       deps <- new
 
       if (!is.null(deps) && length(deps)) {
