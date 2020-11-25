@@ -196,7 +196,11 @@ getPackageRecords <- function(pkgNames,
   # Prior recursive steps may have already computed this package record and
   # its recursive dependencies. Avoid constructing this package record.
   priorPkgRecords <- dropNull(lapply(pkgNames, function(pkgName) {
-    get0(pkgName, envir = .visited.packages, ifnotfound = NULL)
+    if (exists(pkgName, envir = .visited.packages)) {
+      get(pkgName, envir = .visited.packages)
+    } else {
+      NULL
+    }
   }))
   if (length(priorPkgRecords)) {
     pkgNames <- setdiff(pkgNames, sapply(priorPkgRecords, "[[", "name"))
