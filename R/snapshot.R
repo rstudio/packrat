@@ -127,6 +127,9 @@ snapshot <- function(project = NULL,
                           implicit.packrat.dependency = TRUE,
                           infer.dependencies = TRUE) {
 
+  verboseDependencies <- isTRUE(getOption("packrat.verbose.snapshot.dependencies"))
+  dependencyLogger <- verboseLogger(verboseDependencies)
+
   if (is.null(available))
   {
     available <- if (dry.run)
@@ -168,6 +171,7 @@ snapshot <- function(project = NULL,
   libPkgs <- setdiff(list.files(libDir(project)), ignore)
 
   if (infer.dependencies) {
+    dependencyLogger("Detecting project dependencies")
     inferredPkgs <- sort_c(appDependencies(project,
                                            available.packages = available,
                                            implicit.packrat.dependency = implicit.packrat.dependency))
@@ -181,21 +185,25 @@ snapshot <- function(project = NULL,
   # Packages currently available in the library should have package records
   # available, so we don't overload the missing.package argument of
   # getPackageRecords and let it fail if something goes wrong
+  dependencyLogger("Getting package records")
   libPkgRecords <- getPackageRecords(libPkgs,
                                      project = project,
                                      available = available,
                                      lib.loc = lib.loc,
-                                     recursive = TRUE)
+                                     recursive = TRUE,
+                                     verbose = verboseDependencies)
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
   # (CRAN, GitHub, Bitbucket, gitlab, source repository)
+  dependencyLogger("Getting inferred package records")
   inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
                                           project = project,
                                           available = available,
                                           check.lockfile = TRUE,
                                           fallback.ok = fallback.ok,
-                                          recursive = getOption("packrat.RecursiveInference", default = TRUE))
+                                          recursive = getOption("packrat.RecursiveInference", default = TRUE),
+                                          verbose = verboseDependencies)
 
   allRecords <- c(
     libPkgRecords,
@@ -223,13 +231,16 @@ snapshot <- function(project = NULL,
   if (!ignore.stale) {
     # If any packages are installed, different from what's in the lockfile, and
     # were installed by packrat, that means they are stale.
+    dependencyLogger("Getting stale package records")
     stale <- names(diffs)[!is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)]
     if (length(stale) > 0 && verbose) {
       prettyPrint(
         getPackageRecords(stale,
                           project = project,
                           NULL,
-                          recursive = FALSE, lib.loc = lib.loc),
+                          lib.loc = lib.loc,
+                          recursive = FALSE,
+                          verbose = verboseDependencies),
         'The following packages are stale:',
         c('These packages must be updated by calling packrat::restore() before\n',
           'snapshotting. If you are sure you want the installed versions of these\n',
