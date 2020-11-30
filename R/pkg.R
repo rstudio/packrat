@@ -184,13 +184,27 @@ getPackageRecords <- function(pkgNames,
                               lib.loc = NULL,
                               missing.package = error_not_installed,
                               check.lockfile = FALSE,
-                              fallback.ok = FALSE)
+                              fallback.ok = FALSE,
+                              .visited.packages = new.env(parent = emptyenv()))
 {
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
 
   # screen out empty package names that might have snuck in
   pkgNames <- setdiff(pkgNames, "")
+
+  # Prior recursive steps may have already computed this package record and
+  # its recursive dependencies. Avoid constructing this package record.
+  priorPkgRecords <- dropNull(lapply(pkgNames, function(pkgName) {
+    if (exists(pkgName, envir = .visited.packages)) {
+      get(pkgName, envir = .visited.packages)
+    } else {
+      NULL
+    }
+  }))
+  if (length(priorPkgRecords)) {
+    pkgNames <- setdiff(pkgNames, sapply(priorPkgRecords, "[[", "name"))
+  }
 
   if (check.lockfile) {
     lockfilePkgRecords <- getPackageRecordsLockfile(pkgNames, project = project)
@@ -247,6 +261,7 @@ getPackageRecords <- function(pkgNames,
 
   # Collect the records together
   allRecords <- c(
+    priorPkgRecords,
     lockfilePkgRecords,
     srcPkgRecords,
     manualSrcPkgRecords,
@@ -260,23 +275,31 @@ getPackageRecords <- function(pkgNames,
   # Now get recursive package dependencies if necessary
   if (recursive) {
     allRecords <- lapply(allRecords, function(record) {
-      deps <- getPackageDependencies(pkgs = record$name,
-                                     lib.loc = lib.loc,
-                                     available.packages = available)
-      if (!is.null(deps)) {
-        record$depends <- getPackageRecords(
-          deps,
-          project = project,
-          available,
-          TRUE,
-          lib.loc = lib.loc,
-          missing.package = missing.package,
-          check.lockfile = check.lockfile,
-          fallback.ok = fallback.ok
-        )
+      if (exists(record$name, envir = .visited.packages)) {
+        # We have already processed this package and computed its recursive
+        # dependencies. Avoid recursively computing its dependencies.
+        get(record$name, envir = .visited.packages)
+      } else {
+        # We have not already processed this package.
+        deps <- getPackageDependencies(pkgs = record$name,
+                                       lib.loc = lib.loc,
+                                       available.packages = available)
+        if (!is.null(deps)) {
+          record$depends <- getPackageRecords(
+            deps,
+            project = project,
+            available,
+            TRUE,
+            lib.loc = lib.loc,
+            missing.package = missing.package,
+            check.lockfile = check.lockfile,
+            fallback.ok = fallback.ok,
+            .visited.packages = .visited.packages
+          )
+        }
+        .visited.packages[[record$name]] <- record
+        record
       }
-
-      record
     })
   }
 
