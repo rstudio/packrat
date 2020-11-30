@@ -185,8 +185,11 @@ getPackageRecords <- function(pkgNames,
                               missing.package = error_not_installed,
                               check.lockfile = FALSE,
                               fallback.ok = FALSE,
+                              verbose = FALSE,
+                              .recursion.level = 1,
                               .visited.packages = new.env(parent = emptyenv()))
 {
+  logger <- verboseLogger(verbose)
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
 
@@ -274,13 +277,18 @@ getPackageRecords <- function(pkgNames,
 
   # Now get recursive package dependencies if necessary
   if (recursive) {
+    .nnn <- length(allRecords)
+    .iii <- 0
     allRecords <- lapply(allRecords, function(record) {
+      .iii <<- .iii + 1
       if (exists(record$name, envir = .visited.packages)) {
         # We have already processed this package and computed its recursive
         # dependencies. Avoid recursively computing its dependencies.
+        logger(sprintf("- (%3i / %3i; depth=%i) %s - using cached dependencies", .iii, .nnn, .recursion.level, record$name))
         get(record$name, envir = .visited.packages)
       } else {
         # We have not already processed this package.
+        logger(sprintf("- (%3i / %3i; depth=%i) %s - calculating dependencies", .iii, .nnn, .recursion.level, record$name))
         deps <- getPackageDependencies(pkgs = record$name,
                                        lib.loc = lib.loc,
                                        available.packages = available)
@@ -294,6 +302,8 @@ getPackageRecords <- function(pkgNames,
             missing.package = missing.package,
             check.lockfile = check.lockfile,
             fallback.ok = fallback.ok,
+            verbose = verbose,
+            .recursion.level = .recursion.level + 1,
             .visited.packages = .visited.packages
           )
         }
