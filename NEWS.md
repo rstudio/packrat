@@ -36,6 +36,9 @@
   
 - Improve performance of dependency processing. (#615)
 
+- Infer package dependencies from `requireNamespace()` and `loadNamespace()`
+  only when the package name is character input. (#602)
+
 # Packrat 0.5.0
 
 - Packrat now supports both of BiocManager and BiocInstaller (as used for

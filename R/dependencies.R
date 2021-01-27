@@ -424,8 +424,13 @@ identifyPackagesUsed <- function(call, env) {
     return()
   }
 
-  # Check for packge loaders
-  pkgLoaders <- c("library", "require", "loadNamespace", "requireNamespace")
+  # Check for package loaders.
+  #
+  # The library() and require() calls accept symbols directly as package
+  # names, while loadNamespace() and requireNamespace() do not.
+  liberalLoaders <- c("library", "require")
+  strictLoaders <- c("loadNamespace", "requireNamespace")
+  pkgLoaders <- c(strictLoaders, liberalLoaders)
   if (!fnString %in% pkgLoaders)
     return()
 
@@ -442,25 +447,27 @@ identifyPackagesUsed <- function(call, env) {
   if (!"package" %in% names(matched))
     return()
 
-  # Protect against 'character.only = TRUE' + symbols.
-  # This defends us against a construct like:
-  #
-  #    for (x in pkgs)
-  #        library(x, character.only = TRUE)
-  #
-  if ("character.only" %in% names(matched)) {
-    if (is.symbol(matched[["package"]])) {
-      return()
+  if (fnString %in% liberalLoaders) {
+    # Protect against 'character.only = TRUE' + symbols.
+    # This defends us against a construct like:
+    #
+    #    for (x in pkgs)
+    #        library(x, character.only = TRUE)
+    #
+    if (!"character.only" %in% names(matched)) {
+      if (anyOf(matched[["package"]], is.character, is.symbol)) {
+        pkg <- as.character(matched[["package"]])
+        env[[pkg]] <- TRUE
+        return()
+      }
     }
   }
 
-  if (anyOf(matched[["package"]], is.symbol, is.character)) {
+  if (anyOf(matched[["package"]], is.character)) {
     pkg <- as.character(matched[["package"]])
     env[[pkg]] <- TRUE
     return()
   }
-
-
 }
 
 expressionDependencies <- function(e) {
@@ -671,7 +678,7 @@ fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
     )
  ), error = function(e) {
    message("Unable to tangle file '", file, "'; cannot parse dependencies")
-   character()	
+   character()
  })
 
   if (!file.exists(outfile)) {
