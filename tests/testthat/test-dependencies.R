@@ -71,3 +71,11 @@ test_that("dependencies are discovered in R Markdown documents in independent R 
     c("pkgA", "pkgB", "pkgD", "pkgF", "pkgG") %in% brokenDeps
   ))
 })
+
+test_that("dependencies are discovered in the presence of variables", {
+  skip_on_cran()
+
+  loadingPackages <- file.path("resources", "loading-packages.R")
+  deps <- packrat:::fileDependencies(loadingPackages)
+  expect_true(all(deps %in% c("bread", "oatmeal")))
+})
