@@ -33,6 +33,8 @@
 
 - Fixed an issue where newly-added project options did not get their correct
   default value when no entry existed within the `packrat.opts` file. (#496)
+  
+- Improve performance of dependency processing. (#615)
 
 # Packrat 0.5.0
 
