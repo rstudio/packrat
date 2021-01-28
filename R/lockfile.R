@@ -86,28 +86,7 @@ readLockFile <- function(file) {
   names(df) <- translate(names(df), aliases)
 
   # Split the repos
-  repos <- gsub("[\r\n]", " ", df[1, 'Repos'])
-  repos <- strsplit(unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE)), "=", fixed = TRUE)
-
-  # Support older-style lockfiles containing unnamed repositories
-  repoLens <- vapply(repos, length, numeric(1))
-  if (all(repoLens == 1)) {
-    # Support for old (unnamed) repositories
-
-    if (length(repoLens) > 1) {
-      # We warn if there were multiple repositories (if there was only one, we
-      # can safely assume it was CRAN)
-      warning("Old-style repository format detected; bumped to new version\n",
-              "Please re-set the repositories with options(repos = ...)\n",
-              "and call packrat::snapshot() to update the lock file.")
-    }
-    repos <- c(CRAN = repos[[1]])
-  } else if (all(repoLens == 2)) {
-    repos <- setNames(
-      sapply(repos, "[[", 2),
-      sapply(repos, "[[", 1)
-    )
-  }
+  repos <- parseRepositories(df[1, 'Repos'])
 
   packages <- if (nrow(df) > 1)
     deserializePackages(utils::tail(df, -1))
@@ -121,6 +100,63 @@ readLockFile <- function(file) {
     repos = repos,
     packages = packages
   )
+}
+
+parseRepositories <- function(repos) {
+  repos <- gsub("[\r\n]", " ", repos)
+
+  if (!grepl("=", repos)) {
+    # Older-style lockfile with unnamed repositories.
+    repos <- unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE))
+    if (length(repos) > 1) {
+      # We warn if there were multiple repositories (if there was only one, we
+      # can safely assume it was CRAN)
+      warning("Old-style repository format detected; bumped to new version\n",
+              "Please re-set the repositories with options(repos = ...)\n",
+              "and call packrat::snapshot() to update the lock file.")
+    }
+    repos <- c(CRAN = repos[[1]])
+    return(repos)
+  }
+
+  # Repositories are of the form:
+  # NAME1=URL1, NAME2=URL2
+  #
+  # The comma is our separator character, but comma may also be part of
+  # the repository name. We do not support / expect commas in the URL.
+  # If we ever see commas in URLs, we will need quoting of names and
+  # values. See https://github.com/rstudio/packrat/issues/587
+  #
+  # Because URLs will not have commas, we know that text of the form:
+  #     A=B,C,D=E
+  # must imply c("A"="B", "C,D"=E). The first comma in "B,C,D" must
+  # split a URL from the subsequent name, and any other commas
+  # are part of that name.
+  parts <- unlist(strsplit(repos, "=", fixed = TRUE))
+  if (length(parts) > 2) {
+    first <- parts[1]
+    middle <- parts[2:(length(parts)-1)]
+    last <- parts[length(parts)]
+    middle <- unlist(lapply(middle, function(each) {
+      commas = unlist(strsplit(each, ",", fixed = TRUE))
+      result <- list(
+        commas[1],
+        paste(commas[2:length(commas)], collapse = ",")
+      )
+      result
+    }))
+    parts <- c(first, middle, last)
+  }
+
+  parts <- sapply(parts, function(each) {
+    sub("^\\s+", "", sub("\\s+$", "", each))
+  })
+
+  repos <- setNames(
+    parts[seq(2,length(parts),2)],
+    parts[seq(1,length(parts),2)]
+  )
+  return(repos)
 }
 
 # Remove leading and trailing whitespace from character vectors
