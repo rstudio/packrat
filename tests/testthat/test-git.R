@@ -1,5 +1,3 @@
-context("git")
-
 test_that("isGitProject identifies projects as sub-directories of git-managed folders as git projects", {
     skip_on_cran()
 

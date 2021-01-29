@@ -1,5 +1,3 @@
-context("Bitbucket")
-
 test_that("we can use devtools:::download to retrieve Bitbucket archives", {
   skip("run manually for now")
 

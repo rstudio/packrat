@@ -1,5 +1,3 @@
-context("Cache")
-
 # https://github.com/rstudio/packrat/issues/345
 test_that("package installation when configured with a a cache uses the cache", {
   skip_on_cran()

@@ -1,4 +1,3 @@
-context("Dependencies")
 
 # Dependency analysis needs rmarkdown+knitr and rmarkdown needs pandoc.
 test_that("we have pandoc", {
