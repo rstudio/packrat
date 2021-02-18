@@ -40,3 +40,9 @@ new_defaults = function(value = list()) {
   origLibPaths = NULL,
   project = NULL
 ))
+
+# Work around namespace:stats potentially not being loaded
+setNames <- function(object = nm, nm) {
+  names(object) <- nm
+  object
+}
