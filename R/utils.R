@@ -507,12 +507,6 @@ loadedNamespacePaths <- function() {
   result
 }
 
-# Work around namespace:stats potentially not being loaded
-setNames <- function(object = nm, nm) {
-  names(object) <- nm
-  object
-}
-
 # Drop null values in a list
 dropNull <- function(x) {
   Filter(Negate(is.null), x)
