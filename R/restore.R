@@ -143,7 +143,7 @@ getSourceForPkgRecord <- function(pkgRecord,
 
     # Attempt to detect if this is the current version of a package
     # on a CRAN-like repository
-    currentVersion <- if (pkgRecord$name %in% rownames(availablePkgs))
+    currentVersion <- if (pkgRecord$name %in% availablePkgs[, "Package"])
       availablePkgs[pkgRecord$name, "Version"]
     else
       NA
@@ -685,7 +685,7 @@ installPkg <- function(pkgRecord,
   if (!(copiedFromCache || copiedFromUntrustedCache) &&
         hasBinaryRepositories() &&
         isFromCranlikeRepo(pkgRecord, repos) &&
-        pkgRecord$name %in% rownames(availablePackagesBinary(repos = repos)) &&
+        pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
         versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
   {
     tempdir <- tempdir()

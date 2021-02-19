@@ -123,7 +123,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
         result$source <- "CRAN"
       }
 
-    } else if (fallback.ok && pkgName %in% rownames(available)) {
+    } else if (fallback.ok && pkgName %in% available[, "Package"]) {
 
       # The package is not currently installed, but is available on CRAN.
       # Snapshot the latest available version for this package from CRAN.
@@ -395,7 +395,7 @@ inferPackageRecord <- function(df, available = availablePackages()) {
       source = 'Bioconductor',
       version = ver
     ), class = c('packageRecord', 'Bioconductor')))
-  } else if (name %in% rownames(available)) {
+  } else if (name %in% available[, "Package"]) {
     # It's available on CRAN, so get it from CRAN!
     return(structure(list(
       name = name,
