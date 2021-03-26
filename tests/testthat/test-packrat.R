@@ -7,10 +7,6 @@
 
 library(testthat)
 
-# Set up test context.
-context("packrat")
-
-
 withTestContext({
 
   test_that("init creates project structure and installs dependencies", {

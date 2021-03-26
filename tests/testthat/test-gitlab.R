@@ -1,5 +1,3 @@
-context("Gitlab")
-
 test_that("we can use devtools:::download to retrieve Gitlab archives", {
   skip("run manually for now")
 

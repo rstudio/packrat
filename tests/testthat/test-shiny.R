@@ -1,5 +1,3 @@
-context("Shiny")
-
 test_that("projects which use shiny implicitly are detected", {
   skip_on_cran()
 

@@ -1,5 +1,3 @@
-context("Bundle")
-
 test_that("Bundle works when using R's internal tar", {
 
   skip_on_cran()

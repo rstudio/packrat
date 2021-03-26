@@ -1,5 +1,3 @@
-context("utils")
-
 emit <- function(x) cat(x, sep = "\n")
 
 test_that("dir_copy copies directories", {

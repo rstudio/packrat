@@ -1,5 +1,3 @@
-context("Downloader")
-
 getAvailableDownloadMethods <- function() {
 
   if (is.windows()) {

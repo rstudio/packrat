@@ -14,7 +14,7 @@ Imports:
     tools,
     utils
 Suggests:
-    testthat (>= 0.7),
+    testthat (>= 3.0.0),
     devtools,
     httr,
     knitr,
@@ -23,3 +23,4 @@ URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
 RoxygenNote: 6.1.1
 Encoding: UTF-8
+Config/testthat/edition: 3

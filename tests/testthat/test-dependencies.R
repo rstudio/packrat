@@ -1,5 +1,3 @@
-context("Dependencies")
-
 test_that("dependencies are properly resolved in expressions", {
   skip_on_cran()
 

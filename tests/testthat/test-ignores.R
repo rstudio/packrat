@@ -1,5 +1,3 @@
-context("ignores")
-
 test_that("updateRBuildIgnore adds the packrat directory to ignore", {
   path <- file.path(tempdir(), ".Rbuildignore")
   unlink(path)

@@ -1,5 +1,3 @@
-context("lockfile")
-
 test_that("Topo sort works", {
 
   # Good

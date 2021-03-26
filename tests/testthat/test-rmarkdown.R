@@ -1,5 +1,3 @@
-context("R Markdown")
-
 test_that("Rmd documents with parameters are analyzed", {
   skip_on_cran()
 
