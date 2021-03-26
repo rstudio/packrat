@@ -7,20 +7,22 @@ canUseGitHubDownloader <- function() {
 }
 
 githubDownload <- function(url, destfile, ...) {
-  onError(1, {
-    authenticate    <- yoink("httr", "authenticate")
-    GET             <- yoink("httr", "GET")
-    content         <- yoink("httr", "content")
+  onError(1, githubDownloadImpl(url, destfile, ...))
+}
 
-    token <- github_pat(quiet = TRUE)
-    auth <- if (!is.null(token))
-      authenticate(token, "x-oauth-basic", "basic")
-    else
-      list()
-    request <- GET(url, auth)
-    writeBin(content(request, "raw"), destfile)
-    if (file.exists(destfile)) 0 else 1
-  })
+githubDownloadImpl <- function(url, destfile, ...) {
+  authenticate    <- yoink("httr", "authenticate")
+  GET             <- yoink("httr", "GET")
+  content         <- yoink("httr", "content")
+
+  token <- github_pat(quiet = TRUE)
+  auth <- if (!is.null(token))
+            authenticate(token, "x-oauth-basic", "basic")
+          else
+            list()
+  request <- GET(url, auth)
+  if (request$status == 200) writeBin(content(request, "raw"), destfile)
+  if (file.exists(destfile)) 0 else 1
 }
 
 #' Retrieve GitHub personal access token.
