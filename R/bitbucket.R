@@ -3,7 +3,7 @@ isBitbucketURL <- function(url) {
 }
 
 canUseBitbucketDownloader <- function() {
-  all(packageVersionInstalled(devtools = "1.9.1", httr = "1.0.0"))
+  all(packageVersionInstalled(httr = "1.0.0"))
 }
 
 bitbucketDownload <- function(url, destfile, ...) {

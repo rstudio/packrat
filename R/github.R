@@ -3,12 +3,11 @@ isGitHubURL <- function(url) {
 }
 
 canUseGitHubDownloader <- function() {
-  all(packageVersionInstalled(devtools = "1.9.1", httr = "1.0.0"))
+  all(packageVersionInstalled(httr = "1.0.0"))
 }
 
 githubDownload <- function(url, destfile, ...) {
   onError(1, {
-    github_pat      <- yoink("devtools", "github_pat")
     authenticate    <- yoink("httr", "authenticate")
     GET             <- yoink("httr", "GET")
     content         <- yoink("httr", "content")
@@ -22,4 +21,21 @@ githubDownload <- function(url, destfile, ...) {
     writeBin(content(request, "raw"), destfile)
     if (file.exists(destfile)) 0 else 1
   })
+}
+
+#' Retrieve GitHub personal access token.
+#'
+#' A GitHub personal access token
+#' Looks in env var `GITHUB_PAT`
+#'
+#' @keywords internal
+github_pat <- function(quiet = TRUE) {
+  pat <- Sys.getenv("GITHUB_PAT")
+  if (nzchar(pat)) {
+    if (!quiet) {
+      message("Using GitHub PAT from envvar GITHUB_PAT")
+    }
+    return(pat)
+  }
+  return(NULL)
 }
