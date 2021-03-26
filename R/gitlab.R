@@ -3,7 +3,7 @@ isGitlabURL <- function(url) {
 }
 
 canUseGitlabDownloader <- function() {
-  all(packageVersionInstalled(devtools = "1.9.1", httr = "1.0.0"))
+  all(packageVersionInstalled(httr = "1.0.0"))
 }
 
 gitlabDownload <- function(url, destfile, ...) {
