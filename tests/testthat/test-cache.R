@@ -62,10 +62,12 @@ test_that("package installation when configured with a a cache uses the cache", 
   unlink(libRoot, recursive = TRUE)
   unlink(srcRoot, recursive = TRUE)
 
-  restore(projRoot,
-          overwrite.dirty = TRUE,
-          prompt = FALSE,
-          restart = FALSE)
+  suppressWarnings(
+    restore(projRoot,
+            overwrite.dirty = TRUE,
+            prompt = FALSE,
+            restart = FALSE)
+  )
 
   expect_true(file.exists(packageDir), packageDir)
   expect_true(is.symlink(packageDir), packageDir)

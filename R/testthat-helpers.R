@@ -131,6 +131,10 @@ makeLibrariesProject <- function() {
 # Sets up repositories etc. for a test context, and restores them when done.
 beginTestContext <- function() {
 
+  # lazy
+  if (interactive() && file.exists("tests/testthat"))
+    setwd("tests/testthat")
+
   fields <- c("repos", "pkgType", "warn")
   options <- setNames(lapply(fields, getOption), fields)
 
