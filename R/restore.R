@@ -683,10 +683,11 @@ installPkg <- function(pkgRecord,
 
   # Try downloading a binary (when appropriate).
   if (!(copiedFromCache || copiedFromUntrustedCache) &&
-        hasBinaryRepositories() &&
-        isFromCranlikeRepo(pkgRecord, repos) &&
-        pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
-        versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
+      hasBinaryRepositories() &&
+      binaryRepositoriesEnabled() &&
+      isFromCranlikeRepo(pkgRecord, repos) &&
+      pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
+      versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
   {
     tempdir <- tempdir()
     tryCatch({

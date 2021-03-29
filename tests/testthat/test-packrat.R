@@ -172,16 +172,23 @@ withTestContext({
 
   test_that("init works with multiple repos", {
     skip_on_cran()
-    repos <- getOption("repos")
-    pkgType <- getOption("pkgType")
-    on.exit({
-      options("repos" = repos)
-      options("pkgType" = pkgType)
-    }, add = TRUE)
-    options(repos = c(CRAN = getOption("repos"), custom = getOption("repos")))
+
+    repos <- getOption("repos")[1]
+    op <- options(
+      repos   = c(CRAN = repos, CUSTOM = repos),
+      pkgType = "source"
+    )
+
+    on.exit(options(op), add = TRUE)
 
     projRoot <- cloneTestProject("empty")
-    init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+
+    init(
+      project = projRoot,
+      options = list(local.repos = "packages"),
+      enter = FALSE
+    )
+
   })
 
   test_that("fileDependencies.R picks up '::', ':::' dependencies", {

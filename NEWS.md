@@ -1,5 +1,8 @@
 # Packrat 0.6.0 (UNRELEASED)
 
+- Packrat now only queries binary repositories for available packages during
+  installation if `getOption("pkgType") != "source"`.
+
 - BREAKING CHANGE: The default Packrat cache directory has changed, and now
   includes an R version suffix. This helps avoid populating a single cache with
   versions of packages compiled for different versions of R (as there is no

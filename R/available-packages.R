@@ -52,6 +52,10 @@ hasBinaryRepositories <- function() {
   !identical(.Platform$pkgType, "source")
 }
 
+binaryRepositoriesEnabled <- function() {
+  !identical(getOption("pkgType"), "source")
+}
+
 availablePackages <- function(repos = getOption("repos"),
                               type = getOption("pkgType"))
 {
