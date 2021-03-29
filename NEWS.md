@@ -1,14 +1,15 @@
-# Packrat 0.6.0 (UNRELEASED)
 
-- Packrat now only queries binary repositories for available packages during
-  installation if `getOption("pkgType") != "source"`.
+# Packrat 0.6.0
 
-- BREAKING CHANGE: The default Packrat cache directory has changed, and now
+- **BREAKING CHANGE**: The default Packrat cache directory has changed, and now
   includes an R version suffix. This helps avoid populating a single cache with
   versions of packages compiled for different versions of R (as there is no
   guarantee that packages compiled for e.g. R 3.4.x will work with R 3.5.x). If
   you'd like to migrate your old Packrat cache directory, you can move the
   directory at `dirname(packrat:::appDataDir())` to `packrat:::appDataDir()`.
+
+- Packrat now only queries binary repositories for available packages during
+  installation if `getOption("pkgType") != "source"`.
 
 - Packrat no longer attempts to unload packages loaded from the user library
   after calling `packrat::init()`, as this could fail in a myriad of cases.

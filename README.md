@@ -34,7 +34,7 @@ Use packrat to make your R projects more:
 
 See the [project page](https://rstudio.github.io/packrat/) for more information,
 or join the discussion on the
-[RStudio Community forums](https://community.rstudio.com/c/general).
+[RStudio Community forums](https://community.rstudio.com).
 
 Read the [release
 notes](https://github.com/rstudio/packrat/blob/master/NEWS.md) to learn what's

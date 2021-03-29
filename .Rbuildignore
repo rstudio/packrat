@@ -5,7 +5,10 @@
 ^packrat/
 ^announce/
 ^scenarios/
-^configure.R$
-^NEWS.md$
+^configure\.R$
+^NEWS\.md$
+^RELEASE\.md$
 ^\.Rprofile$
 ^\.github$
+^tags$
+^R/tags$
