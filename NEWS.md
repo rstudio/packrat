@@ -1,4 +1,6 @@
 
+# Packrat 0.7.0 (UNRELEASED)
+
 # Packrat 0.6.0
 
 - **BREAKING CHANGE**: The default Packrat cache directory has changed, and now
