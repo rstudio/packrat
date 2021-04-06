@@ -392,7 +392,7 @@ allOf <- function(object, ...) {
 
 recursiveWalk <- function(`_node`, fn, ...) {
   fn(`_node`, ...)
-  if (is.call(`_node`)) {
+  if (is.recursive(`_node`)) {
     for (i in seq_along(`_node`)) {
       recursiveWalk(`_node`[[i]], fn, ...)
     }
@@ -473,7 +473,6 @@ identifyPackagesUsed <- function(call, env) {
 }
 
 expressionDependencies <- function(e) {
-
   if (is.expression(e)) {
     return(unlist(lapply(e, function(call) {
       expressionDependencies(call)
