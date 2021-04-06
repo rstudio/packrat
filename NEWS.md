@@ -1,6 +1,9 @@
 
 # Packrat 0.7.0 (UNRELEASED)
 
+- Packrat identifies additional code dependencies, including package
+  references used to define function argument default values. (#630)
+
 # Packrat 0.6.0
 
 - **BREAKING CHANGE**: The default Packrat cache directory has changed, and now
