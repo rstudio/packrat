@@ -182,6 +182,8 @@ hasYamlFrontMatter <- function(content) {
 yamlDeps <- function(yaml) {
   c(
     "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml, perl = TRUE))],
+    "shiny"[any(grepl("server:[[:space:]]*shiny", yaml, perl = TRUE))],
+    "shiny"[any(grepl("[[:space:]]+type:[[:space:]]*shiny", yaml, perl = TRUE))],
     "rticles"[any(grepl("rticles::", yaml, perl = TRUE))]
   )
 }
