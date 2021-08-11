@@ -4,6 +4,9 @@
 - Packrat identifies additional code dependencies, including package
   references used to define function argument default values. (#630)
 
+- Added support for extracting R package dependencies from Quarto documents
+  and websites.
+
 # Packrat 0.6.0
 
 - **BREAKING CHANGE**: The default Packrat cache directory has changed, and now

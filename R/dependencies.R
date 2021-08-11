@@ -109,7 +109,7 @@ dirDependencies <- function(dir) {
   dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
-  pattern <- "[.](?:r|rmd|rnw|rpres)$"
+  pattern <- "[.](?:r|rmd|qmd|rnw|rpres)$"
   pkgs <- character()
   R_files <- list.files(dir,
                         pattern = pattern,
@@ -168,6 +168,7 @@ fileDependencies <- function(file) {
   switch(fileext,
          r = fileDependencies.R(file),
          rmd = fileDependencies.Rmd(file),
+         qmd = fileDependencies.Rmd(file),
          rnw = fileDependencies.Rnw(file),
          rpres = fileDependencies.Rpres(file),
          stop("Unrecognized file type '", file, "'")
