@@ -4,8 +4,7 @@
 \alias{install_local}
 \title{Install a Package from a Local Repository}
 \usage{
-install_local(pkgs, ..., lib = .libPaths()[1],
-  repos = get_opts("local.repos"))
+install_local(pkgs, ..., lib = .libPaths()[1], repos = get_opts("local.repos"))
 }
 \arguments{
 \item{pkgs}{A character vector of package names.}

@@ -4,8 +4,13 @@
 \alias{init}
 \title{Initialize Packrat on a new or existing \R project}
 \usage{
-init(project = ".", options = NULL, enter = TRUE, restart = enter,
-  infer.dependencies = TRUE)
+init(
+  project = ".",
+  options = NULL,
+  enter = TRUE,
+  restart = enter,
+  infer.dependencies = TRUE
+)
 }
 \arguments{
 \item{project}{The directory that contains the \R project.}

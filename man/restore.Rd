@@ -4,8 +4,13 @@
 \alias{restore}
 \title{Apply the most recent snapshot to the library}
 \usage{
-restore(project = NULL, overwrite.dirty = FALSE,
-  prompt = interactive(), dry.run = FALSE, restart = !dry.run)
+restore(
+  project = NULL,
+  overwrite.dirty = FALSE,
+  prompt = interactive(),
+  dry.run = FALSE,
+  restart = !dry.run
+)
 }
 \arguments{
 \item{project}{The project directory. When in packrat mode, if this is \code{NULL},
@@ -38,11 +43,11 @@ There are three common use cases for \code{restore}:
   \item \strong{Hydrate}: Use \code{restore} after copying a project to a new
 machine to populate the library on that machine.
 
-\item \strong{Sync}: Use \code{restore} to apply library changes made by a
+  \item \strong{Sync}: Use \code{restore} to apply library changes made by a
 collaborator to your own library. (In general, you want to run \code{restore}
 whenever you pick up a change to \code{packrat.lock})
 
-\item \strong{Rollback}: Use \code{restore} to undo accidental changes made
+  \item \strong{Rollback}: Use \code{restore} to undo accidental changes made
 to the library since the last snapshot.
 }
 

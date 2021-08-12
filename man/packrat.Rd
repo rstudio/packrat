@@ -3,7 +3,6 @@
 \docType{package}
 \name{packrat}
 \alias{packrat}
-\alias{packrat-package}
 \title{Packrat: Reproducible dependency management}
 \description{
 Packrat is a tool for managing the \R packages your project depends on in
@@ -66,7 +65,7 @@ repository).
 
 \examples{
 \dontrun{
-# Create a new packrat project from an existing directory of \\R code
+# Create a new packrat project from an existing directory of \R code
 init()
 
 # Install a package and take a snapshot of the new state of the library

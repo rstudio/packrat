@@ -8,8 +8,7 @@
 \usage{
 set_lockfile_metadata(repos = NULL, r_version = NULL, project = NULL)
 
-get_lockfile_metadata(metadata = NULL, simplify = TRUE,
-  project = NULL)
+get_lockfile_metadata(metadata = NULL, simplify = TRUE, project = NULL)
 }
 \arguments{
 \item{repos}{A named character vector of the form \code{c(<repoName> = "<pathToRepo>")}.}
