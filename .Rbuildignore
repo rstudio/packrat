@@ -12,3 +12,6 @@
 ^\.github$
 ^tags$
 ^R/tags$
+^tests/testthat/packrat/lib/
+^tests/testthat/packrat/lib-R/
+^tests/testthat/packrat/lib-ext/
