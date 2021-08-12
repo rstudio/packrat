@@ -4,8 +4,13 @@
 \alias{clean}
 \title{Remove Packages from the Library}
 \usage{
-clean(packages = NULL, project = NULL, lib.loc = libDir(project),
-  dry.run = FALSE, force = FALSE)
+clean(
+  packages = NULL,
+  project = NULL,
+  lib.loc = libDir(project),
+  dry.run = FALSE,
+  force = FALSE
+)
 }
 \arguments{
 \item{packages}{A set of package names to remove from the project. When

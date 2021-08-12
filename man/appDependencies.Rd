@@ -4,8 +4,12 @@
 \alias{appDependencies}
 \title{Detect Application Dependencies}
 \usage{
-appDependencies(project = NULL, available.packages = NULL,
-  fields = opts$snapshot.fields(), implicit.packrat.dependency = TRUE)
+appDependencies(
+  project = NULL,
+  available.packages = NULL,
+  fields = opts$snapshot.fields(),
+  implicit.packrat.dependency = TRUE
+)
 }
 \arguments{
 \item{project}{Directory containing application. Defaults to current working

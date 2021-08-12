@@ -7,11 +7,19 @@
 \alias{off}
 \title{Packrat Mode}
 \usage{
-packrat_mode(on = NULL, project = NULL,
-  auto.snapshot = get_opts("auto.snapshot"), clean.search.path = FALSE)
+packrat_mode(
+  on = NULL,
+  project = NULL,
+  auto.snapshot = get_opts("auto.snapshot"),
+  clean.search.path = FALSE
+)
 
-on(project = NULL, auto.snapshot = get_opts("auto.snapshot"),
-  clean.search.path = TRUE, print.banner = TRUE)
+on(
+  project = NULL,
+  auto.snapshot = get_opts("auto.snapshot"),
+  clean.search.path = TRUE,
+  print.banner = TRUE
+)
 
 off(project = NULL, print.banner = TRUE)
 }
