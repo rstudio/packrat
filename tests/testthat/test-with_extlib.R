@@ -1,5 +1,3 @@
-context("extlib without packages")
-
 test_that("with_extlib successfully works with no packages provided", {
   skip_on_cran()
 

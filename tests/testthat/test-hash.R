@@ -1,5 +1,3 @@
-context("hash")
-
 test_that("we can hash packages containing multiple packages in LinkingTo", {
   skip_on_cran()
 

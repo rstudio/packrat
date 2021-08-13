@@ -1,5 +1,3 @@
-context("Local Repositories")
-
 withTestContext({
 
   test_that("init fails when package not found in any repo", {

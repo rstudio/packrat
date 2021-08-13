@@ -1,5 +1,3 @@
-context("packrat mode")
-
 test_that("packrat_mode successfully sets the library paths when turned on and off", {
 
   with_dir(tempdir(), {
