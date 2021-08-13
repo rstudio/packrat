@@ -1,10 +1,10 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.travis\.yml$
-^internal/
-^packrat/
-^announce/
-^scenarios/
+^internal$
+^packrat$
+^announce$
+^scenarios$
 ^configure\.R$
 ^NEWS\.md$
 ^RELEASE\.md$
@@ -12,6 +12,8 @@
 ^\.github$
 ^tags$
 ^R/tags$
-^tests/testthat/packrat/lib/
-^tests/testthat/packrat/lib-R/
-^tests/testthat/packrat/lib-ext/
+^tests/testthat/packrat/lib$
+^tests/testthat/packrat/lib-R$
+^tests/testthat/packrat/lib-ext$
+^tests/testthat/repo$
+^tests/testthat/repo-empty$
