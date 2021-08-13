@@ -1,0 +1,9 @@
+---
+title: qmd with explicit package dependencies
+---
+
+this qmd file has a package dependency in an r chunk.
+
+```{r}
+library(bread)
+```
