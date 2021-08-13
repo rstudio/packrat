@@ -26,6 +26,9 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
         with:
           r-version: ${{ matrix.R }}
+      - uses: r-lib/actions/setup-pandoc@v1
+        with:
+          pandoc-version: 2.11.4
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
