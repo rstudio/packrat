@@ -74,6 +74,13 @@ rebuildTestRepo <- function(testroot = getwd()) {
   tools::write_PACKAGES(target, subdirs = TRUE)
 }
 
+# "Rebuilds" an empty test repo.
+rebuildEmptyTestRepo <- function(testroot = getwd()) {
+  target <- file.path(testroot, "repo-empty")
+  unlink(target, recursive = TRUE)
+  dir.create(target, recursive = TRUE)
+}
+
 # Installs a test package from source. Necessary because install.packages
 # fails under R CMD CHECK.
 installTestPkg <- function(pkg, ver, lib) {
