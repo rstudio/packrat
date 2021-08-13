@@ -17,7 +17,7 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        R: [ '3.5.3', '3.6.3', '4.0.5', '4.1.1' ]
+        R: [ '3.6.3', '4.0.5', '4.1.1' ]
     name: R ${{ matrix.R }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
