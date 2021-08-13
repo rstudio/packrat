@@ -86,3 +86,9 @@ test_that("dependencies are discovered in the presence of variables", {
   deps <- packrat:::fileDependencies(loadingPackages)
   expect_true(all(deps %in% c("bread", "oatmeal")))
 })
+
+test_that("dependencies in function default values are discovered", {
+  skip_on_cran()
+  emojiR <- file.path("resources", "emoji.R")
+  expect_equal(packrat:::fileDependencies(emojiR), "emo")
+})
