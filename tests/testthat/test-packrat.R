@@ -74,6 +74,7 @@ withTestContext({
   test_that("snapshot captures new dependencies", {
     skip_on_cran()
     skip_on_travis()
+    skip_on_ci()
     projRoot <- cloneTestProject("healthy")
     lib <- libDir(projRoot)
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
@@ -99,6 +100,7 @@ withTestContext({
   test_that("snapshot captures only installed dependecies butwhen infer.dependencies is FALSE", {
     skip_on_cran()
     skip_on_travis()
+    skip_on_ci()
     projRoot <- cloneTestProject("healthy")
     lib <- libDir(projRoot)
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
