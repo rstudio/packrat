@@ -16,7 +16,7 @@ test_that("We can discover dependencies with an evaluate hook", {
   skip_on_cran()
 
   path <- "resources/evaluate-deps.Rmd"
-  deps <- fileDependencies.Rmd.evaluate(path)
+  deps <- fileDependencies.evaluate(path)
   expect_equal(deps, c("abc", "def", "ghi", "jkl"))
 
 })

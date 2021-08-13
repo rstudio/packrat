@@ -43,6 +43,18 @@ test_that("dependencies are discovered in R Markdown documents with R chunks", {
   expect_true("rmarkdown" %in% packrat:::fileDependencies(ordinaryRmd))
 })
 
+test_that("package dependencies are not discovered in a Quarto document without R chunks", {
+  skip_on_cran()
+  ordinaryQmd <- file.path("resources", "simple.qmd")
+  expect_equal(length(packrat:::fileDependencies(ordinaryQmd)), 0)
+})
+
+test_that("package dependencies are discovered in a Quarto document with R chunks", {
+  skip_on_cran()
+  ordinaryQmd <- file.path("resources", "dependencies.qmd")
+  expect_equal(packrat:::fileDependencies(ordinaryQmd), c("bread"))
+})
+
 test_that("dependencies are discovered in R Markdown documents with no chunks", {
   skip_on_cran()
   chunklessRmd <- file.path("resources", "no-chunks.Rmd")

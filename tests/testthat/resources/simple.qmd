@@ -1,0 +1,6 @@
+---
+title: qmd without explicit package dependencies
+---
+
+this is really just a markdown file. it has no explicit requirement on
+rmarkdown.

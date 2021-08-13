@@ -168,7 +168,7 @@ fileDependencies <- function(file) {
   switch(fileext,
          r = fileDependencies.R(file),
          rmd = fileDependencies.Rmd(file),
-         qmd = fileDependencies.Rmd(file),
+         qmd = fileDependencies.Qmd(file),
          rnw = fileDependencies.Rnw(file),
          rpres = fileDependencies.Rpres(file),
          stop("Unrecognized file type '", file, "'")
@@ -211,10 +211,28 @@ stripAltEngines <- function(file, encoding) {
   writeLines(contents[regions], file)
 }
 
+# compute package dependencies for an *.qmd file. not all Quarto documents
+# require R/rmarkdown.
+#
+# Quarto/rsconnect may independently indicate that this file needs the knitr
+# engine and will communicate an implicit dependency on rmarkdown
+fileDependencies.Qmd <- function(file) {
+  fileDependencies.Markdown(file, implicit = NULL)
+}
+
+# compute package dependencies for an *.Rmd file. rmarkdown is an automatic,
+# implicit dependency.
 fileDependencies.Rmd <- function(file) {
+  fileDependencies.Markdown(file, implicit = c("rmarkdown"))
+}
 
-  deps <- "rmarkdown"
+fileDependencies.Markdown <- function(file, implicit = NULL) {
 
+  deps <- c()
+  if (!is.null(implicit)) {
+    deps <- c(deps, implicit)
+  }
+  
   # try using an evaluate-based approach for dependencies
   if (knitrHasEvaluateHook()) {
 
@@ -232,7 +250,7 @@ fileDependencies.Rmd <- function(file) {
       }
 
       # render with a custom evaluate hook to discover dependencies
-      deps <- c(deps, fileDependencies.Rmd.evaluate(file))
+      deps <- c(deps, fileDependencies.evaluate(file))
     }
   }
 
@@ -316,7 +334,7 @@ fileDependencies.Rmd <- function(file) {
   if (requireNamespace("knitr", quietly = TRUE)) {
     deps <- c(
       deps,
-      fileDependencies.Rmd.tangle(file, encoding = encoding)
+      fileDependencies.tangle(file, encoding = encoding)
     )
   } else {
     warning("knitr is required to parse dependencies but is not available")
@@ -574,7 +592,7 @@ knitrHasEvaluateHook <- function() {
 }
 
 
-fileDependencies.Rmd.evaluate <- function(file) {
+fileDependencies.evaluate <- function(file) {
 
   # discovered packages (to be updated by evaluate hook)
   deps <- list()
@@ -634,7 +652,7 @@ fileDependencies.Rmd.evaluate <- function(file) {
 # Extract dependencies per chunk rather than per file.
 # Packages like learnr have special R code chunks that are not evaluated at run time.
 # While the .Rmd file can be rendered with rmarkdown, a raw tangled R file may not be able to be processed.
-fileDependencies.Rmd.tangle <- function(file, encoding = "UTF-8") {
+fileDependencies.tangle <- function(file, encoding = "UTF-8") {
 
   # discovered packages
   deps <- list()
