@@ -1,5 +1,12 @@
 context("Dependencies")
 
+# Dependency analysis needs rmarkdown+knitr and rmarkdown needs pandoc.
+test_that("we have pandoc", {
+  skip_on_cran()
+
+  expect_true(rmarkdown::pandoc_available())
+})
+
 test_that("dependencies are properly resolved in expressions", {
   skip_on_cran()
 
