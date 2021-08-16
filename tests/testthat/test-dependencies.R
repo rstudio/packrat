@@ -84,6 +84,7 @@ test_that("dependencies are discovered in R Markdown documents in independent R 
 
   # shiny_prerendered file
   expect_true("shiny" %in% brokenDeps)
+
   # check for working chunks
   expect_true(all(
     c("pkgA", "pkgB", "pkgD", "pkgF", "pkgG") %in% brokenDeps
