@@ -9,3 +9,7 @@ an unknown engine
 ```{r engine="mystery"}
 a mysterious engine
 ```
+
+```{Rscript}
+stop("don't run me")
+```

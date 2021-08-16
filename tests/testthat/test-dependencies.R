@@ -107,6 +107,7 @@ test_that("dependencies in function default values are discovered", {
 
 test_that("knitr doesn't warn about unknown engines in dependency discovery", {
   skip_on_cran()
+
   file <- "resources/unknown-engines.Rmd"
 
   caughtWarning <- NULL

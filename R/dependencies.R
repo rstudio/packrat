@@ -602,9 +602,13 @@ fileDependencies.evaluate <- function(file) {
   engines <- knitr::knit_engines$get()
   on.exit(knitr::knit_engines$restore(engines), add = TRUE)
 
+  # generate overrides
   overrides <- replicate(length(engines), function(options) {}, FALSE)
   names(overrides) <- names(engines)
-  overrides$R <- overrides$Rscript <- NULL
+
+  # retain the regular R knitr hook, and treat Rscript chunks
+  # the same way as "regular" R chunks
+  overrides$R <- overrides$Rscript <- engines$R
   knitr::knit_engines$set(overrides)
 
   # save old hook and install our custom hook
