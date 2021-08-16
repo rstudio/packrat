@@ -103,3 +103,18 @@ test_that("dependencies in function default values are discovered", {
   emojiR <- file.path("resources", "emoji.R")
   expect_equal(packrat:::fileDependencies(emojiR), "emo")
 })
+
+test_that("knitr doesn't warn about unknown engines in dependency discovery", {
+  skip_on_cran()
+  file <- "resources/unknown-engines.Rmd"
+
+  caughtWarning <- NULL
+  deps <- withCallingHandlers(
+    packrat:::fileDependencies(file),
+    warning = function(w) caughtWarning <<- w
+  )
+
+  expect_true(is.null(caughtWarning))
+  expect_equal(deps, "rmarkdown")
+
+})
