@@ -116,7 +116,7 @@ test_that("knitr doesn't warn about unknown engines in dependency discovery", {
     warning = function(w) caughtWarning <<- w
   )
 
-  expect_true(is.null(caughtWarning))
+  expect_null(caughtWarning)
   expect_equal(deps, "rmarkdown")
 
 })
