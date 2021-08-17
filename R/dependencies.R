@@ -623,7 +623,7 @@ fileDependencies.evaluate <- function(file) {
 
   # keep going on error
   chunkOptions <- knitr::opts_chunk$get()
-  on.exit(knitr::opts_chunk$restore(chunkOptions))
+  on.exit(knitr::opts_chunk$restore(chunkOptions), add = TRUE)
   knitr::opts_chunk$set(error = TRUE)
 
   # rudely override knitr's 'inline_exec' function so
