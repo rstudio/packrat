@@ -1,6 +1,13 @@
 
 # Packrat 0.7.0 (UNRELEASED)
 
+- Fixed an issue where Packrat could inadvertently execute non-R code chunks
+  when scanning R Markdown documents for dependencies.
+
+- Fixed an issue where a knitr warning would be emitted when scanning an
+  R Markdown document containing unknown or un-registered knitr engines.
+  (#639)
+
 - Packrat identifies additional code dependencies, including package
   references used to define function argument default values. (#630)
 

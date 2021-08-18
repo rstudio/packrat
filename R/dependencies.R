@@ -232,7 +232,7 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
   if (!is.null(implicit)) {
     deps <- c(deps, implicit)
   }
-  
+
   # try using an evaluate-based approach for dependencies
   if (knitrHasEvaluateHook()) {
 
@@ -597,6 +597,20 @@ fileDependencies.evaluate <- function(file) {
   # discovered packages (to be updated by evaluate hook)
   deps <- list()
 
+  # override any existing engines -- we don't want dependency discovery
+  # to, say, run arbitrary bash scripts contained in the document!
+  engines <- knitr::knit_engines$get()
+  on.exit(knitr::knit_engines$restore(engines), add = TRUE)
+
+  # generate overrides
+  overrides <- replicate(length(engines), function(options) {}, FALSE)
+  names(overrides) <- names(engines)
+
+  # retain the regular R knitr hook, and treat Rscript chunks
+  # the same way as "regular" R chunks
+  overrides$R <- overrides$Rscript <- engines$R
+  knitr::knit_engines$set(overrides)
+
   # save old hook and install our custom hook
   evaluate_hook <- knitr::knit_hooks$get("evaluate")
   on.exit(knitr::knit_hooks$set(evaluate = evaluate_hook), add = TRUE)
@@ -606,6 +620,11 @@ fileDependencies.evaluate <- function(file) {
       deps <<- c(deps, expressionDependencies(parsed))
     })
   })
+
+  # keep going on error
+  chunkOptions <- knitr::opts_chunk$get()
+  on.exit(knitr::opts_chunk$restore(chunkOptions), add = TRUE)
+  knitr::opts_chunk$set(error = TRUE)
 
   # rudely override knitr's 'inline_exec' function so
   # that we can detect dependencies within inline chunks
@@ -636,12 +655,28 @@ fileDependencies.evaluate <- function(file) {
   }
 
   # attempt to render document with our custom hook active
+  # TODO: do we want to report errors here? right now we're just
+  # capturing and silently discarding render errors
   outfile <- tempfile()
+  on.exit(unlink(outfile), add = TRUE)
+
   tryCatch(
-    rmarkdown::render(file, output_file = outfile, quiet = TRUE),
+    withCallingHandlers(
+      rmarkdown::render(file, output_file = outfile, quiet = TRUE),
+      warning = function(w) {
+
+        # ignore warnings emitted by knitr::get_engine()
+        get_engine <- yoink("knitr", "get_engine")
+        for (i in seq_len(sys.nframe())) {
+          fn <- sys.function(i)
+          if (identical(fn, get_engine))
+            invokeRestart("muffleWarning")
+        }
+
+      }
+    ),
     error = identity
   )
-  unlink(outfile)
 
   unique(unlist(deps, recursive = TRUE))
 }

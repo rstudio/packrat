@@ -84,6 +84,7 @@ test_that("dependencies are discovered in R Markdown documents in independent R 
 
   # shiny_prerendered file
   expect_true("shiny" %in% brokenDeps)
+
   # check for working chunks
   expect_true(all(
     c("pkgA", "pkgB", "pkgD", "pkgF", "pkgG") %in% brokenDeps
@@ -102,4 +103,20 @@ test_that("dependencies in function default values are discovered", {
   skip_on_cran()
   emojiR <- file.path("resources", "emoji.R")
   expect_equal(packrat:::fileDependencies(emojiR), "emo")
+})
+
+test_that("knitr doesn't warn about unknown engines in dependency discovery", {
+  skip_on_cran()
+
+  file <- "resources/unknown-engines.Rmd"
+
+  caughtWarning <- NULL
+  deps <- withCallingHandlers(
+    packrat:::fileDependencies(file),
+    warning = function(w) caughtWarning <<- w
+  )
+
+  expect_null(caughtWarning)
+  expect_equal(deps, "rmarkdown")
+
 })
