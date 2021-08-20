@@ -1,3 +1,6 @@
+# Packrat 0.8.0 (UNRELEASED)
+
+
 # Packrat 0.7.0
 
 - Fixed an issue where Packrat could inadvertently execute non-R code chunks
