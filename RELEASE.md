@@ -1,15 +1,68 @@
+## Release Instructions
 
-## Release Notes
+-   Use git to switch to a release branch (e.g. `release/<version>`).
 
-- Use git to switch to a release branch (e.g. `release/<version>`).
-- Update version in `DESCRIPTION` file.
-- Update version in `NEWS.md`.
-- Run `source("R/update.R"); updateInit()` to update auto-loaders.
-- Run `urlchecker::url_check()` and fix or update URLs.
-- Run `R CMD build packrat` from parent directory to generate tarball.
-- Run `R CMD check --as-cran packrat_*.tar.gz` to test the package.
-- Fix associated issues; rinse; repeat.
-- Submit to CRAN.
-- Cross fingers.
-- After submission, squash and merge `release/<version>` branch back to master.
-- Run `R -f configure.R` to bump version, and update `NEWS.md` with new header for next version's release notes.
+-   Update version in `DESCRIPTION` file.
+
+-   Update header and version in `NEWS.md`. Confirm recent changes are included.
+
+-   Update auto-loaders (from R):
+
+    ```r
+    source("R/update.R"); updateInit()
+    ```
+
+-   Check and fix URLs (from R):
+
+    ```r
+    install.packages("urlchecker")
+    urlchecker::url_check()
+    ```
+
+-   Generate a release `.tar.gz` by running the following command from the
+    parent directory of your `packrat` repository:
+    
+    ```console
+    R CMD build packrat
+    ```
+
+-   Test the package (also from the parent directory):
+
+    ```console
+    R CMD check --as-cran packrat_*.tar.gz
+    ```
+    
+-   Test the package using [R-Hub](https://docs.r-hub.io). Triggered from R:
+
+    ```r
+    install.packages("rhub")
+    rhub::check_for_cran()
+    ```
+
+-   Fix any issues identified by the previous steps. Rinse and repeat.
+
+-   Submit to CRAN. Cross fingers.
+    
+-   After submission, squash-and-merge the `release/<version>` branch back to 
+    `master`.
+
+-   Create a git tag for your new release and push that tag.
+
+    ```console
+    git tag -a -m 'CRAN release: vX.Y.Z' vX.Y.Z COMMIT_HASH
+    git push origin --tags
+    ```
+
+-   Create a GitHub release against that tag and include the NEWS.md items in
+    its notes.
+
+-   Create a branch to bump for development (e.g. `development/<version>`).
+
+    Update `NEWS.md` with an "unreleased" version header and run the following
+    command to update `DESCRIPTION` and the auto-loaders:
+    
+    ```console
+    R -f configure.R
+    ```
+
+    Squash-and-merge this branch back to `master`.
