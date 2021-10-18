@@ -36,16 +36,16 @@ rebuildTestRepo <- function(testroot = getwd()) {
   source <- file.path(testroot, "packages")
   setwd(source)
 
-  # Create a dummy folder for the current version of Packrat.
-  dir.create("packrat", showWarnings = FALSE)
-  file.copy(DESCRIPTION, "packrat/DESCRIPTION", overwrite = TRUE)
-
-  # Force Packrat tests to believe the currently installed / tested
-  # version of Packrat is on CRAN.
-  cat("Repository: CRAN",
-      file = "packrat/DESCRIPTION",
-      sep = "\n",
-      append = TRUE)
+  # # Create a dummy folder for the current version of Packrat.
+  # dir.create("packrat", showWarnings = FALSE)
+  # file.copy(DESCRIPTION, "packrat/DESCRIPTION", overwrite = TRUE)
+  #
+  # # Force Packrat tests to believe the currently installed / tested
+  # # version of Packrat is on CRAN.
+  # cat("Repository: CRAN",
+  #     file = "packrat/DESCRIPTION",
+  #     sep = "\n",
+  #     append = TRUE)
 
   # Copy in the dummy folders.
   target <- file.path(testroot, "repo", "src", "contrib")

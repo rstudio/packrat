@@ -603,10 +603,10 @@ diff <- function(packageRecordsA, packageRecordsB) {
 
       ## Helpful when debugging unexpected differences between two package records.
       ##
-      ## printPackageRecord("pkgA", pkgA)
-      ## printPackageRecord("pkgB", pkgB)
-      ## printPackageRecord("strippedA", strippedA)
-      ## printPackageRecord("strippedB", strippedB)
+      printPackageRecord("pkgA", pkgA)
+      printPackageRecord("pkgB", pkgB)
+      printPackageRecord("strippedA", strippedA)
+      printPackageRecord("strippedB", strippedB)
 
       if (identical(strippedA, strippedB)) {
         return(NA)

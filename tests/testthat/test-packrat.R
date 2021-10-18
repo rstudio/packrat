@@ -71,6 +71,11 @@ withTestContext({
     skip_on_cran()
     skip_on_travis()
     skip_on_ci()
+
+    old <- getOption("packrat.verbose.snapshot.dependencies")
+    options(packrat.verbose.snapshot.dependencies = TRUE)
+    on.exit(options(packrat.verbose.snapshot.dependencies = old), add = TRUE)
+
     projRoot <- cloneTestProject("healthy")
     lib <- libDir(projRoot)
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
@@ -85,12 +90,12 @@ withTestContext({
     # Snapshot the new state and make sure we picked up both toast and its
     # dependency, bread
     pkgs <- pkgNames(lockInfo(projRoot))
+    expect_equal(pkgs, c("oatmeal", "packrat"))
     expect_false("bread" %in% pkgs)
     expect_false("toast" %in% pkgs)
     snapshot(projRoot)
     pkgs <- pkgNames(lockInfo(projRoot))
-    expect_true("bread" %in% pkgs)
-    expect_true("toast" %in% pkgs)
+    expect_equal(pkgs, c("bread", "oatmeal", "packrat", "toast"))
   })
 
   test_that("snapshot captures only installed dependecies butwhen infer.dependencies is FALSE", {
@@ -111,10 +116,12 @@ withTestContext({
     # Snapshot the new state and make sure we picked up both toast and its
     # dependency, bread
     pkgs <- pkgNames(lockInfo(projRoot))
+    expect_equal(pkgs, c("oatmeal", "packrat"))
     expect_false("bread" %in% pkgs)
     expect_false("toast" %in% pkgs)
     snapshot(projRoot, infer.dependencies = FALSE)
     pkgs <- pkgNames(lockInfo(projRoot))
+    expect_equal(pkgs, c("bread", "oatmeal", "packrat"))
     expect_true("bread" %in% pkgs)
     expect_false("toast" %in% pkgs)
   })
