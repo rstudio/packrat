@@ -104,8 +104,18 @@ appDependencies <- function(project = NULL,
   setdiff(sorted, "")
 }
 
-# detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
+  dirDependencies_renv(dir)
+}
+
+# detect all package dependencies for a directory of files.
+dirDependencies_renv <- function(dir) {
+  deps <- dependencies(dir)
+  unique(deps$Package)
+}
+
+# detect all package dependencies for a directory of files
+dirDependencies_old <- function(dir) {
   dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
@@ -659,10 +669,12 @@ fileDependencies.evaluate <- function(file) {
   # capturing and silently discarding render errors
   outfile <- tempfile()
   on.exit(unlink(outfile), add = TRUE)
+  outdir <- tempdir()
+  on.exit(unlink(outdir, recursive = TRUE), add = TRUE)
 
   tryCatch(
     withCallingHandlers(
-      rmarkdown::render(file, output_file = outfile, quiet = TRUE),
+      rmarkdown::render(file, output_file = outfile, output_dir = outdir, quiet = TRUE),
       warning = function(w) {
 
         # ignore warnings emitted by knitr::get_engine()
@@ -675,7 +687,9 @@ fileDependencies.evaluate <- function(file) {
 
       }
     ),
-    error = identity
+    error = function(err) {
+      identity(err)
+    }
   )
 
   unique(unlist(deps, recursive = TRUE))
