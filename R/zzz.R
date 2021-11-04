@@ -11,4 +11,6 @@
       setenv(key, val)
   })
 
+  loadRenv()
+
 }
