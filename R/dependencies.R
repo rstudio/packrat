@@ -106,6 +106,22 @@ appDependencies <- function(project = NULL,
 
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
+  if (as.logical(getOption("packrat.dependency.discovery.disabled", default = FALSE))) {
+    character()
+  } else if (as.logical(getOption("packrat.dependency.discovery.renv", default = FALSE))) {
+    dirDependenciesRenv(dir)
+  } else {
+    dirDependenciesBuiltIn(dir)
+  }
+}
+
+dirDependenciesRenv <- function(dir) {
+  deps <- renv$dependencies(dir)
+  unique(deps$Package)
+}
+
+# detect all package dependencies for a directory of files
+dirDependenciesBuiltIn <- function(dir) {
   dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
@@ -144,13 +160,11 @@ dirDependencies <- function(dir) {
     R_files <- grep(ignoredDirRegex, R_files, invert = TRUE, value = TRUE)
   }
 
-  if (!identical(getOption("packrat.dependency.discovery.disabled"), TRUE)) {
-    sapply(R_files, function(file) {
-      filePath <- file.path(dir, file)
-      pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
+  sapply(R_files, function(file) {
+    filePath <- file.path(dir, file)
+    pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
 
-    })
-  }
+  })
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
