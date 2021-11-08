@@ -116,6 +116,21 @@ dirDependencies <- function(dir) {
 }
 
 dirDependenciesRenv <- function(dir) {
+  old <- options(renv.config.filebacked.cache = FALSE)
+  on.exit(do.call(options, old), add = TRUE)
+
+  project <- Sys.getenv("RENV_PROJECT", unset = NA)
+  if (!is.na(project)) {
+    Sys.unsetenv("RENV_PROJECT")
+    on.exit(Sys.setenv(RENV_PROJECT = project), add = TRUE)
+  }
+
+  profile <- Sys.getenv("RENV_PROFILE", unset = NA)
+  if (!is.na(profile)) {
+    Sys.unsetenv("RENV_PROFILE")
+    on.exit(Sys.setenv(RENV_PROFILE = profile), add = TRUE)
+  }
+
   deps <- renv$dependencies(path = dir, quiet = TRUE)
   unique(deps$Package)
 }
