@@ -116,7 +116,7 @@ dirDependencies <- function(dir) {
 }
 
 dirDependenciesRenv <- function(dir) {
-  deps <- renv$dependencies(dir)
+  deps <- renv$dependencies(path = dir, quiet = TRUE)
   unique(deps$Package)
 }
 
