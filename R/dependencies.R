@@ -115,6 +115,29 @@ dirDependencies <- function(dir) {
   }
 }
 
+# Return renv ignore patterns based on the packrat ignored.directories option.
+# Each directory is returned as a rooted pattern for renv, meaning that it
+# should only apply at the root directory of the project.
+#
+# Note: The "/data/" and "/inst/" directories are ignored by default.
+ignoredDirsForRenv <- function(ignoredDirs) {
+  if (length(ignoredDirs) > 0) {
+    # Make sure all the directories end with a slash.
+    ignoredDirs <- ifelse(
+        substr(ignoredDirs, nchar(ignoredDirs), nchar(ignoredDirs)) != "/",
+        paste0(ignoredDirs, "/"),
+        ignoredDirs
+    )
+    # Make sure all the directories begin with a slash.
+    ignoredDirs <- ifelse(
+        substr(ignoredDirs, 1, 1) != "/",
+        paste0("/", ignoredDirs),
+        ignoredDirs
+    )
+    ignoredDirs
+  }
+}
+
 dirDependenciesRenv <- function(dir) {
   old <- options(renv.config.filebacked.cache = FALSE)
   on.exit(do.call(options, old), add = TRUE)
@@ -132,7 +155,13 @@ dirDependenciesRenv <- function(dir) {
   }
 
   deps <- renv$dependencies(path = dir, quiet = TRUE)
-  unique(deps$Package)
+  pkgs <- unique(deps$Package)
+  # remove accidents.
+  # https://github.com/rstudio/renv/issues/858
+  pkgs <- setdiff(pkgs, c("R"))
+  ## Exclude recommended packages if there is no package installed locally
+  ## this places an implicit dependency on the system-installed version of a package
+  dropSystemPackages(pkgs)
 }
 
 # detect all package dependencies for a directory of files
