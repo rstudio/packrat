@@ -139,8 +139,8 @@ ignoredDirsForRenv <- function(ignoredDirs) {
 }
 
 dirDependenciesRenv <- function(dir) {
-  old <- options(renv.config.filebacked.cache = FALSE)
-  on.exit(do.call(options, old), add = TRUE)
+  old_filebacked_cache <- options(renv.config.filebacked.cache = FALSE)
+  on.exit(do.call(options, old_filebacked_cache), add = TRUE)
 
   project <- Sys.getenv("RENV_PROJECT", unset = NA)
   if (!is.na(project)) {
@@ -153,6 +153,16 @@ dirDependenciesRenv <- function(dir) {
     Sys.unsetenv("RENV_PROFILE")
     on.exit(Sys.setenv(RENV_PROFILE = profile), add = TRUE)
   }
+
+  old_ignored_packages <- options("renv.settings.ignored.packages" = opts$ignored.packages())
+  on.exit(do.call(options, old_ignored_packages), add = TRUE)
+
+  # TODO:
+  # old_renv_ignore <- options("renv.settings.ignore.matching" = ignoredDirsForRenv(opts$ignored.directories())
+  # on.exit(do.call(options, old_renv_ignore), add = TRUE)
+
+  # TODO: add rsconnect as an ignored directory? May not be an issue for
+  # bundling, since we don't include the rsconnect directory.
 
   deps <- renv$dependencies(path = dir, quiet = TRUE)
   pkgs <- unique(deps$Package)
