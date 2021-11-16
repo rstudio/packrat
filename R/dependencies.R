@@ -120,22 +120,27 @@ dirDependencies <- function(dir) {
 # should only apply at the root directory of the project.
 #
 # Note: The "/data/" and "/inst/" directories are ignored by default.
-ignoredDirsForRenv <- function(ignoredDirs) {
-  if (length(ignoredDirs) > 0) {
+#
+# See: https://github.com/rstudio/renv/pull/866
+ignoresForRenv <- function(ignoredDirectories) {
+  ignores <- NULL
+  if (length(ignoredDirectories) > 0) {
+    ignores <- ignoredDirectories
     # Make sure all the directories end with a slash.
-    ignoredDirs <- ifelse(
-        substr(ignoredDirs, nchar(ignoredDirs), nchar(ignoredDirs)) != "/",
-        paste0(ignoredDirs, "/"),
-        ignoredDirs
+    ignores <- ifelse(
+        substr(ignores, nchar(ignores), nchar(ignores)) != "/",
+        paste0(ignores, "/"),
+        ignores
     )
     # Make sure all the directories begin with a slash.
-    ignoredDirs <- ifelse(
-        substr(ignoredDirs, 1, 1) != "/",
-        paste0("/", ignoredDirs),
-        ignoredDirs
+    ignores <- ifelse(
+        substr(ignores, 1, 1) != "/",
+        paste0("/", ignores),
+        ignores
     )
-    ignoredDirs
+    attr(ignores, "asis") <- TRUE
   }
+  ignores
 }
 
 dirDependenciesRenv <- function(dir) {
@@ -157,21 +162,21 @@ dirDependenciesRenv <- function(dir) {
   old_ignored_packages <- options("renv.settings.ignored.packages" = opts$ignored.packages())
   on.exit(do.call(options, old_ignored_packages), add = TRUE)
 
-  # TODO:
-  # old_renv_ignore <- options("renv.settings.ignore.matching" = ignoredDirsForRenv(opts$ignored.directories())
-  # on.exit(do.call(options, old_renv_ignore), add = TRUE)
+  old_renv_exclude <- options("renv.renvignore.exclude" = ignoresForRenv(opts$ignored.directories()))
+  on.exit(do.call(options, old_renv_exclude), add = TRUE)
 
   # TODO: add rsconnect as an ignored directory? May not be an issue for
   # bundling, since we don't include the rsconnect directory.
 
-  deps <- renv$dependencies(path = dir, quiet = TRUE)
+  deps <- renv$dependencies(path = dir, root = dir, quiet = TRUE)
   pkgs <- unique(deps$Package)
   # remove accidents.
   # https://github.com/rstudio/renv/issues/858
   pkgs <- setdiff(pkgs, c("R"))
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
-  dropSystemPackages(pkgs)
+  pkgs <- dropSystemPackages(pkgs)
+  pkgs
 }
 
 # detect all package dependencies for a directory of files
