@@ -168,13 +168,12 @@ dirDependenciesRenv <- function(dir) {
   # TODO: add rsconnect as an ignored directory? May not be an issue for
   # bundling, since we don't include the rsconnect directory.
 
-  deps <- renv$dependencies(path = dir, root = dir, quiet = TRUE)
+  absDir <- normalizePath(dir)
+  deps <- renv$dependencies(path = absDir, root = absDir, quiet = TRUE)
   pkgs <- unique(deps$Package)
-  # remove accidents.
-  # https://github.com/rstudio/renv/issues/858
-  pkgs <- setdiff(pkgs, c("R"))
-  ## Exclude recommended packages if there is no package installed locally
-  ## this places an implicit dependency on the system-installed version of a package
+  ## Exclude recommended packages (and the artifical "R" package) if there is
+  ## no package installed locally this places an implicit dependency on the
+  ## system-installed version of a package
   pkgs <- dropSystemPackages(pkgs)
   pkgs
 }
