@@ -108,7 +108,7 @@ appDependencies <- function(project = NULL,
 dirDependencies <- function(dir) {
   if (as.logical(getOption("packrat.dependency.discovery.disabled", default = FALSE))) {
     character()
-  } else if (as.logical(getOption("packrat.dependency.discovery.renv", default = FALSE))) {
+  } else if (as.logical(getOption("packrat.dependency.discovery.renv", default = TRUE))) {
     dirDependenciesRenv(dir)
   } else {
     dirDependenciesBuiltIn(dir)
