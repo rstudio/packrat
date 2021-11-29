@@ -157,6 +157,11 @@ moveInstalledPackageToCache <- function(packagePath,
                                         fatal = FALSE,
                                         cacheDir = cacheLibDir())
 {
+  logger <- if(isVerboseCache()) {
+    message
+  } else {
+    function(...) {}
+  }
   ensureDirectory(cacheDir)
 
   packageName <- basename(packagePath)
@@ -183,18 +188,16 @@ moveInstalledPackageToCache <- function(packagePath,
     }
   }
 
-  if (isVerboseCache()) {
-    message("Caching ", packageName, ".")
-  }
+  logger("Caching ", packageName, ".")
 
   # Rename / copy into staging location, which is guaranteed to be on the same
   # device(drive) as our final, cached location.
   on.exit(unlink(stagingPackagePath, recursive = TRUE), add = TRUE)
-  message("Attempting to rename '", packagePath, "' to '", renameStagingPackagePath, "'.")
+  logger("Renaming '", packagePath, "' to '", renameStagingPackagePath, "'.")
   on.exit(unlink(renameStagingPackagePath, recursive = TRUE), add = TRUE)
   if (!suppressWarnings(file.rename(packagePath, renameStagingPackagePath))) {
     on.exit(unlink(copyStagingPackagePath, recursive = TRUE), add = TRUE)
-    message("Rename failed; copying '", packagePath, "' to '", copyStagingPackagePath, "'.")
+    logger("Rename failed; copying '", packagePath, "' to '", copyStagingPackagePath, "'.")
     if (!all(dir_copy(packagePath, copyStagingPackagePath))) {
       stop("failed to copy package '", packageName, "' into cache")
     } else {
@@ -210,19 +213,24 @@ moveInstalledPackageToCache <- function(packagePath,
 
   # Package is in our staging location.
 
+  # Multiple, concurrent installs can race through this section and
+  # occasionally encounter rename conflicts.
+
   # Move aside any existing copy, as may occur when overwrite==TRUE
   # (restore on failure).
   if (file.exists(cachedPackagePath)) {
     if (!file.rename(cachedPackagePath, backupPackagePath)) {
-      stop("failed to back up package '", packageName, "'; cannot safely copy to cache")
+      stop("failed to back up package '", packageName, "'; cannot safely add to cache")
     }
     on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
   }
 
-  message("Attempting to rename '", stagingPackagePath, "' to '", cachedPackagePath, "'.")
+  # Shift our staging location to the final cached location.
+
+  logger("Renaming '", stagingPackagePath, "' to '", cachedPackagePath, "'.")
   if (!file.rename(stagingPackagePath, cachedPackagePath)) {
     if (file.exists(cachedPackagePath)) {
-      message("Target already existed for package '", packageName, "' when attempting final rename.")
+      logger("Target already existed for package '", packageName, "' when attempting final rename.")
       # Someone else created this package in the window between renames...
       return(symlinkPackageToCache(packagePath, cachedPackagePath))
     }
@@ -231,7 +239,7 @@ moveInstalledPackageToCache <- function(packagePath,
     }
     stop("failed to add package '", packageName, "' to cache")
   }
-  message("Cached ", packageName, "!")
+  logger("Cached ", packageName, "!")
   return(symlinkPackageToCache(packagePath, cachedPackagePath))
 }
 
