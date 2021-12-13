@@ -69,7 +69,7 @@ list_files <- function(path = ".", pattern = NULL, all.files = FALSE,
 }
 
 # wrapper around read.dcf to workaround LC_CTYPE bug
-# (see: http://r.789695.n4.nabble.com/Bug-in-read-dcf-all-TRUE-td4690578.html)
+# (see: # https://stat.ethz.ch/pipermail/r-devel/2014-May/069046.html)
 readDcf <- function(...) {
   loc <- Sys.getlocale('LC_CTYPE')
   on.exit(Sys.setlocale('LC_CTYPE', loc))
