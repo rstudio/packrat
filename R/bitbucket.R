@@ -3,11 +3,17 @@ isBitbucketURL <- function(url) {
 }
 
 canUseBitbucketDownloader <- function() {
-  all(packageVersionInstalled(devtools = "1.9.1", httr = "1.0.0"))
+  (all(packageVersionInstalled(httr = "1.0.0")) &
+     !is.null(bitbucket_user(quiet = TRUE)) &
+     !is.null(bitbucket_pwd(quiet = TRUE)))
 }
 
 bitbucketDownload <- function(url, destfile, ...) {
-  onError(1, bitbucketDownloadImpl(url, destfile, ...))
+  tryCatch(
+    bitbucketDownloadImpl(url, destfile, ...),
+    error = function(e) {
+      stop(sprintf("Bitbucket request failed with %s", e), call. = FALSE)
+    })
 }
 
 bitbucketDownloadImpl <- function(url, destfile, ...) {
@@ -24,15 +30,18 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
   }
 
   request <- GET(url, auth)
-  if (request$status == 401) {
-    warning("Failed to download package from Bitbucket: not authorized. ",
-            "Did you set BITBUCKET_USERNAME and BITBUCKET_PASSWORD env vars?",
-            call. = FALSE)
-    return(1)
+  if (result$status != 200) {
+    stop(
+      sprintf(
+        "Unable to download package from Bitbucket; check the BITBICKET_USERNAME and BITBUCKET_PASSWORD environment variables: %s",
+        httr::http_status(result)$message))
   }
-
-  if (request$status == 200) writeBin(content(request, "raw"), destfile)
-  if (file.exists(destfile)) 0 else 1
+  writeBin(content(result, "raw"), destfile)
+  if (!file.exists(destfile)) {
+    stop("No data received.")
+  }
+  # Success!
+  return(TRUE)
 }
 
 
