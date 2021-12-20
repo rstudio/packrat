@@ -52,29 +52,6 @@ download <- function(url,
 }
 
 downloadImpl <- function(url, method, ...) {
-
-  # If this is a path to a GitHub URL, attempt to download with authentication,
-  # so that private GitHub repositories can be handled.
-  if (isGitHubURL(url) && canUseGitHubDownloader()) {
-    result <- try(githubDownload(url, ...), silent = TRUE)
-    if (!inherits(result, "try-error"))
-      return(result)
-  }
-
-  # If this is a path to a Bitbucket URL, attempt to download.
-  if (isBitbucketURL(url) && canUseBitbucketDownloader()) {
-    result <- try(bitbucketDownload(url, ...), silent = TRUE)
-    if (!inherits(result, "try-error"))
-      return(result)
-  }
-
-  # If this is a path to a Gitlab URL, attempt to download.
-  if (isGitlabURL(url) && canUseGitlabDownloader()) {
-    result <- try(gitlabDownload(url, ...), silent = TRUE)
-    if (!inherits(result, "try-error"))
-      return(result)
-  }
-
   # When on Windows using an 'internal' method, we need to call
   # 'setInternet2' to set some appropriate state.
   if (is.windows() && method == "internal") {

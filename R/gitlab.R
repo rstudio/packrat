@@ -3,11 +3,17 @@ isGitlabURL <- function(url) {
 }
 
 canUseGitlabDownloader <- function() {
-  all(packageVersionInstalled(devtools = "1.9.1", httr = "1.0.0"))
+  (all(packageVersionInstalled(httr = "1.0.0")) &&
+     !is.null(gitlab_user(quiet = TRUE)) &&
+     !is.null(gitlab_pwd(quiet = TRUE)))
 }
 
 gitlabDownload <- function(url, destfile, ...) {
-  onError(1, gitlabDownloadImpl(url, destfile, ...))
+  tryCatch(
+    gitlabDownloadImpl(url, destfile, ...),
+    error = function(e) {
+      stop(sprintf("GitLab request failed: %s", e), call. = FALSE)
+    })
 }
 
 gitlabDownloadImpl <- function(url, destfile, ...) {
@@ -24,15 +30,18 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   }
 
   request <- GET(url, auth)
-  if (request$status == 401) {
-    warning("Failed to download package from GitLab: not authorized. ",
-            "Did you set GITLAB_USERNAME and GITLAB_PASSWORD env vars?",
-            call. = FALSE)
-    return(1)
+  if (result$status != 200) {
+    stop(
+      sprintf(
+        "Unable to download package from GitLab; check the GITLAB_USERNAME and GITLAB_PASSWORD environment variables: %s",
+        httr::http_status(result)$message), call. = FALSE)
   }
-
-  if (request$status == 200) writeBin(content(request, "raw"), destfile)
-  if (file.exists(destfile)) 0 else 1
+  writeBin(content(result, "raw"), destfile)
+  if (!file.exists(destfile)) {
+    stop("No data received.", call. = FALSE)
+  }
+  # Success!
+  return(TRUE)
 }
 
 #' Retrieve GitLab user.
