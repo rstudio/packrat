@@ -2,7 +2,7 @@
 
 - Stop using `devtools::github_pat` to obtain an (optional) `GITHUB_PAT`
   environment variable value. The `github_pat` function was removed in
-  devtools-2.4.3. (#651)
+  `devtools-2.4.3`. (#651)
 
 - Use authenticated downloaders for GitHub, GitLab, and Bitbucket when the
   `httr` package is installed and the appropriate credentials are available.

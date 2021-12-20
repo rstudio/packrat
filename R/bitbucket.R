@@ -3,8 +3,8 @@ isBitbucketURL <- function(url) {
 }
 
 canUseBitbucketDownloader <- function() {
-  (all(packageVersionInstalled(httr = "1.0.0")) &
-     !is.null(bitbucket_user(quiet = TRUE)) &
+  (all(packageVersionInstalled(httr = "1.0.0")) &&
+     !is.null(bitbucket_user(quiet = TRUE)) &&
      !is.null(bitbucket_pwd(quiet = TRUE)))
 }
 
@@ -12,7 +12,7 @@ bitbucketDownload <- function(url, destfile, ...) {
   tryCatch(
     bitbucketDownloadImpl(url, destfile, ...),
     error = function(e) {
-      stop(sprintf("Bitbucket request failed with %s", e), call. = FALSE)
+      stop(sprintf("Bitbucket request failed: %s", e), call. = FALSE)
     })
 }
 
@@ -33,7 +33,7 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
   if (result$status != 200) {
     stop(
       sprintf(
-        "Unable to download package from Bitbucket; check the BITBICKET_USERNAME and BITBUCKET_PASSWORD environment variables: %s",
+        "Unable to download package from Bitbucket; check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables: %s",
         httr::http_status(result)$message))
   }
   writeBin(content(result, "raw"), destfile)

@@ -3,8 +3,8 @@ isGitlabURL <- function(url) {
 }
 
 canUseGitlabDownloader <- function() {
-  (all(packageVersionInstalled(httr = "1.0.0")) &
-     !is.null(gitlab_user(quiet = TRUE)) &
+  (all(packageVersionInstalled(httr = "1.0.0")) &&
+     !is.null(gitlab_user(quiet = TRUE)) &&
      !is.null(gitlab_pwd(quiet = TRUE)))
 }
 
@@ -12,7 +12,7 @@ gitlabDownload <- function(url, destfile, ...) {
   tryCatch(
     gitlabDownloadImpl(url, destfile, ...),
     error = function(e) {
-      stop(sprintf("GitLab request failed with %s", e), call. = FALSE)
+      stop(sprintf("GitLab request failed: %s", e), call. = FALSE)
     })
 }
 

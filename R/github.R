@@ -3,14 +3,15 @@ isGitHubURL <- function(url) {
 }
 
 canUseGitHubDownloader <- function() {
-  all(packageVersionInstalled(httr = "1.0.0")) & (!is.null(github_pat()))
+  (all(packageVersionInstalled(httr = "1.0.0")) &&
+     !is.null(github_pat()))
 }
 
 github_pat <- function(quiet = TRUE) {
   pat <- Sys.getenv("GITHUB_PAT")
   if (nzchar(pat)) {
     if (!quiet) {
-      message("Using GitHub username from envvar GITHUB_PAT")
+      message("Using GitHub PAT from envvar GITHUB_PAT")
     }
     return(pat)
   }
@@ -21,7 +22,7 @@ githubDownload <- function(url, destfile, ...) {
   tryCatch(
     githubDownloadImpl(url, destfile, ...),
     error = function(e) {
-      stop(sprintf("GitHub request failed with %s", e), call. = FALSE)
+      stop(sprintf("GitHub request failed: %s", e), call. = FALSE)
     })
 }
 
