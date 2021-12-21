@@ -9,6 +9,9 @@
 
 - Provide more information about authenticated download failures.
 
+- Hash `RemoteType: url` packages as though they came from a CRAN-like
+  repository. Improves cache reuse for packages originally installed by
+  `remotes<2.0.2`. (#652)
 
 # Packrat 0.7.0
 
