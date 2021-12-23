@@ -37,8 +37,9 @@ hash <- function(path, descLookup = installedDescLookup) {
   # Remote SHA backwards compatible with cache v2: use 'GithubSHA1' if exists, otherwise all 'Remote' fields
   remote_fields <- if ("GithubSHA1" %in% names(DESCRIPTION)) {
     "GithubSHA1"
-  } else if (is.null(DESCRIPTION[["RemoteType"]]) || DESCRIPTION[["RemoteType"]] %in% c("cran","standard") ) {
-    # Package installed from a CRAN-like repository by install.packages (null) or remotes (cran) or pak (standard)
+  } else if (is.null(DESCRIPTION[["RemoteType"]]) || DESCRIPTION[["RemoteType"]] %in% c("cran", "standard", "url")) {
+    # Package installed from a CRAN-like repository by install.packages (null),
+    # remotes (cran, url), or pak (standard).
     c()
   } else {
     # Mirror the order used by devtools when augmenting the DESCRIPTION.
