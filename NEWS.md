@@ -16,6 +16,10 @@
 - The `packrat::set_opts` function and `packrat::opts` single-option setter no
   longer overwrite previously written in-memory state. (#655)
 
+- The 'packrat::opts$ignored.packages()' project option ignores recursive
+  package dependencies in addition to direct package dependencies. (#654)
+
+
 # Packrat 0.7.0
 
 - Fixed an issue where Packrat could inadvertently execute non-R code chunks
