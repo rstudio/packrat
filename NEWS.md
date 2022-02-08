@@ -13,6 +13,9 @@
   repository. Improves cache reuse for packages originally installed by
   `remotes<2.0.2`. (#652)
 
+- The `packrat::opts` single-option setter no longer overwrites previously
+  written state. (#655)
+
 # Packrat 0.7.0
 
 - Fixed an issue where Packrat could inadvertently execute non-R code chunks
