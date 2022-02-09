@@ -176,9 +176,7 @@ make_setter <- function(name) {
     if (missing(x)) {
       return(get_opts(name))
     } else {
-      o <- get_opts()
-      o[[name]] <- x
-      setOptions(o, persist = persist)
+      return(setOptions(setNames(list(x), name), persist = persist))
     }
   }
 }
@@ -204,7 +202,7 @@ setOptions <- function(options, project = NULL, persist = TRUE) {
 
   keys <- names(options)
   values <- options
-  opts <- read_opts(project = project)
+  opts <- get_opts(project = project)
   for (i in seq_along(keys)) {
     if (is.null(values[[i]]))
       opts[keys[[i]]] <- list(NULL)

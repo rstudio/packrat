@@ -13,8 +13,8 @@
   repository. Improves cache reuse for packages originally installed by
   `remotes<2.0.2`. (#652)
 
-- The `packrat::opts` single-option setter no longer overwrites previously
-  written state. (#655)
+- The `packrat::set_opts` function and `packrat::opts` single-option setter no
+  longer overwrite previously written in-memory state. (#655)
 
 # Packrat 0.7.0
 
