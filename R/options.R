@@ -173,8 +173,11 @@ get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
 make_setter <- function(name) {
   force(name)
   function(x, persist = TRUE) {
-    if (missing(x)) return(get_opts(name))
-    else setOptions(setNames(list(x), name), persist = persist)
+    if (missing(x)) {
+      return(get_opts(name))
+    } else {
+      return(setOptions(setNames(list(x), name), persist = persist))
+    }
   }
 }
 
@@ -199,7 +202,7 @@ setOptions <- function(options, project = NULL, persist = TRUE) {
 
   keys <- names(options)
   values <- options
-  opts <- read_opts(project = project)
+  opts <- get_opts(project = project)
   for (i in seq_along(keys)) {
     if (is.null(values[[i]]))
       opts[keys[[i]]] <- list(NULL)
