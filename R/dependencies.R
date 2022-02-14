@@ -110,6 +110,80 @@ appDependencies <- function(project = NULL,
 
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
+  if (as.logical(getOption("packrat.dependency.discovery.disabled", default = FALSE))) {
+    character()
+  } else if (as.logical(getOption("packrat.dependency.discovery.renv", default = TRUE))) {
+    dirDependenciesRenv(dir)
+  } else {
+    dirDependenciesBuiltIn(dir)
+  }
+}
+
+# Return renv ignore patterns based on the packrat ignored.directories option.
+# Each directory is returned as a rooted pattern for renv, meaning that it
+# should only apply at the root directory of the project.
+#
+# Note: The "/data/" and "/inst/" directories are ignored by default.
+#
+# See: https://github.com/rstudio/renv/pull/866
+ignoresForRenv <- function(ignoredDirectories) {
+  ignores <- NULL
+  if (length(ignoredDirectories) > 0) {
+    ignores <- ignoredDirectories
+    # Make sure all the directories end with a slash.
+    ignores <- ifelse(
+        substr(ignores, nchar(ignores), nchar(ignores)) != "/",
+        paste0(ignores, "/"),
+        ignores
+    )
+    # Make sure all the directories begin with a slash.
+    ignores <- ifelse(
+        substr(ignores, 1, 1) != "/",
+        paste0("/", ignores),
+        ignores
+    )
+    attr(ignores, "asis") <- TRUE
+  }
+  ignores
+}
+
+dirDependenciesRenv <- function(dir) {
+  old_filebacked_cache <- options(renv.config.filebacked.cache = FALSE)
+  on.exit(do.call(options, old_filebacked_cache), add = TRUE)
+
+  project <- Sys.getenv("RENV_PROJECT", unset = NA)
+  if (!is.na(project)) {
+    Sys.unsetenv("RENV_PROJECT")
+    on.exit(Sys.setenv(RENV_PROJECT = project), add = TRUE)
+  }
+
+  profile <- Sys.getenv("RENV_PROFILE", unset = NA)
+  if (!is.na(profile)) {
+    Sys.unsetenv("RENV_PROFILE")
+    on.exit(Sys.setenv(RENV_PROFILE = profile), add = TRUE)
+  }
+
+  old_ignored_packages <- options("renv.settings.ignored.packages" = opts$ignored.packages())
+  on.exit(do.call(options, old_ignored_packages), add = TRUE)
+
+  old_renv_exclude <- options("renv.renvignore.exclude" = ignoresForRenv(opts$ignored.directories()))
+  on.exit(do.call(options, old_renv_exclude), add = TRUE)
+
+  # TODO: add rsconnect as an ignored directory? May not be an issue for
+  # bundling, since we don't include the rsconnect directory.
+
+  absDir <- normalizePath(dir)
+  deps <- renv$dependencies(path = absDir, root = absDir, quiet = TRUE)
+  pkgs <- unique(deps$Package)
+  ## Exclude recommended packages (and the artifical "R" package) if there is
+  ## no package installed locally this places an implicit dependency on the
+  ## system-installed version of a package
+  pkgs <- dropSystemPackages(pkgs)
+  pkgs
+}
+
+# detect all package dependencies for a directory of files
+dirDependenciesBuiltIn <- function(dir) {
   dir <- normalizePath(dir, winslash = '/')
 
   # first get the packages referred to in source code
@@ -148,13 +222,11 @@ dirDependencies <- function(dir) {
     R_files <- grep(ignoredDirRegex, R_files, invert = TRUE, value = TRUE)
   }
 
-  if (!identical(getOption("packrat.dependency.discovery.disabled"), TRUE)) {
-    sapply(R_files, function(file) {
-      filePath <- file.path(dir, file)
-      pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
+  sapply(R_files, function(file) {
+    filePath <- file.path(dir, file)
+    pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
 
-    })
-  }
+  })
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
