@@ -127,15 +127,21 @@ dropSystemPackages <- function(packages) {
   packages
 }
 
-recursivePackageDependencies <- function(pkgs, lib.loc,
-                                         available.packages = availablePackages(),
-                                         fields = c("Depends", "Imports", "LinkingTo")) {
+recursivePackageDependencies <- function(
+    pkgs,
+    ignores,
+    lib.loc,
+    available.packages = availablePackages(),
+    fields = c("Depends", "Imports", "LinkingTo")) {
 
   if (!length(pkgs)) return(NULL)
+
   deps <- getPackageDependencies(pkgs, lib.loc, available.packages, fields)
+  deps <- setdiff(deps, ignores)
   depsToCheck <- setdiff(deps, pkgs)
   while (length(depsToCheck)) {
     newDeps <- getPackageDependencies(depsToCheck, lib.loc, available.packages, fields)
+    newDeps <- setdiff(newDeps, ignores)
     depsToCheck <- setdiff(newDeps, deps)
     deps <- sort_c(unique(c(deps, newDeps)))
   }

@@ -132,6 +132,7 @@ symlinkExternalPackages <- function(project = NULL) {
   lib.loc <- getDefaultLibPaths()
   pkgDeps <- recursivePackageDependencies(
     external.packages,
+    ignores = NULL,
     lib.loc = lib.loc,
     available.packages = NULL
   )

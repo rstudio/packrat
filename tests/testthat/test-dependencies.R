@@ -120,3 +120,38 @@ test_that("knitr doesn't warn about unknown engines in dependency discovery", {
   expect_equal(deps, "rmarkdown")
 
 })
+
+withTestContext({
+  test_that("project dependencies are detected", {
+    skip_on_cran()
+
+    packrat:::set_opts(local.repos = "packages", persist = FALSE)
+    on.exit(packrat:::set_opts(local.repos = NULL, persist = FALSE), add = TRUE)
+
+    projRoot <- cloneTestProject("sated")
+    deps <- packrat:::appDependencies(projRoot)
+    expect_equal(deps, c("bread", "breakfast", "oatmeal", "packrat", "toast"))
+  })
+
+  test_that("project dependencies can ignore top-level dependencies", {
+    skip_on_cran()
+
+    packrat:::set_opts(ignored.packages = c("bread"), local.repos = "packages", persist = FALSE)
+    on.exit(packrat:::set_opts(ignored.packages = NULL, local.repos = NULL, persist = FALSE), add = TRUE)
+
+    projRoot <- cloneTestProject("smallbreakfast")
+    deps <- packrat:::appDependencies(projRoot)
+    expect_equal(deps, c("oatmeal", "packrat")) # bread is ignored.
+  })
+
+  test_that("project dependencies can ignore lower-level dependencies", {
+    skip_on_cran()
+
+    packrat:::set_opts(ignored.packages = c("toast"), local.repos = "packages", persist = FALSE)
+    on.exit(packrat:::set_opts(ignored.packages = NULL, local.repos = NULL, persist = FALSE), add = TRUE)
+
+    projRoot <- cloneTestProject("sated")
+    deps <- packrat:::appDependencies(projRoot)
+    expect_equal(deps, c("breakfast", "oatmeal", "packrat")) # toast and bread are ignored
+  })
+})

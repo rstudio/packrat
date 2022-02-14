@@ -53,6 +53,8 @@ appDependencies <- function(project = NULL,
     .packrat_mutables$origLibPaths
   )
 
+  ignores <- packrat::opts$ignored.packages()
+
   ## For R packages, we only use the DESCRIPTION file
   if (isRPackage(project)) {
 
@@ -61,20 +63,22 @@ appDependencies <- function(project = NULL,
       pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
 
     # Strip out any dependencies the user has requested we do not track.
-    parentDeps <- setdiff(parentDeps, packrat::opts$ignored.packages())
+    parentDeps <- setdiff(parentDeps, ignores)
 
     ## For downstream dependencies, we don't grab their Suggests:
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
     childDeps <- recursivePackageDependencies(parentDeps,
+                                              ignores,
                                               libPaths,
                                               available.packages,
                                               fields)
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
-    parentDeps <- setdiff(parentDeps, packrat::opts$ignored.packages())
+    parentDeps <- setdiff(parentDeps, ignores)
     childDeps <- recursivePackageDependencies(parentDeps,
+                                              ignores,
                                               libPaths,
                                               available.packages,
                                               fields)
