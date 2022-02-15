@@ -19,6 +19,8 @@
 - The 'packrat::opts$ignored.packages()' project option ignores recursive
   package dependencies in addition to direct package dependencies. (#654)
 
+- Use a bundled `renv` to perform dependency detection. Avoids a number of 
+  evaluation issues and side-effects. (#644)
 
 # Packrat 0.7.0
 
