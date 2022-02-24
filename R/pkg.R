@@ -369,7 +369,8 @@ inferPackageRecord <- function(df, available = availablePackages()) {
       remote_username = as.character(df$RemoteUsername),
       remote_ref = as.character(df$RemoteRef),
       remote_sha = as.character(df$RemoteSha)),
-      c(remote_host = as.character(df$RemoteHost))
+      c(remote_host = as.character(df$RemoteHost)),
+      c(remote_subdir = as.character(df$RemoteSubdir))
     ), class = c('packageRecord', 'gitlab')))
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
