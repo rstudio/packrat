@@ -9,6 +9,8 @@
 
 - Provide more information about authenticated download failures.
 
+- Handle GitLab packages located in a repository sub-directory. (#660)
+
 - Hash `RemoteType: url` packages as though they came from a CRAN-like
   repository. Improves cache reuse for packages originally installed by
   `remotes<2.0.2`. (#652)
