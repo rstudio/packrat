@@ -24,6 +24,8 @@
 - Use a bundled `renv` to perform dependency detection. Avoids a number of 
   evaluation issues and side-effects. (#644)
 
+- Take an `renv` update to avoid an implicit dependency on the `quarto` package for all `*.qmd` content.
+
 # Packrat 0.7.0
 
 - Fixed an issue where Packrat could inadvertently execute non-R code chunks
