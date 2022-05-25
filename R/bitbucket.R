@@ -29,7 +29,7 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
     list()
   }
 
-  request <- GET(url, auth)
+  result <- GET(url, auth)
   if (result$status != 200) {
     stop(
       sprintf(
