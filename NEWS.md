@@ -1,3 +1,6 @@
+# Packrat 0.9.0 (UNRELEASED)
+
+
 # Packrat 0.8.0
 
 - Stop using `devtools::github_pat` to obtain an (optional) `GITHUB_PAT`
