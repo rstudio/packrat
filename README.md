@@ -1,7 +1,6 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/rstudio/packrat/workflows/R-CMD-check/badge.svg)](https://github.com/rstudio/packrat/actions)
-[![Build Status](https://travis-ci.org/rstudio/packrat.svg?branch=master)](https://travis-ci.org/rstudio/packrat)
 [![Coverage Status](https://codecov.io/github/rstudio/packrat/coverage.svg?branch=master)](https://codecov.io/github/rstudio/packrat?branch=master)
 <!-- badges: end -->
 
