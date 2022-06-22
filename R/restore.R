@@ -365,8 +365,8 @@ getSourceForPkgRecord <- function(pkgRecord,
     }, add = TRUE)
 
     if (canUseBitbucketDownloader()) {
-      status <- bitbucketDownload(archiveUrl, srczip)
-      if (status) {
+      success <- bitbucketDownload(archiveUrl, srczip)
+      if (!success) {
         message("FAILED")
         stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
       }
@@ -457,8 +457,8 @@ getSourceForPkgRecord <- function(pkgRecord,
     }, add = TRUE)
 
     if (canUseGitlabDownloader()) {
-      status <- gitlabDownload(archiveUrl, srczip)
-      if (status) {
+      success <- gitlabDownload(archiveUrl, srczip)
+      if (!success) {
         message("FAILED")
         stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
       }
