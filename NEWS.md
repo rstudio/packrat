@@ -1,5 +1,7 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Fixed a bug preventing successful downloads of private GitLab and Bitbucket
+  archives during restore. (#671)
 
 # Packrat 0.8.0
 
