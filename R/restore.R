@@ -364,19 +364,19 @@ getSourceForPkgRecord <- function(pkgRecord,
         unlink(srczip, recursive = TRUE)
     }, add = TRUE)
 
-    if (canUseBitbucketDownloader()) {
-      status <- bitbucketDownload(archiveUrl, srczip)
-      if (status) {
-        message("FAILED")
-        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+    tryCatch({
+      success <- if (canUseBitbucketDownloader()) {
+        bitbucketDownload(archiveUrl, srczip)
+      } else {
+        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
       }
-    } else {
-      success <- downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
       if (!success) {
-        message("FAILED")
-        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+        stop("Download failure.")
       }
-    }
+    }, error = function(e) {
+      message("FAILED")
+      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+    })
 
 
 
@@ -456,19 +456,19 @@ getSourceForPkgRecord <- function(pkgRecord,
         unlink(srczip, recursive = TRUE)
     }, add = TRUE)
 
-    if (canUseGitlabDownloader()) {
-      status <- gitlabDownload(archiveUrl, srczip)
-      if (status) {
-        message("FAILED")
-        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+    tryCatch({
+      success <- if (canUseGitlabDownloader()) {
+        gitlabDownload(archiveUrl, srczip)
+      } else {
+        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
       }
-    } else {
-      success <- downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
       if (!success) {
-        message("FAILED")
-        stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
+        stop("Download failure.")
       }
-    }
+    }, error = function(e) {
+      message("FAILED")
+      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+    })
 
     local({
       scratchDir <- tempfile()
