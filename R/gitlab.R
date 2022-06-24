@@ -18,6 +18,7 @@ gitlabDownload <- function(url, destfile, ...) {
 
 gitlabDownloadImpl <- function(url, destfile, ...) {
   authenticate   <- yoink("httr", "authenticate")
+  add_headers    <- yoink("httr", "add_headers")
   GET            <- yoink("httr", "GET")
   content        <- yoink("httr", "content")
 
