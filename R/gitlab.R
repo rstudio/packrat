@@ -21,9 +21,13 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   GET            <- yoink("httr", "GET")
   content        <- yoink("httr", "content")
 
+  token <- gitlab_pat(quiet = TRUE)
   user <- gitlab_user(quiet = TRUE)
   pwd <- gitlab_pwd(quiet = TRUE)
-  auth <- if (!is.null(user) && !is.null(pwd)) {
+
+  auth <- if (!is.null(token)) {
+    add_headers("Private-Token" = token)
+  } else if (!is.null(user) && !is.null(pwd)) {
     authenticate(user, pwd, type = "basic")
   } else {
     list()
@@ -77,6 +81,25 @@ gitlab_pwd <- function(quiet = FALSE) {
       message("Using GitLab password from envvar GITLAB_PASSWORD")
     }
     return(pwd)
+  }
+  return(NULL)
+}
+
+
+#' Retrieve GitLab PAT.
+#'
+#' A GitLab PAT
+#' Looks in env var \code{GITLAB_PAT}
+#'
+#' @keywords internal
+#'
+gitlab_pat <- function(quiet = FALSE) {
+  token <- Sys.getenv("GITLAB_PAT")
+  if (nzchar(token)) {
+    if (!quiet) {
+      message("Using GitLab PAT from envvar GITLAB_PAT")
+    }
+    return(token)
   }
   return(NULL)
 }
