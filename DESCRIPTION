@@ -21,6 +21,6 @@ Suggests:
     rmarkdown
 URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 Config/testthat/edition: 3
