@@ -44,13 +44,6 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   return(TRUE)
 }
 
-#' Retrieve GitLab PAT.
-#'
-#' A GitLab PAT
-#' Looks in env var \code{GITLAB_PAT}
-#'
-#' @keywords internal
-#'
 gitlab_pat <- function(quiet = FALSE) {
   token <- Sys.getenv("GITLAB_PAT")
   if (nzchar(token)) {
