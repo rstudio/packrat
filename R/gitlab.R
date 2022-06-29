@@ -33,7 +33,7 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   if (result$status != 200) {
     stop(
       sprintf(
-        "Unable to download package from GitLab; check the GITHUB_PAT environment variable: %s",
+        "Unable to download package from GitLab; check the GITLAB_PAT environment variable: %s",
         httr::http_status(result)$message), call. = FALSE)
   }
   writeBin(content(result, "raw"), destfile)
