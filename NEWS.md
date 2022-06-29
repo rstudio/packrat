@@ -2,10 +2,11 @@
 
 - Fixed a bug preventing successful downloads of private GitLab and Bitbucket
   archives during restore. (#671)
+
 - Allow GitLab downloads from private repos to be authenticated with
-  `GITLAB_PAT` environment variable. This method of authentication replaces the
-  `GITLAB_USERNAME` and `GITLAB_PASSWORD` variables, which are not supported by
-  GitLab. (#673)
+  `GITLAB_PAT` environment variable. This method of authentication replaces
+  the `GITLAB_USERNAME` and `GITLAB_PASSWORD` variables, which are not
+  supported by GitLab. (#673)
 
 # Packrat 0.8.0
 
