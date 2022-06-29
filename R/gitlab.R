@@ -4,8 +4,7 @@ isGitlabURL <- function(url) {
 
 canUseGitlabDownloader <- function() {
   (all(packageVersionInstalled(httr = "1.0.0")) &&
-     !is.null(gitlab_user(quiet = TRUE)) &&
-     !is.null(gitlab_pwd(quiet = TRUE)))
+     !is.null(gitlab_pat(quiet = TRUE)))
 }
 
 gitlabDownload <- function(url, destfile, ...) {
@@ -18,13 +17,14 @@ gitlabDownload <- function(url, destfile, ...) {
 
 gitlabDownloadImpl <- function(url, destfile, ...) {
   authenticate   <- yoink("httr", "authenticate")
+  add_headers    <- yoink("httr", "add_headers")
   GET            <- yoink("httr", "GET")
   content        <- yoink("httr", "content")
 
-  user <- gitlab_user(quiet = TRUE)
-  pwd <- gitlab_pwd(quiet = TRUE)
-  auth <- if (!is.null(user) && !is.null(pwd)) {
-    authenticate(user, pwd, type = "basic")
+  token <- gitlab_pat(quiet = TRUE)
+
+  auth <- if (!is.null(token)) {
+    add_headers("Private-Token" = token)
   } else {
     list()
   }
@@ -33,7 +33,7 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   if (result$status != 200) {
     stop(
       sprintf(
-        "Unable to download package from GitLab; check the GITLAB_USERNAME and GITLAB_PASSWORD environment variables: %s",
+        "Unable to download package from GitLab; check the GITLAB_PAT environment variable: %s",
         httr::http_status(result)$message), call. = FALSE)
   }
   writeBin(content(result, "raw"), destfile)
@@ -44,39 +44,13 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   return(TRUE)
 }
 
-#' Retrieve GitLab user.
-#'
-#' A GitLab user
-#' Looks in env var \code{GITLAB_USERNAME}
-#'
-#' @keywords internal
-#'
-gitlab_user <- function(quiet = FALSE) {
-  user <- Sys.getenv("GITLAB_USERNAME")
-  if (nzchar(user)) {
+gitlab_pat <- function(quiet = FALSE) {
+  token <- Sys.getenv("GITLAB_PAT")
+  if (nzchar(token)) {
     if (!quiet) {
-      message("Using GitLab username from envvar GITLAB_USERNAME")
+      message("Using GitLab PAT from envvar GITLAB_PAT")
     }
-    return(user)
-  }
-  return(NULL)
-}
-
-
-#' Retrieve GitLab password
-#'
-#' A GitLab password
-#' Looks in env var \code{GITLAB_PASSWORD}
-#'
-#' @keywords internal
-#'
-gitlab_pwd <- function(quiet = FALSE) {
-  pwd <- Sys.getenv("GITLAB_PASSWORD")
-  if (nzchar(pwd)) {
-    if (!quiet) {
-      message("Using GitLab password from envvar GITLAB_PASSWORD")
-    }
-    return(pwd)
+    return(token)
   }
   return(NULL)
 }

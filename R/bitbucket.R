@@ -44,14 +44,6 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
   return(TRUE)
 }
 
-
-#' Retrieve Bitbucket user.
-#'
-#' A bitbucket user
-#' Looks in env var \code{BITBUCKET_USERNAME}
-#'
-#' @keywords internal
-#'
 bitbucket_user <- function(quiet = FALSE) {
   user <- Sys.getenv("BITBUCKET_USERNAME")
   if (nzchar(user)) {
@@ -63,14 +55,6 @@ bitbucket_user <- function(quiet = FALSE) {
   return(NULL)
 }
 
-
-#' Retrieve Bitbucket password
-#'
-#' A bitbucket password
-#' Looks in env var \code{BITBUCKET_PASSWORD}
-#'
-#' @keywords internal
-#'
 bitbucket_pwd <- function(quiet = FALSE) {
   pwd <- Sys.getenv("BITBUCKET_PASSWORD")
   if (nzchar(pwd)) {
