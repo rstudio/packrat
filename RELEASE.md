@@ -12,6 +12,8 @@
     source("R/update.R"); updateInit()
     ```
 
+-   Commit your changes!
+
 -   Check and fix URLs (from R):
 
     ```r
