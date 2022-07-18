@@ -3,8 +3,7 @@ isGitHubURL <- function(url) {
 }
 
 canUseGitHubDownloader <- function() {
-  (all(packageVersionInstalled(httr = "1.0.0") || 
-  getOption("packrat.download.use.renv", default = FALSE)) &&
+  (all(packageVersionInstalled(httr = "1.0.0")) &&
      !is.null(github_pat()))
 }
 
@@ -20,19 +19,11 @@ github_pat <- function(quiet = TRUE) {
 }
 
 githubDownload <- function(url, destfile, ...) {
-  if (as.logical(getOption("packrat.download.use.renv", default = FALSE))) {
-    tryCatch(
-      githubDownloadImplRenv(url, destfile, ...),
-      error = function(e) {
-        stop(sprintf("GitHub request failed: %s", e), call. = FALSE)
+  tryCatch(
+    githubDownloadImpl(url, destfile, ...),
+    error = function(e) {
+      stop(sprintf("GitHub request failed: %s", e), call. = FALSE)
     })
-  } else {
-    tryCatch(
-      githubDownloadImpl(url, destfile, ...),
-      error = function(e) {
-        stop(sprintf("GitHub request failed: %s", e), call. = FALSE)
-    })
-  }
 }
 
 githubDownloadImpl <- function(url, destfile, ...) {
@@ -59,12 +50,5 @@ githubDownloadImpl <- function(url, destfile, ...) {
     stop("No data received.", call. = FALSE)
   }
   # Success!
-  return(TRUE)
-}
-
-githubDownloadImplRenv <- function(url, destfile, ...) {
-  Sys.setenv("RENV_DOWNLOAD_METHOD" = "curl")
-  print("About to use renv's download function")
-  renv$download(url, destfile, type = "github")
   return(TRUE)
 }
