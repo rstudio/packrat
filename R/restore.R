@@ -198,9 +198,15 @@ getSourceForPkgRecord <- function(pkgRecord,
           archiveUrl <- file.path(repo, "src/contrib/Archive",
                                   pkgRecord$name,
                                   pkgSrcFile)
-          if (!downloadWithRetries(archiveUrl,
-                                   destfile = file.path(pkgSrcDir, pkgSrcFile),
-                                   mode = "wb", quiet = TRUE)) {
+          destfile <- file.path(pkgSrcDir, pkgSrcFile)
+          success <- if (getOption("packrat.download.using.renv", FALSE)) {
+            downloadWithRenv(archiveURL, destfile)
+          } else {
+            downloadWithRetries(archiveUrl,
+                                           destfile = file.path(pkgSrcDir, pkgSrcFile),
+                                           mode = "wb", quiet = TRUE)
+          }
+          if (!success) {
             stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
           }
           foundVersion <- TRUE
@@ -269,7 +275,9 @@ getSourceForPkgRecord <- function(pkgRecord,
     }, add = TRUE)
 
     tryCatch({
-      success <- if (canUseGitHubDownloader()) {
+      success <- if (getOption("packrat.download.using.renv", FALSE)) {
+        downloadWithRenv(archiveUrl, srczip, type = "github")
+      } else if (canUseGitHubDownloader()) {
         githubDownload(archiveUrl, srczip)
       } else {
         downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
@@ -365,7 +373,9 @@ getSourceForPkgRecord <- function(pkgRecord,
     }, add = TRUE)
 
     tryCatch({
-      success <- if (canUseBitbucketDownloader()) {
+      success <- if (getOption("packrat.download.using.renv", FALSE)) {
+        downloadWithRenv(archiveUrl, srczip, type = "bitbucket")
+      } else if (canUseBitbucketDownloader()) {
         bitbucketDownload(archiveUrl, srczip)
       } else {
         downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
@@ -457,7 +467,9 @@ getSourceForPkgRecord <- function(pkgRecord,
     }, add = TRUE)
 
     tryCatch({
-      success <- if (canUseGitlabDownloader()) {
+      success <- if (getOption("packrat.download.using.renv", FALSE)) {
+        downloadWithRenv(archiveUrl, srczip, type = "gitlab")
+      } else if (canUseGitlabDownloader()) {
         gitlabDownload(archiveUrl, srczip)
       } else {
         downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
@@ -516,7 +528,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       )
     })
 
-    type <- "Gitlab"
+    type <- "GitLab"
   }
   if (!quiet) {
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {

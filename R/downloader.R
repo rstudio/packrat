@@ -201,6 +201,14 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
   success
 }
 
+
+downloadWithRenv <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
+  Sys.setenv("RENV_DOWNLOAD_METHOD" = method)
+  renv$download(url = url, destfile = destfile, type = type)
+  return(TRUE)
+}
+
+
 inferAppropriateDownloadMethod <- function(url) {
 
   ## If the user wants to explicitly use their own download method,
@@ -244,14 +252,16 @@ secureDownloadMethod <- function() {
     # that doesn't rely on the value of setInternet2). If it's R <= 3.1
     # then we can use "internal" for https so long as internet2 is enabled
     # (we don't use libcurl on Windows because it doesn't check certs).
-    if (isR32)
-        return("wininet")
-
-    # Otherwise, make a call to 'setInternet2' and use the 'internal' method
-    # if that call succeeds.
-    seti2 <- `::`(utils, 'setInternet2')
-    if (suppressWarnings(seti2(NA)))
-      return("internal")
+    if (isR32) {
+      return("wininet")
+    } else {
+      # Otherwise, make a call to 'setInternet2' and use the 'internal' method
+      # if that call succeeds.
+      seti2 <- `::`(utils, 'setInternet2')
+      if (suppressWarnings(seti2(NA))) {
+        return("internal")
+      }
+    }
   }
 
   # For Darwin and Linux we use libcurl if we can and then fall back
