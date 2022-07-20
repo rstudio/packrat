@@ -348,24 +348,24 @@ getSourceForPkgRecord <- function(pkgRecord,
       error = function(e) "internal"
     )
 
-    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      pkgRecord$remote_host <- paste0(protocol, "://bitbucket.org")
-    }
-
     # API URLs get recorded when packages are downloaded with devtools /
     # remotes, but Packrat just wants to use 'plain' URLs when downloading
     # package sources.
     originalRemoteHost <- pkgRecord$remote_host
     pkgRecord$remote_host <- sub("api.bitbucket.org/2.0", "bitbucket.org", pkgRecord$remote_host, fixed = TRUE)
 
-    # Previously, we weren't setting the protocol. This causes the `renv` downloader to fail.
-    protocol <- if (identical(method, "internal")) "http" else "https"
-    archiveUrl <- paste0(protocol, "://",
-                         pkgRecord$remote_host, "/",
-                         pkgRecord$remote_username, "/",
-                         pkgRecord$remote_repo, "/get/",
-                         pkgRecord$remote_sha, ".tar.gz")
+    fmt <- "%s/%s/%s/get/%s.tar.gz"
+    archiveUrl <- sprintf(fmt,
+                          pkgRecord$remote_host,
+                          pkgRecord$remote_username,
+                          pkgRecord$remote_repo,
+                          pkgRecord$remote_sha)
+
+    # Ensure the protocol is prepended
+    if (!grepl("^http", archiveUrl)) {
+      protocol <- if (identical(method, "internal")) "http" else "https"
+      archiveUrl <- paste(protocol, archiveUrl, sep = "://")
+    }
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
