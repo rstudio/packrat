@@ -177,7 +177,7 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
 
   # Annotate the package DESCRIPTION with the repository
   tmpTarballPath <- file.path(tempdir(), "packrat-tarball-upload")
-  untar(package, exdir = tmpTarballPath, tar = "internal")
+  untar(package, exdir = tmpTarballPath, tar = Sys.getenv("TAR", "internal"))
   pkgName <- sub("_.*", "", basename(package))
   untarredPath <- file.path(tmpTarballPath, pkgName)
   setRepositoryField(
