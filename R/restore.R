@@ -359,12 +359,13 @@ getSourceForPkgRecord <- function(pkgRecord,
     originalRemoteHost <- pkgRecord$remote_host
     pkgRecord$remote_host <- sub("api.bitbucket.org/2.0", "bitbucket.org", pkgRecord$remote_host, fixed = TRUE)
 
-    fmt <- "%s/%s/%s/get/%s.tar.gz"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$remote_host,
-                          pkgRecord$remote_username,
-                          pkgRecord$remote_repo,
-                          pkgRecord$remote_sha)
+    # Previously, we weren't setting the protocol. This causes the `renv` downloader to fail.
+    protocol <- if (identical(method, "internal")) "http" else "https"
+    archiveUrl <- paste0(protocol, "://",
+                         pkgRecord$remote_host, "/",
+                         pkgRecord$remote_username, "/",
+                         pkgRecord$remote_repo, "/get/",
+                         pkgRecord$remote_sha, ".tar.gz")
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit({
