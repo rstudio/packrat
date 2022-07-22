@@ -1,6 +1,6 @@
 # Tools for getting info about the execution environment
 
-tar_binary() <- function() {
+tar_binary <- function() {
   # If TAR is specified in the environment, use that.
   tar <- Sys.getenv("TAR", unset = NA)
   if (!is.na(tar)) {

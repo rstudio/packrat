@@ -56,7 +56,7 @@ rebuildTestRepo <- function(testroot = getwd()) {
     descfile <- as.data.frame(read.dcf(file.path(source, pkg, "DESCRIPTION")))
     tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
                      sep = "")
-    tar(tarball, pkg, compression = "gzip", tar = "internal")
+    tar(tarball, pkg, compression = "gzip", tar = tar_binary())
     dir.create(file.path(target, pkg))
     file.rename(file.path(source, tarball), file.path(target, pkg, tarball))
   }

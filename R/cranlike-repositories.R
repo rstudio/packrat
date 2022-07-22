@@ -193,7 +193,7 @@ uploadPackageTarball <- function(package, repoName, repoPath, ...) {
     basename(package),
     files = pkgName,
     compression = "gzip",
-    tar = "internal"
+    tar = tar_binary()
   )
 
   if (success != 0)

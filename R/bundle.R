@@ -126,7 +126,7 @@ bundle <- function(project = NULL,
     tarfile = file,
     files = basename(project),
     compression = "gzip",
-    tar = "internal",
+    tar = tar_binary(),
     ...
   )
 
