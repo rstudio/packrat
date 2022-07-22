@@ -116,7 +116,7 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
 R.path <- function() file.path(R.home("bin"), "R")
 
-R <- function(options, path = tempdir(), env_vars = NULL, ...) {
+R <- function(options, path = tempdir(), env_vars = NULL, env_mask = c("") ...) {
   options <- paste("--vanilla", options)
   r_path <- file.path(R.home("bin"), "R")
 
@@ -125,6 +125,10 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
     old <- add_path(get_rtools_path(), 0)
     on.exit(set_path(old))
   }
+
+  getOption("packrat.masked.envvars")
+  # OR
+  get_opts("environment_masking")
 
   in_dir(path, system_check(r_path, options, c(r_env_vars(), env_vars), ...))
 }
