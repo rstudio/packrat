@@ -19,6 +19,7 @@ Suggests:
     devtools,
     httr,
     knitr,
+    mockery,
     rmarkdown
 URL: https://github.com/rstudio/packrat/
 BugReports: https://github.com/rstudio/packrat/issues
