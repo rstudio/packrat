@@ -173,7 +173,7 @@ dirDependenciesRenv <- function(dir) {
   # bundling, since we don't include the rsconnect directory.
 
   absDir <- normalizePath(dir)
-  deps <- renv$dependencies(path = absDir, root = absDir, quiet = FALSE)
+  deps <- renv$dependencies(path = absDir, root = absDir, quiet = FALSE, progress = TRUE)
   pkgs <- unique(deps$Package)
   ## Exclude recommended packages (and the artifical "R" package) if there is
   ## no package installed locally this places an implicit dependency on the
