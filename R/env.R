@@ -9,7 +9,10 @@ tar_binary <- function() {
 
   # If we're on Unix, look for a tar binary on the PATH.
   if (is.unix()) {
-    return(Sys.which("tar"))
+    tar <- file.path(Sys.which("tar"))
+    if (file.exists(tar)) {
+      return(tar)
+    }
   }
 
   # If we're on Windows, look for the system tar binary.
@@ -28,7 +31,6 @@ tar_binary <- function() {
   warning("No external tar binary found. Using R's internal TAR, which may cause failures with long filenames.")
   return("internal")
 }
-
 
 # Tools for storing state in environment variables. Possibly unused.
 getenv <- function(x) {
