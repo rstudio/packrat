@@ -127,7 +127,7 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
   }
 
   # Mask Git service tokens unless told not to.
-  git_token_vars <- if (!getOption("packrat.unmask.git.service.tokens", FALSE)) {
+  git_token_vars <- if (!getOption("packrat.unmask.git.service.vars", FALSE)) {
     c(
       "GITHUB_PAT" = NA,
       "GITLAB_PAT" = NA,

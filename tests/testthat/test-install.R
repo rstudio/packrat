@@ -41,7 +41,7 @@ test_that("Git service token variables are masked from subprocesses by default",
   )
   set_envvar(git_token_vars)
 
-  unmask_option <- options("packrat.unmask.git.service.tokens" = NULL)
+  unmask_option <- options("packrat.unmask.git.service.vars" = NULL)
   on.exit(options(unmask_option), add = TRUE)
 
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
@@ -95,7 +95,7 @@ test_that("Git service token variable masking can be disabled", {
   )
   set_envvar(git_token_vars)
 
-  unmask_option <- options("packrat.unmask.git.service.tokens" = TRUE)
+  unmask_option <- options("packrat.unmask.git.service.vars" = TRUE)
   on.exit(options(unmask_option), add = TRUE)
 
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
