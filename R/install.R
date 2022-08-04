@@ -116,7 +116,7 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
 R.path <- function() file.path(R.home("bin"), "R")
 
-R <- function(options, path = tempdir(), env_vars = NULL, env_mask = c("") ...) {
+R <- function(options, path = tempdir(), env_vars = NULL, ...) {
   options <- paste("--vanilla", options)
   r_path <- file.path(R.home("bin"), "R")
 
@@ -126,11 +126,38 @@ R <- function(options, path = tempdir(), env_vars = NULL, env_mask = c("") ...) 
     on.exit(set_path(old))
   }
 
-  getOption("packrat.masked.envvars")
-  # OR
-  get_opts("environment_masking")
+  # Mask Git service tokens unless told not to.
+  git_token_vars <- if (!getOption("packrat.unmask.git.service.tokens", FALSE)) {
+    c(
+      "GITHUB_PAT" = NA,
+      "GITLAB_PAT" = NA,
+      "BITBUCKET_USERNAME" = NA,
+      "BITBUCKET_USER" = NA,
+      "BITBUCKET_PASSWORD" = NA,
+      "BITBUCKET_PASS" = NA,
+      # Varnames that may have been used previously
+      "GITHUB_USERNAME" = NA,
+      "GITHUB_USER" = NA,
+      "GITHUB_PASSWORD" = NA,
+      "GITHUB_PASS" = NA,
+      "GITLAB_USERNAME" = NA,
+      "GITLAB_USER" = NA,
+      "GITLAB_PASSWORD" = NA,
+      "GITLAB_PASS" = NA
+    )
+  } else {
+    NULL
+  }
 
-  in_dir(path, system_check(r_path, options, c(r_env_vars(), env_vars), ...))
+  in_dir(
+    path,
+    system_check(
+      cmd = r_path,
+      args = options,
+      env = c(r_env_vars(), env_vars, git_token_vars),
+      ...
+    )
+  )
 }
 
 r_env_vars <- function() {
@@ -582,8 +609,19 @@ rtools_needed <- function() {
 }
 
 system_check <- function(cmd, args = character(), env = character(),
-                         quiet = FALSE, ...) {
+                         quiet = FALSE, return_output = FALSE, ...) {
   full <- paste(shQuote(cmd), paste(args, collapse = ", "))
+
+  # Add user-specified environment mask to the environment
+  masked_envvars_option <- getOption("packrat.masked.envvars", NULL)
+  if (!is.null(masked_envvars_option)) {
+    add_to_env <- as.character(rep(NA, length(masked_envvars_option)))
+    names(add_to_env) <- masked_envvars_option
+    print(add_to_env)
+    env <- c(env, add_to_env)
+  }
+
+  print(env)
 
   if (!quiet) {
     message(wrap_command(full))
@@ -594,7 +632,7 @@ system_check <- function(cmd, args = character(), env = character(),
   # on Windows
   result <- suppressWarnings(with_envvar(
     env,
-    if (quiet) {
+    if (quiet || return_output) {
       system2(cmd, args, stdout = TRUE, stderr = TRUE)
     } else {
       system2(cmd, args)
@@ -625,6 +663,10 @@ system_check <- function(cmd, args = character(), env = character(),
     stop(stopMsg, call. = FALSE)
   }
 
+  if (return_output) {
+    return(result)
+  }
+
   invisible(TRUE)
 }
 
@@ -636,7 +678,7 @@ wrap_command <- function(x) {
 }
 
 set_envvar <- function(envs, action = "replace") {
-  stopifnot(is.named(envs))
+  stopifnot(all.named(envs))
   stopifnot(is.character(action), length(action) == 1)
   action <- match.arg(action, c("replace", "prefix", "suffix"))
 
@@ -658,7 +700,7 @@ set_envvar <- function(envs, action = "replace") {
   invisible(old)
 }
 
-is.named <- function(x) {
+all.named <- function(x) {
   !is.null(names(x)) && all(names(x) != "")
 }
 
