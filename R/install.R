@@ -126,35 +126,12 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
     on.exit(set_path(old))
   }
 
-  # Mask Git service tokens unless told not to.
-  git_token_vars <- if (!getOption("packrat.unmask.git.service.vars", FALSE)) {
-    c(
-      "GITHUB_PAT" = NA,
-      "GITLAB_PAT" = NA,
-      "BITBUCKET_USERNAME" = NA,
-      "BITBUCKET_USER" = NA,
-      "BITBUCKET_PASSWORD" = NA,
-      "BITBUCKET_PASS" = NA,
-      # Varnames that may have been used previously
-      "GITHUB_USERNAME" = NA,
-      "GITHUB_USER" = NA,
-      "GITHUB_PASSWORD" = NA,
-      "GITHUB_PASS" = NA,
-      "GITLAB_USERNAME" = NA,
-      "GITLAB_USER" = NA,
-      "GITLAB_PASSWORD" = NA,
-      "GITLAB_PASS" = NA
-    )
-  } else {
-    NULL
-  }
-
   in_dir(
     path,
     system_check(
       cmd = r_path,
       args = options,
-      env = c(r_env_vars(), env_vars, git_token_vars),
+      env = c(r_env_vars(), env_vars, envvar_mask()),
       ...
     )
   )
@@ -172,6 +149,40 @@ r_env_vars <- function() {
     "NOT_CRAN" = "true",
     "TAR" = auto_tar()
   )
+}
+
+envvar_mask <- function() {
+  # Mask tokens unless told not to.
+  git_token_vars <- if (!getOption("packrat.unmask.git.service.vars", FALSE)) {
+    c(
+      "GITHUB_PAT",
+      "GITLAB_PAT",
+      "BITBUCKET_USERNAME",
+      "BITBUCKET_USER",
+      "BITBUCKET_PASSWORD",
+      "BITBUCKET_PASS",
+      # Varnames that may have been used previously
+      "GITHUB_USERNAME",
+      "GITHUB_USER",
+      "GITHUB_PASSWORD",
+      "GITHUB_PASS",
+      "GITLAB_USERNAME",
+      "GITLAB_USER",
+      "GITLAB_PASSWORD",
+      "GITLAB_PASS"
+    )
+  } else {
+    NULL
+  }
+
+  user_specified_vars <- getOption("packrat.masked.envvars", NULL)
+
+  all_vars <- c(git_token_vars, user_specified_vars)
+
+  envvar_mask <- as.character(rep(NA, length(all_vars)))
+  names(envvar_mask) <- all_vars
+
+  return(envvar_mask)
 }
 
 auto_tar <- function() {
@@ -611,14 +622,6 @@ rtools_needed <- function() {
 system_check <- function(cmd, args = character(), env = character(),
                          quiet = FALSE, return_output = FALSE, ...) {
   full <- paste(shQuote(cmd), paste(args, collapse = ", "))
-
-  # Add user-specified environment mask to the environment
-  masked_envvars_option <- getOption("packrat.masked.envvars", NULL)
-  if (!is.null(masked_envvars_option)) {
-    add_to_env <- as.character(rep(NA, length(masked_envvars_option)))
-    names(add_to_env) <- masked_envvars_option
-    env <- c(env, add_to_env)
-  }
 
   if (!quiet && !return_output) {
     message(wrap_command(full))
