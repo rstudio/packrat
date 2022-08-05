@@ -617,13 +617,10 @@ system_check <- function(cmd, args = character(), env = character(),
   if (!is.null(masked_envvars_option)) {
     add_to_env <- as.character(rep(NA, length(masked_envvars_option)))
     names(add_to_env) <- masked_envvars_option
-    print(add_to_env)
     env <- c(env, add_to_env)
   }
 
-  print(env)
-
-  if (!quiet) {
+  if (!quiet && !return_output) {
     message(wrap_command(full))
     message()
   }
