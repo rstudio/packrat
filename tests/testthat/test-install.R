@@ -14,12 +14,12 @@ test_that("Git service token variables are masked from subprocesses by default",
     "GITLAB_USER",
     "GITLAB_PASSWORD",
     "GITLAB_PASS"
-  ))
+  ), unset = NA)
   for (varname in names(prior_envvars)) {
-    if (is.na(varname)) {
-      on.exit(Sys.unsetenv(varname), add = TRUE)
+    if (is.na(prior_envvars[varname])) {
+      on.exit(Sys.unsetenv(varname), add = TRUE, after = FALSE)
     } else {
-      on.exit(Sys.setenv(varname = prior_envvars[varname]), add = TRUE)
+      on.exit(Sys.setenv(varname = prior_envvars[varname]), add = TRUE, after = FALSE)
     }
   }
 
@@ -42,7 +42,7 @@ test_that("Git service token variables are masked from subprocesses by default",
   set_envvar(git_token_vars)
 
   unmask_option <- options("packrat.unmask.git.service.vars" = NULL)
-  on.exit(options(unmask_option), add = TRUE)
+  on.exit(options(unmask_option), add = TRUE, after = FALSE)
 
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
 
@@ -67,12 +67,12 @@ test_that("Git service token variable masking can be disabled", {
     "GITLAB_USER",
     "GITLAB_PASSWORD",
     "GITLAB_PASS"
-  ))
+  ), unset = NA)
   for (varname in names(prior_envvars)) {
-    if (is.na(varname)) {
-      on.exit(Sys.unsetenv(varname), add = TRUE)
+    if (is.na(prior_envvars[varname])) {
+      on.exit(Sys.unsetenv(varname), add = TRUE, after = FALSE)
     } else {
-      on.exit(Sys.setenv(varname = prior_envvars[varname]), add = TRUE)
+      on.exit(Sys.setenv(varname = prior_envvars[varname]), add = TRUE, after = FALSE)
     }
   }
 
@@ -96,7 +96,7 @@ test_that("Git service token variable masking can be disabled", {
   set_envvar(git_token_vars)
 
   unmask_option <- options("packrat.unmask.git.service.vars" = TRUE)
-  on.exit(options(unmask_option), add = TRUE)
+  on.exit(options(unmask_option), add = TRUE, after = FALSE)
 
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
 
@@ -111,12 +111,12 @@ test_that("Other environment variables can be masked via the new option", {
     "MEAT_EATERS_OPTION" = "beef_patty"
   )
 
-  prior_envvars <- Sys.getenv(names(envvars))
+  prior_envvars <- Sys.getenv(names(envvars), unset = NA)
   for (varname in names(prior_envvars)) {
-    if (is.na(varname)) {
-      on.exit(Sys.unsetenv(varname), add = TRUE)
+    if (is.na(prior_envvars[varname])) {
+      on.exit(Sys.unsetenv(varname), add = TRUE, after = FALSE)
     } else {
-      on.exit(Sys.setenv(varname = prior_envvars[varname]), add = TRUE)
+      on.exit(Sys.setenv(varname = prior_envvars[varname]), add = TRUE, after = FALSE)
     }
   }
   set_envvar(envvars)
@@ -129,7 +129,7 @@ test_that("Other environment variables can be masked via the new option", {
 
 
   unmask_option <- options("packrat.masked.envvars" = names(envvars))
-  on.exit(options(unmask_option), add = TRUE)
+  on.exit(options(unmask_option), add = TRUE, after = FALSE)
 
   # Now that they are named in the option, they should be absent from this output
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
