@@ -212,6 +212,14 @@ set_libpaths <- function(paths) {
 
 with_libpaths <- with_something(set_libpaths)
 
+# Modifies environment variables, executes the code in `code` and then restores
+# the environment variables to their prior values.
+# - `new` should be a named character vector of values for environment variables
+#   to take during execution. Variables can be temporarily unset with an `NA`
+#   value.
+# - `action` can be "prefix" or "suffix" to combine `new` with existing
+#   variables instead of replacing.
+# See `set_envvar` for more details.
 with_envvar <- function(new, code, action = "replace") {
   old <- set_envvar(new, action)
   on.exit(set_envvar(old, "replace"))
@@ -677,6 +685,14 @@ wrap_command <- function(x) {
   paste(lines, continue, collapse = "\n")
 }
 
+# `set_envvar` takes a named character vector and sets its contents to update
+# environment variables. It returns the old value of the modified envvars.
+# - All non-NA entries in the list will be written to the environment. The
+#   default action overwrites the environment variables, but "prefix" and
+#   "suffix" combine the new value with the existing value.
+# - Any names in the list with NA values will be unset using `Sys.unsetenv`
+# `with_envvar` uses this function to temporarily replace environment variables
+# for execution of a code block.
 set_envvar <- function(envs, action = "replace") {
   stopifnot(all.named(envs))
   stopifnot(is.character(action), length(action) == 1)
