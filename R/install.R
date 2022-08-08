@@ -153,7 +153,7 @@ r_env_vars <- function() {
 
 envvar_mask <- function() {
   # Mask tokens unless told not to.
-  git_token_vars <- if (!getOption("packrat.unmask.git.service.vars", FALSE)) {
+  git_token_vars <- if (!getOption("packrat.mask.git.service.envvars", TRUE)) {
     c(
       "GITHUB_PAT",
       "GITLAB_PAT",

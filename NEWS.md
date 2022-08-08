@@ -2,10 +2,10 @@
 
 - Packrat now masks environment variables commonly used for Git service account
   authentication from subprocesses used to install packages. This behavior can
-  be disabled by setting the option `packrat.unmask.git.service.vars` to `TRUE`.
-- Users can now mask arbitrary environment variables from the subprocess that
+  be disabled by setting the option `packrat.mask.git.service.envvars` to `FALSE`.
+- Users can mask additional arbitrary environment variables from the subprocess that
   run package installation tasks, by setting the option `packrat.masked.envvars`
-  to a character vector of variable names to mask.
+  to a character vector of variable names to mask. These variables are masked whether or not `packrat.mask.git.service.envvars` has been set to `FALSE`.
 
 # Packrat 0.8.1
 

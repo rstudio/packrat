@@ -18,7 +18,7 @@ test_that("The default list of environment variables is masked correctly", {
   prior_envvars <- set_envvar(new_envvars, "replace")
   on.exit(set_envvar(prior_envvars, "replace"))
 
-  unmask_option <- options("packrat.unmask.git.service.vars" = NULL)
+  unmask_option <- options("packrat.mask.git.service.envvars" = NULL)
   on.exit(options(unmask_option), add = TRUE, after = FALSE)
 
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
@@ -48,7 +48,7 @@ test_that("The default list of masked environment variables can be disabled", {
   prior_envvars <- set_envvar(new_envvars, "replace")
   on.exit(set_envvar(prior_envvars, "replace"))
 
-  unmask_option <- options("packrat.unmask.git.service.vars" = TRUE)
+  unmask_option <- options("packrat.mask.git.service.envvars" = FALSE)
   on.exit(options(unmask_option), add = TRUE, after = FALSE)
 
   subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
