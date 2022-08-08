@@ -113,6 +113,9 @@ test_that("Git and user-specified variables can be masked while other variables 
     "PLANT_BASED" = "veggie_patty",
     "MEAT_EATERS_OPTION" = "beef_patty"
   )
+  prior_envvars <- set_envvar(new_envvars, "replace")
+  on.exit(set_envvar(new_envvars, "replace"), add = TRUE, after = FALSE)
+
 
   git_mask_option <- options("packrat.mask.git.service.envvars" = NULL)
   on.exit(options(git_mask_option), add = TRUE, after = FALSE)
@@ -128,7 +131,7 @@ test_that("Git and user-specified variables can be masked while other variables 
 
   # Check masked vars
   not_expected <- sapply(masked_names, function(x) any(grepl(x, subprocess_output)))
-  expect_false(any(not_expected), info = print(subprocess_output)) # expect_false("Are any of the outputs TRUE?")
+  expect_false(any(not_expected), info = print(not_expected)) # expect_false("Are any of the outputs TRUE?")
 
   # Check unmasked var
   expect_true(any(grepl(unmasked_name, subprocess_output)), info = print(subprocess_output))
