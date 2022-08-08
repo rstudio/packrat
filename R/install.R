@@ -116,7 +116,7 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
 R.path <- function() file.path(R.home("bin"), "R")
 
-R <- function(options, path = tempdir(), env_vars = NULL, ...) {
+R <- function(options, path = tempdir(), ...) {
   options <- paste("--vanilla", options)
   r_path <- file.path(R.home("bin"), "R")
 
@@ -131,7 +131,7 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
     system_check(
       cmd = r_path,
       args = options,
-      env = c(r_env_vars(), env_vars, envvar_mask()),
+      env = c(r_env_vars(), envvar_mask()),
       ...
     )
   )
