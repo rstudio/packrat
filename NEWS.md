@@ -1,5 +1,6 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Take an `renv` update to include a fix regarding `download.file.method` handling.
 
 # Packrat 0.8.1
 
