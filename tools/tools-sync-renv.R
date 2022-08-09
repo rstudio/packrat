@@ -1,3 +1,8 @@
+# This script updates the vendored version of renv. It must be run from the
+# Packrat root directory. By default, uses the current version of renv on main.
+# You can pass a single tag as an argument after --args to use that version.
+# R -f /tools/test.R --args 0.15.5-48
+
 
 # double-check that we're in the packrat root directory
 if (!file.exists("DESCRIPTION"))
@@ -7,12 +12,29 @@ desc <- read.dcf("DESCRIPTION", all = TRUE)
 if (!identical(desc$Package, "packrat"))
   stop("script must be run from packrat root directory")
 
+# determine which tag we're downloading, if any
+args = commandArgs(trailingOnly = TRUE)
+if (length(args) == 0) {
+    tag <- NULL
+    print("using the current HEAD of the renv repo")
+} else if (length(args) == 1) {
+    tag <- args
+    print(paste("using the version of renv tagged", args))
+} else {
+    stop("this script only accepts one argument for the renv tag")
+}
+
 # move to temporary directory
 owd <- setwd(tempdir())
 
-# check out the latest renv sources
-# TODO: clone a specific version / tag
-system("git clone --depth 1 https://github.com/rstudio/renv")
+if (is.null(tag)) {
+  # check out the latest renv sources
+  system("git clone --depth 1 https://github.com/rstudio/renv")
+} else if (length(tag) == 1) {
+  # check out the tagged version
+  git_clone_cmd <- paste0("git clone --branch ", tag, " --depth 1 https://github.com/rstudio/renv")
+  system(git_clone_cmd)
+}
 
 twd <- setwd("renv")
 gitCommitHash <- system("git rev-parse HEAD", intern = TRUE)
