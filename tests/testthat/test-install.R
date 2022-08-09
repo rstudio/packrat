@@ -1,6 +1,6 @@
 test_that("The default list of environment variables is masked correctly", {
   new_envvars <- c(
-    "GITHUB_PAT" = "secret",
+    # "GITHUB_PAT" = "secret",
     "GITLAB_PAT" = "secret",
     "BITBUCKET_USERNAME" = "secret",
     "BITBUCKET_USER" = "secret",
@@ -32,7 +32,7 @@ test_that("The default list of environment variables is masked correctly", {
 
 test_that("The default list of masked environment variables can be disabled", {
   new_envvars <- c(
-    "GITHUB_PAT" = "secret",
+    # "GITHUB_PAT" = "secret",
     "GITLAB_PAT" = "secret",
     "BITBUCKET_USERNAME" = "secret",
     "BITBUCKET_USER" = "secret",
@@ -96,7 +96,7 @@ test_that("User-specified masked envvars do not appear in an R subprocess", {
 
 test_that("Git and user-specified variables can be masked while other variables still appear", {
   new_envvars <- c(
-    "GITHUB_PAT" = "secret",
+    # "GITHUB_PAT" = "secret",
     "GITLAB_PAT" = "secret",
     "BITBUCKET_USERNAME" = "secret",
     "BITBUCKET_USER" = "secret",
