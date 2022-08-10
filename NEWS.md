@@ -1,5 +1,6 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Take an `renv` update to include a fix regarding `download.file.method` handling.
 - Packrat now masks environment variables commonly used for Git service account
   authentication from subprocesses used to install packages. This behavior can
   be disabled by setting the option `packrat.mask.git.service.envvars` to `FALSE`.
