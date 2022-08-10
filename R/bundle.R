@@ -126,7 +126,7 @@ bundle <- function(project = NULL,
     tarfile = file,
     files = basename(project),
     compression = "gzip",
-    tar = "internal",
+    tar = tar_binary(),
     ...
   )
 
@@ -177,7 +177,7 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
 
   whereFiles <- list.files()
   message("- Untarring '", basename(bundle), "' in directory '", where, "'...")
-  untar(bundle, exdir = where, tar = "internal", ...)
+  untar(bundle, exdir = where, tar = tar_binary(), ...)
   dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
 
   if (restore) {
