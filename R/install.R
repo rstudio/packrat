@@ -147,7 +147,7 @@ r_env_vars <- function() {
     # the R subprocesses. Unsetting it here avoids those problems.
     "R_TESTS" = "",
     "NOT_CRAN" = "true",
-    "TAR" = auto_tar()
+    "TAR" = tar_binary()
   )
 }
 
@@ -176,22 +176,11 @@ envvar_mask <- function() {
   }
 
   user_specified_vars <- getOption("packrat.masked.envvars", NULL)
-
   all_vars <- c(git_token_vars, user_specified_vars)
-
   envvar_mask <- as.character(rep(NA, length(all_vars)))
   names(envvar_mask) <- all_vars
 
   return(envvar_mask)
-}
-
-auto_tar <- function() {
-  tar <- Sys.getenv("TAR", unset = NA)
-  if (!is.na(tar)) return(tar)
-
-  windows <- .Platform$OS.type == "windows"
-  no_rtools <- is.null(get_rtools_path())
-  if (windows && no_rtools) "internal" else ""
 }
 
 with_something <- function(set) {
@@ -304,27 +293,21 @@ decompress <- function(src, target = tempdir()) {
 decompressImpl <- function(src, target = tempdir()) {
   stopifnot(file.exists(src))
 
-  # force internal tar (otherwise bad things can happen on Windows if
-  # unexpected versions of tar.exe are on the PATH)
-  TAR <- Sys.getenv("TAR")
-  Sys.setenv(TAR = "internal")
-  on.exit(Sys.setenv(TAR = TAR), add = TRUE)
-
   if (grepl("\\.zip$", src)) {
     unzip(src, exdir = target, unzip = getOption("unzip"))
     outdir <- getrootdir(as.vector(unzip(src, list = TRUE)$Name))
 
   } else if (grepl("\\.tar$", src)) {
-    untar(src, exdir = target)
-    outdir <- getrootdir(untar(src, list = TRUE))
+    untar(src, exdir = target, tar = tar_binary())
+    outdir <- getrootdir(untar(src, list = TRUE, tar = tar_binary()))
 
   } else if (grepl("\\.(tar\\.gz|tgz)$", src)) {
-    untar(src, exdir = target, compressed = "gzip")
-    outdir <- getrootdir(untar(src, compressed = "gzip", list = TRUE))
+    untar(src, exdir = target, compressed = "gzip", tar = tar_binary())
+    outdir <- getrootdir(untar(src, compressed = "gzip", list = TRUE, tar = tar_binary()))
 
   } else if (grepl("\\.(tar\\.bz2|tbz)$", src)) {
-    untar(src, exdir = target, compressed = "bzip2")
-    outdir <- getrootdir(untar(src, compressed = "bzip2", list = TRUE))
+    untar(src, exdir = target, compressed = "bzip2", tar = tar_binary())
+    outdir <- getrootdir(untar(src, compressed = "bzip2", list = TRUE, tar = tar_binary()))
 
   } else {
     ext <- gsub("^[^.]*\\.", "", src)

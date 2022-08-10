@@ -56,7 +56,7 @@ rebuildTestRepo <- function(testroot = getwd()) {
     descfile <- as.data.frame(read.dcf(file.path(source, pkg, "DESCRIPTION")))
     tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
                      sep = "")
-    tar(tarball, pkg, compression = "gzip", tar = "internal")
+    tar(tarball, pkg, compression = "gzip", tar = tar_binary())
     dir.create(file.path(target, pkg))
     file.rename(file.path(source, tarball), file.path(target, pkg, tarball))
   }
@@ -197,7 +197,7 @@ bundle_test <- function(bundler, checker, ...) {
   setwd("packrat-test-bundle")
   suppressWarnings(packrat::init(enter = FALSE))
   bundler(file = "test-bundle.tar.gz", ...)
-  utils::untar("test-bundle.tar.gz", exdir = "untarred", tar = "internal")
+  utils::untar("test-bundle.tar.gz", exdir = "untarred", tar = tar_binary())
 
   # run checker
   checker()
