@@ -1,5 +1,11 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Change how Packrat selects a `tar` binary. Previously, Packrat would force the
+  use of R's internal `tar` implementation, which cannot handle long filepaths.
+  Now, if a `TAR` environment variable exists, Packrat will use that. Otherwise,
+  it will either look for a `tar` binary on the `PATH` on Unix, or look for the
+  system `tar` on Windows. If no binary is found in those locations, it will use
+  R's internal `tar` implementation. (#648)
 
 # Packrat 0.8.1
 
