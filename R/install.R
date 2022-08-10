@@ -116,7 +116,7 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
 R.path <- function() file.path(R.home("bin"), "R")
 
-R <- function(options, path = tempdir(), env_vars = NULL, ...) {
+R <- function(options, path = tempdir(), ...) {
   options <- paste("--vanilla", options)
   r_path <- file.path(R.home("bin"), "R")
 
@@ -126,7 +126,15 @@ R <- function(options, path = tempdir(), env_vars = NULL, ...) {
     on.exit(set_path(old))
   }
 
-  in_dir(path, system_check(r_path, options, c(r_env_vars(), env_vars), ...))
+  in_dir(
+    path,
+    system_check(
+      cmd = r_path,
+      args = options,
+      env = c(r_env_vars(), envvar_mask()),
+      ...
+    )
+  )
 }
 
 r_env_vars <- function() {
@@ -141,6 +149,38 @@ r_env_vars <- function() {
     "NOT_CRAN" = "true",
     "TAR" = tar_binary()
   )
+}
+
+envvar_mask <- function() {
+  # Mask tokens unless told not to.
+  git_token_vars <- if (getOption("packrat.mask.git.service.envvars", TRUE)) {
+    c(
+      "GITHUB_PAT",
+      "GITLAB_PAT",
+      "BITBUCKET_USERNAME",
+      "BITBUCKET_USER",
+      "BITBUCKET_PASSWORD",
+      "BITBUCKET_PASS",
+      # Varnames that may have been used previously
+      "GITHUB_USERNAME",
+      "GITHUB_USER",
+      "GITHUB_PASSWORD",
+      "GITHUB_PASS",
+      "GITLAB_USERNAME",
+      "GITLAB_USER",
+      "GITLAB_PASSWORD",
+      "GITLAB_PASS"
+    )
+  } else {
+    NULL
+  }
+
+  user_specified_vars <- getOption("packrat.masked.envvars", NULL)
+  all_vars <- c(git_token_vars, user_specified_vars)
+  envvar_mask <- as.character(rep(NA, length(all_vars)))
+  names(envvar_mask) <- all_vars
+
+  return(envvar_mask)
 }
 
 with_something <- function(set) {
@@ -161,6 +201,14 @@ set_libpaths <- function(paths) {
 
 with_libpaths <- with_something(set_libpaths)
 
+# Modifies environment variables, executes the code in `code` and then restores
+# the environment variables to their prior values.
+# - `new` should be a named character vector of values for environment variables
+#   to take during execution. Variables can be temporarily unset with an `NA`
+#   value.
+# - `action` can be "prefix" or "suffix" to combine `new` with existing
+#   variables instead of replacing.
+# See `set_envvar` for more details.
 with_envvar <- function(new, code, action = "replace") {
   old <- set_envvar(new, action)
   on.exit(set_envvar(old, "replace"))
@@ -563,10 +611,10 @@ rtools_needed <- function() {
 }
 
 system_check <- function(cmd, args = character(), env = character(),
-                         quiet = FALSE, ...) {
+                         quiet = FALSE, return_output = FALSE, ...) {
   full <- paste(shQuote(cmd), paste(args, collapse = ", "))
 
-  if (!quiet) {
+  if (!quiet && !return_output) {
     message(wrap_command(full))
     message()
   }
@@ -575,7 +623,7 @@ system_check <- function(cmd, args = character(), env = character(),
   # on Windows
   result <- suppressWarnings(with_envvar(
     env,
-    if (quiet) {
+    if (quiet || return_output) {
       system2(cmd, args, stdout = TRUE, stderr = TRUE)
     } else {
       system2(cmd, args)
@@ -606,6 +654,10 @@ system_check <- function(cmd, args = character(), env = character(),
     stop(stopMsg, call. = FALSE)
   }
 
+  if (return_output) {
+    return(result)
+  }
+
   invisible(TRUE)
 }
 
@@ -616,8 +668,16 @@ wrap_command <- function(x) {
   paste(lines, continue, collapse = "\n")
 }
 
+# `set_envvar` takes a named character vector and sets its contents to update
+# environment variables. It returns the old value of the modified envvars.
+# - All non-NA entries in the list will be written to the environment. The
+#   default action overwrites the environment variables, but "prefix" and
+#   "suffix" combine the new value with the existing value.
+# - Any names in the list with NA values will be unset using `Sys.unsetenv`
+# `with_envvar` uses this function to temporarily replace environment variables
+# for execution of a code block.
 set_envvar <- function(envs, action = "replace") {
-  stopifnot(is.named(envs))
+  stopifnot(all.named(envs))
   stopifnot(is.character(action), length(action) == 1)
   action <- match.arg(action, c("replace", "prefix", "suffix"))
 
@@ -639,7 +699,7 @@ set_envvar <- function(envs, action = "replace") {
   invisible(old)
 }
 
-is.named <- function(x) {
+all.named <- function(x) {
   !is.null(names(x)) && all(names(x) != "")
 }
 
