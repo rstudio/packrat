@@ -203,16 +203,11 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
 
 
 downloadWithRenv <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
-  # Capture and prepare to restore the existing value of RENV_DOWNLOAD_METHOD environment variable
-  RENV_DOWNLOAD_METHOD <- Sys.getenv("RENV_DOWNLOAD_METHOD")
-  if (is.na(RENV_DOWNLOAD_METHOD)) {
-    on.exit(Sys.unsetenv("RENV_DOWNLOAD_METHOD"))
-  } else {
-    on.exit(Sys.setenv("RENV_DOWNLOAD_METHOD" = RENV_DOWNLOAD_METHOD))
-  }
+  with_envvar(
+    c(RENV_DOWNLOAD_METHOD = method),
+    renv$download(url = url, destfile = destfile, type = type)
+  )
 
-  Sys.setenv("RENV_DOWNLOAD_METHOD" = method)
-  renv$download(url = url, destfile = destfile, type = type)
   return(TRUE)
 }
 
