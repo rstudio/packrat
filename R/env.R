@@ -1,4 +1,38 @@
-# Tools for storing state in environment variables.
+# Tools for getting info about the execution environment
+
+tar_binary <- function() {
+  # If TAR is specified in the environment, use that.
+  tar <- Sys.getenv("TAR", unset = NA)
+  if (!is.na(tar)) {
+    return(tar)
+  }
+
+  # If we're on Unix, look for a tar binary on the PATH.
+  if (is.unix()) {
+    tar <- file.path(Sys.which("tar"))
+    if (file.exists(tar)) {
+      return(tar)
+    }
+  }
+
+  # If we're on Windows, look for the system tar binary.
+  if (is.windows()) {
+    root <- Sys.getenv("SystemRoot", unset = NA)
+    if (is.na(root)) {
+      root <- "C:/Windows"
+    }
+    tar <- file.path(root, "System32/tar.exe")
+    if (file.exists(tar)) {
+      return(tar)
+    }
+  }
+
+  # Return internal only as a fallback with a warning.
+  warning("No external tar binary found. Using R's internal TAR, which may cause failures with long filenames.")
+  return("internal")
+}
+
+# Tools for storing state in environment variables. Possibly unused.
 getenv <- function(x) {
   strsplit(Sys.getenv(x, unset = ""), .Platform$path.sep, fixed = TRUE)[[1]]
 }

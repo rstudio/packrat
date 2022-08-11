@@ -135,7 +135,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         setwd(file.path(pkgRecord$source_path, ".."))
 
         tar(file.path(pkgSrcDir, pkgSrcFile), files = pkgRecord$name,
-            compression = "gzip", tar = "internal")
+            compression = "gzip", tar = tar_binary())
       }
     })
     type <- "local"
@@ -298,7 +298,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       })
       # untar can emit noisy warnings (e.g. "skipping pax global extended
       # headers"); hide those
-      suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
+      suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
       # Find the base directory
       basedir <- if (length(dir(scratchDir)) == 1)
         file.path(scratchDir, dir(scratchDir))
@@ -399,7 +399,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       })
       # untar can emit noisy warnings (e.g. "skipping pax global extended
       # headers"); hide those
-      suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
+      suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
       # Find the base directory
       basedir <- if (length(dir(scratchDir)) == 1)
         file.path(scratchDir, dir(scratchDir))
@@ -491,7 +491,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       })
       # untar can emit noisy warnings (e.g. "skipping pax global extended
       # headers"); hide those
-      suppressWarnings(untar(srczip, exdir = scratchDir, tar = "internal"))
+      suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
       # Find the base directory
       basedir <- if (length(dir(scratchDir)) == 1)
         file.path(scratchDir, dir(scratchDir))

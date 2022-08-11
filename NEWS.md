@@ -1,5 +1,20 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Take an `renv` update to include a fix regarding `download.file.method` handling.
+- Packrat now masks environment variables commonly used for Git service account
+  authentication from subprocesses used to install packages. This behavior can
+  be disabled by setting the option `packrat.mask.git.service.envvars` to `FALSE`.
+- Users can mask additional arbitrary environment variables from the subprocess
+  that run package installation tasks, by setting the option
+  `packrat.masked.envvars` to a character vector of variable names to mask.
+  These variables are masked whether or not `packrat.mask.git.service.envvars`
+  has been set to `FALSE`.
+- Change how Packrat selects a `tar` binary. Previously, Packrat would force the
+  use of R's internal `tar` implementation, which cannot handle long filepaths.
+  Now, if a `TAR` environment variable exists, Packrat will use that. Otherwise,
+  it will either look for a `tar` binary on the `PATH` on Unix, or look for the
+  system `tar` on Windows. If no binary is found in those locations, it will use
+  R's internal `tar` implementation. (#648)
 
 # Packrat 0.8.1
 

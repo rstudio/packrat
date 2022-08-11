@@ -1,5 +1,9 @@
 is.windows <- function() {
-  Sys.info()["sysname"] == "Windows"
+  .Platform$OS.type == "windows"
+}
+
+is.unix <- function() {
+  .Platform$OS.type == "unix"
 }
 
 is.mac <- function() {
