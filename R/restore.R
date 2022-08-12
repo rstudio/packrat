@@ -198,15 +198,9 @@ getSourceForPkgRecord <- function(pkgRecord,
           archiveUrl <- file.path(repo, "src/contrib/Archive",
                                   pkgRecord$name,
                                   pkgSrcFile)
-          destfile <- file.path(pkgSrcDir, pkgSrcFile)
-          success <- if (getOption("packrat.download.using.renv", FALSE)) {
-            downloadWithRenv(archiveURL, destfile)
-          } else {
-            downloadWithRetries(archiveUrl,
-                                           destfile = file.path(pkgSrcDir, pkgSrcFile),
-                                           mode = "wb", quiet = TRUE)
-          }
-          if (!success) {
+          if (!downloadWithRetries(archiveUrl,
+                                    destfile = file.path(pkgSrcDir, pkgSrcFile),
+                                    mode = "wb", quiet = TRUE)) {
             stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
           }
           foundVersion <- TRUE
@@ -275,7 +269,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     }, add = TRUE)
 
     tryCatch({
-      success <- if (getOption("packrat.download.using.renv", FALSE)) {
+      success <- if (getOption("packrat.download.using.renv.git", TRUE)) {
         downloadWithRenv(archiveUrl, srczip, type = "github")
       } else if (canUseGitHubDownloader()) {
         githubDownload(archiveUrl, srczip)
