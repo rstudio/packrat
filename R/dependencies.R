@@ -168,7 +168,7 @@ dirDependenciesRenv <- function(dir) {
     on.exit(Sys.setenv(RENV_PROFILE = profile), add = TRUE)
   }
 
-  absDir <- normalizePath(dir)
+  absDir <- normalizePath(dir, winslash = "/")
 
   old_ignored_packages <- options("renv.settings.ignored.packages" = opts$ignored.packages())
   on.exit(do.call(options, old_ignored_packages), add = TRUE)
