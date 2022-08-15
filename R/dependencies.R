@@ -126,7 +126,9 @@ dirDependencies <- function(dir) {
 # Note: The "/data/" and "/inst/" directories are ignored by default.
 #
 # See: https://github.com/rstudio/renv/pull/866
-ignoresForRenv <- function(ignoredDirectories) {
+#
+# See: renv:::renv_renvignore_parse_impl
+ignoresForRenv <- function(dir, ignoredDirectories) {
   ignores <- NULL
   if (length(ignoredDirectories) > 0) {
     ignores <- ignoredDirectories
@@ -142,6 +144,9 @@ ignoresForRenv <- function(ignoredDirectories) {
         paste0("/", ignores),
         ignores
     )
+    # Prepend the project root and quote.
+    ignores <- paste0('^\\Q', dir, '\\E\\Q', ignores, '\\E$')
+    # Tell renv that these rules do not need additional parsing.
     attr(ignores, "asis") <- TRUE
   }
   ignores
@@ -163,16 +168,17 @@ dirDependenciesRenv <- function(dir) {
     on.exit(Sys.setenv(RENV_PROFILE = profile), add = TRUE)
   }
 
+  absDir <- normalizePath(dir)
+
   old_ignored_packages <- options("renv.settings.ignored.packages" = opts$ignored.packages())
   on.exit(do.call(options, old_ignored_packages), add = TRUE)
 
-  old_renv_exclude <- options("renv.renvignore.exclude" = ignoresForRenv(opts$ignored.directories()))
+  old_renv_exclude <- options("renv.renvignore.exclude" = ignoresForRenv(absDir, opts$ignored.directories()))
   on.exit(do.call(options, old_renv_exclude), add = TRUE)
 
   # TODO: add rsconnect as an ignored directory? May not be an issue for
   # bundling, since we don't include the rsconnect directory.
 
-  absDir <- normalizePath(dir)
   deps <- renv$dependencies(path = absDir, root = absDir, quiet = TRUE)
   pkgs <- unique(deps$Package)
   ## Exclude recommended packages (and the artifical "R" package) if there is

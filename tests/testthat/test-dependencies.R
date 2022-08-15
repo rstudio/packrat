@@ -154,4 +154,60 @@ withTestContext({
     deps <- packrat:::appDependencies(projRoot)
     expect_equal(deps, c("breakfast", "oatmeal", "packrat")) # toast and bread are ignored
   })
+
+  # https://github.com/rstudio/packrat/issues/684
+  test_that("dependencies beneath project 'data' directory are ignored (renv)", {
+    old <- options(packrat.dependency.discovery.renv = TRUE)
+    on.exit(options(old), add = TRUE)
+
+    project.dir <- tempfile("project-containing-data")
+    dir.create(project.dir)
+    writeLines("library('oatmeal')", file.path(project.dir, "code.R"))
+    data.dir <- file.path(project.dir, "data")
+    dir.create(data.dir)
+    writeLines("library(bread)", file.path(data.dir, "test.R"))
+    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    expect_equal(deps, c("oatmeal"))
+  })
+
+  # https://github.com/rstudio/packrat/issues/684
+  test_that("dependencies with 'data' in project path are allowed (renv)", {
+    old <- options(packrat.dependency.discovery.renv = TRUE)
+    on.exit(options(old), add = TRUE)
+
+    base.dir <- tempfile("project-beneath-data")
+    project.dir <- file.path(base.dir, "data", "project")
+    dir.create(project.dir, recursive = TRUE)
+    writeLines("library('oatmeal')", file.path(project.dir, "code.R"))
+    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    expect_equal(deps, c("oatmeal"))
+  })
+
+  # https://github.com/rstudio/packrat/issues/684
+  test_that("dependencies beneath project 'data' directory are ignored (builtin)", {
+    old <- options(packrat.dependency.discovery.renv = FALSE)
+    on.exit(options(old), add = TRUE)
+
+    project.dir <- tempfile("project-containing-data")
+    dir.create(project.dir)
+    writeLines("library('oatmeal')", file.path(project.dir, "code.R"))
+    data.dir <- file.path(project.dir, "data")
+    dir.create(data.dir)
+    writeLines("library(bread)", file.path(data.dir, "test.R"))
+    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    expect_equal(deps, c("oatmeal"))
+  })
+
+  # https://github.com/rstudio/packrat/issues/684
+  test_that("dependencies with 'data' in project path are allowed (builtin)", {
+    old <- options(packrat.dependency.discovery.renv = FALSE)
+    on.exit(options(old), add = TRUE)
+
+    base.dir <- tempfile("project-beneath-data")
+    project.dir <- file.path(base.dir, "data", "project")
+    dir.create(project.dir, recursive = TRUE)
+    writeLines("library('oatmeal')", file.path(project.dir, "code.R"))
+    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    expect_equal(deps, c("oatmeal"))
+  })
 })
