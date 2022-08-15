@@ -2,12 +2,15 @@ isBitbucketURL <- function(url) {
   is.string(url) && grepl("^http(?:s)?://(?:www|api).bitbucket.(org|com)", url, perl = TRUE)
 }
 
+# Add a `canUseRenvDownloader` function
 canUseBitbucketDownloader <- function() {
   (all(packageVersionInstalled(httr = "1.0.0")) &&
      !is.null(bitbucket_user(quiet = TRUE)) &&
      !is.null(bitbucket_pwd(quiet = TRUE)))
 }
 
+# This becomes the top-level one. It calls out to either bitbucketDownloadRenv,
+# bitbucketDownloadHttr, downloadWithRetries
 bitbucketDownload <- function(url, destfile, ...) {
   tryCatch(
     bitbucketDownloadImpl(url, destfile, ...),
@@ -16,6 +19,7 @@ bitbucketDownload <- function(url, destfile, ...) {
     })
 }
 
+# This becomes bitbucketDownloadHttr
 bitbucketDownloadImpl <- function(url, destfile, ...) {
   authenticate    <- yoink("httr", "authenticate")
   GET             <- yoink("httr", "GET")
