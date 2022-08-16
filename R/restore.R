@@ -295,16 +295,19 @@ getSourceForPkgRecord <- function(pkgRecord,
       GithubSubdir   = pkgRecord$gh_subdir
     )
 
-    modified_srczip <- modifyRemoteInfo(srczip, remote_info)
-    on.exit({
-      if (file.exists(modified_srczip))
-        unlink(modified_srczip, recursive = TRUE)
-    }, add = TRUE)
-
-    # Copy the updated source to the destination
     file.create(file.path(pkgSrcDir, pkgSrcFile))
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
-    file.copy(modified_srczip, dest, overwrite = TRUE)
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")
+
+    tryCatch({
+      success <- modifyRemoteInfo(
+        src = srczip,
+        dest = dest,
+        remote_info = remote_info
+      )
+    }, error = function(e) {
+      stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+           pkgRecord$name, e))
+    })
 
     type <- "GitHub"
 
@@ -322,7 +325,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     # Think about the user presentation of this message. The return values from
     # different error functions are bad. One of them raises an error, and
     # another returns a value
-    
+
 
     # Prefer using https if possible. Note that 'wininet'
     # can fail if attempting to download from an 'http'
@@ -381,17 +384,21 @@ getSourceForPkgRecord <- function(pkgRecord,
       RemoteSha = pkgRecord$remote_sha,
       RemoteSubdir = pkgRecord$remote_subdir
     )
-    
-    modified_srczip <- modifyRemoteInfo(srczip, remote_info)
-    on.exit({
-      if (file.exists(modified_srczip))
-        unlink(modified_srczip, recursive = TRUE)
-    }, add = TRUE)
 
-    # Copy the updated source to the destination
     file.create(file.path(pkgSrcDir, pkgSrcFile))
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
-    file.copy(modified_srczip, dest, overwrite = TRUE)
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")
+
+    tryCatch({
+      success <- modifyRemoteInfo(
+        src = srczip,
+        dest = dest,
+        remote_info = remote_info
+      )
+    }, error = function(e) {
+      unlink(dest)
+      stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+           pkgRecord$name, e))
+    })
 
     type <- "Bitbucket"
 
@@ -419,7 +426,7 @@ getSourceForPkgRecord <- function(pkgRecord,
                           pkgRecord$remote_repo,
                           pkgRecord$remote_sha)
 
-    srczip <- tempfile(fileext = '.tar.gz')
+    srczip <- tempfile(fileext = ".tar.gz")
     on.exit({
       if (file.exists(srczip))
         unlink(srczip, recursive = TRUE)
@@ -436,7 +443,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      stop(sprintf("Failed to download package from URL:\n- %s\n- Reason: %s", archiveUrl, e))
     })
 
     remote_info <- data.frame(
@@ -449,20 +456,23 @@ getSourceForPkgRecord <- function(pkgRecord,
       RemoteSubdir = pkgRecord$remote_subdir
     )
 
-    modified_srczip <- modifyRemoteInfo(srczip, remote_info)
-    on.exit({
-      if (file.exists(modified_srczip))
-        unlink(modified_srczip, recursive = TRUE)
-    }, add = TRUE)
-
-    # Copy the updated source to the destination
     file.create(file.path(pkgSrcDir, pkgSrcFile))
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
-    file.copy(modified_srczip, dest, overwrite = TRUE)
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")
+
+    tryCatch({
+      success <- modifyRemoteInfo(
+        src = srczip,
+        dest = dest,
+        remote_info = remote_info
+      )
+    }, error = function(e) {
+      stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+           pkgRecord$name, e))
+    })
 
     type <- "GitLab"
   }
-  if (!quiet) {
+  if (!quiet) { # TODO: Does turning on (quiet) prevent it from failing on error here
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
       message("OK (", type, ")")
     } else {
@@ -1038,11 +1048,17 @@ archivePackageType <- function(path, quiet = FALSE, default = "source") {
 }
 
 
-# Given a path to a zip a data frame of remote info: decompress the archive,
-# append the remote info to the DESCRIPTION file, recompress it, and return a
-# new tempfile path.
-# TODO: Needs tests
-modifyRemoteInfo(srczip, remote_info) {
+# Passed decompress the archive passed to `src`, append the `remote_info` to the
+# DESCRIPTION file and recompress into the file passed to `dest`, which must be
+# a `.tar.gz`. Returns TRUE if successful.
+modifyRemoteInfo <- function(src, dest, remote_info) {
+  # We expect `dest` to end with `".tar.gz"`.
+  if (!grepl(".tar.gz$", dest)) {
+    stop("Destination path for source archive must end in '.tar.gz'.")
+  }
+
+  # Extract the package to a temporary dir so that we can modify the
+  # `DESCRIPTION` with the remote info.
   scratchDir <- tempfile()
   on.exit({
     if (file.exists(scratchDir))
@@ -1050,7 +1066,7 @@ modifyRemoteInfo(srczip, remote_info) {
   })
   # untar can emit noisy warnings (e.g. "skipping pax global extended
   # headers"); hide those
-  suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
+  suppressWarnings(untar(src, exdir = scratchDir, tar = tar_binary()))
   # Find the base directory
   basedir <- if (length(dir(scratchDir)) == 1)
     file.path(scratchDir, dir(scratchDir))
@@ -1067,22 +1083,23 @@ modifyRemoteInfo(srczip, remote_info) {
     basedir <- file.path(basedir, remote_subdir)
   }
 
-  if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
-    stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
+  if (!file.exists(file.path(basedir, "DESCRIPTION"))) {
+    stop("No DESCRIPTION file was found in the archive for ", pkgRecord$name)
   }
 
-  appendToDcf(file.path(basedir, 'DESCRIPTION'), remote_info)
+  # Do what we came here to do.
+  appendToDcf(file.path(basedir, "DESCRIPTION"), remote_info)
 
-  dest <- tempfile(fileext = '.tar.gz')
-
-  # TODO: Can we un-suppress this warning?
+  # Now we can recompress the file to wherever we've been told to do so.
   # R's internal tar (which we use here for cross-platform consistency)
   # emits warnings when there are > 100 characters in the path, due to the
   # resulting incompatibility with older implementations of tar. This isn't
   # relevant for our purposes, so suppress the warning.
   in_dir(dirname(basedir),
           suppressWarnings(tar(tarfile = dest, files = basename(basedir),
-                              compression = 'gzip', tar = tar_binary()))
+                              compression = "gzip", tar = tar_binary()))
   )
+
+  return(TRUE)
 }
 

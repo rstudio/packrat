@@ -202,10 +202,6 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
 }
 
 
-canUseRenvDownloader(downloadType) {
-  
-}
-
 
 downloadWithRenv <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
   with_envvar(
