@@ -195,21 +195,34 @@ getSourceForPkgRecord <- function(pkgRecord,
       foundVersion <- FALSE
       for (repo in repos) {
         tryCatch({
-          archiveUrl <- file.path(repo, "src/contrib/Archive",
-                                  pkgRecord$name,
-                                  pkgSrcFile)
-          if (!downloadWithRetries(archiveUrl,
-                                   destfile = file.path(pkgSrcDir, pkgSrcFile),
-                                   mode = "wb", quiet = TRUE)) {
-            stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
-          }
-          foundVersion <- TRUE
-          type <- paste(type, "archived")
-          break
+            repoPaths = c(file.path(repo, "src/contrib", pkgSrcFile),
+                            file.path(repo, "src/contrib", pkgRecord$name, pkgSrcFile),
+                            file.path(repo, "src/contrib/Archive", pkgSrcFile),
+                            file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgSrcFile),
+                            file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgRecord$version, pkgSrcFile))
+            
+            foundInArchive <- FALSE
+            
+            for(repoPath in repoPaths) {
+               if (downloadWithRetries(repoPath,
+                                       destfile = file.path(pkgSrcDir, pkgSrcFile),
+                                       mode = "wb", quiet = FALSE)) {
+                   foundInArchive <- TRUE
+                   break
+              } 
+            }
+          
+            if (foundInArchive) {
+                foundVersion <- TRUE
+                type <- paste(type, "archived")
+                break
+            }
+          
         }, error = function(e) {
           # Ignore error and try the next repository
         })
       }
+      
       if (!foundVersion) {
         message("FAILED")
         stopMsg <- sprintf("Failed to retrieve package sources for %s %s from CRAN (internet connectivity issue?)",
