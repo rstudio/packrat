@@ -245,7 +245,7 @@ getSourceForPkgRecord <- function(pkgRecord,
                             pkgRecord$gh_repo,
                             pkgRecord$gh_sha1)
     } else {
-      # Prefer using the 'remote_host' entry as it allows for successfuly
+      # Prefer using the 'remote_host' entry as it allows for successfully
       # installation of packages available on private GitHub repositories
       # (which will not use api.github.com)
       fmt <- "%s/repos/%s/%s/tarball/%s"
@@ -313,77 +313,39 @@ getSourceForPkgRecord <- function(pkgRecord,
 
 
   } else if (identical(pkgRecord$source, "bitbucket")) {
+    archiveUrl <- bitbucketArchiveUrl(pkgRecord)
 
-    # Pseudocode
+    srczip <- tempfile(fileext = '.tar.gz')
+    on.exit(
+      if (file.exists(srczip)) unlink(srczip, recursive = TRUE),
+      add = TRUE
+    )
+
     tryCatch({
-      retrieveBitbucketSourceToDest(pkgRecord$source, file.path(pkgSrcDir, pkgSrcFile))
+      bitbucketDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from Bitbucket: %s", e))
+      stop(sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
     })
     # TODO: Have to include the URL and reason in the lower-level error messages.
     # Think about the user presentation of this message. The return values from
     # different error functions are bad. One of them raises an error, and
     # another returns a value
 
-
-    # Prefer using https if possible. Note that 'wininet'
-    # can fail if attempting to download from an 'http'
-    # URL that redirects to an 'https' URL.
-    # https://github.com/rstudio/packrat/issues/269
-    method <- tryCatch(
-      secureDownloadMethod(),
-      error = function(e) "internal"
+    # Modify remote info, move modified package to new location
+    remote_info <- as.data.frame(
+      list(
+        RemoteType = pkgRecord$source,
+        RemoteHost = pkgRecord$remote_host,
+        RemoteRepo = pkgRecord$remote_repo,
+        RemoteUsername = pkgRecord$remote_username,
+        RemoteRef = pkgRecord$remote_ref,
+        RemoteSha = pkgRecord$remote_sha
+      ),
+      c(RemoteSubdir = pkgRecord$remote_subdir),
+      stringsAsFactors = FALSE
     )
 
-    # API URLs get recorded when packages are downloaded with devtools /
-    # remotes, but Packrat just wants to use 'plain' URLs when downloading
-    # package sources.
-    originalRemoteHost <- pkgRecord$remote_host
-    pkgRecord$remote_host <- sub("api.bitbucket.org/2.0", "bitbucket.org", pkgRecord$remote_host, fixed = TRUE)
-
-    fmt <- "%s/%s/%s/get/%s.tar.gz"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$remote_host,
-                          pkgRecord$remote_username,
-                          pkgRecord$remote_repo,
-                          pkgRecord$remote_sha)
-
-    # Ensure the protocol is prepended
-    if (!grepl("^http", archiveUrl)) {
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      archiveUrl <- paste(protocol, archiveUrl, sep = "://")
-    }
-
-    srczip <- tempfile(fileext = '.tar.gz')
-    on.exit({
-      if (file.exists(srczip))
-        unlink(srczip, recursive = TRUE)
-    }, add = TRUE)
-
-    tryCatch({
-      success <- if (canUseBitbucketDownloader()) {
-        bitbucketDownload(archiveUrl, srczip)
-      } else {
-        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
-      }
-      if (!success) {
-        stop("Download failure.")
-      }
-    }, error = function(e) {
-      message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
-    })
-
-    remote_info <- data.frame(
-      RemoteType = "bitbucket",
-      RemoteHost = originalRemoteHost,
-      RemoteRepo = pkgRecord$remote_repo,
-      RemoteUsername = pkgRecord$remote_username,
-      RemoteRef = pkgRecord$remote_ref,
-      RemoteSha = pkgRecord$remote_sha,
-      RemoteSubdir = pkgRecord$remote_subdir
-    )
 
     file.create(file.path(pkgSrcDir, pkgSrcFile))
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")

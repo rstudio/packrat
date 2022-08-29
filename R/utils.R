@@ -642,6 +642,10 @@ packageVersionInstalled <- function(...) {
   })
 }
 
+canUseHttr <- function() {
+  packageVersionInstalled(httr = "1.0.0")
+}
+
 packratOption <- function(envName, optionName, defaultValue) {
 
   envValue <- Sys.getenv(envName, unset = NA)
