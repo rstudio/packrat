@@ -13,7 +13,7 @@ bitbucketDownload <- function(url, destfile, ...) {
 # success value will be turned into an error in the outer function.
 bitbucketDownloadImpl <- function(url, destfile, ...) {
   success <- if (bitbucketAuthenticated()) {
-    if (getOption("packrat.authenticated.downloads.use.renv")) {
+    if (getOption("packrat.authenticated.downloads.use.renv", FALSE)) {
       renvDownload(url, destfile, type = "bitbucket")
     } else if (canUseHttr()) {
       bitbucketDownloadHttr(url, destfile)

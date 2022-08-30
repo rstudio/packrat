@@ -346,9 +346,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       stringsAsFactors = FALSE
     )
 
-
-    file.create(file.path(pkgSrcDir, pkgSrcFile))
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
     tryCatch({
       success <- modifyRemoteInfo(
@@ -357,7 +355,6 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      unlink(dest)
       stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
            pkgRecord$name, e))
     })
@@ -1010,8 +1007,8 @@ archivePackageType <- function(path, quiet = FALSE, default = "source") {
 }
 
 
-# Passed decompress the archive passed to `src`, append the `remote_info` to the
-# DESCRIPTION file and recompress into the file passed to `dest`, which must be
+# Decompresses the archive passed to `src`. Appends `remote_info` to the
+# DESCRIPTION file. Recompresses the file passed to `dest`, which must be
 # a `.tar.gz`. Returns TRUE if successful.
 modifyRemoteInfo <- function(src, dest, remote_info) {
   # We expect `dest` to end with `".tar.gz"`.
@@ -1057,9 +1054,16 @@ modifyRemoteInfo <- function(src, dest, remote_info) {
   # emits warnings when there are > 100 characters in the path, due to the
   # resulting incompatibility with older implementations of tar. This isn't
   # relevant for our purposes, so suppress the warning.
-  in_dir(dirname(basedir),
-          suppressWarnings(tar(tarfile = dest, files = basename(basedir),
-                              compression = "gzip", tar = tar_binary()))
+  # tryCatch here so we can unlink the file if tar fails.
+  tryCatch(
+    in_dir(dirname(basedir),
+            suppressWarnings(tar(tarfile = dest, files = basename(basedir),
+                                compression = "gzip", tar = tar_binary()))
+    ),
+    error = function(e) {
+      unlink(dest)
+      stop(e)
+    }
   )
 
   return(TRUE)
