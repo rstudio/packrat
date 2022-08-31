@@ -363,60 +363,37 @@ getSourceForPkgRecord <- function(pkgRecord,
 
 
   } else if (identical(pkgRecord$source, "gitlab")) {
+    print(pkgRecord)
+    archiveUrl <- gitlabArchiveUrl(pkgRecord)
 
-    # Prefer using https if possible. Note that 'wininet'
-    # can fail if attempting to download from an 'http'
-    # URL that redirects to an 'https' URL.
-    # https://github.com/rstudio/packrat/issues/269
-    method <- tryCatch(
-      secureDownloadMethod(),
-      error = function(e) "internal"
+    srczip <- tempfile(fileext = '.tar.gz')
+    on.exit(
+      if (file.exists(srczip)) unlink(srczip, recursive = TRUE),
+      add = TRUE
     )
-
-    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      pkgRecord$remote_host <- paste0(protocol, "://gitlab.com")
-    }
-
-    fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$remote_host,
-                          pkgRecord$remote_username,
-                          pkgRecord$remote_repo,
-                          pkgRecord$remote_sha)
-
-    srczip <- tempfile(fileext = ".tar.gz")
-    on.exit({
-      if (file.exists(srczip))
-        unlink(srczip, recursive = TRUE)
-    }, add = TRUE)
 
     tryCatch({
-      success <- if (canUseGitlabDownloader()) {
-        gitlabDownload(archiveUrl, srczip)
-      } else {
-        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
-      }
-      if (!success) {
-        stop("Download failure.")
-      }
+      gitlabDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- %s\n- Reason: %s", archiveUrl, e))
+      stop(sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
     })
 
-    remote_info <- data.frame(
-      RemoteType = "gitlab",
-      RemoteHost = pkgRecord$remote_host,
-      RemoteRepo = pkgRecord$remote_repo,
-      RemoteUsername = pkgRecord$remote_username,
-      RemoteRef = pkgRecord$remote_ref,
-      RemoteSha = pkgRecord$remote_sha,
-      RemoteSubdir = pkgRecord$remote_subdir
+    # Modify remote info, move modified package to new location
+    remote_info <- as.data.frame(
+      list(
+        RemoteType = pkgRecord$source,
+        RemoteHost = pkgRecord$remote_host,
+        RemoteRepo = pkgRecord$remote_repo,
+        RemoteUsername = pkgRecord$remote_username,
+        RemoteRef = pkgRecord$remote_ref,
+        RemoteSha = pkgRecord$remote_sha
+      ),
+      c(RemoteSubdir = pkgRecord$remote_subdir),
+      stringsAsFactors = FALSE
     )
 
-    file.create(file.path(pkgSrcDir, pkgSrcFile))
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
     tryCatch({
       success <- modifyRemoteInfo(

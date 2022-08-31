@@ -36,7 +36,6 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
   return(TRUE)
 }
 
-# This becomes bitbucketDownloadHttr
 bitbucketDownloadHttr <- function(url, destfile, ...) {
   authenticate    <- yoink("httr", "authenticate")
   GET             <- yoink("httr", "GET")
@@ -88,8 +87,8 @@ bitbucketArchiveUrl <- function(pkgRecord) {
     secureDownloadMethod(),
     error = function(e) "internal"
   )
+  protocol <- if (identical(method, "internal")) "http" else "https"
   if (!grepl("^http", archiveUrl)) {
-    protocol <- if (identical(method, "internal")) "http" else "https"
     archiveUrl <- paste(protocol, archiveUrl, sep = "://")
   }
   return(archiveUrl)

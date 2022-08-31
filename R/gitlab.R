@@ -1,21 +1,29 @@
-isGitlabURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://(?:www|api).gitlab.(org|com)", url, perl = TRUE)
-}
-
-canUseGitlabDownloader <- function() {
-  (all(packageVersionInstalled(httr = "1.0.0")) &&
-     !is.null(gitlab_pat(quiet = TRUE)))
-}
-
 gitlabDownload <- function(url, destfile, ...) {
-  tryCatch(
-    gitlabDownloadImpl(url, destfile, ...),
-    error = function(e) {
-      stop(sprintf("GitLab request failed: %s", e), call. = FALSE)
-    })
+  success <- gitlabDownloadImpl(url, destfile, ...)
+  if (!success) {
+    stop("Download failure.")
+  }
 }
 
 gitlabDownloadImpl <- function(url, destfile, ...) {
+  tryCatch({
+    if (gitlabAuthenticated()) {
+      if (canUseRenvDownload()) {
+        renvDownload(url, destfile, type = "gitlab")
+      } else if (canUseHttr()) {
+        gitlabDownloadHttr(url, destfile)
+      }
+    } else {
+      downloadWithRetries(url, destfile = destfile)
+    }
+  }, error = function(e) {
+    stop(sprintf("Error in downloader:\n%s", e))
+  })
+
+  return(TRUE)
+}
+
+gitlabDownloadHttr <- function(url, destfile, ...) {
   authenticate   <- yoink("httr", "authenticate")
   add_headers    <- yoink("httr", "add_headers")
   GET            <- yoink("httr", "GET")
@@ -44,6 +52,43 @@ gitlabDownloadImpl <- function(url, destfile, ...) {
   return(TRUE)
 }
 
+gitlabArchiveUrl <- function(pkgRecord) {
+  # Determine what protocol we can use, preferring https. Note that 'wininet'
+  # can fail if attempting to download from an 'http' URL that redirects to an
+  # 'https' URL. https://github.com/rstudio/packrat/issues/269
+  method <- tryCatch(
+    secureDownloadMethod(),
+    error = function(e) "internal"
+  )
+  protocol <- if (identical(method, "internal")) "http" else "https"
+
+  # If remote_host is empty, set it.
+  if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
+    pkgRecord$remote_host <- paste0(protocol, "://gitlab.com")
+  }
+
+  fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
+  archiveUrl <- sprintf(fmt,
+                        pkgRecord$remote_host,
+                        pkgRecord$remote_username,
+                        pkgRecord$remote_repo,
+                        pkgRecord$remote_sha)
+
+  protocol <- if (identical(method, "internal")) "http" else "https"
+  if (!grepl("^http", archiveUrl)) {
+    archiveUrl <- paste(protocol, archiveUrl, sep = "://")
+  }
+  return(archiveUrl)
+}
+
+isGitlabURL <- function(url) {
+  is.string(url) && grepl("^http(?:s)?://(?:www|api).gitlab.(org|com)", url, perl = TRUE)
+}
+
+gitlabAuthenticated <- function() {
+  !is.null(gitlab_pat(quiet = TRUE))
+}
+
 gitlab_pat <- function(quiet = FALSE) {
   token <- Sys.getenv("GITLAB_PAT")
   if (nzchar(token)) {
@@ -54,3 +99,4 @@ gitlab_pat <- function(quiet = FALSE) {
   }
   return(NULL)
 }
+
