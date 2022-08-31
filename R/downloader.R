@@ -201,17 +201,25 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
   success
 }
 
-
-
-renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
-  with_envvar(
-    c(RENV_DOWNLOAD_METHOD = method),
-    renv$download(url = url, destfile = destfile, type = type)
-  )
-
-  return(TRUE)
+canUseRenvDownload <- function() {
+  getOption("packrat.authenticated.downloads.use.renv", FALSE) &&
+    identical(secureDownloadMethod(), "curl")
 }
 
+renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
+  debug <- getOption("packrat.renv.debug", FALSE)
+  if (debug) {
+    options(renv.download.trace = TRUE) # TODO remove
+  }
+  
+  result <- with_envvar(
+    c(RENV_DOWNLOAD_METHOD = method),
+    renv$download(url = url, destfile = destfile, type = type, quiet = !debug)
+  )
+  if (identical(result, destfile)) {
+    return(TRUE)
+  }
+}
 
 inferAppropriateDownloadMethod <- function(url) {
 
@@ -266,6 +274,14 @@ secureDownloadMethod <- function() {
         return("internal")
       }
     }
+  }
+
+  # TODO: Reassess if this is terrible or not. 
+
+  # Authenticated downloads with renv lean heavily on curl, so if we are going
+  # to use the renv downloader, we want to prefer curl over libcurl and wget.
+  if (getOption("packrat.authenticated.downloads.use.renv", FALSE) && nzchar(Sys.which("curl"))) {
+    return("curl")
   }
 
   # For Darwin and Linux we use libcurl if we can and then fall back

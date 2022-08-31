@@ -11,18 +11,29 @@ bitbucketDownload <- function(url, destfile, ...) {
 
 # This will either return a boolean success value or raise an error. A non-TRUE
 # success value will be turned into an error in the outer function.
-bitbucketDownloadImpl <- function(url, destfile, ...) {
-  success <- if (bitbucketAuthenticated()) {
-    if (getOption("packrat.authenticated.downloads.use.renv", FALSE)) {
-      renvDownload(url, destfile, type = "bitbucket")
-    } else if (canUseHttr()) {
-      bitbucketDownloadHttr(url, destfile)
-    }
-  } else {
-    downloadWithRetries(url, destfile = destfile)
-  }
 
-  return(success)
+# This doesn't make sense, but why? It doesn't make sense because these all
+# return TRUE. There's no inner tryCatch to generate an error message for them.
+
+# This should either return TRUE or stop with an error. The outer function is the same.
+
+# TODO But now we don't need the outer downloader.
+bitbucketDownloadImpl <- function(url, destfile, ...) {
+  tryCatch({
+    if (bitbucketAuthenticated()) {
+      if (canUseRenvDownload()) {
+        renvDownload(url, destfile, type = "bitbucket")
+      } else if (canUseHttr()) {
+        bitbucketDownloadHttr(url, destfile)
+      }
+    } else {
+      downloadWithRetries(url, destfile = destfile)
+    }
+  }, error = function(e) {
+    stop(sprintf("Error in downloader:\n%s", e))
+  })
+
+  return(TRUE)
 }
 
 # This becomes bitbucketDownloadHttr
