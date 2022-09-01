@@ -64,7 +64,7 @@ gitlabArchiveUrl <- function(pkgRecord) {
 
   # If remote_host is empty, set it.
   if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-    pkgRecord$remote_host <- paste0(protocol, "://gitlab.com")
+    pkgRecord$remote_host <- "gitlab.com"
   }
 
   fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
@@ -89,7 +89,7 @@ gitlabAuthenticated <- function() {
   !is.null(gitlab_pat(quiet = TRUE))
 }
 
-gitlab_pat <- function(quiet = FALSE) {
+gitlab_pat <- function(quiet = TRUE) {
   token <- Sys.getenv("GITLAB_PAT")
   if (nzchar(token)) {
     if (!quiet) {

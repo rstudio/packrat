@@ -103,7 +103,7 @@ bitbucketAuthenticated <- function() {
   !is.null(bitbucket_pwd(quiet = TRUE))
 }
 
-bitbucket_user <- function(quiet = FALSE) {
+bitbucket_user <- function(quiet = TRUE) {
   user <- Sys.getenv("BITBUCKET_USERNAME")
   if (nzchar(user)) {
     if (!quiet) {
@@ -114,7 +114,7 @@ bitbucket_user <- function(quiet = FALSE) {
   return(NULL)
 }
 
-bitbucket_pwd <- function(quiet = FALSE) {
+bitbucket_pwd <- function(quiet = TRUE) {
   pwd <- Sys.getenv("BITBUCKET_PASSWORD")
   if (nzchar(pwd)) {
     if (!quiet) {

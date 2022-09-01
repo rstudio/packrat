@@ -223,80 +223,40 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     }
   } else if (identical(pkgRecord$source, "github")) {
-
-    # Prefer using https if possible. Note that 'wininet'
-    # can fail if attempting to download from an 'http'
-    # URL that redirects to an 'https' URL.
-    # https://github.com/rstudio/packrat/issues/269
-    method <- tryCatch(
-      secureDownloadMethod(),
-      error = function(e) "internal"
-    )
-
-    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-      # Guard against packages installed with older versions of devtools
-      # (it's possible the associated package record will not contain a
-      # 'remote_host' entry)
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      fmt <- "%s://api.github.com/repos/%s/%s/tarball/%s"
-      archiveUrl <- sprintf(fmt,
-                            protocol,
-                            pkgRecord$gh_username,
-                            pkgRecord$gh_repo,
-                            pkgRecord$gh_sha1)
-    } else {
-      # Prefer using the 'remote_host' entry as it allows for successfully
-      # installation of packages available on private GitHub repositories
-      # (which will not use api.github.com)
-      fmt <- "%s/repos/%s/%s/tarball/%s"
-      archiveUrl <- sprintf(fmt,
-                            pkgRecord$remote_host,
-                            pkgRecord$remote_username,
-                            pkgRecord$remote_repo,
-                            pkgRecord$remote_sha)
-
-      # Ensure the protocol is prepended
-      if (!grepl("^http", archiveUrl)) {
-        protocol <- if (identical(method, "internal")) "http" else "https"
-        archiveUrl <- paste(protocol, archiveUrl, sep = "://")
-      }
-    }
+    archiveUrl <- githubArchiveUrl(pkgRecord)
 
     srczip <- tempfile(fileext = '.tar.gz')
-    on.exit({
-      if (file.exists(srczip))
-        unlink(srczip, recursive = TRUE)
-    }, add = TRUE)
+    on.exit(
+      if (file.exists(srczip)) unlink(srczip, recursive = TRUE),
+      add = TRUE
+    )
 
     tryCatch({
-      success <- if (getOption("packrat.download.using.renv.git", TRUE)) {
-        downloadWithRenv(archiveUrl, srczip, type = "github")
-      } else if (canUseGitHubDownloader()) {
-        githubDownload(archiveUrl, srczip)
-      } else {
-        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
-      }
-      if (!success) {
-        stop("Download failure.")
-      }
+      githubDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      stop(sprintf("Failed to download package from GitHub URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
     })
 
     # Note: renv adds the remoteType field in its migrate. But its presence here
     # won't cause problems, and will really help us.
-    remote_info <- data.frame(
-      RemoteType     = "github",
-      GithubRepo     = pkgRecord$gh_repo,
-      GithubUsername = pkgRecord$gh_username,
-      GithubRef      = pkgRecord$gh_ref,
-      GithubSHA1     = pkgRecord$gh_sha1,
-      GithubSubdir   = pkgRecord$gh_subdir
+
+    # TODO: The archive url workflow for GH suggests that these fields are
+    # deprecated? only older versions of devtools? consider splitting this based
+    # on the presence of pkgRecord$remote_host
+    remote_info <- as.data.frame(
+      list(
+        RemoteType     = pkgRecord$source,
+        GithubRepo     = pkgRecord$gh_repo,
+        GithubUsername = pkgRecord$gh_username,
+        GithubRef      = pkgRecord$gh_ref,
+        GithubSHA1     = pkgRecord$gh_sha1
+      ),
+      c(GithubSubdir   = pkgRecord$gh_subdir),
+      stringsAsFactors = FALSE
     )
 
-    file.create(file.path(pkgSrcDir, pkgSrcFile))
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/")
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
     tryCatch({
       success <- modifyRemoteInfo(
@@ -310,7 +270,6 @@ getSourceForPkgRecord <- function(pkgRecord,
     })
 
     type <- "GitHub"
-
 
   } else if (identical(pkgRecord$source, "bitbucket")) {
     archiveUrl <- bitbucketArchiveUrl(pkgRecord)
@@ -363,7 +322,6 @@ getSourceForPkgRecord <- function(pkgRecord,
 
 
   } else if (identical(pkgRecord$source, "gitlab")) {
-    print(pkgRecord)
     archiveUrl <- gitlabArchiveUrl(pkgRecord)
 
     srczip <- tempfile(fileext = '.tar.gz')
@@ -376,7 +334,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       gitlabDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      stop(sprintf("Failed to download package from GitLab URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
     })
 
     # Modify remote info, move modified package to new location

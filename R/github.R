@@ -1,23 +1,3 @@
-isGitHubURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://(?:www|api).github.com", url, perl = TRUE)
-}
-
-canUseGitHubDownloader <- function() {
-  (all(packageVersionInstalled(httr = "1.0.0")) &&
-     !is.null(github_pat()))
-}
-
-github_pat <- function(quiet = TRUE) {
-  pat <- Sys.getenv("GITHUB_PAT")
-  if (nzchar(pat)) {
-    if (!quiet) {
-      message("Using GitHub PAT from envvar GITHUB_PAT")
-    }
-    return(pat)
-  }
-  return(NULL)
-}
-
 githubDownload <- function(url, destfile, ...) {
   tryCatch(
     githubDownloadImpl(url, destfile, ...),
@@ -27,6 +7,24 @@ githubDownload <- function(url, destfile, ...) {
 }
 
 githubDownloadImpl <- function(url, destfile, ...) {
+  tryCatch({
+    if (githubAuthenticated()) {
+      if (canUseRenvDownload()) {
+        renvDownload(url, destfile, type = "github")
+      } else if (canUseHttr()) {
+        githubDownloadHttr(url, destfile)
+      }
+    } else {
+      downloadWithRetries(url, destfile = destfile)
+    }
+  }, error = function(e) {
+    stop(sprintf("Error in downloader:\n%s", e))
+  })
+
+  return(TRUE)
+}
+
+githubDownloadHttr <- function(url, destfile, ...) {
   authenticate    <- yoink("httr", "authenticate")
   GET             <- yoink("httr", "GET")
   content         <- yoink("httr", "content")
@@ -51,4 +49,60 @@ githubDownloadImpl <- function(url, destfile, ...) {
   }
   # Success!
   return(TRUE)
+}
+
+githubArchiveUrl <- function(pkgRecord) {
+  # Determine what protocol we can use, preferring https. Note that 'wininet'
+  # can fail if attempting to download from an 'http' URL that redirects to an
+  # 'https' URL. https://github.com/rstudio/packrat/issues/269
+  method <- tryCatch(
+    secureDownloadMethod(),
+    error = function(e) "internal"
+  )
+  protocol <- if (identical(method, "internal")) "http" else "https"
+
+  if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
+    # Guard against packages installed with older versions of devtools
+    # (it's possible the associated package record will not contain a
+    # 'remote_host' entry)
+    fmt <- "api.github.com/repos/%s/%s/tarball/%s"
+    archiveUrl <- sprintf(fmt,
+                          pkgRecord$gh_username,
+                          pkgRecord$gh_repo,
+                          pkgRecord$gh_sha1)
+  } else {
+    # Prefer using the 'remote_host' entry as it allows for successfully
+    # installation of packages available on private GitHub repositories
+    # (which will not use api.github.com)
+    fmt <- "%s/repos/%s/%s/tarball/%s"
+    archiveUrl <- sprintf(fmt,
+                          pkgRecord$remote_host,
+                          pkgRecord$remote_username,
+                          pkgRecord$remote_repo,
+                          pkgRecord$remote_sha)
+
+    # Ensure the protocol is prepended
+    if (!grepl("^http", archiveUrl)) {
+      archiveUrl <- paste(protocol, archiveUrl, sep = "://")
+    }
+  }
+}
+
+isGitHubURL <- function(url) {
+  is.string(url) && grepl("^http(?:s)?://(?:www|api).github.com", url, perl = TRUE)
+}
+
+githubAuthenticated <- function() {
+  !is.null(github_pat(quiet = TRUE))
+}
+
+github_pat <- function(quiet = TRUE) {
+  pat <- Sys.getenv("GITHUB_PAT")
+  if (nzchar(pat)) {
+    if (!quiet) {
+      message("Using GitHub PAT from envvar GITHUB_PAT")
+    }
+    return(pat)
+  }
+  return(NULL)
 }
