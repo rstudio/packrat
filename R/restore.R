@@ -233,7 +233,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       githubDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from GitHub URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      e$message <- sprintf("Failed to download package from GitHub URL:\n- '%s'\n- Reason: %s", archiveUrl, e)
+      stop(e)
     })
 
     # Note: renv adds the remoteType field in its migrate. But its presence here
@@ -263,8 +264,9 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
-           pkgRecord$name, e))
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+           pkgRecord$name, e)
+      stop(e)
     })
 
     type <- "GitHub"
@@ -282,7 +284,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       bitbucketDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      e$message <- sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e)
+      stop(e)
     })
 
     # Modify remote info, move modified package to new location
@@ -308,8 +311,9 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
-           pkgRecord$name, e))
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+           pkgRecord$name, e)
+      stop(e)
     })
 
     type <- "Bitbucket"
@@ -328,7 +332,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       gitlabDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from GitLab URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      e$message <- sprintf("Failed to download package from GitLab URL:\n- '%s'\n- Reason: %s", archiveUrl, e)
+      stop(e)
     })
 
     # Modify remote info, move modified package to new location
@@ -354,8 +359,9 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      stop(sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
-           pkgRecord$name, e))
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+           pkgRecord$name, e)
+      stop(e)
     })
 
     type <- "GitLab"

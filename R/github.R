@@ -10,9 +10,8 @@ githubDownload <- function(url, destfile, ...) {
         githubDownloadHttr(url, destfile)
       }
     }, error = function(e) {
-      stop(
-        "Check the GITHUB_PAT environment variable.\n", e
-        )
+      e$message <- paste0(e, "Check the GITHUB_PAT environment variables.")
+      stop(e)
     })
   } else {
     downloadWithRetries(url, destfile = destfile)

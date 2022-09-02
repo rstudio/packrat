@@ -10,9 +10,8 @@ bitbucketDownload <- function(url, destfile, ...) {
         bitbucketDownloadHttr(url, destfile)
       }
     }, error = function(e) {
-      stop(
-        "Check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables.\n", e
-        )
+      e$message <- paste0(e, "Check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables.")
+      stop(e)
     })
   } else {
     downloadWithRetries(url, destfile = destfile)

@@ -10,9 +10,8 @@ gitlabDownload <- function(url, destfile, ...) {
         gitlabDownloadHttr(url, destfile)
       }
     }, error = function(e) {
-      stop(
-        "Check the GITLAB_PAT environment variable.\n", e
-        )
+      e$message <- paste0(e, "Check the GITLAB_PAT environment variable.")
+      stop(e)
     })
   } else {
     downloadWithRetries(url, destfile = destfile)
