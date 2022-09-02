@@ -1,12 +1,20 @@
 bitbucketDownload <- function(url, destfile, ...) {
   if (bitbucketAuthenticated()) {
-    if (canUseRenvDownload()) {
-      renvDownload(url, destfile, type = "bitbucket")
-    } else if (canUseHttr()) {
-      bitbucketDownloadHttr(url, destfile)
-    }
+    # Because we cannot guarantee consistency of error codes across all
+    # combinations of download method and API, we inject a message to check
+    # provider credentials.
+    tryCatch({
+      if (canUseRenvDownload()) {
+        renvDownload(url, destfile, type = "bitbucket")
+      } else if (canUseHttr()) {
+        bitbucketDownloadHttr(url, destfile)
+      }
+    }, error = function(e) {
+      stop(
+        "Check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables.\n", e
+        )
+    })
   } else {
-    # Success handling needs to happen here.
     downloadWithRetries(url, destfile = destfile)
   }
 }
@@ -26,10 +34,7 @@ bitbucketDownloadHttr <- function(url, destfile, ...) {
 
   result <- GET(url, auth)
   if (result$status != 200) {
-    stop(
-      sprintf(
-        "Unable to download package from Bitbucket; check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables: %s",
-        httr::http_status(result)$message))
+    stop(httr::http_status(result)$message)
   }
   writeBin(content(result, "raw"), destfile)
   if (!file.exists(destfile)) {

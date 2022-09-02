@@ -1,12 +1,20 @@
 githubDownload <- function(url, destfile, ...) {
   if (githubAuthenticated()) {
-    if (canUseRenvDownload()) {
-      renvDownload(url, destfile, type = "github")
-    } else if (canUseHttr()) {
-      githubDownloadHttr(url, destfile)
-    }
+    # Because we cannot guarantee consistency of error codes across all
+    # combinations of download method and API, we inject a message to check
+    # provider credentials.
+    tryCatch({
+      if (canUseRenvDownload()) {
+        renvDownload(url, destfile, type = "github")
+      } else if (canUseHttr()) {
+        githubDownloadHttr(url, destfile)
+      }
+    }, error = function(e) {
+      stop(
+        "Check the GITHUB_PAT environment variable.\n", e
+        )
+    })
   } else {
-    # Success handling needs to happen here.
     downloadWithRetries(url, destfile = destfile)
   }
 }
@@ -25,10 +33,7 @@ githubDownloadHttr <- function(url, destfile, ...) {
 
   result <- GET(url, auth)
   if (result$status != 200) {
-    stop(
-      sprintf(
-        "Unable to download package from GitHub; check the GITHUB_PAT environment variable: %s",
-        httr::http_status(result)$message), call. = FALSE)
+    stop(httr::http_status(result)$message)
   }
   writeBin(content(result, "raw"), destfile)
   if (!file.exists(destfile)) {
