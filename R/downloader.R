@@ -198,7 +198,10 @@ downloadWithRetries <- function(url, ..., maxTries = 5L) {
     )
     if (success) break
   }
-  success
+  if (!success) {
+    stop("Download failed.")
+  }
+  return(TRUE)
 }
 
 canUseRenvDownload <- function() {

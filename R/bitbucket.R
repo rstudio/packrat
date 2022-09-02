@@ -1,39 +1,14 @@
-# It needs to stop with an error if it does not succeed. The call site will
-# return the error message and print the URL. The "stop" here is a fallback to
-# catch errors that may occur lower down the stack that don't properly create an
-# error message, just cause a... lack of success.
 bitbucketDownload <- function(url, destfile, ...) {
-  success <- bitbucketDownloadImpl(url, destfile, ...)
-  if (!success) {
-    stop("Download failure.")
-  }
-}
-
-# This will either return a boolean success value or raise an error. A non-TRUE
-# success value will be turned into an error in the outer function.
-
-# This doesn't make sense, but why? It doesn't make sense because these all
-# return TRUE. There's no inner tryCatch to generate an error message for them.
-
-# This should either return TRUE or stop with an error. The outer function is the same.
-
-# TODO But now we don't need the outer downloader.
-bitbucketDownloadImpl <- function(url, destfile, ...) {
-  tryCatch({
-    if (bitbucketAuthenticated()) {
-      if (canUseRenvDownload()) {
-        renvDownload(url, destfile, type = "bitbucket")
-      } else if (canUseHttr()) {
-        bitbucketDownloadHttr(url, destfile)
-      }
-    } else {
-      downloadWithRetries(url, destfile = destfile)
+  if (bitbucketAuthenticated()) {
+    if (canUseRenvDownload()) {
+      renvDownload(url, destfile, type = "bitbucket")
+    } else if (canUseHttr()) {
+      bitbucketDownloadHttr(url, destfile)
     }
-  }, error = function(e) {
-    stop(sprintf("Error in downloader:\n%s", e))
-  })
-
-  return(TRUE)
+  } else {
+    # Success handling needs to happen here.
+    downloadWithRetries(url, destfile = destfile)
+  }
 }
 
 bitbucketDownloadHttr <- function(url, destfile, ...) {

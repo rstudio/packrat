@@ -1,26 +1,14 @@
 gitlabDownload <- function(url, destfile, ...) {
-  success <- gitlabDownloadImpl(url, destfile, ...)
-  if (!success) {
-    stop("Download failure.")
-  }
-}
-
-gitlabDownloadImpl <- function(url, destfile, ...) {
-  tryCatch({
-    if (gitlabAuthenticated()) {
-      if (canUseRenvDownload()) {
-        renvDownload(url, destfile, type = "gitlab")
-      } else if (canUseHttr()) {
-        gitlabDownloadHttr(url, destfile)
-      }
-    } else {
-      downloadWithRetries(url, destfile = destfile)
+  if (gitlabAuthenticated()) {
+    if (canUseRenvDownload()) {
+      renvDownload(url, destfile, type = "gitlab")
+    } else if (canUseHttr()) {
+      gitlabDownloadHttr(url, destfile)
     }
-  }, error = function(e) {
-    stop(sprintf("Error in downloader:\n%s", e))
-  })
-
-  return(TRUE)
+  } else {
+    # Success handling needs to happen here.
+    downloadWithRetries(url, destfile = destfile)
+  }
 }
 
 gitlabDownloadHttr <- function(url, destfile, ...) {

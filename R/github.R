@@ -1,27 +1,14 @@
 githubDownload <- function(url, destfile, ...) {
-  tryCatch(
-    githubDownloadImpl(url, destfile, ...),
-    error = function(e) {
-      stop(sprintf("GitHub request failed: %s", e), call. = FALSE)
-    })
-}
-
-githubDownloadImpl <- function(url, destfile, ...) {
-  tryCatch({
-    if (githubAuthenticated()) {
-      if (canUseRenvDownload()) {
-        renvDownload(url, destfile, type = "github")
-      } else if (canUseHttr()) {
-        githubDownloadHttr(url, destfile)
-      }
-    } else {
-      downloadWithRetries(url, destfile = destfile)
+  if (githubAuthenticated()) {
+    if (canUseRenvDownload()) {
+      renvDownload(url, destfile, type = "github")
+    } else if (canUseHttr()) {
+      githubDownloadHttr(url, destfile)
     }
-  }, error = function(e) {
-    stop(sprintf("Error in downloader:\n%s", e))
-  })
-
-  return(TRUE)
+  } else {
+    # Success handling needs to happen here.
+    downloadWithRetries(url, destfile = destfile)
+  }
 }
 
 githubDownloadHttr <- function(url, destfile, ...) {

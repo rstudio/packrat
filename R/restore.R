@@ -198,11 +198,9 @@ getSourceForPkgRecord <- function(pkgRecord,
           archiveUrl <- file.path(repo, "src/contrib/Archive",
                                   pkgRecord$name,
                                   pkgSrcFile)
-          if (!downloadWithRetries(archiveUrl,
-                                    destfile = file.path(pkgSrcDir, pkgSrcFile),
-                                    mode = "wb", quiet = TRUE)) {
-            stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
-          }
+          downloadWithRetries(archiveUrl,
+                              destfile = file.path(pkgSrcDir, pkgSrcFile),
+                              mode = "wb", quiet = TRUE)
           foundVersion <- TRUE
           type <- paste(type, "archived")
           break
@@ -286,10 +284,6 @@ getSourceForPkgRecord <- function(pkgRecord,
       message("FAILED")
       stop(sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
     })
-    # TODO: Have to include the URL and reason in the lower-level error messages.
-    # Think about the user presentation of this message. The return values from
-    # different error functions are bad. One of them raises an error, and
-    # another returns a value
 
     # Modify remote info, move modified package to new location
     remote_info <- as.data.frame(
