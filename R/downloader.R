@@ -214,6 +214,12 @@ renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(
   if (debug) {
     options(renv.download.trace = TRUE) # TODO remove
   }
+
+  # We temporarily set our user agent to "curl" so that Bitbucket will treat us
+  # like a command line and not a browser. Otherwise, if we make unauthorized
+  # requests to Bitbucket .tar.gz URLs, we get redirects instead of a 401.
+  renv_useragent_option <- options("renv.http.useragent" = "curl")
+  on.exit(options(renv_useragent_option), add = TRUE)
   
   result <- with_envvar(
     c(RENV_DOWNLOAD_METHOD = method),
