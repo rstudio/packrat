@@ -233,7 +233,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       githubDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      e$message <- sprintf("Failed to download package from GitHub URL:\n- '%s'\n- Reason: %s", archiveUrl, e)
+      e$message <- sprintf("Failed to download package from GitHub URL: '%s'\n%s", archiveUrl, e)
       stop(e)
     })
 
@@ -264,7 +264,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
            pkgRecord$name, e)
       stop(e)
     })
@@ -284,7 +284,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       bitbucketDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      e$message <- sprintf("Failed to download package from Bitbucket URL:\n- '%s'\n- Reason: %s", archiveUrl, e)
+      e$message <- sprintf("Failed to download package from Bitbucket URL: '%s'\n%s", archiveUrl, e)
       stop(e)
     })
 
@@ -311,7 +311,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
            pkgRecord$name, e)
       stop(e)
     })
@@ -332,7 +332,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       gitlabDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      e$message <- sprintf("Failed to download package from GitLab URL:\n- '%s'\n- Reason: %s", archiveUrl, e)
+      e$message <- sprintf("Failed to download package from GitLab URL: '%s'\n%s", archiveUrl, e)
       stop(e)
     })
 
@@ -359,7 +359,7 @@ getSourceForPkgRecord <- function(pkgRecord,
         remote_info = remote_info
       )
     }, error = function(e) {
-      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n- Reason: %s",
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
            pkgRecord$name, e)
       stop(e)
     })
