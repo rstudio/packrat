@@ -220,10 +220,10 @@ renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(
   # requests to Bitbucket .tar.gz URLs, we get redirects instead of a 401.
   renv_useragent_option <- options("renv.http.useragent" = "curl")
   on.exit(options(renv_useragent_option), add = TRUE)
-  
+
   result <- with_envvar(
     c(RENV_DOWNLOAD_METHOD = method),
-    renv$download(url = url, destfile = destfile, type = type, quiet = !debug)
+    renv$download(url = url, destfile = destfile, type = type)
   )
   if (identical(result, destfile)) {
     return(TRUE)
@@ -285,7 +285,7 @@ secureDownloadMethod <- function() {
     }
   }
 
-  # TODO: Reassess if this is terrible or not. 
+  # TODO: Reassess if this is terrible or not.
 
   # Authenticated downloads with renv lean heavily on curl, so if we are going
   # to use the renv downloader, we want to prefer curl over libcurl and wget.

@@ -40,3 +40,20 @@ test_that("githubArchiveUrl returns the correct URL", {
     "https://api.github.com/repos/breakfaster/muesli/tarball/abcde12345"
   )
 })
+
+test_that("githubDownload calls renv$download with the correct values", {
+  url <- githubArchiveUrl(github_pkg_record)
+  destfile <- "/dev/null"
+
+  auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
+  on.exit(options(auth_download_option), add = TRUE)
+
+  mockery::stub(githubDownload, "githubAuthenticated", TRUE)
+  renv_download_mock <- mockery::mock(destfile)
+  mockery::stub(githubDownload, "renvDownload", renv_download_mock, depth = 3)
+
+  githubDownload(url, destfile)
+
+  mockery::expect_called(renv_download_mock, 1)
+  mockery::expect_args(renv_download_mock, 1, url, destfile, type = "github")
+})
