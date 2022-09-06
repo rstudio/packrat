@@ -71,12 +71,13 @@ githubArchiveUrl <- function(pkgRecord) {
                           pkgRecord$remote_username,
                           pkgRecord$remote_repo,
                           pkgRecord$remote_sha)
-
-    # Ensure the protocol is prepended
-    if (!grepl("^http", archiveUrl)) {
-      archiveUrl <- paste(protocol, archiveUrl, sep = "://")
-    }
   }
+
+  # Ensure the protocol is prepended
+  if (!grepl("^http", archiveUrl)) {
+    archiveUrl <- paste(protocol, archiveUrl, sep = "://")
+  }
+  return(archiveUrl)
 }
 
 isGitHubURL <- function(url) {

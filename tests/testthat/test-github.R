@@ -1,14 +1,42 @@
-test_that("we can use devtools:::download to retrieve GitHub archives", {
-  skip("run manually for now")
+github_pkg_record <- list(
+  name = "muesli",
+  source = "github",
+  version = "0.1.0",
+  hash = "abc123",
+  gh_repo = "muesli",
+  gh_username = "breakfaster",
+  gh_ref = "HEAD",
+  gh_sha1 = "abcde12345",
+  remote_host = "api.github.com",
+  remote_repo = "muesli",
+  remote_username = "breakfaster",
+  remote_ref = "HEAD",
+  remote_sha = "abcde12345",
+  depends = list()
+)
 
-  if (!canUseGitHubDownloader())
-    skip("requires devtools")
+old_github_pkg_record <- list(
+  name = "muesli",
+  source = "github",
+  version = "0.1.0",
+  hash = "abc123",
+  gh_repo = "muesli",
+  gh_username = "breakfaster",
+  gh_ref = "HEAD",
+  gh_sha1 = "abcde12345",
+  depends = list()
+)
 
-  url <- "https://api.github.com/repos/rstudio/packrat/tarball/cd0f9a4dae7ea0c79966b6784b44d7e4e4edadad"
-  destination <- tempfile("packrat-test-gh-", fileext = ".tar.gz")
-  result <- githubDownload(url, destination)
-  expect_true(result == 0)
-  expect_true(file.exists(destination))
-  unlink(destination)
 
+test_that("githubArchiveUrl returns the correct URL", {
+  mockery::stub(githubArchiveUrl, "secureDownloadMethod", "curl")
+  expect_equal(
+    githubArchiveUrl(github_pkg_record),
+    "https://api.github.com/repos/breakfaster/muesli/tarball/abcde12345"
+  )
+
+  expect_equal(
+    githubArchiveUrl(old_github_pkg_record),
+    "https://api.github.com/repos/breakfaster/muesli/tarball/abcde12345"
+  )
 })
