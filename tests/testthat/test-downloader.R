@@ -19,9 +19,6 @@ getAvailableDownloadMethods <- function() {
   if (has("curl"))
     methods <- c(methods, "curl")
 
-  if (canUseLibCurlDownloadMethod())
-    methods <- c(methods, "libcurl")
-
   methods
 }
 

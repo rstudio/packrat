@@ -143,13 +143,6 @@ downloadFile <- function(url,
 
 }
 
-# TODO: we cannot use libcurl until R no longer sends HEAD requests when
-# attempting to download files
-canUseLibCurlDownloadMethod <- function() {
-  FALSE
-}
-
-
 # Attempt download.packages multiple times.
 #
 # Assumes we are downloading a single package.
@@ -285,22 +278,7 @@ secureDownloadMethod <- function() {
     }
   }
 
-  # TODO: Reassess if this is terrible or not.
-
-  # Authenticated downloads with renv lean heavily on curl, so if we are going
-  # to use the renv downloader, we want to prefer curl over libcurl and wget.
-  if (getOption("packrat.authenticated.downloads.use.renv", FALSE) && nzchar(Sys.which("curl"))) {
-    return("curl")
-  }
-
-  # For Darwin and Linux we use libcurl if we can and then fall back
-  # to curl or wget as appropriate. We prefer libcurl because it honors
-  # the same proxy configuration that "internal" does so it less likely
-  # to break downloads for users behind proxy servers.
-  if (canUseLibCurlDownloadMethod())
-    return("libcurl")
-
-  # Otherwise, fall back to 'wget' or 'curl' (preferring 'wget')
+  # Otherwise, fall back to 'wget' or 'curl' (preferring 'curl')
   candidates <- c("curl", "wget")
   for (candidate in candidates)
     if (isProgramOnPath(candidate))
