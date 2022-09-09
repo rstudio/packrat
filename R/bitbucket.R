@@ -103,4 +103,3 @@ bitbucket_pwd <- function(quiet = TRUE) {
   }
   return(NULL)
 }
-
