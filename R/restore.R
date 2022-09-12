@@ -237,9 +237,6 @@ getSourceForPkgRecord <- function(pkgRecord,
       stop(e)
     })
 
-    # Note: renv adds the remoteType field in its migrate. But its presence here
-    # won't cause problems, and will really help us.
-
     # TODO: The archive url workflow for GH suggests that these fields are
     # deprecated? only older versions of devtools? consider splitting this based
     # on the presence of pkgRecord$remote_host
@@ -258,7 +255,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
     tryCatch({
-      success <- modifyRemoteInfo(
+      success <- appendRemoteInfoToDescription(
         src = srczip,
         dest = dest,
         remote_info = remote_info
@@ -305,7 +302,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
     tryCatch({
-      success <- modifyRemoteInfo(
+      success <- appendRemoteInfoToDescription(
         src = srczip,
         dest = dest,
         remote_info = remote_info
@@ -353,7 +350,7 @@ getSourceForPkgRecord <- function(pkgRecord,
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
     tryCatch({
-      success <- modifyRemoteInfo(
+      success <- appendRemoteInfoToDescription(
         src = srczip,
         dest = dest,
         remote_info = remote_info
@@ -945,7 +942,7 @@ archivePackageType <- function(path, quiet = FALSE, default = "source") {
 # Decompresses the archive passed to `src`. Appends `remote_info` to the
 # DESCRIPTION file. Recompresses the file passed to `dest`, which must be
 # a `.tar.gz`. Returns TRUE if successful.
-modifyRemoteInfo <- function(src, dest, remote_info) {
+appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   # We expect `dest` to end with `".tar.gz"`.
   if (!grepl(".tar.gz$", dest)) {
     stop("Destination path for source archive must end in '.tar.gz'.")

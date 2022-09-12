@@ -1,14 +1,26 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Packrat now supports restoring packages hosted in private repositories on
+  GitHub, GitLab, and Bitbucket. To enable this, set the option
+  `packrat.authenticated.downloads.use.renv` to `TRUE`. `curl` must be available
+  on your system to take advantage of this capability. For authenticated
+  downloads, you must make `GITHUB_PAT`, `GITLAB_PAT`, and/or
+  `BITBUCKET_USERNAME` and `BITBUCKET_PASSWORD` available in Packrat's
+  environment, as appropriate. These environment variables are hidden from
+  package install processes.
+
 - Take an `renv` update to include a fix regarding `download.file.method` handling.
+
 - Packrat now masks environment variables commonly used for Git service account
   authentication from subprocesses used to install packages. This behavior can
   be disabled by setting the option `packrat.mask.git.service.envvars` to `FALSE`.
+
 - Users can mask additional arbitrary environment variables from the subprocess
   that run package installation tasks, by setting the option
   `packrat.masked.envvars` to a character vector of variable names to mask.
   These variables are masked whether or not `packrat.mask.git.service.envvars`
   has been set to `FALSE`.
+
 - Change how Packrat selects a `tar` binary. Previously, Packrat would force the
   use of R's internal `tar` implementation, which cannot handle long filepaths.
   Now, if a `TAR` environment variable exists, Packrat will use that. Otherwise,

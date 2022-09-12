@@ -1,4 +1,4 @@
-test_that("modifyRemoteInfo modifies DESCRIPTION and writes expected output", {
+test_that("appendRemoteInfoToDescription modifies DESCRIPTION and writes expected output", {
   remote_info <- data.frame(
     RemoteType = "gitlab",
     RemoteHost = "gitlab.com",
@@ -10,7 +10,7 @@ test_that("modifyRemoteInfo modifies DESCRIPTION and writes expected output", {
   )
 
   # 1. compress one of the test packages
-  # 2. run modifyRemoteInfo on it
+  # 2. run appendRemoteInfoToDescription on it
   # 3. check that info was modified
 
   src_tmp <- tempfile(fileext = ".tar.tz")
@@ -31,7 +31,7 @@ test_that("modifyRemoteInfo modifies DESCRIPTION and writes expected output", {
                              compression = "gzip", tar = tar_binary()))
   )
 
-  success <- modifyRemoteInfo(
+  success <- appendRemoteInfoToDescription(
     src = src_tmp,
     dest = dest_tmp,
     remote_info = remote_info

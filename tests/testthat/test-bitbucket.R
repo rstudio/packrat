@@ -19,7 +19,7 @@ test_that("bitbucketArchiveUrl returns the correct URL", {
   )
 })
 
-test_that("bitbucketDownload calls renv$download with the correct values", {
+test_that("bitbucketDownload calls renvDownload with the correct values", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
   destfile <- "/dev/null"
 

@@ -19,7 +19,7 @@ test_that("gitlabArchiveUrl returns the correct URL", {
   )
 })
 
-test_that("gitlabDownload calls renv$download with the correct values", {
+test_that("gitlabDownload calls renvDownload with the correct values", {
   url <- gitlabArchiveUrl(gitlab_pkg_record)
   destfile <- "/dev/null"
 

@@ -65,16 +65,11 @@ test_that("The same content is returned regardless of download method", {
 
 })
 
-test_that("renvDownload call s renv$download, passing in the values it received", {
+test_that("renvDownload calls renv$download, passing in the values it received", {
   url <- "https://github.com/my-great-org/cool-repo.tar.gz"
   destfile <- "/dev/null"
   type <- "github"
 
-  # TODO: We can probably remove this after I fix some stuff
-  auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
-  on.exit(options(auth_download_option), add = TRUE)
-
-  mockery::stub(githubDownload, "githubAuthenticated", TRUE)
   renv_download_mock <- mockery::mock(destfile)
   mockery::stub(renvDownload, "renv$download", renv_download_mock)
 
