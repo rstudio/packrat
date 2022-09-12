@@ -8,19 +8,19 @@
   `BITBUCKET_USERNAME` and `BITBUCKET_PASSWORD` available in Packrat's
   environment, as appropriate. These environment variables are hidden from
   package install processes.
-
-- Take an `renv` update to include a fix regarding `download.file.method` handling.
-
+- Correctly discover dependencies in a project beneath a directory hierarchy
+  containing "data". (#684)
+- Take an `renv` update to include a fix regarding `download.file.method`
+  handling. (#683)
 - Packrat now masks environment variables commonly used for Git service account
   authentication from subprocesses used to install packages. This behavior can
-  be disabled by setting the option `packrat.mask.git.service.envvars` to `FALSE`.
-
-- Users can mask additional arbitrary environment variables from the subprocess
+  be disabled by setting the option `packrat.mask.git.service.envvars` to
+  `FALSE`. (#682)
+- Users can mask additional arbitrary environment variables from the sub-process
   that run package installation tasks, by setting the option
   `packrat.masked.envvars` to a character vector of variable names to mask.
   These variables are masked whether or not `packrat.mask.git.service.envvars`
-  has been set to `FALSE`.
-
+  has been set to `FALSE`. (#682)
 - Change how Packrat selects a `tar` binary. Previously, Packrat would force the
   use of R's internal `tar` implementation, which cannot handle long filepaths.
   Now, if a `TAR` environment variable exists, Packrat will use that. Otherwise,
