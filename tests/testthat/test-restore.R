@@ -1,19 +1,15 @@
-test_that("appendRemoteInfoToDescription modifies DESCRIPTION and writes expected output", {
-  remote_info <- data.frame(
-    RemoteType = "gitlab",
-    RemoteHost = "gitlab.com",
-    RemoteRepo = "bread",
-    RemoteUsername = "breakfaster",
-    RemoteRef = "HEAD",
-    RemoteSha = "abc123",
-    stringsAsFactors = FALSE
-  )
+remote_info <- data.frame(
+  RemoteType = "gitlab",
+  RemoteHost = "gitlab.com",
+  RemoteRepo = "bread",
+  RemoteUsername = "breakfaster",
+  RemoteRef = "HEAD",
+  RemoteSha = "abc123",
+  stringsAsFactors = FALSE
+)
 
-  # 1. compress one of the test packages
-  # 2. run appendRemoteInfoToDescription on it
-  # 3. check that info was modified
-
-  src_tmp <- tempfile(fileext = ".tar.tz")
+test_that("appendRemoteInfoToDescription modifies DESCRIPTION file", {
+  src_tmp <- tempfile(fileext = ".tar.gz")
   on.exit(
     if (file.exists(src_tmp)) unlink(src_tmp, recursive = TRUE),
     add = TRUE
@@ -24,11 +20,17 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION and writes expecte
     add = TRUE
   )
 
-  basedir <- "packages/toast"
+  basedir <- test_path("packages/toast")
 
-  in_dir(dirname(basedir),
-        suppressWarnings(tar(tarfile = src_tmp, files = basename(basedir),
-                             compression = "gzip", tar = tar_binary()))
+  tryCatch(
+    in_dir(dirname(basedir),
+           suppressWarnings(tar(tarfile = src_tmp, files = basename(basedir),
+                                compression = "gzip", tar = tar_binary()))
+    ),
+    error = function(e) {
+      unlink(src_tmp)
+      stop(e)
+    }
   )
 
   success <- appendRemoteInfoToDescription(
@@ -39,13 +41,19 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION and writes expecte
 
   expect_true(success)
 
-  untarred_tmp <- tempdir()
+  untarred_tmp <- tempfile()
   on.exit(
     if (file.exists(untarred_tmp)) unlink(untarred_tmp, recursive = TRUE),
     add = TRUE
   )
 
   untar(dest_tmp, exdir = untarred_tmp, tar = tar_binary())
+    if (length(dir(untarred_tmp)) == 1 &&
+      dir.exists(file.path(untarred_tmp, dir(untarred_tmp)))) {
+    basedir <- file.path(untarred_tmp, dir(untarred_tmp))
+  } else {
+    basedir <- untarred_tmp
+  }
   desc <- readLines(file.path(untarred_tmp, "toast", "DESCRIPTION"))
 
   expected_desc_tail <- c(
@@ -57,4 +65,5 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION and writes expecte
     "RemoteSha: abc123"
   )
   expect_identical(tail(desc, 6), expected_desc_tail)
+  getwd()
 })

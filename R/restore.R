@@ -958,11 +958,22 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   # untar can emit noisy warnings (e.g. "skipping pax global extended
   # headers"); hide those
   suppressWarnings(untar(src, exdir = scratchDir, tar = tar_binary()))
+
   # Find the base directory
   basedir <- if (length(dir(scratchDir)) == 1)
     file.path(scratchDir, dir(scratchDir))
   else
     scratchDir
+
+  # Determine the untarred base directory. We're looking to see if the untarred
+  # directory contains only a single directory and if so, we treat that as our
+  # base directory.
+  if (length(dir(scratchDir)) == 1 &&
+      dir.exists(file.path(scratchDir, dir(scratchDir)))) {
+    basedir <- file.path(scratchDir, dir(scratchDir))
+  } else {
+    basedir <- scratchDir
+  }
 
   # Determine the true package root
   if (remote_info$RemoteType == "github") {
