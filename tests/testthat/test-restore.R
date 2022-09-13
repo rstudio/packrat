@@ -24,7 +24,7 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION and writes expecte
     add = TRUE
   )
 
-  basedir <- "packages/toast"
+  basedir <- test_path("packages/toast")
 
   in_dir(dirname(basedir),
         suppressWarnings(tar(tarfile = src_tmp, files = basename(basedir),
