@@ -233,7 +233,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       githubDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      e$message <- sprintf("Failed to download package from GitHub URL: '%s'\n%s", archiveUrl, e)
+      e$message <- sprintf("Failed to download package from GitHub URL: '%s'\n%s", archiveUrl, e$message)
       stop(e)
     })
 
@@ -281,7 +281,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       bitbucketDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      e$message <- sprintf("Failed to download package from Bitbucket URL: '%s'\n%s", archiveUrl, e)
+      e$message <- sprintf("Failed to download package from Bitbucket URL: '%s'\n%s", archiveUrl, e$message)
       stop(e)
     })
 
@@ -329,7 +329,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       gitlabDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      e$message <- sprintf("Failed to download package from GitLab URL: '%s'\n%s", archiveUrl, e)
+      e$message <- sprintf("Failed to download package from GitLab URL: '%s'\n%s", archiveUrl, e$message)
       stop(e)
     })
 

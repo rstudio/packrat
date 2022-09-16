@@ -10,7 +10,7 @@ bitbucketDownload <- function(url, destfile, ...) {
         bitbucketDownloadHttr(url, destfile)
       }
     }, error = function(e) {
-      e$message <- paste0(e, "Check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables.")
+      e$message <- paste(e$message, "Check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables.", sep = "\n")
       stop(e)
     })
   } else {

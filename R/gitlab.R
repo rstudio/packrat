@@ -1,4 +1,4 @@
-gitlabDownload <- function(url, destfile, ...) {
+ gitlabDownload <- function(url, destfile, ...) {
   if (gitlabAuthenticated()) {
     # Because we cannot guarantee consistency of error codes across all
     # combinations of download method and API, we inject a message to check
@@ -10,7 +10,7 @@ gitlabDownload <- function(url, destfile, ...) {
         gitlabDownloadHttr(url, destfile)
       }
     }, error = function(e) {
-      e$message <- paste0(e, "Check the GITLAB_PAT environment variable.")
+      e$message <- paste(e$message, "Check the GITLAB_PAT environment variable.", sep = "\n")
       stop(e)
     })
   } else {
