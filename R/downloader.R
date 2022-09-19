@@ -203,24 +203,19 @@ canUseRenvDownload <- function() {
 }
 
 renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
-  debug <- getOption("packrat.renv.debug", FALSE)
-  if (debug) {
-    options(renv.download.trace = TRUE) # TODO remove
+  if (identical(type, "bitbucket")) {
+    # We temporarily set our user agent to "curl" so that Bitbucket will treat us
+    # like a command line and not a browser. Otherwise, if we make unauthorized
+    # requests to Bitbucket .tar.gz URLs, we get redirects instead of a 401.
+    renv_useragent_option <- options("renv.http.useragent" = "curl")
+    on.exit(options(renv_useragent_option), add = TRUE)
   }
-
-  # We temporarily set our user agent to "curl" so that Bitbucket will treat us
-  # like a command line and not a browser. Otherwise, if we make unauthorized
-  # requests to Bitbucket .tar.gz URLs, we get redirects instead of a 401.
-  renv_useragent_option <- options("renv.http.useragent" = "curl")
-  on.exit(options(renv_useragent_option), add = TRUE)
 
   result <- with_envvar(
     c(RENV_DOWNLOAD_METHOD = method),
     renv$download(url = url, destfile = destfile, type = type)
   )
-  if (identical(result, destfile)) {
-    return(TRUE)
-  }
+  return (identical(result, destfile))
 }
 
 inferAppropriateDownloadMethod <- function(url) {
