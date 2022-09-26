@@ -1,8 +1,18 @@
+# - Equivalent to other git provider download functions.
+# - Called by `getSourceForPkgRecord` (which manages the lifecycle of
+#   `destfile`).Responsible for dispatching different download implementations
+#   depending on environment and configuration, passing them `url` and
+#   `destfile`.
+# - Returns nothing if successful, and does not check the return values of inner
+#   download methods (`renvDownload`, `providerDownloadHttr`, and
+#   `downloadWithRetries`). Those functions are responsible for detecting errors
+#   and calling `stop` when they occur.
+# - For authenticated download methods (`renvDownload`, `providerDownloadHttr`),
+#   catches errors append a note advising the user to check
+#   configuration-related environment variables. This happens no matter what the
+#   cause of the error.
 githubDownload <- function(url, destfile, ...) {
   if (githubAuthenticated()) {
-    # Because we cannot guarantee consistency of error codes across all
-    # combinations of download method and API, we inject a message to check
-    # provider credentials.
     tryCatch({
       if (canUseRenvDownload()) {
         renvDownload(url, destfile, type = "github")
@@ -18,6 +28,11 @@ githubDownload <- function(url, destfile, ...) {
   }
 }
 
+# - The original function for authenticated downloads. Requires `httr` to be
+#   installed. Called by this git provider's top-level download function if
+#   `renvDownload`'s requirements are not met, but this function's are.
+# - Returns `TRUE` if it succeeds. Calls `stop()` if any errors are encountered.
+# - Writes to `destfile`, whose lifecycle is managed by `getSourceForPkgRecord`.
 githubDownloadHttr <- function(url, destfile, ...) {
   authenticate    <- yoink("httr", "authenticate")
   GET             <- yoink("httr", "GET")

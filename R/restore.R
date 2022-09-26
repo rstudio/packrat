@@ -57,6 +57,11 @@ versionMatchesDb <- function(pkgRecord, db) {
 
 # Given a package record, fetch the sources for the package and place them in
 # the source directory root given by sourceDir.
+# - Responsible for calling different download methods for different source
+#   locations (e.g. git hosting service, CRAN).
+# - Creates the path for the temporary destination file, named `srczip` at this
+#   level. It doesn't create the file itself — download functions do that — but
+#   handles its cleanup if it exists when the function exits.
 getSourceForPkgRecord <- function(pkgRecord,
                                   sourceDir,
                                   availablePkgs,
