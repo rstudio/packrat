@@ -314,6 +314,7 @@ authDownloadAdvice <- function(type = NULL) {
     )
 
     # Info on available auth tokens, dependant on provider type.
+    token_msg <- NULL
     if (identical(type, "github")) {
       if (githubAuthenticated()) {
         token_msg <- "GITHUB_PAT found; check that it is correct."
@@ -339,7 +340,7 @@ authDownloadAdvice <- function(type = NULL) {
 
     # Info on configuration
     if (canUseRenvDownload()) {
-      advice <- c(advice, "Packrat is configured to use internal renv download methods.")
+      advice <- c(advice, "Packrat is configured to use internal renv for authenticated downloads.")
     } else if (canUseHttr()) {
       advice <- c(advice, "Packrat will use the httr package for authenticated downloads.")
     } else {
