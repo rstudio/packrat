@@ -302,3 +302,64 @@ secureDownloadMethod <- function() {
 
   stop("Failed to discover a secure download method.")
 }
+
+# Returns a function to be used as an error handler for githubDownload,
+# gitlabDownload, and bitbucketDownload.
+authDownloadAdvice <- function(type = NULL) {
+  f <- function(e = NULL) {
+    advice <- paste0(
+      "If you are trying to restore a package from a private Git repo, ",
+      "you must have credentials available in your environment, ",
+      "and Packrat must be configured to use an auth-capable download method."
+    )
+
+    # Info on available auth tokens, dependant on provider type.
+    if (identical(type, "github")) {
+      if (githubAuthenticated()) {
+        token_msg <- "GITHUB_PAT found; check that it is correct."
+      } else {
+        token_msg <- "GITHUB_PAT environment variable not found."
+      }
+    }
+    if (identical(type, "gitlab")) {
+      if (gitlabAuthenticated()) {
+        token_msg <- "GITLAB_PAT found; check that it is correct."
+      } else {
+        token_msg <- "GITLAB_PAT environment variable not found."
+      }
+    }
+    if (identical(type, "bitbucket")) {
+      if (bitbucketAuthenticated()) {
+        token_msg <- "BITBUCKET_USERNAME and BITBUCKET_PASSWORD found; check that they are correct."
+      } else {
+        token_msg <- "BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables not found."
+      }
+    }
+    advice <- c(advice, token_msg)
+
+    # Info on configuration
+    if (canUseRenvDownload()) {
+      advice <- c(advice, "Packrat is configured to use internal renv download methods.")
+    } else if (canUseHttr()) {
+      advice <- c(advice, "Packrat will use the httr package for authenticated downloads.")
+    } else {
+      advice <- c(advice, paste0(
+        "Packrat is not configured to use an auth-capable download ",
+        "method. Try setting the option ",
+        "packrat.authenticated.downloads.use.renv to TRUE, or installing the ",
+        "httr package."
+      ))
+    }
+    advice <- paste(advice, collapse = " ")
+
+    # This allows us to see the advice without appending to an error message.
+    if (is.null(e)) {
+      return(advice)
+    } else {
+      e$message <- paste(e$message, advice, sep = "\n")
+      stop(e)
+    }
+  }
+
+  return(f)
+}

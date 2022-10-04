@@ -12,19 +12,13 @@
 #   configuration-related environment variables. This happens no matter what the
 #   cause of the error.
 gitlabDownload <- function(url, destfile, ...) {
-  if (gitlabAuthenticated()) {
-    tryCatch({
-      if (canUseRenvDownload()) {
-        renvDownload(url, destfile, type = "gitlab")
-      } else if (canUseHttr()) {
-        gitlabDownloadHttr(url, destfile)
-      }
-    }, error = function(e) {
-      e$message <- paste(e$message, "Check the GITLAB_PAT environment variable.", sep = "\n")
-      stop(e)
-    })
+  gitlabDownloadError <- authDownloadAdvice(type = "gitlab")
+  if (gitlabAuthenticated() && canUseRenvDownload()) {
+    tryCatch(renvDownload(url, destfile, type = "gitlab"), error = gitlabDownloadError)
+  } else if (gitlabAuthenticated() && canUseHttr()) {
+    tryCatch(gitlabDownloadHttr(url, destfile), error = gitlabDownloadError)
   } else {
-    downloadWithRetries(url, destfile = destfile)
+    tryCatch(downloadWithRetries(url, destfile = destfile), error = gitlabDownloadError)
   }
 }
 

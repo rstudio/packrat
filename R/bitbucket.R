@@ -12,19 +12,13 @@
 #   configuration-related environment variables. This happens no matter what the
 #   cause of the error.
 bitbucketDownload <- function(url, destfile, ...) {
-  if (bitbucketAuthenticated()) {
-    tryCatch({
-      if (canUseRenvDownload()) {
-        renvDownload(url, destfile, type = "bitbucket")
-      } else if (canUseHttr()) {
-        bitbucketDownloadHttr(url, destfile)
-      }
-    }, error = function(e) {
-      e$message <- paste(e$message, "Check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables.", sep = "\n")
-      stop(e)
-    })
+  bitbucketDownloadError <- authDownloadAdvice(type = "bitbucket")
+  if (bitbucketAuthenticated() && canUseRenvDownload()) {
+    tryCatch(renvDownload(url, destfile, type = "bitbucket"), error = bitbucketDownloadError)
+  } else if (bitbucketAuthenticated() && canUseHttr()) {
+    tryCatch(bitbucketDownloadHttr(url, destfile), error = bitbucketDownloadError)
   } else {
-    downloadWithRetries(url, destfile = destfile)
+    tryCatch(downloadWithRetries(url, destfile = destfile), error = bitbucketDownloadError)
   }
 }
 

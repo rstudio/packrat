@@ -4,27 +4,21 @@
 #   depending on environment and configuration, passing them `url` and
 #   `destfile`.
 # - Returns nothing if successful, and does not check the return values of inner
-#   download methods (`renvDownload`, `providerDownloadHttr`, and
+#   download methods (`renvDownload`, `githubDownloadHttr`, and
 #   `downloadWithRetries`). Those functions are responsible for detecting errors
 #   and calling `stop` when they occur.
-# - For authenticated download methods (`renvDownload`, `providerDownloadHttr`),
+# - For authenticated download methods (`renvDownload`, `githubDownloadHttr`),
 #   catches errors append a note advising the user to check
 #   configuration-related environment variables. This happens no matter what the
 #   cause of the error.
 githubDownload <- function(url, destfile, ...) {
-  if (githubAuthenticated()) {
-    tryCatch({
-      if (canUseRenvDownload()) {
-        renvDownload(url, destfile, type = "github")
-      } else if (canUseHttr()) {
-        githubDownloadHttr(url, destfile)
-      }
-    }, error = function(e) {
-      e$message <- paste(e$message, "Check the GITHUB_PAT environment variable.", sep = "\n")
-      stop(e)
-    })
+  githubDownloadError <- authDownloadAdvice(type = "github")
+  if (githubAuthenticated() && canUseRenvDownload()) {
+    tryCatch(renvDownload(url, destfile, type = "github"), error = githubDownloadError)
+  } else if (githubAuthenticated() && canUseHttr()) {
+    tryCatch(githubDownloadHttr(url, destfile), error = githubDownloadError)
   } else {
-    downloadWithRetries(url, destfile = destfile)
+    tryCatch(downloadWithRetries(url, destfile = destfile), error = githubDownloadError)
   }
 }
 
