@@ -19,10 +19,11 @@ test_that("bitbucketArchiveUrl returns the correct URL", {
   )
 })
 
-test_that("bitbucketDownload calls renvDownload with the correct values", {
+test_that("bitbucketDownload calls renvDownload in the expected context", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
   destfile <- "/dev/null"
 
+  # Testing the effect of the option, rather than just mocking canUseRenvDownload
   auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
   on.exit(options(auth_download_option), add = TRUE)
 
@@ -34,4 +35,50 @@ test_that("bitbucketDownload calls renvDownload with the correct values", {
 
   mockery::expect_called(renv_download_mock, 1)
   mockery::expect_args(renv_download_mock, 1, url, destfile, type = "bitbucket")
+})
+
+test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context", {
+  url <- bitbucketArchiveUrl(bitbucket_pkg_record)
+  destfile <- "/dev/null"
+
+  mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
+  mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
+  httr_download_mock <- mockery::mock(TRUE)
+  mockery::stub(bitbucketDownload, "bitbucketDownloadHttr", httr_download_mock, depth = 3)
+
+  bitbucketDownload(url, destfile)
+
+  mockery::expect_called(httr_download_mock, 1)
+  mockery::expect_args(httr_download_mock, 1, url, destfile)
+})
+
+test_that("bitbucketDownload calls downloadWithRetries in the expected contexts", {
+  url <- bitbucketArchiveUrl(bitbucket_pkg_record)
+  destfile <- "/dev/null"
+
+  # With auth data but no configured auth-capable method configured
+
+  mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
+  mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
+  mockery::stub(bitbucketDownload, "canUseHttr", FALSE)
+  download_with_retries_mock <- mockery::mock(TRUE)
+  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+
+  bitbucketDownload(url, destfile)
+
+  mockery::expect_called(download_with_retries_mock, 1)
+  mockery::expect_args(download_with_retries_mock, 1, url, destfile)
+
+  # With auth-capable methods configured but no auth data
+
+  mockery::stub(bitbucketDownload, "bitbucketAuthenticated", FALSE)
+  mockery::stub(bitbucketDownload, "canUseRenvDownload", TRUE)
+  mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
+  download_with_retries_mock <- mockery::mock(TRUE)
+  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+
+  bitbucketDownload(url, destfile)
+
+  mockery::expect_called(download_with_retries_mock, 1)
+  mockery::expect_args(download_with_retries_mock, 1, url, destfile)
 })

@@ -41,10 +41,11 @@ test_that("githubArchiveUrl returns the correct URL", {
   )
 })
 
-test_that("githubDownload calls renvDownload with the correct values", {
+test_that("githubDownload calls renvDownload in the expected context", {
   url <- githubArchiveUrl(github_pkg_record)
   destfile <- "/dev/null"
 
+  # Testing the effect of the option, rather than just mocking canUseRenvDownload
   auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
   on.exit(options(auth_download_option), add = TRUE)
 
@@ -56,4 +57,50 @@ test_that("githubDownload calls renvDownload with the correct values", {
 
   mockery::expect_called(renv_download_mock, 1)
   mockery::expect_args(renv_download_mock, 1, url, destfile, type = "github")
+})
+
+test_that("githubDownload calls githubDownloadHttr in the expected context", {
+  url <- githubArchiveUrl(github_pkg_record)
+  destfile <- "/dev/null"
+
+  mockery::stub(githubDownload, "githubAuthenticated", TRUE)
+  mockery::stub(githubDownload, "canUseHttr", TRUE)
+  httr_download_mock <- mockery::mock(TRUE)
+  mockery::stub(githubDownload, "githubDownloadHttr", httr_download_mock, depth = 3)
+
+  githubDownload(url, destfile)
+
+  mockery::expect_called(httr_download_mock, 1)
+  mockery::expect_args(httr_download_mock, 1, url, destfile)
+})
+
+test_that("githubDownload calls downloadWithRetries in the expected contexts", {
+  url <- githubArchiveUrl(github_pkg_record)
+  destfile <- "/dev/null"
+
+  # With auth data but no configured auth-capable method configured
+
+  mockery::stub(githubDownload, "githubAuthenticated", TRUE)
+  mockery::stub(githubDownload, "canUseRenvDownload", FALSE)
+  mockery::stub(githubDownload, "canUseHttr", FALSE)
+  download_with_retries_mock <- mockery::mock(TRUE)
+  mockery::stub(githubDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+
+  githubDownload(url, destfile)
+
+  mockery::expect_called(download_with_retries_mock, 1)
+  mockery::expect_args(download_with_retries_mock, 1, url, destfile)
+
+  # With auth-capable methods configured but no auth data
+
+  mockery::stub(githubDownload, "githubAuthenticated", FALSE)
+  mockery::stub(githubDownload, "canUseRenvDownload", TRUE)
+  mockery::stub(githubDownload, "canUseHttr", TRUE)
+  download_with_retries_mock <- mockery::mock(TRUE)
+  mockery::stub(githubDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+
+  githubDownload(url, destfile)
+
+  mockery::expect_called(download_with_retries_mock, 1)
+  mockery::expect_args(download_with_retries_mock, 1, url, destfile)
 })
