@@ -80,7 +80,23 @@ test_that("renvDownload calls renv$download, passing in the values it received",
 })
 
 test_that("authDownloadAdvice offers sound advice", {
-  # Testing in the context of GITHUB_PAT being set. All providers share the same flow.
+  advice_github <- authDownloadAdvice(type = "github")
+
+  # Using renv for downloads
+  mockery::stub(advice_github, "canUseRenvDownload", TRUE)
+  expect_true(grepl("Packrat is configured to use internal renv for authenticated downloads.", advice_github(), fixed = TRUE))
+
+  # Using httr for downloads
+  mockery::stub(advice_github, "canUseRenvDownload", FALSE)
+  mockery::stub(advice_github, "canUseHttr", TRUE)
+  expect_true(grepl("Packrat will use the httr package for authenticated downloads.", advice_github(), fixed = TRUE))
+
+  # With no available auth methods
+  mockery::stub(advice_github, "canUseRenvDownload", FALSE)
+  mockery::stub(advice_github, "canUseHttr", FALSE)
+  expect_true(grepl("Packrat is not configured to use an auth-capable download method. Try setting the option packrat.authenticated.downloads.use.renv to TRUE, or installing the httr package.", advice_github(), fixed = TRUE))
+
+  # Expected auth token (GitHub) present
   github_pat <- Sys.getenv("GITHUB_PAT", unset = NA)
   Sys.setenv(GITHUB_PAT = "foo")
   if (is.na(github_pat)) {
@@ -88,36 +104,10 @@ test_that("authDownloadAdvice offers sound advice", {
   } else {
     on.exit(Sys.setenv(GITHUB_PAT = github_pat), add = TRUE, after = TRUE)
   }
+  expect_true(grepl("GITHUB_PAT found; check that it is correct.", advice_github(), fixed = TRUE))
 
-  advice_github <- authDownloadAdvice(type = "github")
 
-  # Using renv for downloads
-  mockery::stub(advice_github, "canUseRenvDownload", TRUE)
-  expect_equal(
-    advice_github(),
-    "If you are trying to restore a package from a private Git repo, you must have credentials available in your environment, and Packrat must be configured to use an auth-capable download method. GITHUB_PAT found; check that it is correct. Packrat is configured to use internal renv for authenticated downloads."
-  )
-
-  # Using httr for downloads
-  mockery::stub(advice_github, "canUseRenvDownload", FALSE)
-  mockery::stub(advice_github, "canUseHttr", TRUE)
-  expect_equal(
-    advice_github(),
-    "If you are trying to restore a package from a private Git repo, you must have credentials available in your environment, and Packrat must be configured to use an auth-capable download method. GITHUB_PAT found; check that it is correct. Packrat will use the httr package for authenticated downloads."
-  )
-
-  # With no available auth methods
-  mockery::stub(advice_github, "canUseRenvDownload", FALSE)
-  mockery::stub(advice_github, "canUseHttr", FALSE)
-  expect_equal(
-    advice_github(),
-    "If you are trying to restore a package from a private Git repo, you must have credentials available in your environment, and Packrat must be configured to use an auth-capable download method. GITHUB_PAT found; check that it is correct. Packrat is not configured to use an auth-capable download method. Try setting the option packrat.authenticated.downloads.use.renv to TRUE, or installing the httr package."
-  )
-
-  # With no token
+  # Expected token not found
   Sys.unsetenv("GITHUB_PAT")
-  expect_equal(
-    advice_github(),
-    "If you are trying to restore a package from a private Git repo, you must have credentials available in your environment, and Packrat must be configured to use an auth-capable download method. GITHUB_PAT environment variable not found. Packrat is not configured to use an auth-capable download method. Try setting the option packrat.authenticated.downloads.use.renv to TRUE, or installing the httr package."
-  )
+  expect_true(grepl("GITHUB_PAT environment variable not found.", advice_github(), fixed = TRUE))
 })

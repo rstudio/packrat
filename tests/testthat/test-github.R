@@ -64,6 +64,7 @@ test_that("githubDownload calls githubDownloadHttr in the expected context", {
   destfile <- "/dev/null"
 
   mockery::stub(githubDownload, "githubAuthenticated", TRUE)
+  mockery::stub(githubDownload, "canUseRenvDownload", FALSE)
   mockery::stub(githubDownload, "canUseHttr", TRUE)
   httr_download_mock <- mockery::mock(TRUE)
   mockery::stub(githubDownload, "githubDownloadHttr", httr_download_mock, depth = 3)

@@ -42,6 +42,7 @@ test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context
   destfile <- "/dev/null"
 
   mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
+  mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
   mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
   httr_download_mock <- mockery::mock(TRUE)
   mockery::stub(bitbucketDownload, "bitbucketDownloadHttr", httr_download_mock, depth = 3)
