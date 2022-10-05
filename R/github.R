@@ -1,6 +1,6 @@
 # - Equivalent to other git provider download functions.
 # - Called by `getSourceForPkgRecord` (which manages the lifecycle of
-#   `destfile`).Responsible for dispatching different download implementations
+#   `destfile`). Responsible for dispatching different download implementations
 #   depending on environment and configuration, passing them `url` and
 #   `destfile`.
 # - Returns nothing if successful, and does not check the return values of inner
@@ -12,13 +12,12 @@
 #   configuration-related environment variables. This happens no matter what the
 #   cause of the error.
 githubDownload <- function(url, destfile, ...) {
-  githubDownloadError <- authDownloadAdvice(type = "github")
   if (githubAuthenticated() && canUseRenvDownload()) {
-    tryCatch(renvDownload(url, destfile, type = "github"), error = githubDownloadError)
+    tryCatch(renvDownload(url, destfile, type = "github"), error = authDownloadAdvice("github", TRUE, "renv"))
   } else if (githubAuthenticated() && canUseHttr()) {
-    tryCatch(githubDownloadHttr(url, destfile), error = githubDownloadError)
+    tryCatch(githubDownloadHttr(url, destfile), error = authDownloadAdvice("github", TRUE, "httr"))
   } else {
-    tryCatch(downloadWithRetries(url, destfile = destfile), error = githubDownloadError)
+    tryCatch(downloadWithRetries(url, destfile = destfile), error = authDownloadAdvice("github", FALSE, "internal"))
   }
 }
 

@@ -305,7 +305,7 @@ secureDownloadMethod <- function() {
 
 # Returns a function to be used as an error handler for githubDownload,
 # gitlabDownload, and bitbucketDownload.
-authDownloadAdvice <- function(type = NULL) {
+authDownloadAdvice <- function(type, authenticated, downloader) {
   f <- function(e = NULL) {
     advice <- paste0(
       "If you are trying to restore a package from a private Git repo, ",
@@ -316,21 +316,21 @@ authDownloadAdvice <- function(type = NULL) {
     # Info on available auth tokens, dependant on provider type.
     token_msg <- NULL
     if (identical(type, "github")) {
-      if (githubAuthenticated()) {
+      if (identical(authenticated, TRUE)) {
         token_msg <- "GITHUB_PAT found; check that it is correct."
       } else {
         token_msg <- "GITHUB_PAT environment variable not found."
       }
     }
     if (identical(type, "gitlab")) {
-      if (gitlabAuthenticated()) {
+      if (identical(authenticated, TRUE)) {
         token_msg <- "GITLAB_PAT found; check that it is correct."
       } else {
         token_msg <- "GITLAB_PAT environment variable not found."
       }
     }
     if (identical(type, "bitbucket")) {
-      if (bitbucketAuthenticated()) {
+      if (identical(authenticated, TRUE)) {
         token_msg <- "BITBUCKET_USERNAME and BITBUCKET_PASSWORD found; check that they are correct."
       } else {
         token_msg <- "BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables not found."
@@ -339,9 +339,9 @@ authDownloadAdvice <- function(type = NULL) {
     advice <- c(advice, token_msg)
 
     # Info on configuration
-    if (canUseRenvDownload()) {
+    if (identical(downloader, "renv")) {
       advice <- c(advice, "Packrat is configured to use internal renv for authenticated downloads.")
-    } else if (canUseHttr()) {
+    } else if (identical(downloader, "httr")) {
       advice <- c(advice, "Packrat will use the httr package for authenticated downloads.")
     } else {
       advice <- c(advice, paste0(

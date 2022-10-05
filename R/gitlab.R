@@ -1,6 +1,6 @@
 # - Equivalent to other git provider download functions.
 # - Called by `getSourceForPkgRecord` (which manages the lifecycle of
-#   `destfile`).Responsible for dispatching different download implementations
+#   `destfile`). Responsible for dispatching different download implementations
 #   depending on environment and configuration, passing them `url` and
 #   `destfile`.
 # - Returns nothing if successful, and does not check the return values of inner
@@ -12,13 +12,12 @@
 #   configuration-related environment variables. This happens no matter what the
 #   cause of the error.
 gitlabDownload <- function(url, destfile, ...) {
-  gitlabDownloadError <- authDownloadAdvice(type = "gitlab")
   if (gitlabAuthenticated() && canUseRenvDownload()) {
-    tryCatch(renvDownload(url, destfile, type = "gitlab"), error = gitlabDownloadError)
+    tryCatch(renvDownload(url, destfile, type = "gitlab"), error = authDownloadAdvice("gitlab", TRUE, "renv"))
   } else if (gitlabAuthenticated() && canUseHttr()) {
-    tryCatch(gitlabDownloadHttr(url, destfile), error = gitlabDownloadError)
+    tryCatch(gitlabDownloadHttr(url, destfile), error = authDownloadAdvice("gitlab", TRUE, "httr"))
   } else {
-    tryCatch(downloadWithRetries(url, destfile = destfile), error = gitlabDownloadError)
+    tryCatch(downloadWithRetries(url, destfile = destfile), error = authDownloadAdvice("gitlab", FALSE, "internal"))
   }
 }
 

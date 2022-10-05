@@ -230,7 +230,7 @@ getSourceForPkgRecord <- function(pkgRecord,
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit(
-      if (file.exists(srczip)) unlink(srczip, recursive = TRUE),
+      unlink(srczip, recursive = TRUE),
       add = TRUE
     )
 
@@ -242,9 +242,6 @@ getSourceForPkgRecord <- function(pkgRecord,
       stop(e)
     })
 
-    # TODO: The archive url workflow for GH suggests that these fields are
-    # deprecated? only older versions of devtools? consider splitting this based
-    # on the presence of pkgRecord$remote_host
     remote_info <- as.data.frame(
       list(
         RemoteType     = pkgRecord$source,
@@ -278,7 +275,7 @@ getSourceForPkgRecord <- function(pkgRecord,
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit(
-      if (file.exists(srczip)) unlink(srczip, recursive = TRUE),
+      unlink(srczip, recursive = TRUE),
       add = TRUE
     )
 
@@ -326,7 +323,7 @@ getSourceForPkgRecord <- function(pkgRecord,
 
     srczip <- tempfile(fileext = '.tar.gz')
     on.exit(
-      if (file.exists(srczip)) unlink(srczip, recursive = TRUE),
+      unlink(srczip, recursive = TRUE),
       add = TRUE
     )
 

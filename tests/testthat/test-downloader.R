@@ -80,34 +80,19 @@ test_that("renvDownload calls renv$download, passing in the values it received",
 })
 
 test_that("authDownloadAdvice offers sound advice", {
-  advice_github <- authDownloadAdvice(type = "github")
 
   # Using renv for downloads
-  mockery::stub(advice_github, "canUseRenvDownload", TRUE)
-  expect_true(grepl("Packrat is configured to use internal renv for authenticated downloads.", advice_github(), fixed = TRUE))
+  expect_true(grepl("Packrat is configured to use internal renv for authenticated downloads.", authDownloadAdvice("github", TRUE, "renv")(), fixed = TRUE))
 
   # Using httr for downloads
-  mockery::stub(advice_github, "canUseRenvDownload", FALSE)
-  mockery::stub(advice_github, "canUseHttr", TRUE)
-  expect_true(grepl("Packrat will use the httr package for authenticated downloads.", advice_github(), fixed = TRUE))
+  expect_true(grepl("Packrat will use the httr package for authenticated downloads.", authDownloadAdvice("gitlab", TRUE, "httr")(), fixed = TRUE))
 
   # With no available auth methods
-  mockery::stub(advice_github, "canUseRenvDownload", FALSE)
-  mockery::stub(advice_github, "canUseHttr", FALSE)
-  expect_true(grepl("Packrat is not configured to use an auth-capable download method. Try setting the option packrat.authenticated.downloads.use.renv to TRUE, or installing the httr package.", advice_github(), fixed = TRUE))
+  expect_true(grepl("Packrat is not configured to use an auth-capable download method. Try setting the option packrat.authenticated.downloads.use.renv to TRUE, or installing the httr package.", authDownloadAdvice("bitbucket", TRUE, "internal")(), fixed = TRUE))
 
   # Expected auth token (GitHub) present
-  github_pat <- Sys.getenv("GITHUB_PAT", unset = NA)
-  Sys.setenv(GITHUB_PAT = "foo")
-  if (is.na(github_pat)) {
-    on.exit(Sys.unsetenv("GITHUB_PAT"), add = TRUE, after = TRUE)
-  } else {
-    on.exit(Sys.setenv(GITHUB_PAT = github_pat), add = TRUE, after = TRUE)
-  }
-  expect_true(grepl("GITHUB_PAT found; check that it is correct.", advice_github(), fixed = TRUE))
-
+  expect_true(grepl("GITHUB_PAT found; check that it is correct.", authDownloadAdvice("github", TRUE, "renv")(), fixed = TRUE))
 
   # Expected token not found
-  Sys.unsetenv("GITHUB_PAT")
-  expect_true(grepl("GITHUB_PAT environment variable not found.", advice_github(), fixed = TRUE))
+  expect_true(grepl("BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables not found.", authDownloadAdvice("bitbucket", FALSE, "httr")(), fixed = TRUE))
 })
