@@ -1,22 +1,32 @@
-isBitbucketURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://(?:www|api).bitbucket.(org|com)", url, perl = TRUE)
-}
-
-canUseBitbucketDownloader <- function() {
-  (all(packageVersionInstalled(httr = "1.0.0")) &&
-     !is.null(bitbucket_user(quiet = TRUE)) &&
-     !is.null(bitbucket_pwd(quiet = TRUE)))
-}
-
+# - Equivalent to other git provider download functions.
+# - Called by `getSourceForPkgRecord` (which manages the lifecycle of
+#   `destfile`). Responsible for dispatching different download implementations
+#   depending on environment and configuration, passing them `url` and
+#   `destfile`.
+# - Returns nothing if successful, and does not check the return values of inner
+#   download methods (`renvDownload`, `providerDownloadHttr`, and
+#   `downloadWithRetries`). Those functions are responsible for detecting errors
+#   and calling `stop` when they occur.
+# - For authenticated download methods (`renvDownload`, `providerDownloadHttr`),
+#   catches errors append a note advising the user to check
+#   configuration-related environment variables. This happens no matter what the
+#   cause of the error.
 bitbucketDownload <- function(url, destfile, ...) {
-  tryCatch(
-    bitbucketDownloadImpl(url, destfile, ...),
-    error = function(e) {
-      stop(sprintf("Bitbucket request failed: %s", e), call. = FALSE)
-    })
+  if (bitbucketAuthenticated() && canUseRenvDownload()) {
+    tryCatch(renvDownload(url, destfile, type = "bitbucket"), error = authDownloadAdvice("bitbucket", TRUE, "renv"))
+  } else if (bitbucketAuthenticated() && canUseHttr()) {
+    tryCatch(bitbucketDownloadHttr(url, destfile), error = authDownloadAdvice("bitbucket", TRUE, "httr"))
+  } else {
+    tryCatch(downloadWithRetries(url, destfile = destfile), error = authDownloadAdvice("bitbucket", FALSE, "internal"))
+  }
 }
 
-bitbucketDownloadImpl <- function(url, destfile, ...) {
+# - The original function for authenticated downloads. Requires `httr` to be
+#   installed. Called by this git provider's top-level download function if
+#   `renvDownload`'s requirements are not met, but this function's are.
+# - Returns `TRUE` if it succeeds. Calls `stop()` if any errors are encountered.
+# - Writes to `destfile`, whose lifecycle is managed by `getSourceForPkgRecord`.
+bitbucketDownloadHttr <- function(url, destfile, ...) {
   authenticate    <- yoink("httr", "authenticate")
   GET             <- yoink("httr", "GET")
   content         <- yoink("httr", "content")
@@ -31,10 +41,7 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
 
   result <- GET(url, auth)
   if (result$status != 200) {
-    stop(
-      sprintf(
-        "Unable to download package from Bitbucket; check the BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables: %s",
-        httr::http_status(result)$message))
+    stop(httr::http_status(result)$message)
   }
   writeBin(content(result, "raw"), destfile)
   if (!file.exists(destfile)) {
@@ -44,7 +51,46 @@ bitbucketDownloadImpl <- function(url, destfile, ...) {
   return(TRUE)
 }
 
-bitbucket_user <- function(quiet = FALSE) {
+bitbucketArchiveUrl <- function(pkgRecord) {
+  # API URLs get recorded when packages are downloaded with devtools /
+  # remotes, but Packrat just wants to use 'plain' URLs when downloading
+  # package sources.
+  remoteHost <- sub("api.bitbucket.org/2.0",
+                                "bitbucket.org",
+                                pkgRecord$remote_host,
+                                fixed = TRUE)
+
+  fmt <- "%s/%s/%s/get/%s.tar.gz"
+  archiveUrl <- sprintf(fmt,
+                        remoteHost,
+                        pkgRecord$remote_username,
+                        pkgRecord$remote_repo,
+                        pkgRecord$remote_sha)
+
+  # Ensure the protocol is prepended. We prefer using https if possible. Note
+  # that 'wininet' can fail if attempting to download from an 'http' URL that
+  # redirects to an 'https' URL. https://github.com/rstudio/packrat/issues/269
+  method <- tryCatch(
+    secureDownloadMethod(),
+    error = function(e) "internal"
+  )
+  protocol <- if (identical(method, "internal")) "http" else "https"
+  if (!grepl("^http", archiveUrl)) {
+    archiveUrl <- paste(protocol, archiveUrl, sep = "://")
+  }
+  return(archiveUrl)
+}
+
+isBitbucketURL <- function(url) {
+  is.string(url) && grepl("^http(?:s)?://(?:www|api).bitbucket.(org|com)", url, perl = TRUE)
+}
+
+bitbucketAuthenticated <- function() {
+  !is.null(bitbucket_user(quiet = TRUE)) &&
+  !is.null(bitbucket_pwd(quiet = TRUE))
+}
+
+bitbucket_user <- function(quiet = TRUE) {
   user <- Sys.getenv("BITBUCKET_USERNAME")
   if (nzchar(user)) {
     if (!quiet) {
@@ -55,7 +101,7 @@ bitbucket_user <- function(quiet = FALSE) {
   return(NULL)
 }
 
-bitbucket_pwd <- function(quiet = FALSE) {
+bitbucket_pwd <- function(quiet = TRUE) {
   pwd <- Sys.getenv("BITBUCKET_PASSWORD")
   if (nzchar(pwd)) {
     if (!quiet) {
@@ -65,4 +111,3 @@ bitbucket_pwd <- function(quiet = FALSE) {
   }
   return(NULL)
 }
-

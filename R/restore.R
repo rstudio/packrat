@@ -57,6 +57,11 @@ versionMatchesDb <- function(pkgRecord, db) {
 
 # Given a package record, fetch the sources for the package and place them in
 # the source directory root given by sourceDir.
+# - Responsible for calling different download methods for different source
+#   locations (e.g. git hosting service, CRAN).
+# - Creates the path for the temporary destination file, named `srczip` at this
+#   level. It doesn't create the file itself — download functions do that — but
+#   handles its cleanup if it exists when the function exits.
 getSourceForPkgRecord <- function(pkgRecord,
                                   sourceDir,
                                   availablePkgs,
@@ -198,11 +203,9 @@ getSourceForPkgRecord <- function(pkgRecord,
           archiveUrl <- file.path(repo, "src/contrib/Archive",
                                   pkgRecord$name,
                                   pkgSrcFile)
-          if (!downloadWithRetries(archiveUrl,
-                                   destfile = file.path(pkgSrcDir, pkgSrcFile),
-                                   mode = "wb", quiet = TRUE)) {
-            stop("Failed to download package from URL:\n- ", shQuote(archiveUrl))
-          }
+          downloadWithRetries(archiveUrl,
+                              destfile = file.path(pkgSrcDir, pkgSrcFile),
+                              mode = "wb", quiet = TRUE)
           foundVersion <- TRUE
           type <- paste(type, "archived")
           break
@@ -223,302 +226,146 @@ getSourceForPkgRecord <- function(pkgRecord,
       }
     }
   } else if (identical(pkgRecord$source, "github")) {
-
-    # Prefer using https if possible. Note that 'wininet'
-    # can fail if attempting to download from an 'http'
-    # URL that redirects to an 'https' URL.
-    # https://github.com/rstudio/packrat/issues/269
-    method <- tryCatch(
-      secureDownloadMethod(),
-      error = function(e) "internal"
-    )
-
-    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-      # Guard against packages installed with older versions of devtools
-      # (it's possible the associated package record will not contain a
-      # 'remote_host' entry)
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      fmt <- "%s://api.github.com/repos/%s/%s/tarball/%s"
-      archiveUrl <- sprintf(fmt,
-                            protocol,
-                            pkgRecord$gh_username,
-                            pkgRecord$gh_repo,
-                            pkgRecord$gh_sha1)
-    } else {
-      # Prefer using the 'remote_host' entry as it allows for successfuly
-      # installation of packages available on private GitHub repositories
-      # (which will not use api.github.com)
-      fmt <- "%s/repos/%s/%s/tarball/%s"
-      archiveUrl <- sprintf(fmt,
-                            pkgRecord$remote_host,
-                            pkgRecord$remote_username,
-                            pkgRecord$remote_repo,
-                            pkgRecord$remote_sha)
-
-      # Ensure the protocol is prepended
-      if (!grepl("^http", archiveUrl)) {
-        protocol <- if (identical(method, "internal")) "http" else "https"
-        archiveUrl <- paste(protocol, archiveUrl, sep = "://")
-      }
-    }
+    archiveUrl <- githubArchiveUrl(pkgRecord)
 
     srczip <- tempfile(fileext = '.tar.gz')
-    on.exit({
-      if (file.exists(srczip))
-        unlink(srczip, recursive = TRUE)
-    }, add = TRUE)
+    on.exit(
+      unlink(srczip, recursive = TRUE),
+      add = TRUE
+    )
 
     tryCatch({
-      success <- if (canUseGitHubDownloader()) {
-        githubDownload(archiveUrl, srczip)
-      } else {
-        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
-      }
-      if (!success) {
-        stop("Download failure.")
-      }
+      githubDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      e$message <- sprintf("Failed to download package from GitHub URL: '%s'\n%s", archiveUrl, e$message)
+      stop(e)
     })
 
-    local({
-      scratchDir <- tempfile()
-      on.exit({
-        if (file.exists(scratchDir))
-          unlink(scratchDir, recursive = TRUE)
-      })
-      # untar can emit noisy warnings (e.g. "skipping pax global extended
-      # headers"); hide those
-      suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
-      # Find the base directory
-      basedir <- if (length(dir(scratchDir)) == 1)
-        file.path(scratchDir, dir(scratchDir))
-      else
-        scratchDir
-
-      if (length(pkgRecord$gh_subdir))
-        basedir <- file.path(basedir, pkgRecord$gh_subdir)
-
-      if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
-        stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
-      }
-
-      ghdata <- c(
+    remote_info <- as.data.frame(
+      list(
+        RemoteType     = pkgRecord$source,
         GithubRepo     = pkgRecord$gh_repo,
         GithubUsername = pkgRecord$gh_username,
         GithubRef      = pkgRecord$gh_ref,
-        GithubSHA1     = pkgRecord$gh_sha1,
-        GithubSubdir   = pkgRecord$gh_subdir
+        GithubSHA1     = pkgRecord$gh_sha1
+      ),
+      c(GithubSubdir   = pkgRecord$gh_subdir),
+      stringsAsFactors = FALSE
+    )
+
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
+
+    tryCatch({
+      success <- appendRemoteInfoToDescription(
+        src = srczip,
+        dest = dest,
+        remote_info = remote_info
       )
-
-      ghinfo <- as.data.frame(as.list(ghdata), stringsAsFactors = FALSE)
-      appendToDcf(file.path(basedir, 'DESCRIPTION'), ghinfo)
-
-      file.create(file.path(pkgSrcDir, pkgSrcFile))
-      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
-
-      # R's internal tar (which we use here for cross-platform consistency)
-      # emits warnings when there are > 100 characters in the path, due to the
-      # resulting incompatibility with older implementations of tar. This isn't
-      # relevant for our purposes, so suppress the warning.
-      in_dir(dirname(basedir),
-             suppressWarnings(tar(tarfile = dest, files = basename(basedir),
-                                  compression = 'gzip', tar = 'internal'))
-      )
+    }, error = function(e) {
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
+           pkgRecord$name, e)
+      stop(e)
     })
 
     type <- "GitHub"
+
   } else if (identical(pkgRecord$source, "bitbucket")) {
-
-    # Prefer using https if possible. Note that 'wininet'
-    # can fail if attempting to download from an 'http'
-    # URL that redirects to an 'https' URL.
-    # https://github.com/rstudio/packrat/issues/269
-    method <- tryCatch(
-      secureDownloadMethod(),
-      error = function(e) "internal"
-    )
-
-    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      pkgRecord$remote_host <- paste0(protocol, "://bitbucket.org")
-    }
-
-    # API URLs get recorded when packages are downloaded with devtools /
-    # remotes, but Packrat just wants to use 'plain' URLs when downloading
-    # package sources.
-    originalRemoteHost <- pkgRecord$remote_host
-    pkgRecord$remote_host <- sub("api.bitbucket.org/2.0", "bitbucket.org", pkgRecord$remote_host, fixed = TRUE)
-
-    fmt <- "%s/%s/%s/get/%s.tar.gz"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$remote_host,
-                          pkgRecord$remote_username,
-                          pkgRecord$remote_repo,
-                          pkgRecord$remote_sha)
+    archiveUrl <- bitbucketArchiveUrl(pkgRecord)
 
     srczip <- tempfile(fileext = '.tar.gz')
-    on.exit({
-      if (file.exists(srczip))
-        unlink(srczip, recursive = TRUE)
-    }, add = TRUE)
-
-    tryCatch({
-      success <- if (canUseBitbucketDownloader()) {
-        bitbucketDownload(archiveUrl, srczip)
-      } else {
-        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
-      }
-      if (!success) {
-        stop("Download failure.")
-      }
-    }, error = function(e) {
-      message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
-    })
-
-
-
-    local({
-      scratchDir <- tempfile()
-      on.exit({
-        if (file.exists(scratchDir))
-          unlink(scratchDir, recursive = TRUE)
-      })
-      # untar can emit noisy warnings (e.g. "skipping pax global extended
-      # headers"); hide those
-      suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
-      # Find the base directory
-      basedir <- if (length(dir(scratchDir)) == 1)
-        file.path(scratchDir, dir(scratchDir))
-      else
-        scratchDir
-
-      if (length(pkgRecord$remote_subdir))
-        basedir <- file.path(basedir, pkgRecord$remote_subdir)
-
-      if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
-        stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
-      }
-
-      remote_info <- as.data.frame(c(list(
-        RemoteType = "bitbucket",
-        RemoteHost = originalRemoteHost,
-        RemoteRepo = pkgRecord$remote_repo,
-        RemoteUsername = pkgRecord$remote_username,
-        RemoteRef = pkgRecord$remote_ref,
-        RemoteSha = pkgRecord$remote_sha)),
-        c(RemoteSubdir = pkgRecord$remote_subdir)
-      )
-      appendToDcf(file.path(basedir, 'DESCRIPTION'), remote_info)
-
-      file.create(file.path(pkgSrcDir, pkgSrcFile))
-      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
-
-      # R's internal tar (which we use here for cross-platform consistency)
-      # emits warnings when there are > 100 characters in the path, due to the
-      # resulting incompatibility with older implementations of tar. This isn't
-      # relevant for our purposes, so suppress the warning.
-      in_dir(dirname(basedir),
-             suppressWarnings(tar(tarfile = dest, files = basename(basedir),
-                                  compression = 'gzip', tar = 'internal'))
-      )
-    })
-
-    type <- "Bitbucket"
-  } else if (identical(pkgRecord$source, "gitlab")) {
-
-    # Prefer using https if possible. Note that 'wininet'
-    # can fail if attempting to download from an 'http'
-    # URL that redirects to an 'https' URL.
-    # https://github.com/rstudio/packrat/issues/269
-    method <- tryCatch(
-      secureDownloadMethod(),
-      error = function(e) "internal"
+    on.exit(
+      unlink(srczip, recursive = TRUE),
+      add = TRUE
     )
 
-    if (is.null(pkgRecord$remote_host) || !nzchar(pkgRecord$remote_host)) {
-      protocol <- if (identical(method, "internal")) "http" else "https"
-      pkgRecord$remote_host <- paste0(protocol, "://gitlab.com")
-    }
-
-    fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$remote_host,
-                          pkgRecord$remote_username,
-                          pkgRecord$remote_repo,
-                          pkgRecord$remote_sha)
-
-    srczip <- tempfile(fileext = '.tar.gz')
-    on.exit({
-      if (file.exists(srczip))
-        unlink(srczip, recursive = TRUE)
-    }, add = TRUE)
-
     tryCatch({
-      success <- if (canUseGitlabDownloader()) {
-        gitlabDownload(archiveUrl, srczip)
-      } else {
-        downloadWithRetries(archiveUrl, destfile = srczip, quiet = TRUE, mode = "wb")
-      }
-      if (!success) {
-        stop("Download failure.")
-      }
+      bitbucketDownload(archiveUrl, srczip)
     }, error = function(e) {
       message("FAILED")
-      stop(sprintf("Failed to download package from URL:\n- '%s'\n- Reason: %s", archiveUrl, e))
+      e$message <- sprintf("Failed to download package from Bitbucket URL: '%s'\n%s", archiveUrl, e$message)
+      stop(e)
     })
 
-    local({
-      scratchDir <- tempfile()
-      on.exit({
-        if (file.exists(scratchDir))
-          unlink(scratchDir, recursive = TRUE)
-      })
-      # untar can emit noisy warnings (e.g. "skipping pax global extended
-      # headers"); hide those
-      suppressWarnings(untar(srczip, exdir = scratchDir, tar = tar_binary()))
-      # Find the base directory
-      basedir <- if (length(dir(scratchDir)) == 1)
-        file.path(scratchDir, dir(scratchDir))
-      else
-        scratchDir
-
-      if (length(pkgRecord$remote_subdir))
-        basedir <- file.path(basedir, pkgRecord$remote_subdir)
-
-      if (!file.exists(file.path(basedir, 'DESCRIPTION'))) {
-        stop('No DESCRIPTION file was found in the archive for ', pkgRecord$name)
-      }
-
-      remote_info <- as.data.frame(c(list(
-        RemoteType = "gitlab",
+    # Modify remote info, move modified package to new location
+    remote_info <- as.data.frame(
+      list(
+        RemoteType = pkgRecord$source,
         RemoteHost = pkgRecord$remote_host,
         RemoteRepo = pkgRecord$remote_repo,
         RemoteUsername = pkgRecord$remote_username,
         RemoteRef = pkgRecord$remote_ref,
-        RemoteSha = pkgRecord$remote_sha)),
-        c(RemoteSubdir = pkgRecord$remote_subdir)
-      )
-      appendToDcf(file.path(basedir, 'DESCRIPTION'), remote_info)
+        RemoteSha = pkgRecord$remote_sha
+      ),
+      c(RemoteSubdir = pkgRecord$remote_subdir),
+      stringsAsFactors = FALSE
+    )
 
-      file.create(file.path(pkgSrcDir, pkgSrcFile))
-      dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = '/')
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
-      # R's internal tar (which we use here for cross-platform consistency)
-      # emits warnings when there are > 100 characters in the path, due to the
-      # resulting incompatibility with older implementations of tar. This isn't
-      # relevant for our purposes, so suppress the warning.
-      in_dir(dirname(basedir),
-             suppressWarnings(tar(tarfile = dest, files = basename(basedir),
-                                  compression = 'gzip', tar = 'internal'))
+    tryCatch({
+      success <- appendRemoteInfoToDescription(
+        src = srczip,
+        dest = dest,
+        remote_info = remote_info
       )
+    }, error = function(e) {
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
+           pkgRecord$name, e)
+      stop(e)
     })
 
-    type <- "Gitlab"
+    type <- "Bitbucket"
+
+
+  } else if (identical(pkgRecord$source, "gitlab")) {
+    archiveUrl <- gitlabArchiveUrl(pkgRecord)
+
+    srczip <- tempfile(fileext = '.tar.gz')
+    on.exit(
+      unlink(srczip, recursive = TRUE),
+      add = TRUE
+    )
+
+    tryCatch({
+      gitlabDownload(archiveUrl, srczip)
+    }, error = function(e) {
+      message("FAILED")
+      e$message <- sprintf("Failed to download package from GitLab URL: '%s'\n%s", archiveUrl, e$message)
+      stop(e)
+    })
+
+    # Modify remote info, move modified package to new location
+    remote_info <- as.data.frame(
+      list(
+        RemoteType = pkgRecord$source,
+        RemoteHost = pkgRecord$remote_host,
+        RemoteRepo = pkgRecord$remote_repo,
+        RemoteUsername = pkgRecord$remote_username,
+        RemoteRef = pkgRecord$remote_ref,
+        RemoteSha = pkgRecord$remote_sha
+      ),
+      c(RemoteSubdir = pkgRecord$remote_subdir),
+      stringsAsFactors = FALSE
+    )
+
+    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
+
+    tryCatch({
+      success <- appendRemoteInfoToDescription(
+        src = srczip,
+        dest = dest,
+        remote_info = remote_info
+      )
+    }, error = function(e) {
+      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
+           pkgRecord$name, e)
+      stop(e)
+    })
+
+    type <- "GitLab"
   }
-  if (!quiet) {
+  if (!quiet) { # TODO: Does turning on (quiet) prevent it from failing on error here
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
       message("OK (", type, ")")
     } else {
@@ -1092,3 +939,78 @@ archivePackageType <- function(path, quiet = FALSE, default = "source") {
   default
 
 }
+
+
+# Decompresses the archive passed to `src`. Appends `remote_info` to the
+# DESCRIPTION file. Recompresses the file passed to `dest`, which must be
+# a `.tar.gz`. Returns TRUE if successful.
+appendRemoteInfoToDescription <- function(src, dest, remote_info) {
+  # We expect `dest` to end with `".tar.gz"`.
+  if (!grepl(".tar.gz$", dest)) {
+    stop("Destination path for source archive must end in '.tar.gz'.")
+  }
+
+  # Extract the package to a temporary dir so that we can modify the
+  # `DESCRIPTION` with the remote info.
+  scratchDir <- tempfile()
+  on.exit({
+    if (file.exists(scratchDir))
+      unlink(scratchDir, recursive = TRUE)
+  })
+  # untar can emit noisy warnings (e.g. "skipping pax global extended
+  # headers"); hide those
+  suppressWarnings(untar(src, exdir = scratchDir, tar = tar_binary()))
+
+  # Find the base directory
+  basedir <- if (length(dir(scratchDir)) == 1)
+    file.path(scratchDir, dir(scratchDir))
+  else
+    scratchDir
+
+  # Determine the untarred base directory. We're looking to see if the untarred
+  # directory contains only a single directory and if so, we treat that as our
+  # base directory.
+  if (length(dir(scratchDir)) == 1 &&
+      dir.exists(file.path(scratchDir, dir(scratchDir)))) {
+    basedir <- file.path(scratchDir, dir(scratchDir))
+  } else {
+    basedir <- scratchDir
+  }
+
+  # Determine the true package root
+  if (remote_info$RemoteType == "github") {
+    remote_subdir <- remote_info$GithubSubdir
+  } else {
+    remote_subdir <- remote_info$RemoteSubdir
+  }
+  if (length(remote_subdir) > 0) {
+    basedir <- file.path(basedir, remote_subdir)
+  }
+
+  if (!file.exists(file.path(basedir, "DESCRIPTION"))) {
+    stop("No DESCRIPTION file was found in the archive for ", pkgRecord$name)
+  }
+
+  # Do what we came here to do.
+  appendToDcf(file.path(basedir, "DESCRIPTION"), remote_info)
+
+  # Now we can recompress the file to wherever we've been told to do so.
+  # R's internal tar (which we use here for cross-platform consistency)
+  # emits warnings when there are > 100 characters in the path, due to the
+  # resulting incompatibility with older implementations of tar. This isn't
+  # relevant for our purposes, so suppress the warning.
+  # tryCatch here so we can unlink the file if tar fails.
+  tryCatch(
+    in_dir(dirname(basedir),
+            suppressWarnings(tar(tarfile = dest, files = basename(basedir),
+                                compression = "gzip", tar = tar_binary()))
+    ),
+    error = function(e) {
+      unlink(dest)
+      stop(e)
+    }
+  )
+
+  return(TRUE)
+}
+

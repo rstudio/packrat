@@ -1,5 +1,13 @@
 # Packrat 0.9.0 (UNRELEASED)
 
+- Packrat now supports restoring packages hosted in private repositories on
+  GitHub, GitLab, and Bitbucket. To enable this, set the option
+  `packrat.authenticated.downloads.use.renv` to `TRUE`. `curl` must be available
+  on your system to take advantage of this capability. For authenticated
+  downloads, you must make `GITHUB_PAT`, `GITLAB_PAT`, and/or
+  `BITBUCKET_USERNAME` and `BITBUCKET_PASSWORD` available in Packrat's
+  environment, as appropriate. These environment variables are hidden from
+  package install processes.
 - Correctly discover dependencies in a project beneath a directory hierarchy
   containing "data". (#684)
 - Take an `renv` update to include a fix regarding `download.file.method`

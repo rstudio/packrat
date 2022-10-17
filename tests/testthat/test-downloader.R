@@ -19,9 +19,6 @@ getAvailableDownloadMethods <- function() {
   if (has("curl"))
     methods <- c(methods, "curl")
 
-  if (canUseLibCurlDownloadMethod())
-    methods <- c(methods, "libcurl")
-
   methods
 }
 
@@ -66,4 +63,36 @@ test_that("The same content is returned regardless of download method", {
     info = "various download methods retrieve exact same content"
   )
 
+})
+
+test_that("renvDownload calls renv$download, passing in the values it received", {
+  url <- "https://github.com/my-great-org/cool-repo.tar.gz"
+  destfile <- "/dev/null"
+  type <- "github"
+
+  renv_download_mock <- mockery::mock(destfile)
+  mockery::stub(renvDownload, "renv$download", renv_download_mock)
+
+  renvDownload(url, destfile, type = type)
+
+  mockery::expect_called(renv_download_mock, 1)
+  mockery::expect_args(renv_download_mock, 1, url, destfile, type)
+})
+
+test_that("authDownloadAdvice offers sound advice", {
+
+  # Using renv for downloads
+  expect_true(grepl("Packrat is configured to use internal renv for authenticated downloads.", authDownloadAdvice("github", TRUE, "renv")(), fixed = TRUE))
+
+  # Using httr for downloads
+  expect_true(grepl("Packrat will use the httr package for authenticated downloads.", authDownloadAdvice("gitlab", TRUE, "httr")(), fixed = TRUE))
+
+  # With no available auth methods
+  expect_true(grepl("Packrat is not configured to use an auth-capable download method. Try setting the option packrat.authenticated.downloads.use.renv to TRUE, or installing the httr package.", authDownloadAdvice("bitbucket", TRUE, "internal")(), fixed = TRUE))
+
+  # Expected auth token (GitHub) present
+  expect_true(grepl("GITHUB_PAT found; check that it is correct.", authDownloadAdvice("github", TRUE, "renv")(), fixed = TRUE))
+
+  # Expected token not found
+  expect_true(grepl("BITBUCKET_USERNAME and BITBUCKET_PASSWORD environment variables not found.", authDownloadAdvice("bitbucket", FALSE, "httr")(), fixed = TRUE))
 })
