@@ -70,7 +70,7 @@
 #' @docType package
 #' @name packrat
 #' @import utils
-#' @author RStudio, Inc.
+#' @author Posit Software, PBC
 NULL
 
 #' Initialize Packrat on a new or existing \R project

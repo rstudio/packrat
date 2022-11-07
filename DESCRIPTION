@@ -5,7 +5,7 @@ Title: A Dependency Management System for Projects and their R Package
 Version: 0.8.1-1
 Author: Kevin Ushey, Jonathan McPherson, Joe Cheng, Aron Atkins, JJ Allaire,
     Toph Allen
-Maintainer: Aron Atkins <aron@rstudio.com>
+Maintainer: Aron Atkins <aron@posit.co>
 Description: Manage the R packages your project depends
     on in an isolated, portable, and reproducible way.
 License: GPL-2

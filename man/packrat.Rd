@@ -79,5 +79,5 @@ restore()
 
 }
 \author{
-RStudio, Inc.
+Posit Software, PBC
 }

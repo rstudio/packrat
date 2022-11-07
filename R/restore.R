@@ -848,7 +848,7 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
 }
 
 discoverUntrustedPackages <- function(srcDir) {
-  if (is.na(Sys.getenv("RSTUDIO_CONNECT", unset = NA)))
+  if (is.na(Sys.getenv("POSIT_CONNECT", unset = NA)))
     return()
 
   # set the 'packrat.untrusted.packages' option if
