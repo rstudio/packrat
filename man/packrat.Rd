@@ -20,7 +20,8 @@ another, even across different platforms. Packrat makes it easy to install the
 packages your project depends on.
 \item \strong{Reproducible}: Packrat records the exact package versions you
 depend on, and ensures those exact versions are the ones that get installed
-wherever you go.}
+wherever you go.
+}
 
 Use \code{\link{init}} to create a new packrat project,
 \code{\link{snapshot}} to record changes to your project's library, and

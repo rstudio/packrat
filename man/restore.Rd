@@ -40,14 +40,12 @@ set of installed packages and their versions matches the snapshot exactly.
 
 There are three common use cases for \code{restore}:
 \itemize{
-  \item \strong{Hydrate}: Use \code{restore} after copying a project to a new
-machine to populate the library on that machine.
-
-  \item \strong{Sync}: Use \code{restore} to apply library changes made by a
+\item \strong{Hydrate}: Use \code{restore} after copying a project to a new machine
+to populate the library on that machine.
+\item \strong{Sync}: Use \code{restore} to apply library changes made by a
 collaborator to your own library. (In general, you want to run \code{restore}
 whenever you pick up a change to \code{packrat.lock})
-
-  \item \strong{Rollback}: Use \code{restore} to undo accidental changes made
+\item \strong{Rollback}: Use \code{restore} to undo accidental changes made
 to the library since the last snapshot.
 }
 
@@ -55,13 +53,13 @@ to the library since the last snapshot.
 changes are necessary to currently loaded packages, you will need to restart
 \R to apply the changes (\code{restore} will let you know when this is
 necessary). It is recommended that you do this as soon as possible, because
-any library changes made between running \code{restore} and restarting \R will
-be lost.
+any library changes made between running \code{restore} and restarting \R
+will be lost.
 }
 \note{
-\code{restore} can be destructive; it will remove packages that were not in
-the snapshot, and it will replace newer packages with older versions if
-that's what the snapshot indicates. \code{restore} will warn you before
+\code{restore} can be destructive; it will remove packages that were
+not in the snapshot, and it will replace newer packages with older versions
+if that's what the snapshot indicates. \code{restore} will warn you before
 attempting to remove or downgrade a package (if \code{prompt} is
 \code{TRUE}), but will always perform upgrades and new installations without
 prompting.
@@ -69,9 +67,16 @@ prompting.
 \code{restore} works only on the private package library created by packrat;
 if you have other libraries on your path, they will be unaffected.
 
-The \code{restart} parameter will only result in a restart of R when the
-R environment packrat is running within makes available a restart function
-via \code{getOption("restart")}.
+The \code{restart} parameter will only result in a restart of R when the R
+environment packrat is running within makes available a restart function via
+\code{getOption("restart")}.
+
+Packrat selects a \code{tar} binary with the following heuristic: If a \code{TAR}
+environment variable exists, Packrat will use that. Otherwise, it will either
+look for a \code{tar} binary on the \code{PATH} on Unix, or look for the
+system \code{tar} on Windows. If no binary is found in those locations, it
+will use R's internal \code{tar} implementation, which may cause errors with
+long filenames.
 }
 \seealso{
 \code{\link{snapshot}}, the command that creates the snapshots applied with
