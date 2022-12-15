@@ -988,7 +988,7 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   }
 
   if (!file.exists(file.path(basedir, "DESCRIPTION"))) {
-    stop("No DESCRIPTION file was found in the archive for ", pkgRecord$name)
+    stop("Could not locate DESCRIPTION file in package archive.")
   }
 
   # Do what we came here to do.
