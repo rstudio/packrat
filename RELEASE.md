@@ -34,12 +34,7 @@
     R CMD check --as-cran packrat_*.tar.gz
     ```
     
--   Test the package using [R-Hub](https://docs.r-hub.io). Triggered from R:
-
-    ```r
-    install.packages("rhub")
-    rhub::check_for_cran()
-    ```
+-   Push the branch to GitHub and let our CI workflow run.
 
 -   Fix any issues identified by the previous steps. Rinse and repeat.
 
