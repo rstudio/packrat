@@ -43,7 +43,7 @@ getPackageDependencies <- function(pkgs,
         warning("Package '", pkg, "' found in multiple local repositories; ",
                 "inferring dependencies from package at path:\n- ", shQuote(path))
       }
-      theseDeps <- combineDcfFields(as.data.frame(readDcf(path)), fields)
+      theseDeps <- combineDcfFields(as.data.frame(readDcf(file.path(path, "DESCRIPTION"))), fields)
     } else {
       warning("Package '", pkg, "' not available in repository or locally")
       return(NULL)
