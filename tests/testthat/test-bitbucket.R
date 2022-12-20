@@ -21,7 +21,7 @@ test_that("bitbucketArchiveUrl returns the correct URL", {
 
 test_that("bitbucketDownload calls renvDownload in the expected context", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   # Testing the effect of the option, rather than just mocking canUseRenvDownload
   auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
@@ -39,7 +39,7 @@ test_that("bitbucketDownload calls renvDownload in the expected context", {
 
 test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
   mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
@@ -55,7 +55,7 @@ test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context
 
 test_that("bitbucketDownload calls downloadWithRetries in the expected contexts", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   # With auth data but no configured auth-capable method configured
 

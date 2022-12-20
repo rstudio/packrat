@@ -43,7 +43,7 @@ test_that("githubArchiveUrl returns the correct URL", {
 
 test_that("githubDownload calls renvDownload in the expected context", {
   url <- githubArchiveUrl(github_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   # Testing the effect of the option, rather than just mocking canUseRenvDownload
   auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
@@ -61,7 +61,7 @@ test_that("githubDownload calls renvDownload in the expected context", {
 
 test_that("githubDownload calls githubDownloadHttr in the expected context", {
   url <- githubArchiveUrl(github_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   mockery::stub(githubDownload, "githubAuthenticated", TRUE)
   mockery::stub(githubDownload, "canUseRenvDownload", FALSE)
@@ -77,7 +77,7 @@ test_that("githubDownload calls githubDownloadHttr in the expected context", {
 
 test_that("githubDownload calls downloadWithRetries in the expected contexts", {
   url <- githubArchiveUrl(github_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   # With auth data but no configured auth-capable method configured
 

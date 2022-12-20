@@ -67,7 +67,7 @@ test_that("The same content is returned regardless of download method", {
 
 test_that("renvDownload calls renv$download, passing in the values it received", {
   url <- "https://github.com/my-great-org/cool-repo.tar.gz"
-  destfile <- "/dev/null"
+  destfile <- nullfile()
   type <- "github"
 
   renv_download_mock <- mockery::mock(destfile)
