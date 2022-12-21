@@ -71,6 +71,7 @@ rebuildTestRepo <- function(testroot = getwd()) {
       Sys.setenv(R_DEFAULT_SERIALIZE_VERSION = version)
   }, add = TRUE)
 
+  message("Initializing packrat test repository:\n- ", surround(prettyDir(target), '"'))
   tools::write_PACKAGES(target, subdirs = TRUE)
 }
 
