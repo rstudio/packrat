@@ -6,7 +6,7 @@
 
 ## NOTE
 
-Packrat has been soft-deprecated and is now superseded by
+Packrat has been soft-deprecated and is now superseded  by
 [renv](https://github.com/rstudio/renv).
 
 While we will continue maintaining Packrat, all new development will focus on
