@@ -29,7 +29,7 @@ test_that("bitbucketDownload calls renvDownload in the expected context", {
 
   mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
   renv_download_mock <- mockery::mock(destfile)
-  mockery::stub(bitbucketDownload, "renvDownload", renv_download_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "renvDownload", renv_download_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
@@ -45,7 +45,7 @@ test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context
   mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
   mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
   httr_download_mock <- mockery::mock(TRUE)
-  mockery::stub(bitbucketDownload, "bitbucketDownloadHttr", httr_download_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "bitbucketDownloadHttr", httr_download_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
@@ -63,7 +63,7 @@ test_that("bitbucketDownload calls downloadWithRetries in the expected contexts"
   mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
   mockery::stub(bitbucketDownload, "canUseHttr", FALSE)
   download_with_retries_mock <- mockery::mock(TRUE)
-  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
@@ -76,7 +76,7 @@ test_that("bitbucketDownload calls downloadWithRetries in the expected contexts"
   mockery::stub(bitbucketDownload, "canUseRenvDownload", TRUE)
   mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
   download_with_retries_mock <- mockery::mock(TRUE)
-  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
