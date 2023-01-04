@@ -67,7 +67,7 @@ gitlabArchiveUrl <- function(pkgRecord) {
     pkgRecord$remote_host <- "gitlab.com"
   }
 
-  fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
+  fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive.tar.gz?sha=%s"
   archiveUrl <- sprintf(fmt,
                         pkgRecord$remote_host,
                         pkgRecord$remote_username,
