@@ -15,7 +15,7 @@ test_that("gitlabArchiveUrl returns the correct URL", {
   mockery::stub(gitlabArchiveUrl, "secureDownloadMethod", "curl")
   expect_equal(
     gitlabArchiveUrl(gitlab_pkg_record),
-    "https://gitlab.com/api/v4/projects/breakfaster%2Fmuseli/repository/archive?sha=abcde12345"
+    "https://gitlab.com/api/v4/projects/breakfaster%2Fmuseli/repository/archive.tar.gz?sha=abcde12345"
   )
 })
 
