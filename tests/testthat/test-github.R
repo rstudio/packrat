@@ -46,11 +46,8 @@ test_that("githubDownload calls renvDownload in the expected context", {
   destfile <- nullfile()
 
   # Testing the effect of the option, rather than just mocking canUseRenvDownload
-  auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
-  on.exit(options(auth_download_option), add = TRUE)
-
+  mockery::stub(githubDownload, "canUseRenvDownload", TRUE)
   mockery::stub(githubDownload, "githubAuthenticated", TRUE)
-  mockery::stub(githubDownload, "secureDownloadMethod", "curl", depth = 5)
   renv_download_mock <- mockery::mock(destfile)
   mockery::stub(githubDownload, "renvDownload", renv_download_mock, depth = 5)
 
