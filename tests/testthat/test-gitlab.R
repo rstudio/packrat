@@ -28,6 +28,7 @@ test_that("gitlabDownload calls renvDownload in the expected context", {
   on.exit(options(auth_download_option), add = TRUE)
 
   mockery::stub(gitlabDownload, "gitlabAuthenticated", TRUE)
+  mockery::stub(gitlabDownload, "secureDownloadMethod", "curl", depth = 2)
   renv_download_mock <- mockery::mock(destfile)
   mockery::stub(gitlabDownload, "renvDownload", renv_download_mock, depth = 5)
 
