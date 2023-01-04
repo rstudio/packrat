@@ -158,7 +158,13 @@ beginTestContext <- function() {
   Sys.setenv(R_PACKRAT_TESTING = "yes")
   Sys.setenv(R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep))
 
-  CRAN <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
+  normalizedRepoPath <- normalizePath("repo", winslash = "/")
+
+  print("SETTING UP TEST CONTEXT")
+  print(normalizedRepoPath)
+  print(list.files(normalizedRepoPath, recursive = TRUE, full.names = TRUE))
+
+  CRAN <- paste(filePrefix(), normalizedRepoPath, sep = "")
 
   options(repos = c(CRAN = CRAN), pkgType = "source", warn = 0)
   assign("test.options", options, envir = .packrat)
