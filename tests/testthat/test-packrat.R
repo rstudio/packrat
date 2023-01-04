@@ -277,7 +277,7 @@ withTestContext({
 
   test_that("Packages restored from GitLab have RemoteType+RemoteHost in their DESCRIPTION", {
     skip_on_cran()
-    skip_on_windows() # Windows tar.exe fails to extract the archive received here.
+    skip_on_os("windows") # Windows tar.exe fails to extract the archive received here.
     projRoot <- cloneTestProject("falsy-gitlab")
 
     # ignore R version warnings
