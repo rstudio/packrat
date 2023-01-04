@@ -71,7 +71,12 @@ rebuildTestRepo <- function(testroot = getwd()) {
       Sys.setenv(R_DEFAULT_SERIALIZE_VERSION = version)
   }, add = TRUE)
 
-  tools::write_PACKAGES(target, subdirs = TRUE)
+  print("BEFORE write_PACKAGES")
+  print(paste0("target: ", target))
+  print(list.files(target, recursive = TRUE, full.names = TRUE))
+  tools::write_PACKAGES(target, type = "source", verbose = TRUE, subdirs = TRUE)
+  print("AFTER write_PACKAGES")
+  print(list.files(target, recursive = TRUE, full.names = TRUE))
 }
 
 # "Rebuilds" an empty test repo.
