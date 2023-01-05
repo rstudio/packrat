@@ -982,11 +982,8 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   }
 
   if (!file.exists(file.path(basedir, "DESCRIPTION"))) {
-    print("ABOUT TO FAIL WITH DESCRIPTION PROBLEM")
-    print(basedir)
-    print(scratchDir)
-    print(list.files(basedir, recursive = TRUE, full.names = TRUE))
-    print(list.files(scratchDir, recursive = TRUE, full.names = TRUE))
+    # This error may indicate a malformed package, or an unexpected directory
+    # structure inside the tarball.
     stop("Could not locate DESCRIPTION file in package archive.")
   }
 

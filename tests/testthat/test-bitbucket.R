@@ -26,7 +26,6 @@ test_that("bitbucketDownload calls renvDownload in the expected context", {
   # Testing the effect of the option, rather than just mocking canUseRenvDownload
   mockery::stub(bitbucketDownload, "canUseRenvDownload", TRUE)
   mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
-  mockery::stub(bitbucketDownload, "secureDownloadMethod", "curl", depth = 5)
   renv_download_mock <- mockery::mock(destfile)
   mockery::stub(bitbucketDownload, "renvDownload", renv_download_mock, depth = 5)
 

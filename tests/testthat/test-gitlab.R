@@ -26,7 +26,6 @@ test_that("gitlabDownload calls renvDownload in the expected context", {
   # Testing the effect of the option, rather than just mocking canUseRenvDownload
   mockery::stub(gitlabDownload, "canUseRenvDownload", TRUE)
   mockery::stub(gitlabDownload, "gitlabAuthenticated", TRUE)
-  mockery::stub(gitlabDownload, "secureDownloadMethod", "curl", depth = 5)
   renv_download_mock <- mockery::mock(destfile)
   mockery::stub(gitlabDownload, "renvDownload", renv_download_mock, depth = 5)
 
