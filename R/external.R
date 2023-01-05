@@ -100,7 +100,7 @@ extlib <- function(packages) {
 loadExternalPackages <- function() {
   pkgs <- get_opts("external.packages")
   if (length(pkgs)) {
-    pkgs <- pkgs[ !is.null(pkgs) & !is.na(pkgs) & nchar(pkgs) ]
+    pkgs <- pkgs[!is.null(pkgs) & !is.na(pkgs) & nchar(pkgs)]
     failures <- dropNull(lapply(pkgs, function(pkg) {
       tryCatch(
         expr = extlib(pkg),

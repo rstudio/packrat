@@ -500,7 +500,7 @@ scan_registry_for_rtools <- function(debug = FALSE) {
   for (i in seq_along(keys)) {
     version <- names(keys)[[i]]
     key <- keys[[version]]
-    if (!is.list(key) || is.null(key$InstallPath)) next;
+    if (!is.list(key) || is.null(key$InstallPath)) next
     install_path <- normalizePath(key$InstallPath,
                                   mustWork = FALSE, winslash = "/")
 

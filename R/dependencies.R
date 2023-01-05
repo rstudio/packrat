@@ -221,7 +221,7 @@ dirDependenciesBuiltIn <- function(dir) {
       "(?:^",
       paste0(
         ignoredDir,
-        collapse=")|(?:^"
+        collapse = ")|(?:^"
       ),
       ")"
     )
@@ -828,7 +828,7 @@ fileDependencies.tangle <- function(file, encoding = "UTF-8") {
   # parse each r chunk independently to retrieve dependencies
   # allows for some chunks to be _broken_ but not stop retrieving dependencies
   r_chunks <- strsplit(paste0(readLines(outfile), collapse = "\n"), key)[[1]]
-  for(r_chunk in r_chunks) {
+  for (r_chunk in r_chunks) {
     try(silent = TRUE, {
       parsed <- parse(text = r_chunk, encoding = encoding)
       deps <- c(deps, expressionDependencies(parsed))

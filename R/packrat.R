@@ -601,7 +601,7 @@ packify <- function(project = NULL, quiet = FALSE) {
   invisible()
 }
 
-lockInfo <- function(project, property='packages', fatal=TRUE) {
+lockInfo <- function(project, property = 'packages', fatal = TRUE) {
 
   project <- getProjectDir(project)
 

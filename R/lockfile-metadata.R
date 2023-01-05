@@ -102,5 +102,3 @@ available_metadata <- c(
   r_version = "RVersion",
   repos = "Repos"
 )
-
-

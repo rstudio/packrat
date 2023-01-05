@@ -133,7 +133,7 @@ getPackageRecordsExternalSource <- function(pkgNames,
       # Construct the package record by hand -- generate the minimal
       # bits of the DESCRIPTION file, and infer the package record
       # from that.
-      pkg <- available[pkgName,]
+      pkg <- available[pkgName, ]
       df <- data.frame(
         Package = pkg[["Package"]],
         Version = pkg[["Version"]],
@@ -319,7 +319,7 @@ getPackageRecords <- function(pkgNames,
 # Return TRUE when the data frame for this package has the given RemoteType.
 hasRemoteType <- function(df, remoteType) {
   # Do not compare with 'identical'; RemoteType may be a factor.
-  return (!is.null(df$RemoteType) && df$RemoteType == remoteType)
+  return(!is.null(df$RemoteType) && df$RemoteType == remoteType)
 }
 
 # Reads a description file and attempts to infer where the package came from.
@@ -577,7 +577,7 @@ diffableRecord <- function(record) {
 # debug helper to print a package record. includes field names, type of value, and value.
 printPackageRecord <- function(name, record) {
   cat(name, "\n")
-  cat(paste(names(record), lapply(record,typeof), record, sep = ":", collapse = "\n"),"\n")
+  cat(paste(names(record), lapply(record, typeof), record, sep = ":", collapse = "\n"), "\n")
 }
 
 # states: NA (unchanged), remove, add, upgrade, downgrade, crossgrade

@@ -235,7 +235,7 @@ deserializePackages <- function(df) {
   df <- df[, names(df) != 'requires', drop = FALSE]
 
   sortedPackages <- lapply(topoSorted, function(pkgName) {
-    pkg <- as.list(df[df$name == pkgName,])
+    pkg <- as.list(df[df$name == pkgName, ])
     pkg <- pkg[!is.na(pkg)]
     return(pkg)
   })
