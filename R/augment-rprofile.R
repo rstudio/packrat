@@ -47,4 +47,3 @@ editRprofileAutoloader <- function(project, action = c("update", "remove")) {
 
   invisible()
 }
-

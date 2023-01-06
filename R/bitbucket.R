@@ -33,7 +33,7 @@ bitbucketDownloadHttr <- function(url, destfile, ...) {
 
   user <- bitbucket_user(quiet = TRUE)
   pwd <- bitbucket_pwd(quiet = TRUE)
-  auth <- if (!is.null(user) & !is.null(pwd)) {
+  auth <- if (!is.null(user) && !is.null(pwd)) {
     authenticate(user, pwd, type = "basic")
   } else {
     list()

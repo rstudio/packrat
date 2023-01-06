@@ -1,0 +1,24 @@
+linters: linters_with_defaults(
+    # some tests have _VERY_ long expectations.
+    line_length_linter(270),
+    object_length_linter(80),
+    object_name_linter = NULL,
+    object_usage_linter = NULL,
+    brace_linter = NULL,
+    commented_code_linter = NULL,
+    cyclocomp_linter = NULL,
+    single_quotes_linter = NULL,
+    seq_linter = NULL
+  )
+exclusions: list(
+    # renv is vendored code, not ours.
+    "inst/resources/renv.R",
+    # test resources that are not "source".
+    "tests/testthat/lockfiles",
+    "tests/testthat/other-packages",
+    "tests/testthat/packrat",
+    "tests/testthat/projects",
+    "tests/testthat/repo",
+    "tests/testthat/repo-empty",
+    "tests/testthat/resources"
+  )

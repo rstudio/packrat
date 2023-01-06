@@ -14,9 +14,14 @@ test_that("hash function is available and has expected arguments", {
   # which expects this non-exported function to be present. That's not to say
   # the function signature can't be changed, only that the relevant call in
   # Connect's packrat_restore.R should be studied to avoid any breakage.
+
+
   expect_identical(
     formals(hash),
-    pairlist(path = quote(expr =), descLookup = as.name("installedDescLookup"))
+    pairlist(
+      path = quote(expr =), # nolint: infix_spaces_linter. r-lib/lintr#1889
+      descLookup = as.name("installedDescLookup")
+      )
   )
 
 })

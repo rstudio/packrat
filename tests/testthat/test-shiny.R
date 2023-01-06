@@ -1,7 +1,7 @@
 test_that("Shiny examples have a shiny dependency", {
   skip_on_cran()
   skip_if_not_installed("shiny")
-  
+
   # Confirm packrat believes all example shiny apps are, in fact, shiny apps
   examplesPath <- system.file("examples", package = "shiny")
   apps <- list.files(examplesPath, full.names = TRUE)
@@ -17,5 +17,4 @@ test_that("projects which use shiny implicitly are detected", {
   # R Markdown document with 'runtime: shiny'
   interactiveDocPath <- file.path("resources", "interactive-doc-example.Rmd")
   expect_true("shiny" %in% packrat:::fileDependencies(interactiveDocPath))
-
 })

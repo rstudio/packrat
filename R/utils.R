@@ -95,7 +95,7 @@ dir_copy <- function(from, to, overwrite = FALSE, all.files = TRUE,
     if (overwrite) {
       unlink(to, recursive = TRUE)
     } else {
-      stop(paste( sep = "",
+      stop(paste(sep = "",
                   if (is_dir(to)) "Directory" else "File",
                   " already exists at path '", to, "'."
       ))

@@ -9,6 +9,7 @@
 ^RELEASE\.md$
 ^\.Rprofile$
 ^\.github$
+^\.lintr$
 ^tags$
 ^R/tags$
 ^tests/testthat/packrat/lib$

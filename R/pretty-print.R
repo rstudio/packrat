@@ -62,7 +62,7 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
     }
     for (i in seq_along(packagesFrom)) {
       if (!is.null(packagesFrom[[i]]) && !is.null(packagesTo[[i]])) {
-        if (!identical(packagesFrom[[i]]$name , packagesTo[[i]]$name)) {
+        if (!identical(packagesFrom[[i]]$name, packagesTo[[i]]$name)) {
           stop('Invalid arguments--package names did not match')
         }
       }

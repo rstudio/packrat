@@ -35,7 +35,7 @@ isFromCranlikeRepo <- function(pkgRecord, repos) {
 # the package version is current. NB: Assumes package is present in db.
 versionMatchesDb <- function(pkgRecord, db) {
   versionMatch <-
-    identical(pkgRecord$version, db[pkgRecord$name,"Version"])
+    identical(pkgRecord$version, db[pkgRecord$name, "Version"])
 
   # For GitHub, Bitbucket, and Gitlab, we also need to check that the SHA1 is identical
   # (the source may be updated even if the version hasn't been bumped)
@@ -189,8 +189,8 @@ getSourceForPkgRecord <- function(pkgRecord,
       # If the file wasn't saved to the destination directory (which can happen
       # if the repo is local--see documentation in download.packages), copy it
       # there now
-      if (!identical(fileLoc[1,2], file.path(pkgSrcDir, pkgSrcFile))) {
-        file.copy(fileLoc[1,2], pkgSrcDir)
+      if (!identical(fileLoc[1, 2], file.path(pkgSrcDir, pkgSrcFile))) {
+        file.copy(fileLoc[1, 2], pkgSrcDir)
       }
       type <- paste(type, "current")
     } else {
@@ -439,7 +439,7 @@ annotatePkgs <- function(pkgNames, project, lib = libDir(project)) {
 
 # Takes a vector of package names, and returns a logical vector that indicates
 # whether the package was not installed by packrat.
-installedByPackrat <- function(pkgNames, lib.loc, default=NA) {
+installedByPackrat <- function(pkgNames, lib.loc, default = NA) {
   # Can't use installed.packages(fields='InstallAgent') here because it uses
   # Meta/package.rds, not the DESCRIPTION file, and we only record this info in
   # the DESCRIPTION file.
@@ -678,7 +678,7 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
       # Changing package type or version: Remove the old one now (we'll write
       # a new one in a moment)
       message("Replacing ", pkgRecord$name, " (", action, " ",
-              installedPkgs[pkgRecord$name,"Version"], " to ",
+              installedPkgs[pkgRecord$name, "Version"], " to ",
               pkgRecord$version, ") ... ", appendLF = FALSE)
       removePkgs(project, pkgRecord$name, lib)
     } else if (identical(action, "add")) {
@@ -1009,4 +1009,3 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
 
   return(TRUE)
 }
-

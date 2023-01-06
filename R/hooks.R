@@ -17,9 +17,9 @@ snapshotHook <- function(expr, value, ok, visible) {
       project <- .packrat_mutables$get("project")
 
       if (is.null(project)) {
-        file = "" ## to stdout
+        file <- "" ## to stdout
       } else {
-        file = file.path(project, "packrat", "packrat.log")
+        file <- file.path(project, "packrat", "packrat.log")
       }
 
       if (inherits(e, "simpleError")) {

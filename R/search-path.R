@@ -16,7 +16,7 @@ search_path <- function() {
   )
 
   ## Filter to only actual packages
-  pkgs <- pkgs[ grep("^package:", pkgs$package), , drop = FALSE]
+  pkgs <- pkgs[grep("^package:", pkgs$package), , drop = FALSE]
 
   ## Clean up the package name by removing the initial 'package:'
   pkgs$package <- sub("^package:", "", pkgs$package)
@@ -37,7 +37,7 @@ search_path <- function() {
   pkgs$lib.dir <- dirname(pkgs$lib.loc)
 
   ## Arrange by lib.dir
-  pkgs <- pkgs[ order(pkgs$lib.dir), ]
+  pkgs <- pkgs[order(pkgs$lib.dir), ]
 
   ## Unset the rownames
   rownames(pkgs) <- NULL

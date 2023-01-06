@@ -99,4 +99,3 @@ gitlab_pat <- function(quiet = TRUE) {
   }
   return(NULL)
 }
-

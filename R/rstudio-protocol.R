@@ -12,4 +12,4 @@
 #   the protocol version number, is used to determine whether the package is too
 #   old to be compatible.
 
-.RStudio_protocol_version = 1
+.RStudio_protocol_version <- 1
