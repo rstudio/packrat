@@ -21,7 +21,7 @@ test_that("The default list of environment variables is masked correctly", {
   git_mask_option <- options("packrat.mask.git.service.envvars" = NULL)
   on.exit(options(git_mask_option), add = TRUE, after = FALSE)
 
-  subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
+  subprocess_output <- R('-e "Sys.getenv()"', return_output = TRUE)
 
   # Check to see if the masked envvar names appear in the subprocess output.
   found_in_output <- sapply(names(new_envvars), function(x) any(grepl(x, subprocess_output)))
@@ -52,7 +52,7 @@ test_that("The default list of masked environment variables can be disabled", {
   git_mask_option <- options("packrat.mask.git.service.envvars" = FALSE)
   on.exit(options(git_mask_option), add = TRUE, after = FALSE)
 
-  subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
+  subprocess_output <- R('-e "Sys.getenv()"', return_output = TRUE)
 
   # Check to see if the masked envvar names appear in the subprocess output.
   found_in_output <- sapply(names(new_envvars), function(x) any(grepl(x, subprocess_output)))
@@ -70,7 +70,8 @@ test_that("Environment variables appear in an R subprocess", {
   user_mask <- options("packrat.masked.envvars" = NULL)
   on.exit(options(user_mask), add = TRUE, after = FALSE)
 
-  subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
+  subprocess_output <- R('-e "Sys.getenv()"', return_output = TRUE)
+
   found_in_output <- sapply(names(new_envvars), function(x) any(grepl(x, subprocess_output)))
   expect_true(all(found_in_output), info = print(subprocess_output))
 })
@@ -86,7 +87,8 @@ test_that("User-specified masked envvars do not appear in an R subprocess", {
   user_mask <- options("packrat.masked.envvars" = names(new_envvars))
   on.exit(options(user_mask), add = TRUE, after = FALSE)
 
-  subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
+  subprocess_output <- R('-e "Sys.getenv()"', return_output = TRUE)
+
   found_in_output <- sapply(names(new_envvars), function(x) any(grepl(x, subprocess_output)))
 
   # Read `any(found_in_output)` as "Are any of the outputs TRUE?"
@@ -125,7 +127,7 @@ test_that("Git and user-specified variables can be masked while other variables 
   masked_names <- names(new_envvars)[1:length(new_envvars) - 1]
   unmasked_name <- names(new_envvars)[length(new_envvars)]
 
-  subprocess_output <- R("-e 'Sys.getenv()'", return_output = TRUE)
+  subprocess_output <- R('-e "Sys.getenv()"', return_output = TRUE)
 
   # Check masked vars
   not_expected <- sapply(masked_names, function(x) any(grepl(x, subprocess_output)))

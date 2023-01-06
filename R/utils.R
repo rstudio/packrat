@@ -535,6 +535,10 @@ symlink <- function(from, to) {
   file.exists(to)
 }
 
+nullfile <- function() {
+  if (is.windows()) "NUL" else "/dev/null"
+}
+
 with_dir <- function(dir, expr) {
   owd <- getwd()
   setwd(dir)

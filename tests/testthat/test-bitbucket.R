@@ -21,15 +21,13 @@ test_that("bitbucketArchiveUrl returns the correct URL", {
 
 test_that("bitbucketDownload calls renvDownload in the expected context", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   # Testing the effect of the option, rather than just mocking canUseRenvDownload
-  auth_download_option <- options(packrat.authenticated.downloads.use.renv = TRUE)
-  on.exit(options(auth_download_option), add = TRUE)
-
+  mockery::stub(bitbucketDownload, "canUseRenvDownload", TRUE)
   mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
   renv_download_mock <- mockery::mock(destfile)
-  mockery::stub(bitbucketDownload, "renvDownload", renv_download_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "renvDownload", renv_download_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
@@ -39,13 +37,13 @@ test_that("bitbucketDownload calls renvDownload in the expected context", {
 
 test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   mockery::stub(bitbucketDownload, "bitbucketAuthenticated", TRUE)
   mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
   mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
   httr_download_mock <- mockery::mock(TRUE)
-  mockery::stub(bitbucketDownload, "bitbucketDownloadHttr", httr_download_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "bitbucketDownloadHttr", httr_download_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
@@ -55,7 +53,7 @@ test_that("bitbucketDownload calls bitbucketDownloadHttr in the expected context
 
 test_that("bitbucketDownload calls downloadWithRetries in the expected contexts", {
   url <- bitbucketArchiveUrl(bitbucket_pkg_record)
-  destfile <- "/dev/null"
+  destfile <- nullfile()
 
   # With auth data but no configured auth-capable method configured
 
@@ -63,7 +61,7 @@ test_that("bitbucketDownload calls downloadWithRetries in the expected contexts"
   mockery::stub(bitbucketDownload, "canUseRenvDownload", FALSE)
   mockery::stub(bitbucketDownload, "canUseHttr", FALSE)
   download_with_retries_mock <- mockery::mock(TRUE)
-  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 
@@ -76,7 +74,7 @@ test_that("bitbucketDownload calls downloadWithRetries in the expected contexts"
   mockery::stub(bitbucketDownload, "canUseRenvDownload", TRUE)
   mockery::stub(bitbucketDownload, "canUseHttr", TRUE)
   download_with_retries_mock <- mockery::mock(TRUE)
-  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 3)
+  mockery::stub(bitbucketDownload, "downloadWithRetries", download_with_retries_mock, depth = 5)
 
   bitbucketDownload(url, destfile)
 

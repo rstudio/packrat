@@ -71,7 +71,7 @@ rebuildTestRepo <- function(testroot = getwd()) {
       Sys.setenv(R_DEFAULT_SERIALIZE_VERSION = version)
   }, add = TRUE)
 
-  tools::write_PACKAGES(target, subdirs = TRUE)
+  tools::write_PACKAGES(target, type = "source", subdirs = TRUE)
 }
 
 # "Rebuilds" an empty test repo.
@@ -158,7 +158,8 @@ beginTestContext <- function() {
   Sys.setenv(R_PACKRAT_TESTING = "yes")
   Sys.setenv(R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep))
 
-  CRAN <- paste(filePrefix(), normalizePath("repo", winslash = "/"), sep = "")
+  normalizedRepoPath <- normalizePath("repo", winslash = "/")
+  CRAN <- paste(filePrefix(), normalizedRepoPath, sep = "")
 
   options(repos = c(CRAN = CRAN), pkgType = "source", warn = 0)
   assign("test.options", options, envir = .packrat)
