@@ -1,3 +1,4 @@
+
 # - Equivalent to other git provider download functions.
 # - Called by `getSourceForPkgRecord` (which manages the lifecycle of
 #   `destfile`). Responsible for dispatching different download implementations
@@ -67,11 +68,10 @@ gitlabArchiveUrl <- function(pkgRecord) {
     pkgRecord$remote_host <- "gitlab.com"
   }
 
-  fmt <- "%s/api/v4/projects/%s%%2F%s/repository/archive?sha=%s"
+  fmt <- "%s/api/v4/projects/%s/repository/archive?sha=%s"
   archiveUrl <- sprintf(fmt,
                         pkgRecord$remote_host,
-                        pkgRecord$remote_username,
-                        pkgRecord$remote_repo,
+                        URLencode(paste0(pkgRecord$remote_username, "/", pkgRecord$remote_repo), reserved = TRUE),
                         pkgRecord$remote_sha)
 
   protocol <- if (identical(method, "internal")) "http" else "https"

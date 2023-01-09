@@ -27,6 +27,7 @@
   it will either look for a `tar` binary on the `PATH` on Unix, or look for the
   system `tar` on Windows. If no binary is found in those locations, it will use
   R's internal `tar` implementation. (#648)
+- Allow GitLab downloads from repositories having paths (#699).
 - Update some RStudio references to Posit.
 
 # Packrat 0.8.1
