@@ -71,7 +71,7 @@ gitlabArchiveUrl <- function(pkgRecord) {
   archiveUrl <- sprintf(fmt,
                         pkgRecord$remote_host,
                         pkgRecord$remote_username,
-                        pkgRecord$remote_repo,
+                        sub("/", "%2F", pkgRecord$remote_repo),
                         pkgRecord$remote_sha)
 
   protocol <- if (identical(method, "internal")) "http" else "https"
