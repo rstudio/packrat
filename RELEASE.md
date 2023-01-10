@@ -1,20 +1,28 @@
 ## Release Instructions
 
--   Use git to switch to a release branch (e.g. `release/<version>`).
+-   Create and switch to a release branch (e.g. `release/<version>`).
+
+    ```bash
+    git checkout -b release/0.9.0
+    ```
 
 -   Update version in `DESCRIPTION` file.
 
--   Update header and version in `NEWS.md`. Confirm recent changes are included.
+-   Update header and version in `NEWS.md`. confirm recent changes are included.
 
 -   Update auto-loaders (from R):
 
     ```r
-    source("R/update.R"); updateInit()
+    source("R/update.R"); updateInit();
     ```
 
 -   Commit your changes!
 
--   Check and fix URLs (from R):
+    ```bash
+    git commit -m 'preparing for 0.9.0 release' NEWS.md DESCRIPTION inst
+    ```
+
+-   Check that all URLs are valid (from R):
 
     ```r
     install.packages("urlchecker")
@@ -38,10 +46,10 @@
 
 -   Fix any issues identified by the previous steps. Rinse and repeat.
 
--   Submit to CRAN. Cross fingers.
+-   Submit to CRAN. Cross fingers. https://cran.r-project.org/
     
--   After submission, squash-and-merge the `release/<version>` branch back to 
-    `master`.
+-   After submission, squash-and-merge the `release/<version>` branch back to
+    `main`.
 
 -   Create a git tag for your new release and push that tag.
 
@@ -62,4 +70,4 @@
     R -f configure.R
     ```
 
-    Squash-and-merge this branch back to `master`.
+    Squash-and-merge this branch back to `main`.
