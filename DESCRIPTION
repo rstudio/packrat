@@ -2,7 +2,7 @@ Package: packrat
 Type: Package
 Title: A Dependency Management System for Projects and their R Package
     Dependencies
-Version: 0.9.0
+Version: 0.9.0-1
 Author: Kevin Ushey, Jonathan McPherson, Joe Cheng, Aron Atkins, JJ Allaire,
     Toph Allen
 Maintainer: Aron Atkins <aron@posit.co>
