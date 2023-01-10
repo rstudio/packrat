@@ -1,4 +1,4 @@
-# Packrat 0.9.0 (UNRELEASED)
+# Packrat 0.9.0
 
 - Packrat now supports restoring packages hosted in private repositories on
   GitHub, GitLab, and Bitbucket. To enable this, set the option
