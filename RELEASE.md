@@ -55,7 +55,7 @@
 
     ```console
     git tag -a -m 'CRAN release: vX.Y.Z' vX.Y.Z COMMIT_HASH
-    git push origin --tags
+    git push origin vX.Y.Z
     ```
 
 -   Create a GitHub release against that tag and include the NEWS.md items in
