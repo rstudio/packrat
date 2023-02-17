@@ -1,3 +1,12 @@
+# This code is difficult to read and has caused problems in the past. Heed my
+# warning. This so that as.data.frame() is given a list. The *_subdir fields are
+# missing in most cases. If they were included in the main list() calls, list()
+# would include a field with that name with a NULL value.
+#
+# Creating a list and then concatenating the possibly-NULL subdir fields means
+# that they are NULL, they will not appear at all in the resulting list at all.
+# The resulting data frame is later appended to the DESCRIPTION file, so this is
+# desirable.
 getRemoteInfo <- function(pkgRecord) {
   if (pkgRecord$source == "github") {
     return(
