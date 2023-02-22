@@ -344,7 +344,8 @@ inferPackageRecord <- function(df, available = availablePackages()) {
       c(remote_repo = as.character(df$RemoteRepo)),
       c(remote_username = as.character(df$RemoteUsername)),
       c(remote_ref = as.character(df$RemoteRef)),
-      c(remote_sha = as.character(df$RemoteSha))
+      c(remote_sha = as.character(df$RemoteSha)),
+      c(remote_subdir = as.character(df$RemoteSubdir))
     ), class = c('packageRecord', 'github')))
   } else if (hasRemoteType(df, "bitbucket")) {
     # It's Bitbucket!
