@@ -21,4 +21,3 @@ test_that("inferPackageRecord preserves fields: GitLab, pkg in subdir", {
   df <- as.data.frame(readDcf(test_path("resources/descriptions/gitlab_subdir")))
   expect_snapshot(inferPackageRecord(df))
 })
-
