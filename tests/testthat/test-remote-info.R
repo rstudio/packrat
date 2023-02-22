@@ -52,7 +52,7 @@ test_that("remote_info is correctly generated from a GitLab pkgRecord", {
     remote_repo = 'adder',
     remote_username = 'my-username',
     remote_ref = 'HEAD',
-    remote_sha1 = 'abc123'
+    remote_sha = 'abc123'
   )
   expected <- data.frame(
     RemoteType = "gitlab",
@@ -75,7 +75,7 @@ test_that("remote_info is correctly generated from a GitLab pkgRecord with a sub
     remote_repo = 'sub_adder',
     remote_username = 'my-username',
     remote_ref = 'HEAD',
-    remote_sha1 = 'abc123',
+    remote_sha = 'abc123',
     remote_subdir = 'subadder'
   )
   expected <- data.frame(
