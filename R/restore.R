@@ -242,17 +242,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       stop(e)
     })
 
-    remote_info <- as.data.frame(
-      list(
-        RemoteType     = pkgRecord$source,
-        GithubRepo     = pkgRecord$gh_repo,
-        GithubUsername = pkgRecord$gh_username,
-        GithubRef      = pkgRecord$gh_ref,
-        GithubSHA1     = pkgRecord$gh_sha1
-      ),
-      c(GithubSubdir   = pkgRecord$gh_subdir),
-      stringsAsFactors = FALSE
-    )
+    remote_info <- getRemoteInfo(pkgRecord)
 
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
@@ -287,19 +277,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       stop(e)
     })
 
-    # Modify remote info, move modified package to new location
-    remote_info <- as.data.frame(
-      list(
-        RemoteType = pkgRecord$source,
-        RemoteHost = pkgRecord$remote_host,
-        RemoteRepo = pkgRecord$remote_repo,
-        RemoteUsername = pkgRecord$remote_username,
-        RemoteRef = pkgRecord$remote_ref,
-        RemoteSha = pkgRecord$remote_sha
-      ),
-      c(RemoteSubdir = pkgRecord$remote_subdir),
-      stringsAsFactors = FALSE
-    )
+    remote_info <- getRemoteInfo(pkgRecord)
 
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 
@@ -335,19 +313,7 @@ getSourceForPkgRecord <- function(pkgRecord,
       stop(e)
     })
 
-    # Modify remote info, move modified package to new location
-    remote_info <- as.data.frame(
-      list(
-        RemoteType = pkgRecord$source,
-        RemoteHost = pkgRecord$remote_host,
-        RemoteRepo = pkgRecord$remote_repo,
-        RemoteUsername = pkgRecord$remote_username,
-        RemoteRef = pkgRecord$remote_ref,
-        RemoteSha = pkgRecord$remote_sha
-      ),
-      c(RemoteSubdir = pkgRecord$remote_subdir),
-      stringsAsFactors = FALSE
-    )
+    remote_info <- getRemoteInfo(pkgRecord)
 
     dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
 

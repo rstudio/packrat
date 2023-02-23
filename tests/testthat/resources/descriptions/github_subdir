@@ -1,0 +1,25 @@
+Package: pkginsubdir
+Type: Package
+Title: Package In Subdirectory
+Version: 0.1.0
+Author: Toph Allen <toph.allen@gmail.com>
+Maintainer: Toph Allen <toph.allen@gmail.com>
+Description: This package lives in a subdirectory
+License: MIT
+Encoding: UTF-8
+RoxygenNote: 7.1.2
+RemoteType: github
+RemoteHost: api.github.com
+RemoteRepo: pkg_in_subdir
+RemoteUsername: my-github-username
+RemoteRef: HEAD
+RemoteSha: abc123
+RemoteSubdir: pkginsubdir
+GithubRepo: pkg_in_subdir
+GithubUsername: my-github-username
+GithubRef: HEAD
+GithubSHA1: abc123
+GithubSubdir: pkginsubdir
+NeedsCompilation: no
+Packaged: 2023-02-22 17:15:10 UTC; root
+Built: R 4.2.1; ; 2023-02-22 17:15:10 UTC; unix
