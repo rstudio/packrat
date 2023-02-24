@@ -3,9 +3,15 @@ Package: packrat
 Title: A Dependency Management System for Projects and their R Package
     Dependencies
 Version: 0.9.0-1
-Author: Kevin Ushey, Jonathan McPherson, Joe Cheng, Aron Atkins, JJ
-    Allaire, Toph Allen
-Maintainer: Aron Atkins <aron@posit.co>
+Authors@R: c(
+    person("Aron", "Atkins", , "aron@posit.co", role = c("aut", "cre")),
+    person("Toph", "Allen", role = "aut"),
+    person("Kevin", "Ushey", role = "aut"),
+    person("Jonathan", "McPherson", role = "aut"),
+    person("Joe", "Cheng", role = "aut"),
+    person("JJ", "Allaire", role = "aut"),
+    person("Posit Software, PBC", role = c("cph", "fnd"))
+  )
 Description: Manage the R packages your project depends on in an isolated,
     portable, and reproducible way.
 License: GPL-2
