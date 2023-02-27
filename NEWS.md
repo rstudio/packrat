@@ -1,3 +1,5 @@
+# Packrat 0.9.2 (UNRELEASED)
+
 # Packrat 0.9.1
 
 - Fix an issue where Packrat would fail to restore packages installed from
