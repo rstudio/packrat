@@ -1,7 +1,6 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/rstudio/packrat/workflows/R-CMD-check/badge.svg)](https://github.com/rstudio/packrat/actions)
-[![Coverage Status](https://codecov.io/github/rstudio/packrat/coverage.svg?branch=master)](https://codecov.io/github/rstudio/packrat?branch=master)
 <!-- badges: end -->
 
 ## NOTE
