@@ -1,4 +1,4 @@
-# Packrat 0.9.1 (UNRELEASED)
+# Packrat 0.9.1
 
 - Fix an issue where Packrat would fail to restore packages installed from
   subdirectories of SCM repositories (GitHub, GitLab, Bitbucket). (#704)
