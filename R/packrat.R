@@ -386,8 +386,10 @@ restore <- function(project = NULL,
   packages <- lockInfo(project)
   r_version <- lockInfo(project, 'r_version')
   if (!identical(as.character(getRversion()), r_version)) {
-    warning('The most recent snapshot was generated using R version ',
-            r_version)
+    warning(
+      'The most recent snapshot was generated using R version ', r_version,
+      immediate. = TRUE
+    )
   }
 
   # See if any of the packages that are currently in the library are dirty.
