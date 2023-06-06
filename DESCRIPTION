@@ -28,7 +28,8 @@ Suggests:
     knitr,
     mockery,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3
 Encoding: UTF-8
 RoxygenNote: 7.2.1

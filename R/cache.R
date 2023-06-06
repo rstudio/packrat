@@ -119,22 +119,28 @@ isVerboseCache <- function() {
   return(isTRUE(getOption("packrat.verbose.cache")))
 }
 
+
 # helper function to remove the package from its original location and
 # create a symlink to the cached version.
 symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
   packageName <- basename(packagePath)
-  backupPackagePath <- tempfile(tmpdir = dirname(packagePath))
-  if (!file.rename(packagePath, backupPackagePath)) {
-    stop("failed to back up package directory '", packagePath, "'; cannot safely link to cache.")
+  backedUp <- FALSE
+  if (file.exists(packagePath)) {
+    backupPackagePath <- tempfile(tmpdir = dirname(packagePath))
+    if (!file.rename(packagePath, backupPackagePath)) {
+      stop("failed to back up package directory '", packagePath, "'; cannot safely link to cache.")
+    }
+    on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
   }
-  on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
 
   if (!symlink(cachedPackagePath, packagePath)) {
     # symlink failed; attempt to restore the backup back to its original name.
-    if (!file.rename(backupPackagePath, packagePath)) {
-      stop("failed to restore package from '", backupPackagePath, "' to ",
-           "'", packagePath, "' after symlink to ",
-           "'", cachedPackagePath, "' failed; package may be lost")
+    if (backedUp) {
+      if (!file.rename(backupPackagePath, packagePath)) {
+        stop("failed to restore package from '", backupPackagePath, "' to ",
+             "'", packagePath, "' after symlink to ",
+             "'", cachedPackagePath, "' failed; package may be lost")
+      }
     }
     stop("failed to create a symlink from '", packagePath, "' to '", cachedPackagePath, "'")
   }
@@ -145,6 +151,36 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
   return(cachedPackagePath)
 }
 
+# Given a path, move that location to a temporary location alongside the
+# original path. Returns an exit handler that either removes the temporary
+# location (when something else exists at the original location) or restores
+# the file back to its original location when nothing is there.
+#
+# The temporary location is not revealed to the caller.
+cacheFileBackup <- function(path) {
+  if (!file.exists(path)) {
+    return(function() {})
+  }
+
+  backupPath <- tempfile(tmpdir = dirname(path))
+
+  if (!file.rename(path, backupPath)) {
+      stop("cannot back-up existing cache directory '", path, "'; cannot safely copy into cache")
+  }
+
+  # Return a function appropriate as an on.exit clean-up handler.
+  function() {
+    if (!file.exists(path)) {
+      if (!file.rename(backupPath, path)) {
+        stop("failed to reset cache directory back-up '", path, "'; package may be lost from cache")
+      }
+    } else {
+      unlink(backupPath, recursive = TRUE)
+    }
+  }
+
+}
+
 # Given a path to an installed package (outside the packrat cache), move that
 # package into the cache and replace the original directory with a symbolic
 # link into the package cache.
@@ -152,17 +188,21 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
 # If the package already exists inside the cache, overwrite=TRUE causes
 # replacement of the cached content while overwrite=FALSE with fatal=FALSE
 # uses the cached package. Using overwrite=TRUE with fatal=TRUE will err.
+#
+# When rename=TRUE, a file-system rename from the package library to the cache
+# is attempted without before falling-back to a directory copy. Used by tests
+# to bypass the initial file.rename and force the directory copy.
 moveInstalledPackageToCache <- function(packagePath,
                                         hash,
+                                        cacheDir = cacheLibDir(),
                                         overwrite = TRUE,
                                         fatal = FALSE,
-                                        cacheDir = cacheLibDir())
+                                        rename = TRUE)
 {
   ensureDirectory(cacheDir)
 
   packageName <- basename(packagePath)
   cachedPackagePath <- file.path(cacheDir, packageName, hash, packageName)
-  backupPackagePath <- tempfile(tmpdir = dirname(cachedPackagePath))
 
   # check for existence of package in cache
   if (file.exists(cachedPackagePath)) {
@@ -175,32 +215,34 @@ moveInstalledPackageToCache <- function(packagePath,
     }
   }
 
-  # back up a pre-existing cached package (restore on failure)
-  if (file.exists(cachedPackagePath)) {
-    if (!file.rename(cachedPackagePath, backupPackagePath)) {
-      stop("failed to back up package '", packageName, "'; cannot safely copy to cache")
-    }
-    on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
-  }
-
   if (isVerboseCache()) {
     message("Caching ", packageName, ".")
   }
 
+  # back up a pre-existing cached package (restore on failure)
+  restore <- cacheFileBackup(cachedPackagePath)
+  on.exit(restore(), add = TRUE)
+
   # attempt to rename to cache
-  if (suppressWarnings(file.rename(packagePath, cachedPackagePath))) {
-    return(symlinkPackageToCache(packagePath, cachedPackagePath))
+  if (rename) {
+    if (suppressWarnings(file.rename(packagePath, cachedPackagePath))) {
+      return(symlinkPackageToCache(packagePath, cachedPackagePath))
+    }
   }
 
-  # rename failed; copy to temporary destination in same directory
-  # and then attempt to rename from there
+  # rename failed; copy into temporary destination within the same directory
+  # as our target path and attempt to rename from there.
+  #
+  # this is common when the cache is on a different file-system than the
+  # project library.
   tempPath <- tempfile(tmpdir = dirname(cachedPackagePath))
   on.exit(unlink(tempPath, recursive = TRUE), add = TRUE)
-  if (all(dir_copy(packagePath, tempPath))) {
+  copied <- dir_copy(packagePath, tempPath)
+  if (all(copied)) {
 
-    # check to see if the cached package path exists now; if it does,
-    # assume that this was generated by another R process that successfully
-    # populated the cache
+    # The cache location was moved aside before our (expensive) directory
+    # copy. Check to see if has reappeared, which means that some other
+    # process successfully populated the cache.
     if (file.exists(cachedPackagePath)) {
       return(symlinkPackageToCache(packagePath, cachedPackagePath))
     }
@@ -208,12 +250,17 @@ moveInstalledPackageToCache <- function(packagePath,
     # attempt to rename to target path
     if (suppressWarnings(file.rename(tempPath, cachedPackagePath))) {
       return(symlinkPackageToCache(packagePath, cachedPackagePath))
-    }
-  }
+    } else {
+      # Error. Rename failed (within same directory structure).
+      # Check one last time if the package exists.
+      if (file.exists(cachedPackagePath)) {
+        return(symlinkPackageToCache(packagePath, cachedPackagePath))
+      }
 
-  # failed to insert package into cache -- clean up and return error
-  if (!file.rename(backupPackagePath, cachedPackagePath)) {
-    stop("failed to restore package '", packageName, "' in cache; package may be lost from cache")
+    }
+  } else {
+    # Error. Copy failed.
+
   }
 
   # return failure
