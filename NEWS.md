@@ -1,5 +1,8 @@
 # Packrat 0.9.2 (UNRELEASED)
 
+- Update vendored `renv` update to include functions for normalizing and
+  transforming Posit Package Manager URLs. (#711)
+
 # Packrat 0.9.1
 
 - Fix an issue where Packrat would fail to restore packages installed from

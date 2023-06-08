@@ -11,6 +11,6 @@
       setenv(key, val)
   })
 
-  loadRenv()
+  renv$initialize()
 
 }

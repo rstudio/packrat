@@ -12,7 +12,7 @@ linters: linters_with_defaults(
   )
 exclusions: list(
     # renv is vendored code, not ours.
-    "inst/resources/renv.R",
+    "inst/vendor/renv.R",
     # test resources that are not "source".
     "tests/testthat/lockfiles",
     "tests/testthat/other-packages",
