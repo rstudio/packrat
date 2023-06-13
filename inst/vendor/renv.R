@@ -1,6 +1,6 @@
 #
 # renv 0.17.3-84: A dependency management toolkit for R.
-# Generated using `renv:::vendor()` at 2023-06-12 09:09:27.
+# Generated using `renv:::vendor()` at 2023-06-13 09:06:36.
 #
 
 # aaa.R ----------------------------------------------------------------------
@@ -175,6 +175,43 @@ renv_abi_packages <- function(project, libpaths) {
 
   # return package names
   names(lockfile$Packages)
+
+}
+
+
+# abort.R --------------------------------------------------------------------
+
+
+# Like 'stop()', but gives us an opportunity to attach extra information
+# to an error, and control how that information is presented to the user.
+#
+# Inspired by `rlang::abort()`: https://github.com/r-lib/rlang/blob/main/R/cnd-abort.R#L839-L883
+abort <- function(message, ..., details = NULL, class = NULL) {
+
+  # create condition object
+  cnd <- if (is.character(message)) {
+    data <- list(message = message, details = details, ...)
+    structure(data, class = c(class, "error", "condition"))
+  } else if (inherits(message, "condition")) {
+    message
+  } else {
+    stop("internal error: abort called with unexpected message")
+  }
+
+  # signal the condition, giving calling handlers a chance to run first
+  signalCondition(cnd)
+
+  # if we get here, the condition wasn't handled -- handle printing of
+  # the error ourselves, and then stop with a fallback condition
+  if (length(cnd$details))
+    writeLines(c(cnd$details, ""))
+
+  # create the fallback, but 'dodge' the existing error handlers
+  fallback <- cnd
+  class(fallback) <- "condition"
+
+  # now throw the error
+  stop(fallback)
 
 }
 
@@ -1938,6 +1975,9 @@ renv_bioconductor_version <- function(project, refresh = FALSE) {
 
 }
 
+# Returns the union of the inferred Bioconductor repositories, together with the
+# current value of the 'repos' R option. The Bioconductor repositories are
+# placed first in the repository list.
 renv_bioconductor_repos <- function(project = NULL, version = NULL) {
 
   # allow bioconductor repos override
@@ -3068,11 +3108,6 @@ renv_cache_synchronize_impl <- function(cache, record, linkable, path) {
   restore <- renv_file_backup(cache)
   defer(restore())
 
-  # get ready to copy / move into cache
-  renv_install_step_start("Caching", record$Package)
-
-  before <- Sys.time()
-
   # copy package from source location into the cache
   if (linkable) {
     renv_cache_move(path, cache, overwrite = TRUE)
@@ -3115,16 +3150,6 @@ renv_cache_synchronize_impl <- function(cache, record, linkable, path) {
       callback(cache)
 
   }
-
-  after <- Sys.time()
-
-  time <- difftime(after, before, units = "auto")
-
-  # report status to user
-  renv_install_step_ok(
-    if (linkable) "moved" else "copied",
-    time = time
-  )
 
   TRUE
 
@@ -6611,7 +6636,7 @@ renv_dependencies_discover_r <- function(path = NULL,
   # update current path
   state <- renv_dependencies_state()
   if (!is.null(state))
-    renv_scope_binding(state, "path", path)
+    renv_scope_binding("path", path, frame = state)
 
   methods <- c(
     renv_dependencies_discover_r_methods,
@@ -8287,9 +8312,9 @@ renv_download_default_agent_scope_impl <- function(headers, envir = parent.frame
   all <- c("User-Agent" = agent, headers)
   headertext <- paste0(names(all), ": ", all, "\r\n", collapse = "")
 
-  renv_scope_binding(utils, "makeUserAgent", function(format = TRUE) {
+  renv_scope_binding("makeUserAgent", function(format = TRUE) {
     if (format) headertext else agent
-  }, frame = envir)
+  }, frame = utils, envir = envir)
 
   return(TRUE)
 
@@ -13384,10 +13409,7 @@ renv_install_package <- function(record) {
   before <- Sys.time()
   withCallingHandlers(
     renv_install_package_impl(record),
-    error = function(e) {
-      writef(" FAILED")
-      writef(e$output)
-    }
+    error = function(e) writef("FAILED")
   )
   after <- Sys.time()
 
@@ -13395,12 +13417,17 @@ renv_install_package <- function(record) {
   type <- renv_package_type(path, quiet = TRUE)
   feedback <- renv_install_package_feedback(path, type)
 
+
+  # link into cache
+  if (renv_cache_config_enabled(project = project)) {
+    renv_cache_synchronize(record, linkable = linkable)
+    feedback <- paste0(feedback, " and cached")
+  }
+
   elapsed <- difftime(after, before, units = "auto")
   renv_install_step_ok(feedback, time = elapsed)
 
-  # link into cache
-  if (renv_cache_config_enabled(project = project))
-    renv_cache_synchronize(record, linkable = linkable)
+  invisible()
 
 }
 
@@ -16664,7 +16691,7 @@ renv_lockfile_from_manifest <- function(manifest,
 
 memo <- function(value, scope = NULL) {
   scope <- scope %||% stringify(sys.call(sys.parent())[[1L]])
-  `_renv_memoize`[[scope]] <- `_renv_memoize`[[scope]] %||% value
+  (`_renv_memoize`[[scope]] <- `_renv_memoize`[[scope]] %||% value)
 }
 
 memoize <- function(key, value, scope = NULL) {
@@ -16848,10 +16875,6 @@ migrate <- function(
 
   project <- renv_project_resolve(project)
   renv_project_lock(project = project)
-
-  # for jetpack
-  if (renv_package_checking())
-    renv_patch_repos()
 
   project <- renv_path_normalize(project, mustWork = TRUE)
   if (file.exists(file.path(project, "packrat/packrat.lock"))) {
@@ -18136,19 +18159,8 @@ renv_package_built <- function(path) {
 }
 
 renv_package_checking <- function() {
-  memo(renv_package_checking_impl())
-}
-
-renv_package_checking_impl <- function() {
-
-  # check for devtools
-  calls <- sys.calls()
-  if (identical(calls[[1L]], quote(devtools::test())))
-    return(TRUE)
-
-  # otherwise, check other things
   is_testing() ||
-    "CheckExEnv" %in% search()
+    "CheckExEnv" %in% search() ||
     renv_envvar_exists("_R_CHECK_PACKAGE_NAME_") ||
     renv_envvar_exists("_R_CHECK_SIZE_OF_TARBALL_")
 }
@@ -19013,7 +19025,7 @@ renv_paths_root <- function(...) {
 # nocov start
 renv_paths_root_default <- function() {
 
-  `_renv_root` <<- `_renv_root` %||% {
+  (`_renv_root` <<- `_renv_root` %||% {
 
     # use tempdir for cache when running tests
     # this check is necessary here to support packages which might use renv
@@ -19026,7 +19038,7 @@ renv_paths_root_default <- function() {
     else
       renv_paths_root_default_impl()
 
-  }
+  })
 
 }
 
@@ -19431,6 +19443,18 @@ renv_ppm_transform_impl <- function(url) {
 
   if (sub("/+$", "", url) %in% sub("/+$", "", urls))
     return(url)
+
+  # if this is a 'known' PPM instance, then skip the query step
+  known <- c(
+    dirname(dirname(config$ppm.url())),
+    getOption("renv.ppm.repos", default = NULL)
+  )
+
+  if (any(startswith(url, known))) {
+    parts <- c(dirname(url), "__linux__", platform, basename(url))
+    binurl <- paste(parts, collapse = "/")
+    return(binurl)
+  }
 
   # try to query the status endpoint
   # TODO: this could fail if the URL is a proxy back to PPM?
@@ -19932,6 +19956,9 @@ renv_progress_callback <- function(callback, max, wait = 1.0) {
 # NULL when no project is currently loaded.
 `_renv_project_path` <- NULL
 
+# Flag indicating whether we're checking if the project is synchronized.
+`_renv_project_synchronized_check_running` <- FALSE
+
 #' Retrieve the active project
 #'
 #' Retrieve the path to the active project (if any).
@@ -20177,6 +20204,9 @@ renv_project_synchronized_check <- function(project = NULL, lockfile = NULL) {
 
   project  <- renv_project_resolve(project)
   lockfile <- lockfile %||% renv_lockfile_load(project)
+
+  # signal that we're running synchronization checks
+  renv_scope_binding("_renv_project_synchronized_check_running", TRUE)
 
   # be quiet when checking for dependencies in this scope
   # https://github.com/rstudio/renv/issues/1181
@@ -21194,9 +21224,10 @@ r_exec_error <- function(package, output, label, extra) {
     paste(renv_path_pretty(extra), "does not exist")
 
   # stop with an error
-  message <- sprintf("%s of package '%s' failed [%s]", label, package, extra)
-  error <- simpleError(message = message)
-  error$output <- all
+  abort(
+    message = sprintf("%s of package '%s' failed [%s]", label, package, extra),
+    detail = all
+  )
   stop(error)
 
 }
@@ -23761,9 +23792,6 @@ restore <- function(project  = NULL,
 
   renv_activate_prompt("restore", library, prompt, project)
 
-  if (renv_package_checking())
-    renv_patch_repos()
-
   # resolve library, lockfile arguments
   libpaths <- renv_libpaths_resolve(library)
   lockfile <- lockfile %||% renv_lockfile_load(project = project)
@@ -25109,8 +25137,11 @@ renv_retrieve_successful <- function(record, path, install = TRUE) {
     renv_retrieve_handle_remotes(record, subdir = subdir)
 
   # ensure its dependencies are retrieved as well
-  if (state$recursive)
+  if (state$recursive) local({
+    repos <- if (is.null(desc$biocViews)) getOption("repos") else renv_bioconductor_repos()
+    renv_scope_options(repos = repos)
     renv_retrieve_successful_recurse(deps)
+  })
 
   # mark package as requiring install if needed
   if (install)
@@ -26534,13 +26565,13 @@ renv_scope_trace <- function(what, tracer, envir = parent.frame()) {
 }
 
 
-renv_scope_binding <- function(envir, symbol, replacement, frame = parent.frame()) {
-  if (exists(symbol, envir, inherits = FALSE)) {
-    old <- renv_binding_replace(symbol, replacement, envir)
-    defer(renv_binding_replace(symbol, old, envir), envir = frame)
+renv_scope_binding <- function(symbol, replacement, frame = renv_envir_self(), envir = parent.frame()) {
+  if (exists(symbol, frame, inherits = FALSE)) {
+    old <- renv_binding_replace(symbol, replacement, frame)
+    defer(renv_binding_replace(symbol, old, frame), envir = envir)
   } else {
-    assign(symbol, replacement, envir = envir)
-    defer(rm(list = symbol, envir = envir, inherits = FALSE), envir = frame)
+    assign(symbol, replacement, frame)
+    defer(rm(list = symbol, envir = frame, inherits = FALSE), envir = envir)
   }
 }
 
@@ -28184,6 +28215,11 @@ renv_snapshot_description_source <- function(dcf) {
   if (is.null(package))
     return(list(Source = "unknown"))
 
+  # if this is running as part of the synchronization check, skip CRAN queries
+  # https://github.com/rstudio/renv/issues/812
+  if (`_renv_project_synchronized_check_running`)
+    return(list(Source = "unknown"))
+
   # NOTE: this is sort of a hack that allows renv to declare packages which
   # appear to be installed from sources, but are actually available on the
   # active R package repositories, as though they were retrieved from that
@@ -28996,28 +29032,29 @@ renv_system_exec <- function(command,
     return(output)
 
   # otherwise, notify the user that things went wrong
-  if (!quiet) {
+  message <- sprintf("error %s [error code %i]", action, status)
+  details <- if (!quiet) renv_system_exec_details(command, args, output)
 
-    cmdline <- paste(command, paste(args, collapse = " "))
-    underline <- paste(rep.int("=", min(80L, nchar(cmdline))), collapse = "")
-    header <- c(cmdline, underline)
+  abort(message, details = details)
 
-    # truncate output (avoid overwhelming console)
-    body <- if (length(output) > 200L)
-      c(head(output, n = 100L), "< ... >", tail(output, n = 100L))
-    else
-      output
-
-    # write to stderr
-    writef(c(header, "", body))
-
-  }
-
-  # throw error
-  fmt <- "error %s [error code %i]"
-  stopf(fmt, action, status)
 }
 
+renv_system_exec_details <- function(command, args, output) {
+
+  # get header, giving the command that was run
+  cmdline <- paste(command, paste(args, collapse = " "))
+  underline <- paste(rep.int("=", min(80L, nchar(cmdline))), collapse = "")
+  header <- c(cmdline, underline)
+
+  # truncate output (avoid overwhelming console)
+  body <- if (length(output) > 200L)
+    c(head(output, n = 100L), "< ... >", tail(output, n = 100L))
+  else
+    output
+
+  c(header, "", body)
+
+}
 
 
 # tar.R ----------------------------------------------------------------------
@@ -29709,7 +29746,7 @@ update <- function(packages = NULL,
   }
 
   # get package records
-  renv_scope_binding(renv_envir_self(), "_renv_snapshot_hash", FALSE)
+  renv_scope_binding("_renv_snapshot_hash", FALSE, frame = renv_envir_self())
   records <- renv_snapshot_libpaths(libpaths = libpaths, project = project)
   packages <- packages %||% names(records)
 

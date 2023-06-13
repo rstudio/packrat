@@ -1,7 +1,7 @@
 
 #
 # renv 0.17.3-84: A dependency management toolkit for R.
-# Generated using `renv:::vendor()` at 2023-06-12 09:09:27.
+# Generated using `renv:::vendor()` at 2023-06-13 09:06:36.
 #
 
 
@@ -16,7 +16,7 @@ renv$initialize <- function() {
   # set up metadata environment
   metadata <- list(
     embedded = TRUE,
-    version  = "1a0dd23ff61f7e0d2a3dc7a6e7b7e36a4b6c5de0"
+    version  = "0.17.3-84"
   )
 
   # assign into renv
