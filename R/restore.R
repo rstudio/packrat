@@ -591,7 +591,7 @@ installPkg <- function(pkgRecord,
         if (inherits(status, "error")) {
           message("FAILED")
           unlink(pkgInstallPath, recursive = TRUE)
-          stop(status)
+          renv$abort(status)
         }
       }
     })
