@@ -584,6 +584,16 @@ installPkg <- function(pkgRecord,
       quiet <- isTRUE(packrat::opts$quiet.package.installation())
       install_local_path(path = pkgSrc, reload = FALSE,
                          dependencies = FALSE, quick = TRUE, quiet = quiet)
+      # if we just installed a binary package, check that it can be loaded
+      # (source packages are checked by default on install)
+      if (identical(pkgType, "binary")) {
+        status <- renv$catch(renv$renv_install_test(pkgRecord$name))
+        if (inherits(status, "error")) {
+          message("FAILED")
+          unlink(pkgInstallPath, recursive = TRUE)
+          renv$abort(status)
+        }
+      }
     })
   }
 

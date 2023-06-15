@@ -1,7 +1,9 @@
 # Packrat 0.9.2 (UNRELEASED)
 
-- Update vendored `renv` update to include functions for normalizing and
+- Update vendored `renv` package to include functions for normalizing and
   transforming Posit Package Manager URLs. (#711)
+- Perform a test-load when installing from binary packages. Includes an `renv`
+  update. (#712)
 
 # Packrat 0.9.1
 
