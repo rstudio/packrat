@@ -55,35 +55,31 @@ appDependencies <- function(project = NULL,
 
   ignores <- packrat::opts$ignored.packages()
 
-  ## For R packages, we only use the DESCRIPTION file
+  parentDeps <- c()
+
+  ## When the project is an R package, start with its DESCRIPTION file.
   if (isRPackage(project)) {
-
     ## Make sure we get records recursively from the packages in DESCRIPTION
-    parentDeps <-
-      pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
-
-    # Strip out any dependencies the user has requested we do not track.
-    parentDeps <- setdiff(parentDeps, ignores)
+    parentDeps <- pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
 
     ## For downstream dependencies, we don't grab their Suggests:
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
-    childDeps <- recursivePackageDependencies(parentDeps,
-                                              ignores,
-                                              libPaths,
-                                              available.packages,
-                                              fields)
-  } else {
-    parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
-    parentDeps <- setdiff(parentDeps, ignores)
-    childDeps <- recursivePackageDependencies(parentDeps,
-                                              ignores,
-                                              libPaths,
-                                              available.packages,
-                                              fields)
   }
 
+  parentDeps <- unique(c(parentDeps, dirDependencies(project)))
+  parentDeps <- setdiff(parentDeps, "packrat")
+
+  # Strip out any dependencies the user has requested we do not track.
+  parentDeps <- setdiff(parentDeps, ignores)
+
+  childDeps <- recursivePackageDependencies(parentDeps,
+                                            ignores,
+                                            libPaths,
+                                            available.packages,
+                                            fields)
+  
   result <- unique(c(parentDeps, childDeps))
 
   # should packrat be included as automatic dependency?
