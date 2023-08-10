@@ -1,5 +1,6 @@
 linters: linters_with_defaults(
     # some tests have _VERY_ long expectations.
+    indentation_linter = NULL,
     line_length_linter(270),
     object_length_linter(80),
     object_name_linter = NULL,
@@ -7,7 +8,7 @@ linters: linters_with_defaults(
     brace_linter = NULL,
     commented_code_linter = NULL,
     cyclocomp_linter = NULL,
-    single_quotes_linter = NULL,
+    quotes_linter = NULL,
     seq_linter = NULL
   )
 exclusions: list(
