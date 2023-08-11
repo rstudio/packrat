@@ -1,6 +1,6 @@
 #
-# renv 1.0.0.9000 [rstudio/renv#42c22c0]: A dependency management toolkit for R.
-# Generated using `renv:::vendor()` at 2023-08-09 15:44:32.090958.
+# renv 1.0.1 [rstudio/renv#5dc2fc9]: A dependency management toolkit for R.
+# Generated using `renv:::vendor()` at 2023-08-11 10:13:20.914354.
 #
 
 # aaa.R ----------------------------------------------------------------------
