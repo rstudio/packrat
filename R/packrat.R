@@ -68,11 +68,9 @@
 #' restore()
 #' }
 #'
-#' @docType package
-#' @name packrat
 #' @import utils
 #' @author Posit Software, PBC
-NULL
+'_PACKAGE'
 
 #' Initialize Packrat on a new or existing \R project
 #'
