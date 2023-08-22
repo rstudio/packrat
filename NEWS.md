@@ -6,6 +6,7 @@
   update. (#712)
 - Update vendored `renv` package to include a fix for load-testing certain
   binary packages. (#716)
+- Update package documentation according to r-lib/roxygen2#1491. (#721)
 
 # Packrat 0.9.1
 
