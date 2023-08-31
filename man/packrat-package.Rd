@@ -83,7 +83,7 @@ restore()
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/rstudio/packrat/}
+  \item \url{https://github.com/rstudio/packrat}
   \item Report bugs at \url{https://github.com/rstudio/packrat/issues}
 }
 
