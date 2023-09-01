@@ -85,15 +85,17 @@ withTestContext({
     # Snapshot the new state and make sure we picked up both toast and its
     # dependency, bread
     pkgs <- pkgNames(lockInfo(projRoot))
-    expect_false("bread" %in% pkgs)
-    expect_false("toast" %in% pkgs)
-    snapshot(projRoot)
+    msg <- paste0("pkgs: ", pkgs, collapse = ", ")
+    expect_false("bread" %in% pkgs, msg)
+    expect_false("toast" %in% pkgs, msg)
+    snapshot(projRoot, ignore.stale = TRUE)
     pkgs <- pkgNames(lockInfo(projRoot))
-    expect_true("bread" %in% pkgs)
-    expect_true("toast" %in% pkgs)
+    msg <- paste0("pkgs: ", pkgs, collapse = ", ")
+    expect_true("bread" %in% pkgs, msg)
+    expect_true("toast" %in% pkgs, msg)
   })
 
-  test_that("snapshot captures only installed dependecies butwhen infer.dependencies is FALSE", {
+  test_that("snapshot captures only installed dependecies when infer.dependencies is FALSE", {
     skip_on_cran()
     skip_on_travis()
     skip_on_ci()
@@ -111,12 +113,14 @@ withTestContext({
     # Snapshot the new state and make sure we picked up both toast and its
     # dependency, bread
     pkgs <- pkgNames(lockInfo(projRoot))
-    expect_false("bread" %in% pkgs)
-    expect_false("toast" %in% pkgs)
-    snapshot(projRoot, infer.dependencies = FALSE)
+    msg <- paste0("pkgs: ", pkgs, collapse = ", ")
+    expect_false("bread" %in% pkgs, msg)
+    expect_false("toast" %in% pkgs, msg)
+    snapshot(projRoot, infer.dependencies = FALSE, ignore.stale = TRUE)
     pkgs <- pkgNames(lockInfo(projRoot))
-    expect_true("bread" %in% pkgs)
-    expect_false("toast" %in% pkgs)
+    msg <- paste0("pkgs: ", pkgs, collapse = ", ")
+    expect_true("bread" %in% pkgs, msg)
+    expect_false("toast" %in% pkgs, msg)
   })
 
   test_that("dependencies in library directories are ignored", {

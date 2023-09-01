@@ -1,5 +1,7 @@
 ## Release Instructions
 
+> Try to use `usethis::use_release_issue()` rather than this checklist.
+
 Create an issue with the following content, replacing `${RELEASE_VERSION}` and
 `${NEXT_RELEASE_VERSION}` with the current and next release versions.
 

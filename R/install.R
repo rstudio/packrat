@@ -677,7 +677,7 @@ wrap_command <- function(x) {
 # `with_envvar` uses this function to temporarily replace environment variables
 # for execution of a code block.
 set_envvar <- function(envs, action = "replace") {
-  stopifnot(all.named(envs))
+  stopifnot(all_named(envs))
   stopifnot(is.character(action), length(action) == 1)
   action <- match.arg(action, c("replace", "prefix", "suffix"))
 
@@ -699,7 +699,7 @@ set_envvar <- function(envs, action = "replace") {
   invisible(old)
 }
 
-all.named <- function(x) {
+all_named <- function(x) {
   !is.null(names(x)) && all(names(x) != "")
 }
 

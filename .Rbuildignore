@@ -12,6 +12,9 @@
 ^\.lintr$
 ^tags$
 ^R/tags$
+^cran-comments\.md$
+^revdep$
+^CRAN-SUBMISSION$
 ^tests/testthat/packrat/lib$
 ^tests/testthat/packrat/lib-R$
 ^tests/testthat/packrat/lib-ext$
