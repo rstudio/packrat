@@ -1,3 +1,5 @@
+# packrat 0.9.2
+
 # Packrat 0.9.2 (UNRELEASED)
 
 - Update vendored `renv` package to include functions for normalizing and
