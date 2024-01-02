@@ -67,3 +67,32 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION file", {
   expect_identical(tail(desc, 6), expected_desc_tail)
   getwd()
 })
+
+test_that("annotatePkgDesc annotates a package description", {
+  project <- tempfile()
+  dir.create(project)
+  lib <- libDir(project)
+  package <- file.path(lib, "fake")
+  dir.create(package, recursive = TRUE)
+  desc <- file.path(package, "DESCRIPTION")
+  write_dcf(
+    list(
+      Package = "fake",
+      Version = "1.2.3",
+      InstallAgent = "testthat"
+    ),
+    desc
+  )
+  pkgRecord <- list(
+    name = "fake",
+    source = "CRAN",
+    version = "1.2.3"
+  )
+
+  annotatePkgDesc(pkgRecord, project)
+  result <- as.data.frame(readDcf(desc))
+  expect_equal(result$Package, "fake")
+  expect_equal(result$Version, "1.2.3")
+  expect_equal(result$InstallAgent, paste('packrat', packageVersion('packrat')))
+  expect_equal(result$InstallSource, "CRAN")
+})
