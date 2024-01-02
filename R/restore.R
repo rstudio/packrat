@@ -427,7 +427,6 @@ installPkg <- function(pkgRecord,
                        repos,
                        lib = libDir(project))
 {
-  pkgSrc <- NULL
   type <- "built source"
   needsInstall <- TRUE
 
@@ -525,14 +524,11 @@ installPkg <- function(pkgRecord,
     })
   }
 
-  if (is.null(pkgSrc)) {
+  if (needsInstall) {
     # When installing from github/bitbucket/gitlab or an older version, use the cached source
     # tarball or zip created in snapshotSources
     pkgSrc <- file.path(srcDir(project), pkgRecord$name,
                         pkgSrcFilename(pkgRecord))
-  }
-
-  if (needsInstall) {
 
     if (!file.exists(pkgSrc)) {
       # If the source file is missing, try to download it. (Could happen in the
