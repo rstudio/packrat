@@ -11,6 +11,9 @@
 - Update vendored `renv` package to include a fix for load-testing certain
   binary packages. (#716)
 - Update package documentation according to r-lib/roxygen2#1491. (#721)
+- Improve package installation in a multi-process environment. Do less work
+  when a target package is in the cache and write package `DESCRIPTION`
+  updates to temporary files before persisting. (#720)
 
 # Packrat 0.9.1
 
