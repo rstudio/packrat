@@ -394,7 +394,9 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
   # Write it out using a temporary file so DESCRIPTION is never partial.
   tmpf <- tempfile(tmpdir = dirname(descFile))
   write_dcf(content, tmpf)
-  file.rename(tmpf, descFile)
+  if (!file.rename(tmpf, descFile)) {
+    stop("Unable to rename annotated package DESCRIPTION")
+  }
 }
 
 # Takes a vector of package names, and returns a logical vector that indicates
