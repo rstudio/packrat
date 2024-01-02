@@ -588,23 +588,20 @@ installPkg <- function(pkgRecord,
 
   # copy package into cache if enabled
   if (isUsingCache(project)) {
-    pkgPath <- file.path(lib, pkgRecord$name)
-
     # copy into global cache if this is a trusted package
     if (isTrustedPackage(pkgRecord$name)) {
-      descPath <- file.path(pkgPath, "DESCRIPTION")
+      descPath <- file.path(pkgInstallPath, "DESCRIPTION")
       if (!file.exists(descPath)) {
         warning("cannot cache package: no DESCRIPTION file at path '", descPath, "'")
       } else {
         hash <- hash(descPath)
         moveInstalledPackageToCache(
-          packagePath = pkgPath,
+          packagePath = pkgInstallPath,
           hash = hash,
           cacheDir = cacheLibDir()
         )
       }
     } else {
-      pkgPath <- file.path(lib, pkgRecord$name)
       tarballName <- pkgSrcFilename(pkgRecord)
       tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
       if (!file.exists(tarballPath)) {
@@ -612,7 +609,7 @@ installPkg <- function(pkgRecord,
       } else {
         hash <- hashTarball(tarballPath)
         moveInstalledPackageToCache(
-          packagePath = pkgPath,
+          packagePath = pkgInstallPath,
           hash = hash,
           cacheDir = untrustedCacheLibDir()
         )
