@@ -570,7 +570,13 @@ installPkg <- function(pkgRecord,
   }
 
   # Annotate DESCRIPTION file so we know we installed it
-  annotatePkgDesc(pkgRecord, project, lib)
+  withCallingHandlers(
+    annotatePkgDesc(pkgRecord, project, lib),
+    error = function(e) {
+      unlink(pkgInstallPath, recursive = TRUE)
+      return(e)
+    }
+  )
 
   # copy package into cache if enabled
   if (isUsingCache(project)) {

@@ -90,7 +90,7 @@ test_that("annotatePkgDesc annotates a package description", {
   )
 
   annotatePkgDesc(pkgRecord, project)
-  result <- as.data.frame(readDcf(desc))
+  result <- as.data.frame(readDcf(desc), stringsAsFactors = FALSE)
   expect_equal(result$Package, "fake")
   expect_equal(result$Version, "1.2.3")
   expect_equal(result$InstallAgent, paste('packrat', packageVersion('packrat')))
