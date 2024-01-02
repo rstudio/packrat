@@ -465,22 +465,6 @@ installPkg <- function(pkgRecord,
     return(cacheCopyStatus$type)
   }
 
-  # The package was not in a cache and needs to be installed.
-  # Remove a prior installation / file from library (if necessary).
-  # We move the old directory out of the way temporarily, and then
-  # delete if if all went well, or restore it if installation failed
-  # for some reason.
-  if (file.exists(pkgInstallPath)) {
-    pkgRenamePath <- tempfile(tmpdir = lib)
-    file.rename(pkgInstallPath, pkgRenamePath)
-    on.exit({
-      if (file.exists(pkgInstallPath))
-        unlink(pkgRenamePath, recursive = !is.symlink(pkgRenamePath))
-      else
-        file.rename(pkgRenamePath, pkgInstallPath)
-    }, add = TRUE)
-  }
-
   type <- "built source"
   needsInstall <- TRUE
 
