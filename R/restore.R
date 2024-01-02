@@ -395,14 +395,6 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
   write_dcf(content, descFile)
 }
 
-# Annotate a set of packages by name.
-annotatePkgs <- function(pkgNames, project, lib = libDir(project)) {
-  records <- searchPackages(lockInfo(project), pkgNames)
-  lapply(records, function(record) {
-    annotatePkgDesc(record, project, lib)
-  })
-}
-
 # Takes a vector of package names, and returns a logical vector that indicates
 # whether the package was not installed by packrat.
 installedByPackrat <- function(pkgNames, lib.loc, default = NA) {
