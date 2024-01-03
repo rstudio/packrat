@@ -574,7 +574,6 @@ installPkg <- function(pkgRecord,
     annotatePkgDesc(pkgRecord, project, lib),
     error = function(e) {
       unlink(pkgInstallPath, recursive = TRUE)
-      return(e)
     }
   )
 
