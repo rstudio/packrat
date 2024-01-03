@@ -1,5 +1,7 @@
 # packrat (development version)
 
+- Update vendored `renv` with support for additional Linux distributions when
+  normalizing and transforming Posit Package Manager URLs. (#725)
 - Improve package installation in a multi-process environment. Do less work
   when a target package is in the cache and write package `DESCRIPTION`
   updates to temporary files before persisting. (#720)
