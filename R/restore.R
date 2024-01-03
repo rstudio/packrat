@@ -391,16 +391,12 @@ annotatePkgDesc <- function(pkgRecord, project, lib = libDir(project)) {
     content[name] <- records[name]
   }
 
-  # Write it out
-  write_dcf(content, descFile)
-}
-
-# Annotate a set of packages by name.
-annotatePkgs <- function(pkgNames, project, lib = libDir(project)) {
-  records <- searchPackages(lockInfo(project), pkgNames)
-  lapply(records, function(record) {
-    annotatePkgDesc(record, project, lib)
-  })
+  # Write it out using a temporary file so DESCRIPTION is never partial.
+  tmpf <- tempfile(tmpdir = dirname(descFile))
+  write_dcf(content, tmpf)
+  if (!file.rename(tmpf, descFile)) {
+    stop("Unable to rename annotated package DESCRIPTION")
+  }
 }
 
 # Takes a vector of package names, and returns a logical vector that indicates
@@ -433,10 +429,6 @@ installPkg <- function(pkgRecord,
                        repos,
                        lib = libDir(project))
 {
-  pkgSrc <- NULL
-  type <- "built source"
-  needsInstall <- TRUE
-
   # If we're trying to install a package that overwrites a symlink, e.g. for a
   # cached package, we need to move that symlink out of the way (otherwise
   # `install.packages()` or `R CMD INSTALL` will fail with surprising errors,
@@ -451,7 +443,6 @@ installPkg <- function(pkgRecord,
   # NOTE: a symlink that points to a path that doesn't exist
   # will return FALSE when queried by `file.exists()`!
   if (file.exists(pkgInstallPath) || is.symlink(pkgInstallPath)) {
-
     temp <- tempfile(tmpdir = lib)
     file.rename(pkgInstallPath, temp)
     on.exit({
@@ -467,36 +458,20 @@ installPkg <- function(pkgRecord,
   cacheCopyStatus <- new.env(parent = emptyenv())
   copiedFromCache <- restoreWithCopyFromCache(project, pkgRecord, cacheCopyStatus)
   if (copiedFromCache) {
-    type <- cacheCopyStatus$type
-    needsInstall <- FALSE
+    return(cacheCopyStatus$type)
   }
 
   # Try restoring the package from the 'unsafe' cache, if applicable.
   copiedFromUntrustedCache <- restoreWithCopyFromUntrustedCache(project, pkgRecord, cacheCopyStatus)
   if (copiedFromUntrustedCache) {
-    type <- cacheCopyStatus$type
-    needsInstall <- FALSE
+    return(cacheCopyStatus$type)
   }
 
-  # if we still need to attempt an installation at this point,
-  # remove a prior installation / file from library (if necessary).
-  # we move the old directory out of the way temporarily, and then
-  # delete if if all went well, or restore it if installation failed
-  # for some reason
-  if (needsInstall && file.exists(pkgInstallPath)) {
-    pkgRenamePath <- tempfile(tmpdir = lib)
-    file.rename(pkgInstallPath, pkgRenamePath)
-    on.exit({
-      if (file.exists(pkgInstallPath))
-        unlink(pkgRenamePath, recursive = !is.symlink(pkgRenamePath))
-      else
-        file.rename(pkgRenamePath, pkgInstallPath)
-    }, add = TRUE)
-  }
+  type <- "built source"
+  needsInstall <- TRUE
 
   # Try downloading a binary (when appropriate).
-  if (!(copiedFromCache || copiedFromUntrustedCache) &&
-      hasBinaryRepositories() &&
+  if (hasBinaryRepositories() &&
       binaryRepositoriesEnabled() &&
       isFromCranlikeRepo(pkgRecord, repos) &&
       pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
@@ -531,14 +506,11 @@ installPkg <- function(pkgRecord,
     })
   }
 
-  if (is.null(pkgSrc)) {
+  if (needsInstall) {
     # When installing from github/bitbucket/gitlab or an older version, use the cached source
     # tarball or zip created in snapshotSources
     pkgSrc <- file.path(srcDir(project), pkgRecord$name,
                         pkgSrcFilename(pkgRecord))
-  }
-
-  if (needsInstall) {
 
     if (!file.exists(pkgSrc)) {
       # If the source file is missing, try to download it. (Could happen in the
@@ -598,27 +570,29 @@ installPkg <- function(pkgRecord,
   }
 
   # Annotate DESCRIPTION file so we know we installed it
-  annotatePkgDesc(pkgRecord, project, lib)
+  withCallingHandlers(
+    annotatePkgDesc(pkgRecord, project, lib),
+    error = function(e) {
+      unlink(pkgInstallPath, recursive = TRUE)
+    }
+  )
 
   # copy package into cache if enabled
   if (isUsingCache(project)) {
-    pkgPath <- file.path(lib, pkgRecord$name)
-
     # copy into global cache if this is a trusted package
     if (isTrustedPackage(pkgRecord$name)) {
-      descPath <- file.path(pkgPath, "DESCRIPTION")
+      descPath <- file.path(pkgInstallPath, "DESCRIPTION")
       if (!file.exists(descPath)) {
         warning("cannot cache package: no DESCRIPTION file at path '", descPath, "'")
       } else {
         hash <- hash(descPath)
         moveInstalledPackageToCache(
-          packagePath = pkgPath,
+          packagePath = pkgInstallPath,
           hash = hash,
           cacheDir = cacheLibDir()
         )
       }
     } else {
-      pkgPath <- file.path(lib, pkgRecord$name)
       tarballName <- pkgSrcFilename(pkgRecord)
       tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
       if (!file.exists(tarballPath)) {
@@ -626,7 +600,7 @@ installPkg <- function(pkgRecord,
       } else {
         hash <- hashTarball(tarballPath)
         moveInstalledPackageToCache(
-          packagePath = pkgPath,
+          packagePath = pkgInstallPath,
           hash = hash,
           cacheDir = untrustedCacheLibDir()
         )

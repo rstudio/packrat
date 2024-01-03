@@ -7,9 +7,21 @@
 
 library(testthat)
 
+# Confirm that the package name still exists in the DESCRIPTION along with
+# the install-time annotation.
+#
+# Other fields are not included in this check.
+expect_annotated_description <- function(lib, name) {
+  desc <- file.path(lib, name, "DESCRIPTION")
+  result <- as.data.frame(readDcf(desc), stringsAsFactors = FALSE)
+
+  expect_equal(result$Package, name)
+  expect_equal(result$InstallAgent, paste('packrat', packageVersion('packrat')))
+}
+
 withTestContext({
 
-  test_that("init creates project structure and installs dependencies", {
+  test_that("init creates project structure and installs dependencies with annotated DESCRIPTION", {
     skip_on_cran()
     projRoot <- cloneTestProject("sated")
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
@@ -17,11 +29,17 @@ withTestContext({
     expect_true(file.exists(lockFilePath(projRoot)))
     expect_true(file.exists(srcDir(projRoot)))
     expect_true(file.exists(libDir(projRoot)))
+
+    expect_true(file.exists(file.path(lib, "packrat")))
     expect_true(file.exists(file.path(lib, "breakfast")))
     expect_true(file.exists(file.path(lib, "bread")))
     expect_true(file.exists(file.path(lib, "oatmeal")))
-    expect_true(file.exists(file.path(lib, "packrat")))
     expect_true(file.exists(file.path(lib, "toast")))
+
+    expect_annotated_description(lib, "breakfast")
+    expect_annotated_description(lib, "bread")
+    expect_annotated_description(lib, "oatmeal")
+    expect_annotated_description(lib, "toast")
   })
 
   test_that("init does not install dependencies when infer.dependencies is false", {
@@ -33,10 +51,11 @@ withTestContext({
     expect_true(file.exists(lockFilePath(projRoot)))
     expect_true(file.exists(srcDir(projRoot)))
     expect_true(file.exists(libDir(projRoot)))
+
+    expect_true(file.exists(file.path(lib, "packrat")))
     expect_false(file.exists(file.path(lib, "breakfast")))
     expect_false(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "oatmeal")))
-    expect_true(file.exists(file.path(lib, "packrat")))
     expect_false(file.exists(file.path(lib, "toast")))
   })
 

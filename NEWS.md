@@ -1,8 +1,10 @@
 # packrat (development version)
 
-# packrat 0.9.2
+- Improve package installation in a multi-process environment. Do less work
+  when a target package is in the cache and write package `DESCRIPTION`
+  updates to temporary files before persisting. (#720)
 
-# Packrat 0.9.2 (UNRELEASED)
+# Packrat 0.9.2
 
 - Update vendored `renv` package to include functions for normalizing and
   transforming Posit Package Manager URLs. (#711)
