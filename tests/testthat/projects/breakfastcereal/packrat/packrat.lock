@@ -1,0 +1,10 @@
+PackratFormat: 1.4
+PackratVersion: 0.4.8.1
+RVersion: 3.3.2
+Repos: CRAN=https://mirrors.nics.utk.edu/cran/,
+    testrepo=file:///home/carendt/r/packrat/tests/testthat/repo
+
+Package: cereal
+Source: testrepo
+Version: 1.0.0
+Hash: f5ddaf46bcdd03014f8daa586a84b69f
