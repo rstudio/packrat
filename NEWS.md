@@ -5,6 +5,10 @@
 - Improve package installation in a multi-process environment. Do less work
   when a target package is in the cache and write package `DESCRIPTION`
   updates to temporary files before persisting. (#720)
+- When determining the package source, consider `biocViews` before
+  `Repository`. Recent Bioconductor package `DESCRIPTION` files include the
+  `Repository` field, which caused Packrat to believe that those packages
+  originated from a CRAN-like repository, not Bioconductor. (#729)
 
 # Packrat 0.9.2
 
