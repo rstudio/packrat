@@ -146,7 +146,7 @@ downloadFile <- function(url,
 # Attempt download.packages multiple times.
 #
 # Assumes we are downloading a single package.
-downloadPackagesWithRetries <- function(name, destdir, repos, type, maxTries = 5L) {
+downloadPackagesWithRetries <- function(name, destdir, repos, type, maxTries = 2L) {
   maxTries <- as.integer(maxTries)
   stopifnot(maxTries > 0L)
   stopifnot(length(name) > 0L)
@@ -173,7 +173,7 @@ downloadPackagesWithRetries <- function(name, destdir, repos, type, maxTries = 5
 #   marker is not `TRUE` after `maxTries` attempts.
 # - Returns `TRUE` if its success marker is `TRUE`.
 # - Passes `destfile` down to `download` via `...`.
-downloadWithRetries <- function(url, ..., maxTries = 5L) {
+downloadWithRetries <- function(url, ..., maxTries = 2L) {
   maxTries <- as.integer(maxTries)
   stopifnot(maxTries > 0L)
 

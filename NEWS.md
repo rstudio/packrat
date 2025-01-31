@@ -9,6 +9,10 @@
   `Repository`. Recent Bioconductor package `DESCRIPTION` files include the
   `Repository` field, which caused Packrat to believe that those packages
   originated from a CRAN-like repository, not Bioconductor. (#729)
+- Attempt package downloads from multiple package repository archive layouts.
+  Paths used by CRAN-like, Nexus, and older Artifactory repositories are
+  supported. (#583)
+- Attempt URL downloads fewer times before giving up.
 
 # Packrat 0.9.2
 
