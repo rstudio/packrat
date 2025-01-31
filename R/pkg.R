@@ -376,6 +376,13 @@ inferPackageRecord <- function(df, available = availablePackages()) {
   } else if (identical(as.character(df$Priority), 'base')) {
     # It's a base package!
     return(NULL)
+  } else if (length(df$biocViews)) {
+    # It's Bioconductor!
+    return(structure(list(
+      name = name,
+      source = 'Bioconductor',
+      version = ver
+    ), class = c('packageRecord', 'Bioconductor')))
   } else if (length(df$Repository) && identical(as.character(df$Repository), 'CRAN')) {
     # It's CRAN!
     return(structure(list(
@@ -390,13 +397,6 @@ inferPackageRecord <- function(df, available = availablePackages()) {
       source = as.character(df$Repository),
       version = ver
     ), class = c('packageRecord', 'CustomCRANLikeRepository')))
-  } else if (length(df$biocViews)) {
-    # It's Bioconductor!
-    return(structure(list(
-      name = name,
-      source = 'Bioconductor',
-      version = ver
-    ), class = c('packageRecord', 'Bioconductor')))
   } else if (name %in% available[, "Package"]) {
     # It's available on CRAN, so get it from CRAN!
     return(structure(list(
