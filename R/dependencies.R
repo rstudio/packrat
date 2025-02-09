@@ -507,10 +507,25 @@ identifyPackagesUsed <- function(call, env) {
     return()
 
   fn <- call[[1]]
-  if (!anyOf(fn, is.character, is.symbol))
-    return()
 
   fnString <- as.character(fn)
+
+  # adding support for pacman package loader
+  # https://github.com/rstudio/packrat/pull/360
+  # The method of line `matched <- match.call(loader, call)` doesn't work with p_load, because `p_load` doesn't have the package list as the named argument.
+ # Because all other arguments in `p_load` will be logical, supposedly be one of `True, False, T, F`, so I just scan `as.character(call)` to get the package name list.
+  # put code before the :: check because pacman::p_load is often used.
+  pacmanLoaders <- c("p_load")
+  if (pacmanLoaders %in% fnString) {
+    s <- as.character(call)
+    sParas <- s[2:length(s)]
+    filterOut <- c("TRUE", "FALSE", "T", "F")
+    pkgs <- sParas[!sParas %in% filterOut]
+    lapply(pkgs, function(x) env[[x]] <- TRUE)
+  }
+
+  if (!anyOf(fn, is.character, is.symbol))
+    return()
 
   # Check for '::', ':::'
   if (fnString %in% c("::", ":::")) {

@@ -1,0 +1,79 @@
+---
+title: "pull request for adding pacman support"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# implementation
+
+The method of line `matched <- match.call(loader, call)` doesn't work with p_load, because `p_load` doesn't have the package list as the named argument.
+
+Because all other arguments in `p_load` will be logical, supposedly be one of `True, False, T, F`, so I just scan `as.character(call)` to get the package name list.
+
+`p_load_gh` is not implemented because the github repo string could be quite complicated. Instead user just need to load that package in `p_load` again, which will make sure the packages be picked up by `packrat`, and there is no negative impact of this.
+
+note pacman package itself will be picked up by original code no matter what:
+if used pcaman::p_load, will pick up because of ::
+if used library(pacman), will pick up because of library.
+
+supported syntax
+
+    pacman::p_load(stringr, units, install = FALSE)
+    pacman::p_load(shiny, shinydashboard)
+
+unsupported syntax
+- arguments that saved in variable. 
+
+    op <- TRUE
+    pacman::p_load(shinyjs, install = op)
+    pkgs <- c("dplyr", "tibble")
+    pacman::p_load(pkgs, character.only = TRUE)
+
+- similar usage for library cannot be detected with original packrat either
+
+    pkg <- "ggmap"
+    library(pkg, character.only = TRUE)
+
+```{r exploration code used in development}
+library(packrat)
+file <- "/Users/xhdong/Projects/ctmm-explorations/shiny/dashboard1/app.R"
+exprs <- suppressWarnings(parse(file, n = -1L))
+e <- exprs[[3]]
+env <- new.env(parent = emptyenv())
+call <- e
+packrat:::identifyPackagesUsed(e, env)
+
+p <- "pacman::p_load(ggplot2,ctmm)"
+p <- "p_load(ggplot2, install = FALSE)"
+exprs <- suppressWarnings(parse(text = p, n = -1L))
+e <- exprs2[[1]]
+call <- e
+env <- new.env(parent = emptyenv())
+packrat:::identifyPackagesUsed(e, env)
+
+s <- as.character(call)
+sParas <- s[2:length(s)]
+filterOut <- c("TRUE", "FALSE", "T", "F")
+sParas[!sParas %in% filterOut]
+```
+
+test
+
+sample code is put inside a Rmarkdown because they are not suitable for regular testtaht folder.
+
+```{r}
+# packrat:::fileDependencies(file)
+packrat:::fileDependencies("inst/PR-360/test.Rmd")
+```
+
+## shiny deployment
+if just build and reload package, shiny deployment will have error:
+
+    Error: Unable to retrieve package records for the following packages:
+    'packrat'
+
+It's because packages either from CRAN or github, if github, must installed by devtools. And packrat is in implicit dependency.
+
+I pushed my changes to my github repo, install packrat from there. Now everything worked, including pacman loader, and github installed packages. the install.package line doesn't hurt either.
