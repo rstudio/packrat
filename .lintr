@@ -7,9 +7,9 @@ linters: linters_with_defaults(
     object_usage_linter = NULL,
     brace_linter = NULL,
     commented_code_linter = NULL,
-    cyclocomp_linter = NULL,
     quotes_linter = NULL,
-    seq_linter = NULL
+    seq_linter = NULL,
+    return_linter = NULL
   )
 exclusions: list(
     # renv is vendored code, not ours.
