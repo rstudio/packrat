@@ -324,6 +324,10 @@ getSourceForPkgRecord <- function(pkgRecord,
   }
 }
 
+useAlternativeArchiveLocations <- function() {
+  getOption("packrat.alternative.archive.layouts", TRUE)
+}
+
 # Returns TRUE when the package is downloaded, FALSE otherwise.
 downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
   pkgSrcFile <- pkgSrcFilename(pkgRecord)
@@ -339,18 +343,23 @@ downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
     # default CRAN format.
     function(repo) {
       file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgSrcFile)
-    },
-
-    # Artifactory (old versions / configurations)
-    function(repo) {
-      file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgRecord$version, pkgSrcFile)
-    },
-
-    # Nexus
-    function(repo) {
-      file.path(repo, "src/contrib", pkgSrcFile)
     }
   )
+
+  if (useAlternativeArchiveLocations()) {
+    formatters <- c(
+      formatters,
+      # Artifactory (old versions / configurations)
+      function(repo) {
+        file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgRecord$version, pkgSrcFile)
+      },
+
+      # Nexus
+      function(repo) {
+        file.path(repo, "src/contrib", pkgSrcFile)
+      }
+    )
+  }
 
   foundVersion <- FALSE
   for (formatter in formatters) {
