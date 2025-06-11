@@ -186,11 +186,16 @@ getSourceForPkgRecord <- function(pkgRecord,
              "(", pkgRecord$version, ")")
         }
 
-      # If the file wasn't saved to the destination directory (which can happen
-      # if the repo is local--see documentation in download.packages), copy it
-      # there now
-      if (!identical(fileLoc[1, 2], file.path(pkgSrcDir, pkgSrcFile))) {
-        file.copy(fileLoc[1, 2], pkgSrcDir)
+      downloadedFile <- fileLoc[1, 2]
+      if (identical(dirname(downloadedFile), pkgSrcDir)) {
+        # The target file is in the destination directory.
+        if (!identical(basename(downloadedFile), pkgSrcFile)) {
+          # When the file has a different name, rename it. This can happen if the repository download redirects to a URL with a different path.
+          file.rename(downloadedFile, file.path(pkgSrcDir, pkgSrcFile))
+        }
+      } else {
+        # When target file is in some different directory, copy it. This can happen if the repo is local (see download.packages documentation).
+        file.copy(downloadedFile, file.path(pkgSrcDir, pkgSrcFile))
       }
       type <- paste(type, "current")
     } else {
