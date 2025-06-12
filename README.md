@@ -31,11 +31,11 @@ Use packrat to make your R projects more:
   go.
 
 See the [project page](https://rstudio.github.io/packrat/) for more information,
-or join the discussion on the
-[RStudio Community forums](https://community.rstudio.com).
+or join the discussion in the
+[Posit Community forums](https://forum.posit.co/).
 
 Read the [release
-notes](https://github.com/rstudio/packrat/blob/master/NEWS.md) to learn what's
+notes](https://github.com/rstudio/packrat/blob/main/NEWS.md) to learn what's
 new in Packrat.
 
 # Quick-start Guide
