@@ -13,6 +13,8 @@
   Paths used by CRAN-like, Nexus, and older Artifactory repositories are
   supported. (#583)
 - Attempt URL downloads fewer times before giving up.
+- Rename files downloaded from a package repository when the name is not
+  `name_1.2.3.tar.gz`, as can happen with r-universe. (#731)
 
 # Packrat 0.9.2
 
