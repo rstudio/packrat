@@ -9,6 +9,16 @@ library(packrat)
     Sys.unsetenv("R_TESTS")
     on.exit(Sys.setenv(R_TESTS = R_TESTS), add = TRUE)
   }
+  # Force tar to internal to avoid xattr errors on macOS when building and
+  # installing our test packages. The default macOS tar binary produces
+  # AppleDouble archives.
+  TAR <- Sys.getenv("TAR", unset = NA)
+  Sys.setenv(TAR = "internal")
+  if (!is.na(TAR)) {
+    on.exit(Sys.setenv(TAR = TAR), add = TRUE)
+  } else {
+    on.exit(Sys.unsetenv("TAR"), add = TRUE)
+  }
 
   dir <- tempdir()
   owd <- setwd(dir)
@@ -42,7 +52,12 @@ library(packrat)
   packrat::repos_upload(file.path(dir, "sashimi"), "sushi")
 
   # Try building and uploading a tarball
-  system(paste("R --vanilla CMD build", file.path(dir, "sashimi")))
+  system2(file.path(R.home("bin"), "R"),
+          c("--vanilla",
+            "CMD",
+            "build",
+            file.path(dir, "sashimi")),
+          env = c(COPYFILE_DISABLE = "1"))
   tarball <- list.files(dir, pattern = "\\.tar\\.gz$")[[1]]
   packrat::repos_upload(file.path(dir, tarball), "sushi")
 
