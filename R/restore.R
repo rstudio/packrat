@@ -197,33 +197,15 @@ getSourceForPkgRecord <- function(pkgRecord,
       # The version requested is not the version on CRAN; it may be an
       # older version. Look for the older version in the CRAN archive for
       # each named repository.
-      foundVersion <- FALSE
-      for (repo in repos) {
-        tryCatch({
-          archiveUrl <- file.path(repo, "src/contrib/Archive",
-                                  pkgRecord$name,
-                                  pkgSrcFile)
-          downloadWithRetries(archiveUrl,
-                              destfile = file.path(pkgSrcDir, pkgSrcFile),
-                              mode = "wb", quiet = TRUE)
-          foundVersion <- TRUE
-          type <- paste(type, "archived")
-          break
-        }, error = function(e) {
-          # Ignore error and try the next repository
-        })
-      }
+      destFile <- file.path(pkgSrcDir, pkgSrcFile)
+      foundVersion <- downloadArchiveWithRetries(repos, pkgRecord, destFile)
       if (!foundVersion) {
         message("FAILED")
-        stopMsg <- sprintf("Failed to retrieve package sources for %s %s from CRAN (internet connectivity issue?)",
-                           pkgRecord$name,
-                           pkgRecord$version)
-
-        if (!is.na(currentVersion))
-          stopMsg <- paste(stopMsg, sprintf("[%s is current]", currentVersion))
-
-        stop(stopMsg)
+        stop(sprintf("Failed to retrieve package sources for %s %s from a package repository archive (internet connectivity issue?)",
+                     pkgRecord$name,
+                     pkgRecord$version))
       }
+      type <- paste(type, "archived")
     }
   } else if (identical(pkgRecord$source, "github")) {
     archiveUrl <- githubArchiveUrl(pkgRecord)
@@ -340,6 +322,60 @@ getSourceForPkgRecord <- function(pkgRecord,
            pkgRecord$version, ").")
     }
   }
+}
+
+useAlternativeArchiveLocations <- function() {
+  getOption("packrat.alternative.archive.layouts", TRUE)
+}
+
+# Returns TRUE when the package is downloaded, FALSE otherwise.
+downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
+  pkgSrcFile <- pkgSrcFilename(pkgRecord)
+
+  # Many repositories follow the CRAN structure, but not all. Try the CRAN
+  # structure across all configured repositories before attempting a
+  # different path.
+  #
+  # The renv implementation probes the repository to determine which
+  # formatter is appropriate. It previously attempted each possibility.
+  # https://github.com/rstudio/renv/blob/731463ec6a52588c148741d2e60c9107c339d941/R/retrieve.R#L951-L1021
+  formatters <- c(
+    # default CRAN format.
+    function(repo) {
+      file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgSrcFile)
+    }
+  )
+
+  if (useAlternativeArchiveLocations()) {
+    formatters <- c(
+      formatters,
+      # Artifactory (old versions / configurations)
+      function(repo) {
+        file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgRecord$version, pkgSrcFile)
+      },
+
+      # Nexus
+      function(repo) {
+        file.path(repo, "src/contrib", pkgSrcFile)
+      }
+    )
+  }
+
+  foundVersion <- FALSE
+  for (formatter in formatters) {
+    for (repo in repos) {
+      archiveUrl <- formatter(repo)
+      tryCatch({
+        downloadWithRetries(archiveUrl,
+                            destfile = destFile,
+                            mode = "wb", quiet = TRUE)
+        return(TRUE)
+      }, error = function(e) {
+        # ignore error and try next repo/archive path.
+      })
+    }
+  }
+  return(FALSE)
 }
 
 snapshotSources <- function(project, repos, pkgRecords) {
