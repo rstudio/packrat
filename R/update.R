@@ -4,9 +4,6 @@ updateInit <- function() {
   init.R <- readLines(file.path("inst", "resources", "init.R"))
   packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
 
-  ## Sync the packrat path, messages
-  source("R/aaa-globals.R")
-
   installAgentLine <- grep("## -- InstallAgent -- ##", init.R)
   init.R[installAgentLine + 1] <- paste("    installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version), type = "cmd"))
 
@@ -14,12 +11,6 @@ updateInit <- function() {
   init.R[installSourceLine + 1] <- paste("    installSource <-", shQuote(paste("InstallSource:", "source"), type = "cmd"))
 
   cat(init.R, file = file.path("inst", "resources", "init.R"), sep = "\n")
-
-  # Update the .Rprofile that is written out to a project directory
-  .Rprofile <- readLines(file.path("inst", "resources", "init-rprofile.R"))
-  version <- read.dcf("DESCRIPTION")[, "Version"]
-  .Rprofile[1] <- paste0("#### -- Packrat Autoloader (version ", version, ") -- ####")
-  cat(.Rprofile, file = file.path("inst", "resources", "init-rprofile.R"), sep = "\n")
 }
 
 # This function is used to update project settings, typically called after
