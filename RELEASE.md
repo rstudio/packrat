@@ -5,14 +5,14 @@ Use `usethis::use_release_issue()` to create a release issue.
 In the "Submit to CRAN" section, Use the following to adjust the version
 before `devtools::submit_cran()`:
 
-- [ ] `usethis::use_version('patch')`
-- [ ] `source("R/update.R"); updateInit();`
+* [ ] `usethis::use_version('patch')`
+* [ ] `source("R/update.R"); updateInit();`
 
 In the "Wait for CRAN" section, use:
 
-- [ ] `usethis::use_dev_version()`
-- [ ] `source("R/update.R"); updateInit();`
-- [ ] Commit and push the result.
+* [ ] `usethis::use_dev_version()`
+* [ ] `source("R/update.R"); updateInit();`
+* [ ] Commit and push the result.
 
 ### Prerequisites
 
