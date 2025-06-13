@@ -1,7 +1,6 @@
 ## Summary
 
-* correct package docs for roxygen2 change.
-* addresses minor issues seen by users.
+* Adjust package handling for different repository types.
 
 ## R CMD check results
 
