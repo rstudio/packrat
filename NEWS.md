@@ -1,4 +1,4 @@
-# packrat (development version)
+# packrat 0.9.3
 
 - Update vendored `renv` with support for additional Linux distributions when
   normalizing and transforming Posit Package Manager URLs. (#725)

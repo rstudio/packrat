@@ -2,7 +2,7 @@ Type: Package
 Package: packrat
 Title: A Dependency Management System for Projects and their R Package
     Dependencies
-Version: 0.9.2.9000
+Version: 0.9.3
 Authors@R: c(
     person("Aron", "Atkins", , "aron@posit.co", role = c("aut", "cre")),
     person("Toph", "Allen", role = "aut"),
