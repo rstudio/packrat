@@ -36,3 +36,8 @@ test_that("Repository is properly split by readLockFile", {
     )
   )
 })
+
+test_that("readLockFile can handle empty repos", {
+  lf <- readLockFile("lockfiles/lockfile-norepos.txt")
+  expect_null(lf$repos)
+})
