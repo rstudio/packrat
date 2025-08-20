@@ -430,8 +430,11 @@ restore <- function(
 
   # Configure repos globally to avoid explicitly passing the repos list to all
   # downstream function calls.
-  repos <- lockInfo(project, 'repos')
-  externalRepos <- getOption('repos')
+  repos <- lockInfo(project, "repos")
+  if (is.null(repos)) {
+    stop("Packrat lockfile is missing repository URLs")
+  }
+  externalRepos <- getOption("repos")
   options(repos = repos)
   on.exit(
     {
