@@ -1,14 +1,19 @@
 updateInit <- function() {
-
   # Update init.R (the file sourced from within the .Rprofile)
   init.R <- readLines(file.path("inst", "resources", "init.R"))
   packrat.version <- read.dcf("DESCRIPTION")[1, "Version"]
 
   installAgentLine <- grep("## -- InstallAgent -- ##", init.R)
-  init.R[installAgentLine + 1] <- paste("    installAgent <-", shQuote(paste("InstallAgent:", "packrat", packrat.version), type = "cmd"))
+  init.R[installAgentLine + 1] <- paste(
+    "    installAgent <-",
+    shQuote(paste("InstallAgent:", "packrat", packrat.version), type = "cmd")
+  )
 
   installSourceLine <- grep("## -- InstallSource -- ##", init.R)
-  init.R[installSourceLine + 1] <- paste("    installSource <-", shQuote(paste("InstallSource:", "source"), type = "cmd"))
+  init.R[installSourceLine + 1] <- paste(
+    "    installSource <-",
+    shQuote(paste("InstallSource:", "source"), type = "cmd")
+  )
 
   cat(init.R, file = file.path("inst", "resources", "init.R"), sep = "\n")
 }
@@ -16,7 +21,6 @@ updateInit <- function() {
 # This function is used to update project settings, typically called after
 # a call to packrat::set_opts
 updateSettings <- function(project = NULL, options = NULL) {
-
   project <- getProjectDir(project)
 
   if (is.null(options)) {
@@ -46,5 +50,4 @@ updateSettings <- function(project = NULL, options = NULL) {
   symlinkExternalPackages(project = project)
 
   invisible(TRUE)
-
 }

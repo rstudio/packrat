@@ -38,21 +38,34 @@
 #'   It defaults to the option \code{"keep.source.pkgs"}.
 #' @export
 #' @importFrom tools pkgVignettes
-install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
-                    args = getOption("devtools.install.args"), quiet = FALSE,
-                    dependencies = NA, build_vignettes = !quick,
-                    keep_source = getOption("keep.source.pkgs")) {
-
+install <- function(
+  pkg = ".",
+  reload = TRUE,
+  quick = FALSE,
+  local = TRUE,
+  args = getOption("devtools.install.args"),
+  quiet = FALSE,
+  dependencies = NA,
+  build_vignettes = !quick,
+  keep_source = getOption("keep.source.pkgs")
+) {
   pkg <- as.package(pkg)
 
-  if (!quiet) message("Installing ", pkg$package)
+  if (!quiet) {
+    message("Installing ", pkg$package)
+  }
 
   # Build the package. Only build locally if it doesn't have vignettes
   has_vignettes <- length(pkgVignettes(dir = pkg$path)$doc > 0)
   if (local && !(has_vignettes && build_vignettes)) {
     built_path <- pkg$path
   } else {
-    built_path <- build(pkg, tempdir(), vignettes = build_vignettes, quiet = quiet)
+    built_path <- build(
+      pkg,
+      tempdir(),
+      vignettes = build_vignettes,
+      quiet = quiet
+    )
     on.exit(unlink(built_path))
   }
 
@@ -66,16 +79,26 @@ install <- function(pkg = ".", reload = TRUE, quick = FALSE, local = TRUE,
   }
   opts <- paste(paste(opts, collapse = " "), paste(args, collapse = " "))
 
-  R(paste("CMD INSTALL --preclean ", shQuote(built_path), " ", opts, sep = ""),
-    quiet = quiet)
+  R(
+    paste("CMD INSTALL --preclean ", shQuote(built_path), " ", opts, sep = ""),
+    quiet = quiet
+  )
 
-  if (reload) reload(pkg$package, quiet = quiet)
+  if (reload) {
+    reload(pkg$package, quiet = quiet)
+  }
 
   invisible(TRUE)
 }
 
-build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
-                  args = NULL, quiet = FALSE) {
+build <- function(
+  pkg = ".",
+  path = NULL,
+  binary = FALSE,
+  vignettes = TRUE,
+  args = NULL,
+  quiet = FALSE
+) {
   pkg <- as.package(pkg)
   if (is.null(path)) {
     path <- dirname(pkg$path)
@@ -89,22 +112,29 @@ build <- function(pkg = ".", path = NULL, binary = FALSE, vignettes = TRUE,
 
   if (binary) {
     args <- c("--build", args)
-    cmd <- paste0("CMD INSTALL --preclean ", shQuote(pkg$path), " ",
-                  paste0(args, collapse = " "))
+    cmd <- paste0(
+      "CMD INSTALL --preclean ",
+      shQuote(pkg$path),
+      " ",
+      paste0(args, collapse = " ")
+    )
     ext <- if (.Platform$OS.type == "windows") "zip" else "tgz"
   } else {
     args <- c(args, "--no-manual", "--no-resave-data")
 
     if (!vignettes) {
       args <- c(args, noBuildVignettes)
-
     } else if (!nzchar(Sys.which("pdflatex"))) {
       message("pdflatex not found. Not building PDF vignettes.")
       args <- c(args, noBuildVignettes)
     }
 
-    cmd <- paste0("CMD build ", shQuote(pkg$path), " ",
-                  paste0(args, collapse = " "))
+    cmd <- paste0(
+      "CMD build ",
+      shQuote(pkg$path),
+      " ",
+      paste0(args, collapse = " ")
+    )
 
     ext <- "tar.gz"
   }
@@ -219,7 +249,13 @@ install_local_path <- function(path, subdir = NULL, ...) {
   invisible(lapply(path, install_local_path_single, subdir = subdir, ...))
 }
 
-install_local_path_single <- function(path, subdir = NULL, before_install = NULL, ..., quiet = FALSE) {
+install_local_path_single <- function(
+  path,
+  subdir = NULL,
+  before_install = NULL,
+  ...,
+  quiet = FALSE
+) {
   stopifnot(file.exists(path))
   if (!quiet) {
     message("Installing package from '", path, "'")
@@ -249,8 +285,9 @@ install_local_path_single <- function(path, subdir = NULL, before_install = NULL
   }
 
   # Call before_install for bundles (if provided)
-  if (!is.null(bundle) && !is.null(before_install))
+  if (!is.null(bundle) && !is.null(before_install)) {
     before_install(bundle, pkg_path)
+  }
 
   # Finally, run install
   with_build_tools({
@@ -263,13 +300,13 @@ with_build_tools <- function(code) {
   if (!is.null(check)) {
     if (check("Installing R packages from source")) {
       with <- getOption("buildtools.with", NULL)
-      if (!is.null(with))
+      if (!is.null(with)) {
         with(code)
-      else
+      } else {
         force(code)
+      }
     }
-  }
-  else {
+  } else {
     force(code)
   }
 }
@@ -296,36 +333,47 @@ decompressImpl <- function(src, target = tempdir()) {
   if (grepl("\\.zip$", src)) {
     unzip(src, exdir = target, unzip = getOption("unzip"))
     outdir <- getrootdir(as.vector(unzip(src, list = TRUE)$Name))
-
   } else if (grepl("\\.tar$", src)) {
     untar(src, exdir = target, tar = tar_binary())
     outdir <- getrootdir(untar(src, list = TRUE, tar = tar_binary()))
-
   } else if (grepl("\\.(tar\\.gz|tgz)$", src)) {
     untar(src, exdir = target, compressed = "gzip", tar = tar_binary())
-    outdir <- getrootdir(untar(src, compressed = "gzip", list = TRUE, tar = tar_binary()))
-
+    outdir <- getrootdir(untar(
+      src,
+      compressed = "gzip",
+      list = TRUE,
+      tar = tar_binary()
+    ))
   } else if (grepl("\\.(tar\\.bz2|tbz)$", src)) {
     untar(src, exdir = target, compressed = "bzip2", tar = tar_binary())
-    outdir <- getrootdir(untar(src, compressed = "bzip2", list = TRUE, tar = tar_binary()))
-
+    outdir <- getrootdir(untar(
+      src,
+      compressed = "bzip2",
+      list = TRUE,
+      tar = tar_binary()
+    ))
   } else {
     ext <- gsub("^[^.]*\\.", "", src)
-    stop("Don't know how to decompress files with extension ", ext,
-         call. = FALSE)
+    stop(
+      "Don't know how to decompress files with extension ",
+      ext,
+      call. = FALSE
+    )
   }
 
   file.path(target, outdir)
 }
 
-getdir <- function(path)  sub("/[^/]*$", "", path)
+getdir <- function(path) sub("/[^/]*$", "", path)
 
 getrootdir <- function(file_list) {
   getdir(file_list[which.min(nchar(gsub("[^/]", "", file_list)))])
 }
 
 as.package <- function(x = NULL) {
-  if (is.package(x)) return(x)
+  if (is.package(x)) {
+    return(x)
+  }
 
   x <- check_dir(x)
   load_pkg_description(x)
@@ -386,7 +434,9 @@ if (!exists("set_rtools_path")) {
 
 find_rtools <- function(debug = FALSE) {
   # Non-windows users don't need rtools
-  if (.Platform$OS.type != "windows") return(TRUE)
+  if (.Platform$OS.type != "windows") {
+    return(TRUE)
+  }
 
   # First try the path
   from_path <- scan_path_for_rtools(debug)
@@ -399,14 +449,27 @@ find_rtools <- function(debug = FALSE) {
     # Installed
     if (is.null(from_path$version)) {
       # but not from rtools
-      if (debug) "gcc and ls on path, assuming set up is correct\n"
+      if (debug) {
+        "gcc and ls on path, assuming set up is correct\n"
+      }
       return(TRUE)
     } else {
       # Installed, but not compatible
-      message("WARNING: Rtools ", from_path$version, " found on the path",
-              " at ", from_path$path, " is not compatible with R ", getRversion(), ".\n\n",
-              "Please download and install ", rtools_needed(), " from ", rtools_url,
-              ", remove the incompatible version from your PATH, then run find_rtools().")
+      message(
+        "WARNING: Rtools ",
+        from_path$version,
+        " found on the path",
+        " at ",
+        from_path$path,
+        " is not compatible with R ",
+        getRversion(),
+        ".\n\n",
+        "Please download and install ",
+        rtools_needed(),
+        " from ",
+        rtools_url,
+        ", remove the incompatible version from your PATH, then run find_rtools()."
+      )
       return(invisible(FALSE))
     }
   }
@@ -416,10 +479,15 @@ find_rtools <- function(debug = FALSE) {
 
   if (length(registry_candidates) == 0) {
     # Not on path or in registry, so not installled
-    message("WARNING: Rtools is required to build R packages, but is not ",
-            "currently installed.\n\n",
-            "Please download and install ", rtools_needed(), " from ", rtools_url,
-            " and then run find_rtools().")
+    message(
+      "WARNING: Rtools is required to build R packages, but is not ",
+      "currently installed.\n\n",
+      "Please download and install ",
+      rtools_needed(),
+      " from ",
+      rtools_url,
+      " and then run find_rtools()."
+    )
     return(invisible(FALSE))
   }
 
@@ -427,35 +495,60 @@ find_rtools <- function(debug = FALSE) {
   if (is.null(from_registry)) {
     # In registry, but not compatible.
     versions <- vapply(registry_candidates, function(x) x$version, character(1))
-    message("WARNING: Rtools is required to build R packages, but no version ",
-            "of Rtools compatible with R ", getRversion(), " was found. ",
-            "(Only the following incompatible version(s) of Rtools were found:",
-            paste(versions, collapse = ","), ")\n\n",
-            "Please download and install ", rtools_needed(), " from ", rtools_url,
-            " and then run find_rtools().")
+    message(
+      "WARNING: Rtools is required to build R packages, but no version ",
+      "of Rtools compatible with R ",
+      getRversion(),
+      " was found. ",
+      "(Only the following incompatible version(s) of Rtools were found:",
+      paste(versions, collapse = ","),
+      ")\n\n",
+      "Please download and install ",
+      rtools_needed(),
+      " from ",
+      rtools_url,
+      " and then run find_rtools()."
+    )
     return(invisible(FALSE))
   }
 
   installed_ver <- installed_version(from_registry$path, debug = debug)
   if (is.null(installed_ver)) {
     # Previously installed version now deleted
-    message("WARNING: Rtools is required to build R packages, but the ",
-            "version of Rtools previously installed in ", from_registry$path,
-            " has been deleted.\n\n",
-            "Please download and install ", rtools_needed(), " from ", rtools_url,
-            " and then run find_rtools().")
+    message(
+      "WARNING: Rtools is required to build R packages, but the ",
+      "version of Rtools previously installed in ",
+      from_registry$path,
+      " has been deleted.\n\n",
+      "Please download and install ",
+      rtools_needed(),
+      " from ",
+      rtools_url,
+      " and then run find_rtools()."
+    )
     return(invisible(FALSE))
   }
 
   if (installed_ver != from_registry$version) {
     # Installed version doesn't match registry version
-    message("WARNING: Rtools is required to build R packages, but no version ",
-            "of Rtools compatible with R ", getRversion(), " was found. ",
-            "Rtools ", from_registry$version, " was previously installed in ",
-            from_registry$path, " but now that directory contains Rtools ",
-            installed_ver, ".\n\n",
-            "Please download and install ", rtools_needed(), " from ", rtools_url,
-            " and then run find_rtools().")
+    message(
+      "WARNING: Rtools is required to build R packages, but no version ",
+      "of Rtools compatible with R ",
+      getRversion(),
+      " was found. ",
+      "Rtools ",
+      from_registry$version,
+      " was previously installed in ",
+      from_registry$path,
+      " but now that directory contains Rtools ",
+      installed_ver,
+      ".\n\n",
+      "Please download and install ",
+      rtools_needed(),
+      " from ",
+      rtools_url,
+      " and then run find_rtools()."
+    )
     return(invisible(FALSE))
   }
 
@@ -465,46 +558,78 @@ find_rtools <- function(debug = FALSE) {
 }
 
 scan_path_for_rtools <- function(debug = FALSE) {
-  if (debug) cat("Scanning path...\n")
+  if (debug) {
+    cat("Scanning path...\n")
+  }
 
   # First look for ls and gcc
   ls_path <- Sys.which("ls")
-  if (ls_path == "") return(NULL)
-  if (debug) cat("ls :", ls_path, "\n")
+  if (ls_path == "") {
+    return(NULL)
+  }
+  if (debug) {
+    cat("ls :", ls_path, "\n")
+  }
 
   gcc_path <- Sys.which("gcc")
-  if (gcc_path == "") return(NULL)
-  if (debug) cat("gcc:", gcc_path, "\n")
+  if (gcc_path == "") {
+    return(NULL)
+  }
+  if (debug) {
+    cat("gcc:", gcc_path, "\n")
+  }
 
   # We have a candidate installPath
   install_path <- dirname(dirname(ls_path))
   install_path2 <- dirname(dirname(dirname(gcc_path)))
-  if (install_path2 != install_path) return(NULL)
+  if (install_path2 != install_path) {
+    return(NULL)
+  }
 
   version <- installed_version(install_path, debug = debug)
-  if (debug) cat("Version:", version, "\n")
+  if (debug) {
+    cat("Version:", version, "\n")
+  }
 
   rtools(install_path, version)
 }
 
 scan_registry_for_rtools <- function(debug = FALSE) {
-  if (debug) cat("Scanning registry...\n")
+  if (debug) {
+    cat("Scanning registry...\n")
+  }
 
   keys <- NULL
-  try(keys <- utils::readRegistry("SOFTWARE\\R-core\\Rtools",
-                                  hive = "HLM", view = "32-bit", maxdepth = 2), silent = TRUE)
-  if (is.null(keys)) return(NULL)
+  try(
+    keys <- utils::readRegistry(
+      "SOFTWARE\\R-core\\Rtools",
+      hive = "HLM",
+      view = "32-bit",
+      maxdepth = 2
+    ),
+    silent = TRUE
+  )
+  if (is.null(keys)) {
+    return(NULL)
+  }
 
   rts <- vector("list", length(keys))
 
   for (i in seq_along(keys)) {
     version <- names(keys)[[i]]
     key <- keys[[version]]
-    if (!is.list(key) || is.null(key$InstallPath)) next
-    install_path <- normalizePath(key$InstallPath,
-                                  mustWork = FALSE, winslash = "/")
+    if (!is.list(key) || is.null(key$InstallPath)) {
+      next
+    }
+    install_path <- normalizePath(
+      key$InstallPath,
+      mustWork = FALSE,
+      winslash = "/"
+    )
 
-    if (debug) cat("Found", install_path, "for", version, "\n")
+    if (debug) {
+      cat("Found", install_path, "for", version, "\n")
+    }
     rts[[i]] <- rtools(install_path, version)
   }
 
@@ -512,7 +637,9 @@ scan_registry_for_rtools <- function(debug = FALSE) {
 }
 
 installed_version <- function(path, debug) {
-  if (!file.exists(file.path(path, "Rtools.txt"))) return(NULL)
+  if (!file.exists(file.path(path, "Rtools.txt"))) {
+    return(NULL)
+  }
 
   # Find the version path
   version_path <- file.path(path, "VERSION.txt")
@@ -520,30 +647,42 @@ installed_version <- function(path, debug) {
     cat("VERSION.txt\n")
     cat(readLines(version_path), "\n")
   }
-  if (!file.exists(version_path)) return(NULL)
+  if (!file.exists(version_path)) {
+    return(NULL)
+  }
 
   # Rtools is in the path -- now crack the VERSION file
   contents <- NULL
   try(contents <- readLines(version_path), silent = TRUE)
-  if (is.null(contents)) return(NULL)
+  if (is.null(contents)) {
+    return(NULL)
+  }
 
   # Extract the version
   contents <- gsub("^\\s+|\\s+$", "", contents)
   version_re <- "Rtools version (\\d\\.\\d+)\\.[0-9.]+$"
 
-  if (!grepl(version_re, contents)) return(NULL)
+  if (!grepl(version_re, contents)) {
+    return(NULL)
+  }
 
   m <- regexec(version_re, contents)
   regmatches(contents, m)[[1]][2]
 }
 
 is_compatible <- function(rtools) {
-  if (is.null(rtools)) return(FALSE)
-  if (is.null(rtools$version)) return(FALSE)
+  if (is.null(rtools)) {
+    return(FALSE)
+  }
+  if (is.null(rtools$version)) {
+    return(FALSE)
+  }
 
   stopifnot(is.rtools(rtools))
   info <- version_info[[rtools$version]]
-  if (is.null(info)) return(FALSE)
+  if (is.null(info)) {
+    return(FALSE)
+  }
 
   r_version <- getRversion()
   r_version >= info$version_min && r_version <= info$version_max
@@ -610,8 +749,14 @@ rtools_needed <- function() {
   "the appropriate version of Rtools"
 }
 
-system_check <- function(cmd, args = character(), env = character(),
-                         quiet = FALSE, return_output = FALSE, ...) {
+system_check <- function(
+  cmd,
+  args = character(),
+  env = character(),
+  quiet = FALSE,
+  return_output = FALSE,
+  ...
+) {
   full <- paste(shQuote(cmd), paste(args, collapse = ", "))
 
   if (!quiet && !return_output) {
@@ -632,11 +777,13 @@ system_check <- function(cmd, args = character(), env = character(),
 
   status <- attr(result, "status")
   if (!is.null(status) && status != 0) {
-
     stopMsg <- paste0(
-      "Command failed (", status, ")",
+      "Command failed (",
+      status,
+      ")",
       "\n\nFailed to run system command:\n\n",
-      "\t", full
+      "\t",
+      full
     )
 
     if (length(result)) {
@@ -693,8 +840,12 @@ set_envvar <- function(envs, action = "replace") {
     }
   }
 
-  if (any(set))  do.call("Sys.setenv", as.list(envs[set]))
-  if (any(!set)) Sys.unsetenv(names(envs)[!set])
+  if (any(set)) {
+    do.call("Sys.setenv", as.list(envs[set]))
+  }
+  if (any(!set)) {
+    Sys.unsetenv(names(envs)[!set])
+  }
 
   invisible(old)
 }
@@ -724,7 +875,9 @@ add_path <- function(path, after = Inf) {
 
 reload <- function(pkg = ".", quiet = FALSE) {
   if (paste0("package:", pkg) %in% search()) {
-    if (!quiet) message("Reloading installed package: \", pkg, \"")
+    if (!quiet) {
+      message("Reloading installed package: \", pkg, \"")
+    }
     forceUnload(pkg)
     library(pkg, character.only = TRUE, quietly = TRUE)
   }

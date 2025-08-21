@@ -2,14 +2,15 @@
 # performed on the given project
 getActions <- function(verb, project) {
   project <- getProjectDir(project)
-  if (verb == "restore")
+  if (verb == "restore") {
     actionFunc <- restore
-  else if (verb == "snapshot")
+  } else if (verb == "snapshot") {
     actionFunc <- snapshot
-  else if (verb == "clean")
+  } else if (verb == "clean") {
     actionFunc <- clean
-  else
+  } else {
     stop("Unknown action '", verb, "'")
+  }
   suppressMessages(actionFunc(project = project, dry.run = TRUE))
 }
 
@@ -19,7 +20,6 @@ getActionMessages <- function(verb, project) {
 }
 
 packageActionMessages <- function(verb, records) {
-
   if (!length(records$actions)) {
     message("No ", verb, " actions to perform!")
     return(invisible(NULL))
@@ -67,33 +67,74 @@ packageActionMessages <- function(verb, records) {
       x$name == package
     })]
     packrat.version <-
-      if (length(record) == 1)
+      if (length(record) == 1) {
         record[[1]]$version
-      else
+      } else {
         NA
+      }
     library.version <- installedPkgInfo[[package]][["Version"]] %||% NA
-    if (verb == "snapshot")
-    {
+    if (verb == "snapshot") {
       msgs$message[[i]] <-
-        switch(action,
-               add = paste("Add", shQuote(package), parens(library.version), "to Packrat"),
-               remove = paste("Remove", shQuote(package), parens(packrat.version), "from Packrat"),
-               upgrade = paste("Replace", shQuote(package), parens(paste(packrat.version, "->", library.version)), "in Packrat"),
-               downgrade = paste("Replace", shQuote(package), parens(paste(packrat.version, "->", library.version)), "in Packrat"),
-               crossgrade = paste("Crossgrade", shQuote(package), parens(paste(packrat.version, "->", library.version)), "in Packrat"),
-               stop("Unrecognized action")
+        switch(
+          action,
+          add = paste(
+            "Add",
+            shQuote(package),
+            parens(library.version),
+            "to Packrat"
+          ),
+          remove = paste(
+            "Remove",
+            shQuote(package),
+            parens(packrat.version),
+            "from Packrat"
+          ),
+          upgrade = paste(
+            "Replace",
+            shQuote(package),
+            parens(paste(packrat.version, "->", library.version)),
+            "in Packrat"
+          ),
+          downgrade = paste(
+            "Replace",
+            shQuote(package),
+            parens(paste(packrat.version, "->", library.version)),
+            "in Packrat"
+          ),
+          crossgrade = paste(
+            "Crossgrade",
+            shQuote(package),
+            parens(paste(packrat.version, "->", library.version)),
+            "in Packrat"
+          ),
+          stop("Unrecognized action")
         )
-    }
-    else
-    {
+    } else {
       msgs$message[[i]] <-
-        switch(action,
-               add = paste("Install", shQuote(package), parens(packrat.version)),
-               remove = paste("Uninstall", shQuote(package), parens(packrat.version)),
-               upgrade = paste("Upgrade", shQuote(package), parens(paste(library.version, "->", packrat.version))),
-               downgrade = paste("Downgrade", shQuote(package), parens(paste(library.version, "->", packrat.version))),
-               crossgrade = paste("Crossgrade", shQuote(package), parens(paste(library.version, "->", packrat.version))),
-               stop("Unrecognized action")
+        switch(
+          action,
+          add = paste("Install", shQuote(package), parens(packrat.version)),
+          remove = paste(
+            "Uninstall",
+            shQuote(package),
+            parens(packrat.version)
+          ),
+          upgrade = paste(
+            "Upgrade",
+            shQuote(package),
+            parens(paste(library.version, "->", packrat.version))
+          ),
+          downgrade = paste(
+            "Downgrade",
+            shQuote(package),
+            parens(paste(library.version, "->", packrat.version))
+          ),
+          crossgrade = paste(
+            "Crossgrade",
+            shQuote(package),
+            parens(paste(library.version, "->", packrat.version))
+          ),
+          stop("Unrecognized action")
         )
     }
     msgs$packrat.version[[i]] <- packrat.version

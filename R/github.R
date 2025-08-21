@@ -13,11 +13,20 @@
 #   cause of the error.
 githubDownload <- function(url, destfile, ...) {
   if (githubAuthenticated() && canUseRenvDownload()) {
-    tryCatch(renvDownload(url, destfile, type = "github"), error = authDownloadAdvice("github", TRUE, "renv"))
+    tryCatch(
+      renvDownload(url, destfile, type = "github"),
+      error = authDownloadAdvice("github", TRUE, "renv")
+    )
   } else if (githubAuthenticated() && canUseHttr()) {
-    tryCatch(githubDownloadHttr(url, destfile), error = authDownloadAdvice("github", TRUE, "httr"))
+    tryCatch(
+      githubDownloadHttr(url, destfile),
+      error = authDownloadAdvice("github", TRUE, "httr")
+    )
   } else {
-    tryCatch(downloadWithRetries(url, destfile = destfile), error = authDownloadAdvice("github", FALSE, "internal"))
+    tryCatch(
+      downloadWithRetries(url, destfile = destfile),
+      error = authDownloadAdvice("github", FALSE, "internal")
+    )
   }
 }
 
@@ -27,9 +36,9 @@ githubDownload <- function(url, destfile, ...) {
 # - Returns `TRUE` if it succeeds. Calls `stop()` if any errors are encountered.
 # - Writes to `destfile`, whose lifecycle is managed by `getSourceForPkgRecord`.
 githubDownloadHttr <- function(url, destfile, ...) {
-  authenticate    <- yoink("httr", "authenticate")
-  GET             <- yoink("httr", "GET")
-  content         <- yoink("httr", "content")
+  authenticate <- yoink("httr", "authenticate")
+  GET <- yoink("httr", "GET")
+  content <- yoink("httr", "content")
 
   token <- github_pat(quiet = TRUE)
   auth <- if (!is.null(token)) {
@@ -65,20 +74,24 @@ githubArchiveUrl <- function(pkgRecord) {
     # (it's possible the associated package record will not contain a
     # 'remote_host' entry)
     fmt <- "api.github.com/repos/%s/%s/tarball/%s"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$gh_username,
-                          pkgRecord$gh_repo,
-                          pkgRecord$gh_sha1)
+    archiveUrl <- sprintf(
+      fmt,
+      pkgRecord$gh_username,
+      pkgRecord$gh_repo,
+      pkgRecord$gh_sha1
+    )
   } else {
     # Prefer using the 'remote_host' entry as it allows for successfully
     # installation of packages available on private GitHub repositories
     # (which will not use api.github.com)
     fmt <- "%s/repos/%s/%s/tarball/%s"
-    archiveUrl <- sprintf(fmt,
-                          pkgRecord$remote_host,
-                          pkgRecord$remote_username,
-                          pkgRecord$remote_repo,
-                          pkgRecord$remote_sha)
+    archiveUrl <- sprintf(
+      fmt,
+      pkgRecord$remote_host,
+      pkgRecord$remote_username,
+      pkgRecord$remote_repo,
+      pkgRecord$remote_sha
+    )
   }
 
   # Ensure the protocol is prepended
@@ -89,7 +102,8 @@ githubArchiveUrl <- function(pkgRecord) {
 }
 
 isGitHubURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://(?:www|api).github.com", url, perl = TRUE)
+  is.string(url) &&
+    grepl("^http(?:s)?://(?:www|api).github.com", url, perl = TRUE)
 }
 
 githubAuthenticated <- function() {

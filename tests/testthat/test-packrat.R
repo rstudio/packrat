@@ -20,7 +20,6 @@ expect_annotated_description <- function(lib, name) {
 }
 
 withTestContext({
-
   test_that("init creates project structure and installs dependencies with annotated DESCRIPTION", {
     skip_on_cran()
     projRoot <- cloneTestProject("sated")
@@ -45,8 +44,12 @@ withTestContext({
   test_that("init does not install dependencies when infer.dependencies is false", {
     skip_on_cran()
     projRoot <- cloneTestProject("sated")
-    init(enter = FALSE, projRoot, options = list(local.repos = "packages"),
-         infer.dependencies = FALSE)
+    init(
+      enter = FALSE,
+      projRoot,
+      options = list(local.repos = "packages"),
+      infer.dependencies = FALSE
+    )
     lib <- libDir(projRoot)
     expect_true(file.exists(lockFilePath(projRoot)))
     expect_true(file.exists(srcDir(projRoot)))
@@ -98,7 +101,7 @@ withTestContext({
     expect_false(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "toast")))
     installTestPkg("bread", "1.0.0", lib)
-    addTestDependency(projRoot, "toast")  # toast depends on bread
+    addTestDependency(projRoot, "toast") # toast depends on bread
     expect_true(file.exists(file.path(lib, "bread")))
 
     # Snapshot the new state and make sure we picked up both toast and its
@@ -126,7 +129,7 @@ withTestContext({
     expect_false(file.exists(file.path(lib, "bread")))
     expect_false(file.exists(file.path(lib, "toast")))
     installTestPkg("bread", "1.0.0", lib)
-    addTestDependency(projRoot, "toast")  # toast depends on bread
+    addTestDependency(projRoot, "toast") # toast depends on bread
     expect_true(file.exists(file.path(lib, "bread")))
 
     # Snapshot the new state and make sure we picked up both toast and its
@@ -160,7 +163,11 @@ withTestContext({
     skip_on_cran()
     projRoot <- cloneTestProject("partlyignored")
     lib <- libDir(projRoot)
-    init(enter = FALSE, projRoot, options = list(ignored.directories = "ignoreme"))
+    init(
+      enter = FALSE,
+      projRoot,
+      options = list(ignored.directories = "ignoreme")
+    )
 
     # This test project has a file called notignored.R that depends on bread, and
     # another file called ignoreme/ignorethis.R that depends on toast.
@@ -196,7 +203,7 @@ withTestContext({
 
     repos <- getOption("repos")[1]
     op <- options(
-      repos   = c(CRAN = repos, CUSTOM = repos),
+      repos = c(CRAN = repos, CUSTOM = repos),
       pkgType = "source"
     )
 
@@ -209,12 +216,14 @@ withTestContext({
       options = list(local.repos = "packages"),
       enter = FALSE
     )
-
   })
 
   test_that("fileDependencies.R picks up '::', ':::' dependencies", {
     file <- tempfile()
-    cat("library('baz')\nlibrary('bat')\nstringr::foo(1)\nKmisc::enumerate(2)\nfunction() {{plyr::bar(plyr::baz(1, 2))}}\n", file = file)
+    cat(
+      "library('baz')\nlibrary('bat')\nstringr::foo(1)\nKmisc::enumerate(2)\nfunction() {{plyr::bar(plyr::baz(1, 2))}}\n",
+      file = file
+    )
     on.exit(unlink(file))
     deps <- fileDependencies.R(file)
     expect_identical(
@@ -228,7 +237,11 @@ withTestContext({
     skip_on_os("windows")
 
     projRoot <- cloneTestProject("sated")
-    packrat::init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+    packrat::init(
+      enter = FALSE,
+      projRoot,
+      options = list(local.repos = "packages")
+    )
     list.files(projRoot, all.files = TRUE, recursive = TRUE)
     expect_true(file.exists(file.path(projRoot, ".Rprofile")))
     packrat::disable(projRoot, restart = FALSE)
@@ -239,7 +252,11 @@ withTestContext({
     projRoot <- cloneTestProject("sated")
     text <- "## Some comments\n## That should be preserved\n"
     cat(text, file = file.path(projRoot, ".Rprofile"))
-    packrat::init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+    packrat::init(
+      enter = FALSE,
+      projRoot,
+      options = list(local.repos = "packages")
+    )
     list.files(projRoot, all.files = TRUE, recursive = TRUE)
     expect_true(file.exists(file.path(projRoot, ".Rprofile")))
     content <- readLines(file.path(projRoot, ".Rprofile"))
@@ -257,7 +274,11 @@ withTestContext({
     ## Empty .Rprofile
     projRoot <- cloneTestProject("sated")
     file.create(file.path(projRoot, ".Rprofile"))
-    packrat::init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
+    packrat::init(
+      enter = FALSE,
+      projRoot,
+      options = list(local.repos = "packages")
+    )
     expect_true(file.exists(file.path(projRoot, ".Rprofile")))
     content <- readLines(file.path(projRoot, ".Rprofile"))
     packrat::disable(projRoot, restart = FALSE)
@@ -270,9 +291,18 @@ withTestContext({
     init(enter = FALSE, projRoot, options = list(local.repos = "packages"))
 
     status(projRoot)
-    unlink(file.path(projRoot, "packrat/lib/x86_64-apple-darwin13.3.0/3.2.0/bread"), recursive = TRUE)
+    unlink(
+      file.path(projRoot, "packrat/lib/x86_64-apple-darwin13.3.0/3.2.0/bread"),
+      recursive = TRUE
+    )
     status(projRoot)
-    unlink(file.path(projRoot, "packrat/lib/x86_64-apple-darwin13.3.0/3.2.0/breakfast"), recursive = TRUE)
+    unlink(
+      file.path(
+        projRoot,
+        "packrat/lib/x86_64-apple-darwin13.3.0/3.2.0/breakfast"
+      ),
+      recursive = TRUE
+    )
     status(projRoot)
 
     # Try removing an item from the lockfile
@@ -283,7 +313,6 @@ withTestContext({
     lf <- lf[-c(breakfastStart:breakfastEnd)]
     cat(lf, file = lockFilePath(projRoot), sep = "\n")
     status(projRoot)
-
   })
 
   test_that("hash does not fail if LinkingTo packages are not available", {
@@ -294,8 +323,11 @@ withTestContext({
   test_that("snapshot succeeds with an empty DESCRIPTION", {
     skip_on_cran()
     projRoot <- cloneTestProject("emptydesc")
-    .snapshotImpl(projRoot, implicit.packrat.dependency = FALSE,
-                  snapshot.sources = FALSE)
+    .snapshotImpl(
+      projRoot,
+      implicit.packrat.dependency = FALSE,
+      snapshot.sources = FALSE
+    )
   })
 
   test_that("Packages restored from GitLab have RemoteType+RemoteHost in their DESCRIPTION", {
@@ -339,16 +371,20 @@ withTestContext({
   })
 
   test_that("packrat and remotes annotated descriptions are comparable", {
-    remotesDesc <- as.data.frame(readDcf("resources/descriptions/falsy.remotes"))
+    remotesDesc <- as.data.frame(readDcf(
+      "resources/descriptions/falsy.remotes"
+    ))
     remotesRecord <- inferPackageRecord(remotesDesc)
-    packratDesc <- as.data.frame(readDcf("resources/descriptions/falsy.packrat"))
+    packratDesc <- as.data.frame(readDcf(
+      "resources/descriptions/falsy.packrat"
+    ))
     packratRecord <- inferPackageRecord(packratDesc)
-    diffed <- diff(list("falsy" = remotesRecord),
-                   list("falsy" = packratRecord))
+    diffed <- diff(list("falsy" = remotesRecord), list("falsy" = packratRecord))
     expected <- c(
       structure(rep.int('remove', 0), names = c()),
       structure(rep.int('add', 0), names = c()),
-      structure(c(NA), names = c("falsy")))
+      structure(c(NA), names = c("falsy"))
+    )
     expect_identical(diffed, expected)
   })
 })

@@ -27,7 +27,6 @@
 #'
 #' @export
 status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
-
   project <- getProjectDir(project)
   stopIfNoLockfile(project)
 
@@ -43,9 +42,13 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
 
   if (length(packratPackages) == 0) {
     initArg <- if (projectDefault) '' else deparse(project)
-    cat('This directory does not appear to be using packrat.\n',
-        'Call packrat::init(', initArg, ') to initialize packrat.',
-        sep = '')
+    cat(
+      'This directory does not appear to be using packrat.\n',
+      'Call packrat::init(',
+      initArg,
+      ') to initialize packrat.',
+      sep = ''
+    )
     return(invisible())
   }
 
@@ -58,10 +61,13 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   installedPkgFolders <- list.files(lib.loc, full.names = TRUE)
 
   installedPkgRecords <- lapply(installedPkgFolders, function(path) {
-
     descPath <- file.path(path, "DESCRIPTION")
     if (!file.exists(descPath)) {
-      warning("No DESCRIPTION file for installed package '", basename(path), "'")
+      warning(
+        "No DESCRIPTION file for installed package '",
+        basename(path),
+        "'"
+      )
       return(NULL)
     }
 
@@ -88,50 +94,58 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   # yet cached the set of available packages. However, to infer broken dependency chains
   # it is in general necessary to have the set of `available.packages()` to fill in
   # broken links.
-  availablePkgs <- if (hasCachedAvailablePackages())
+  availablePkgs <- if (hasCachedAvailablePackages()) {
     availablePackages()
-  else
+  } else {
     availablePackagesSkeleton()
+  }
 
   inferredPkgNames <- appDependencies(
     project,
     available.packages = availablePkgs
   )
 
-
   # Suppress warnings on 'Suggests', since they may be from non-CRAN repos (e.g. OmegaHat)
   suggestedPkgNames <- suppressWarnings(
-    appDependencies(project,
-                    available.packages = availablePkgs,
-                    fields = "Suggests")
+    appDependencies(
+      project,
+      available.packages = availablePkgs,
+      fields = "Suggests"
+    )
   )
 
   # All packages mentioned in one of the three above
   allPkgNames <- sort_c(unique(c(
-    packratNames, installedPkgNames, inferredPkgNames
+    packratNames,
+    installedPkgNames,
+    inferredPkgNames
   )))
 
   # Match the above with the set of all package names
   .match <- function(what, from = allPkgNames) {
-    if (is.null(what)) NA
-    else what[from]
+    if (is.null(what)) {
+      NA
+    } else {
+      what[from]
+    }
   }
 
   packrat.version <- .match(packratVersions)
-  packrat.source  <- .match(packratSources)
+  packrat.source <- .match(packratSources)
   library.version <- .match(installedPkgVersions)
   currently.used <- allPkgNames %in% c(inferredPkgNames, suggestedPkgNames)
 
   # Generate a table that holds the current overall state
   external.packages <- opts$external.packages()
-  statusTbl <- data.frame(stringsAsFactors = FALSE,
-                          row.names = 1:length(allPkgNames),
-                          package = allPkgNames,
-                          packrat.version = packrat.version,
-                          packrat.source  = packrat.source,
-                          library.version = library.version,
-                          currently.used  = currently.used,
-                          external.package = allPkgNames %in% external.packages
+  statusTbl <- data.frame(
+    stringsAsFactors = FALSE,
+    row.names = 1:length(allPkgNames),
+    package = allPkgNames,
+    packrat.version = packrat.version,
+    packrat.source = packrat.source,
+    library.version = library.version,
+    currently.used = currently.used,
+    external.package = allPkgNames %in% external.packages
   )
 
   # Only give information on packages not included in external.packages
@@ -141,51 +155,60 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   # be between packrat.version, library.version, currently.used
 
   if (!quiet) {
-
     # Packages that are only tracked within packrat, but are no longer present
     # in the local library nor found in the user's code
-    onlyPackrat <- with(statusTbl,
-                        !is.na(packrat.version) &
-                          is.na(library.version) &
-                          !currently.used
+    onlyPackrat <- with(
+      statusTbl,
+      !is.na(packrat.version) &
+        is.na(library.version) &
+        !currently.used
     )
-
 
     if (any(onlyPackrat)) {
       prettyPrint(
         searchPackages(packratPackages, statusTbl$package[onlyPackrat]),
-        header = c("The following packages are tracked by packrat, but are no longer ",
-                   "available in the local library nor present in your code:"),
-        footer = c("You can call packrat::snapshot() to remove these packages from the lockfile, ",
-                   "or if you intend to use these packages, use packrat::restore() to restore them ",
-                   "to your private library.")
+        header = c(
+          "The following packages are tracked by packrat, but are no longer ",
+          "available in the local library nor present in your code:"
+        ),
+        footer = c(
+          "You can call packrat::snapshot() to remove these packages from the lockfile, ",
+          "or if you intend to use these packages, use packrat::restore() to restore them ",
+          "to your private library."
+        )
       )
     }
 
     # Packages that are used in the code, but are not mentioned in either packrat
     # or the library
-    whichUntrackedPackages <- with(statusTbl,
-                                   currently.used &
-                                     is.na(packrat.version) &
-                                     is.na(library.version)
+    whichUntrackedPackages <- with(
+      statusTbl,
+      currently.used &
+        is.na(packrat.version) &
+        is.na(library.version)
     )
     pkgNamesUntracked <- statusTbl$package[whichUntrackedPackages]
 
     if (length(pkgNamesUntracked)) {
       prettyPrintNames(
         pkgNamesUntracked,
-        c("The following packages are referenced in your code, but are not present\n",
-          "in your library nor in packrat:\n"),
-        c("\nYou will need to install these packages manually, then use\n",
-          "packrat::snapshot() to record these packages in packrat.")
+        c(
+          "The following packages are referenced in your code, but are not present\n",
+          "in your library nor in packrat:\n"
+        ),
+        c(
+          "\nYou will need to install these packages manually, then use\n",
+          "packrat::snapshot() to record these packages in packrat."
+        )
       )
     }
 
     # Packages that are in the library, currently used, but not tracked by packrat
-    whichMissingFromPackrat <- with(statusTbl,
-                                    currently.used &
-                                      is.na(packrat.version) &
-                                      (!is.na(library.version))
+    whichMissingFromPackrat <- with(
+      statusTbl,
+      currently.used &
+        is.na(packrat.version) &
+        (!is.na(library.version))
     )
 
     missingFromPackrat <- statusTbl$package[whichMissingFromPackrat]
@@ -202,11 +225,13 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     }
 
     # Packages that are tracked by packrat, currently used, but out of sync in the library
-    whichOutOfSync <- with(statusTbl,
-                           currently.used &
-                             !is.na(packrat.version) &
-                             !is.na(library.version) &
-                             packrat.version != library.version)
+    whichOutOfSync <- with(
+      statusTbl,
+      currently.used &
+        !is.na(packrat.version) &
+        !is.na(library.version) &
+        packrat.version != library.version
+    )
     pkgNamesOutOfSync <- statusTbl$package[whichOutOfSync]
 
     if (length(pkgNamesOutOfSync)) {
@@ -214,8 +239,10 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
         searchPackages(packratPackages, pkgNamesOutOfSync),
         searchPackages(installedPkgRecords, pkgNamesOutOfSync),
         "The following packages are out of sync between packrat and your current library:",
-        c("Use packrat::snapshot() to set packrat to use the current library, or use\n",
-          "packrat::restore() to reset the library to the last snapshot."),
+        c(
+          "Use packrat::snapshot() to set packrat to use the current library, or use\n",
+          "packrat::restore() to reset the library to the last snapshot."
+        ),
         "packrat",
         "library"
       )
@@ -223,10 +250,12 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
 
     # Packages which have been deleted from the library, but are still tracked by packrat,
     # and still in use
-    whichDeletedButStillTracked <- with(statusTbl,
-                                        currently.used &
-                                          !is.na(packrat.version) &
-                                          is.na(library.version))
+    whichDeletedButStillTracked <- with(
+      statusTbl,
+      currently.used &
+        !is.na(packrat.version) &
+        is.na(library.version)
+    )
     deletedButStillTracked <- statusTbl$package[whichDeletedButStillTracked]
 
     if (length(deletedButStillTracked)) {
@@ -239,28 +268,26 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
     }
 
     # If everything is in order, let the user know
-    if (!(any(onlyPackrat) ||
-            length(missingFromPackrat) ||
-            length(pkgNamesUntracked) ||
-            length(pkgNamesOutOfSync) ||
-            length(deletedButStillTracked) ||
-            length(missingFromPackrat))) {
+    if (
+      !(any(onlyPackrat) ||
+        length(missingFromPackrat) ||
+        length(pkgNamesUntracked) ||
+        length(pkgNamesOutOfSync) ||
+        length(deletedButStillTracked) ||
+        length(missingFromPackrat))
+    ) {
       message("Up to date.")
     }
-
   }
 
   invisible(statusTbl)
-
 }
 
 getPackageElement <- function(package, element) {
-
   setNames(
     unlist(lapply(package, "[[", element)),
     unlist(lapply(package, "[[", "name"))
   )
-
 }
 
 hasCachedAvailablePackages <- function() {

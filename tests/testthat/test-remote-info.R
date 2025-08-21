@@ -31,12 +31,12 @@ test_that("remote_info is correctly generated from a GitHub pkgRecord with a sub
     gh_subdir = 'subadder'
   )
   expected <- data.frame(
-    RemoteType     = "github",
-    GithubRepo     = "sub_adder",
+    RemoteType = "github",
+    GithubRepo = "sub_adder",
     GithubUsername = "my-username",
-    GithubRef      = "HEAD",
-    GithubSHA1     = "abc123",
-    GithubSubdir   = "subadder",
+    GithubRef = "HEAD",
+    GithubSHA1 = "abc123",
+    GithubSubdir = "subadder",
     stringsAsFactors = FALSE
   )
   expect_identical(getRemoteInfo(pkgRecordGithubSubdir), expected)

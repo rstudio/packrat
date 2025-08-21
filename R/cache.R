@@ -23,9 +23,9 @@ installedDescLookup <- function(pkgName) {
 #
 #' @importFrom tools md5sum
 hash <- function(path, descLookup = installedDescLookup) {
-
-  if (!file.exists(path))
+  if (!file.exists(path)) {
     stop("No DESCRIPTION file at path '", path, "'!")
+  }
 
   if (is.data.frame(path)) {
     DESCRIPTION <- path
@@ -37,18 +37,37 @@ hash <- function(path, descLookup = installedDescLookup) {
   # Remote SHA backwards compatible with cache v2: use 'GithubSHA1' if exists, otherwise all 'Remote' fields
   remote_fields <- if ("GithubSHA1" %in% names(DESCRIPTION)) {
     "GithubSHA1"
-  } else if (is.null(DESCRIPTION[["RemoteType"]]) || DESCRIPTION[["RemoteType"]] %in% c("cran", "standard", "url")) {
+  } else if (
+    is.null(DESCRIPTION[["RemoteType"]]) ||
+      DESCRIPTION[["RemoteType"]] %in% c("cran", "standard", "url")
+  ) {
     # Package installed from a CRAN-like repository by install.packages (null),
     # remotes (cran, url), or pak (standard).
     c()
   } else {
     # Mirror the order used by devtools when augmenting the DESCRIPTION.
-    c("RemoteType", "RemoteHost", "RemoteRepo", "RemoteUsername", "RemoteRef", "RemoteSha", "RemoteSubdir")
+    c(
+      "RemoteType",
+      "RemoteHost",
+      "RemoteRepo",
+      "RemoteUsername",
+      "RemoteRef",
+      "RemoteSha",
+      "RemoteSubdir"
+    )
   }
 
   # Mirror the order of DESCRIPTION fields produced by `package.skeleton` and
   # `devtools::create_description`.
-  fields <- c("Package", "Version", "Depends", "Imports", "Suggests", "LinkingTo", remote_fields)
+  fields <- c(
+    "Package",
+    "Version",
+    "Depends",
+    "Imports",
+    "Suggests",
+    "LinkingTo",
+    remote_fields
+  )
 
   # TODO: Do we want the 'Built' field used for hashing? The main problem with using that is
   # it essentially makes packages installed from source un-recoverable, since they will get
@@ -68,37 +87,47 @@ hash <- function(path, descLookup = installedDescLookup) {
   # TODO: It would really be best if, on installation, we recorded what version of LinkingTo
   # packages were actually linked to, in case that package is not available in the library
   # (or, even worse, is actually a different version!)
-  linkingToField <- unlist(strsplit(as.character(sub[["LinkingTo"]]), "\\s*,\\s*"))
+  linkingToField <- unlist(strsplit(
+    as.character(sub[["LinkingTo"]]),
+    "\\s*,\\s*"
+  ))
   linkingToPkgs <- gsub("\\s*\\(.*", "", linkingToField)
   linkingToPkgs <- gsub("^\\s*(.*?)\\s*$", "\\1", linkingToPkgs, perl = TRUE)
 
   linkingToHashes <- lapply(linkingToPkgs, function(x) {
     linkingToDesc <- descLookup(x)
     # If we return NULL
-    if (is.null(linkingToDesc))
+    if (is.null(linkingToDesc)) {
       return(NULL)
-    else if (is.character(linkingToDesc) && !file.exists(linkingToDesc))
+    } else if (is.character(linkingToDesc) && !file.exists(linkingToDesc)) {
       return(NULL)
-    else
+    } else {
       hash(linkingToDesc, descLookup = descLookup)
+    }
   })
 
-  missingLinkingToPkgs <- linkingToPkgs[vapply(linkingToHashes, is.null, logical(1))]
+  missingLinkingToPkgs <- linkingToPkgs[vapply(
+    linkingToHashes,
+    is.null,
+    logical(1)
+  )]
   if (length(missingLinkingToPkgs)) {
-    warning("The following packages specified in the LinkingTo field for package '",
-            pkgName,
-            "' are unavailable:\n- ",
-            paste(shQuote(missingLinkingToPkgs), collapse = ", "),
-            "\nThese packages are required to be installed when attempting to hash this package for caching.",
-            call. = FALSE)
+    warning(
+      "The following packages specified in the LinkingTo field for package '",
+      pkgName,
+      "' are unavailable:\n- ",
+      paste(shQuote(missingLinkingToPkgs), collapse = ", "),
+      "\nThese packages are required to be installed when attempting to hash this package for caching.",
+      call. = FALSE
+    )
   }
 
-
-  linkingToHashes <- if (length(linkingToHashes))
+  linkingToHashes <- if (length(linkingToHashes)) {
     paste(
       collapse = "",
       sort_c(unlist(dropNull(linkingToHashes)))
     )
+  }
 
   # Normalize for hashing and add in the linkingTo hashes as well
   ready <- normalizeForHash(sub)
@@ -107,7 +136,9 @@ hash <- function(path, descLookup = installedDescLookup) {
   cat(ready, file = tempfile)
   result <- md5sum(tempfile)
   unlink(tempfile)
-  if (is.na(result)) stop("Failed to hash file!")
+  if (is.na(result)) {
+    stop("Failed to hash file!")
+  }
   unname(result)
 }
 
@@ -125,18 +156,36 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
   packageName <- basename(packagePath)
   backupPackagePath <- tempfile(tmpdir = dirname(packagePath))
   if (!file.rename(packagePath, backupPackagePath)) {
-    stop("failed to back up package directory '", packagePath, "'; cannot safely link to cache.")
+    stop(
+      "failed to back up package directory '",
+      packagePath,
+      "'; cannot safely link to cache."
+    )
   }
   on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
 
   if (!symlink(cachedPackagePath, packagePath)) {
     # symlink failed; attempt to restore the backup back to its original name.
     if (!file.rename(backupPackagePath, packagePath)) {
-      stop("failed to restore package from '", backupPackagePath, "' to ",
-           "'", packagePath, "' after symlink to ",
-           "'", cachedPackagePath, "' failed; package may be lost")
+      stop(
+        "failed to restore package from '",
+        backupPackagePath,
+        "' to ",
+        "'",
+        packagePath,
+        "' after symlink to ",
+        "'",
+        cachedPackagePath,
+        "' failed; package may be lost"
+      )
     }
-    stop("failed to create a symlink from '", packagePath, "' to '", cachedPackagePath, "'")
+    stop(
+      "failed to create a symlink from '",
+      packagePath,
+      "' to '",
+      cachedPackagePath,
+      "'"
+    )
   }
 
   if (isVerboseCache()) {
@@ -152,12 +201,13 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
 # If the package already exists inside the cache, overwrite=TRUE causes
 # replacement of the cached content while overwrite=FALSE with fatal=FALSE
 # uses the cached package. Using overwrite=TRUE with fatal=TRUE will err.
-moveInstalledPackageToCache <- function(packagePath,
-                                        hash,
-                                        overwrite = TRUE,
-                                        fatal = FALSE,
-                                        cacheDir = cacheLibDir())
-{
+moveInstalledPackageToCache <- function(
+  packagePath,
+  hash,
+  overwrite = TRUE,
+  fatal = FALSE,
+  cacheDir = cacheLibDir()
+) {
   ensureDirectory(cacheDir)
 
   packageName <- basename(packagePath)
@@ -178,7 +228,11 @@ moveInstalledPackageToCache <- function(packagePath,
   # back up a pre-existing cached package (restore on failure)
   if (file.exists(cachedPackagePath)) {
     if (!file.rename(cachedPackagePath, backupPackagePath)) {
-      stop("failed to back up package '", packageName, "'; cannot safely copy to cache")
+      stop(
+        "failed to back up package '",
+        packageName,
+        "'; cannot safely copy to cache"
+      )
     }
     on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
   }
@@ -197,7 +251,6 @@ moveInstalledPackageToCache <- function(packagePath,
   tempPath <- tempfile(tmpdir = dirname(cachedPackagePath))
   on.exit(unlink(tempPath, recursive = TRUE), add = TRUE)
   if (all(dir_copy(packagePath, tempPath))) {
-
     # check to see if the cached package path exists now; if it does,
     # assume that this was generated by another R process that successfully
     # populated the cache
@@ -213,7 +266,11 @@ moveInstalledPackageToCache <- function(packagePath,
 
   # failed to insert package into cache -- clean up and return error
   if (!file.rename(backupPackagePath, cachedPackagePath)) {
-    stop("failed to restore package '", packageName, "' in cache; package may be lost from cache")
+    stop(
+      "failed to restore package '",
+      packageName,
+      "' in cache; package may be lost from cache"
+    )
   }
 
   # return failure
@@ -222,37 +279,41 @@ moveInstalledPackageToCache <- function(packagePath,
 
 # Pull out cached package information from the DESCRIPTION
 cachedPackages <- function(cacheDir = cacheLibDir(), fields = NULL) {
-
   pkgCachePaths <- list.files(cacheDir, full.names = TRUE)
-  pkgPaths <- setNames(lapply(pkgCachePaths, function(x) {
-    list.files(x, full.names = TRUE)
-  }), basename(pkgCachePaths))
+  pkgPaths <- setNames(
+    lapply(pkgCachePaths, function(x) {
+      list.files(x, full.names = TRUE)
+    }),
+    basename(pkgCachePaths)
+  )
 
   lapply(seq_along(pkgPaths), function(i) {
-
     pkgName <- names(pkgPaths)[[i]]
     hashedPaths <- pkgPaths[[i]]
 
-    result <- setNames(lapply(hashedPaths, function(path) {
-      as.list(readDcf(file.path(path, pkgName, "DESCRIPTION"), all = TRUE))
-    }), pkgName)
+    result <- setNames(
+      lapply(hashedPaths, function(path) {
+        as.list(readDcf(file.path(path, pkgName, "DESCRIPTION"), all = TRUE))
+      }),
+      pkgName
+    )
 
     if (!is.null(fields)) {
       lapply(result, `[`, fields)
     } else {
       result
     }
-
   })
 }
 
 listCachedPackages <- cachedPackages
 
 clearPackageCache <- function(cacheDir = cacheLibDir(), ask = TRUE) {
-
   if (ask) {
-    message("The packrat cache directory was resolved to:\n- ",
-            shQuote(cacheDir))
+    message(
+      "The packrat cache directory was resolved to:\n- ",
+      shQuote(cacheDir)
+    )
     msg <- "Are you sure you want to clear the packrat cache? [Y/n]: "
     response <- readline(msg)
     if (tolower(substring(response, 1, 1)) != "y") {
@@ -262,7 +323,6 @@ clearPackageCache <- function(cacheDir = cacheLibDir(), ask = TRUE) {
   }
 
   unlink(cacheDir, recursive = TRUE)
-
 }
 
 deletePackagesFromCache <- function(packages, cacheDir = cacheLibDir()) {

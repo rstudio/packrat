@@ -150,7 +150,6 @@ initOptions <- function(project = NULL, options = default_opts()) {
 ##' packrat::opts$external.packages(c("devtools", "knitr"))
 ##' }
 get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
-
   project <- getProjectDir(project)
 
   cachedOptions <- get("options", envir = .packrat)
@@ -165,8 +164,11 @@ get_opts <- function(options = NULL, simplify = TRUE, project = NULL) {
     opts
   } else {
     result <- opts[names(opts) %in% options]
-    if (simplify) unlist(unname(result))
-    else result
+    if (simplify) {
+      unlist(unname(result))
+    } else {
+      result
+    }
   }
 }
 
@@ -189,7 +191,6 @@ set_opts <- function(..., project = NULL, persist = TRUE) {
 }
 
 setOptions <- function(options, project = NULL, persist = TRUE) {
-
   project <- getProjectDir(project)
   optsPath <- packratOptionsFilePath(project)
 
@@ -204,16 +205,18 @@ setOptions <- function(options, project = NULL, persist = TRUE) {
   values <- options
   opts <- get_opts(project = project)
   for (i in seq_along(keys)) {
-    if (is.null(values[[i]]))
+    if (is.null(values[[i]])) {
       opts[keys[[i]]] <- list(NULL)
-    else
+    } else {
       opts[[keys[[i]]]] <- values[[i]]
+    }
   }
 
   write_opts(opts, project = project, persist = persist)
 
-  if (persist)
+  if (persist) {
     updateSettings(project)
+  }
 
   invisible(opts)
 }
@@ -221,9 +224,12 @@ setOptions <- function(options, project = NULL, persist = TRUE) {
 ##' @rdname packrat-options
 ##' @format NULL
 ##' @export
-opts <- setNames(lapply(names(VALID_OPTIONS), function(x) {
-  make_setter(x)
-}), names(VALID_OPTIONS))
+opts <- setNames(
+  lapply(names(VALID_OPTIONS), function(x) {
+    make_setter(x)
+  }),
+  names(VALID_OPTIONS)
+)
 
 validateOptions <- function(opts) {
   for (i in seq_along(opts)) {
@@ -235,11 +241,25 @@ validateOptions <- function(opts) {
     opt <- VALID_OPTIONS[[key]]
     if (is.list(opt)) {
       if (!(value %in% opt)) {
-        stop("'", value, "' is not a valid setting for packrat option '", key, "'", call. = FALSE)
+        stop(
+          "'",
+          value,
+          "' is not a valid setting for packrat option '",
+          key,
+          "'",
+          call. = FALSE
+        )
       }
     } else if (is.function(opt)) {
       if (!opt(value)) {
-        stop("'", value, "' is not a valid setting for packrat option '", key, "'", call. = FALSE)
+        stop(
+          "'",
+          value,
+          "' is not a valid setting for packrat option '",
+          key,
+          "'",
+          call. = FALSE
+        )
       }
     }
   }
@@ -252,37 +272,53 @@ readOptsFile <- function(path) {
   content <- readLines(path)
   namesRegex <- "^[[:alnum:]\\_\\.]*:"
   namesIndices <- grep(namesRegex, content, perl = TRUE)
-  if (!length(namesIndices)) return(list())
-  contentIndices <- mapply(seq, namesIndices, c(namesIndices[-1] - 1, length(content)), SIMPLIFY = FALSE)
-  if (!length(contentIndices)) return(list())
+  if (!length(namesIndices)) {
+    return(list())
+  }
+  contentIndices <- mapply(
+    seq,
+    namesIndices,
+    c(namesIndices[-1] - 1, length(content)),
+    SIMPLIFY = FALSE
+  )
+  if (!length(contentIndices)) {
+    return(list())
+  }
   result <- lapply(contentIndices, function(x) {
     if (length(x) == 1) {
       result <- sub(".*:\\s*", "", content[[x]], perl = TRUE)
     } else {
       first <- sub(".*:\\s*", "", content[[x[1]]])
-      if (first == "") first <- NULL
+      if (first == "") {
+        first <- NULL
+      }
       rest <- gsub("^\\s*", "", content[x[2:length(x)]], perl = TRUE)
       result <- c(first, rest)
     }
     result[result != ""]
   })
-  names(result) <- unlist(lapply(strsplit(content[namesIndices], ":", fixed = TRUE), `[[`, 1))
+  names(result) <- unlist(lapply(
+    strsplit(content[namesIndices], ":", fixed = TRUE),
+    `[[`,
+    1
+  ))
   result
 }
 
 ## Read and parse an options file. Returns the default set
 ## of options if no options available.
 read_opts <- function(project = NULL) {
-
   project <- getProjectDir(project)
   path <- packratOptionsFilePath(project)
 
-  if (!file.exists(path))
+  if (!file.exists(path)) {
     return(default_opts())
+  }
 
   opts <- readOptsFile(path)
-  if (!length(opts))
+  if (!length(opts)) {
     return(default_opts())
+  }
 
   opts[] <- lapply(opts, function(x) {
     if (identical(x, "TRUE")) {
@@ -305,10 +341,10 @@ read_opts <- function(project = NULL) {
 }
 
 write_opts <- function(options, project = NULL, persist = TRUE) {
-
   project <- getProjectDir(project)
-  if (!is.list(options))
+  if (!is.list(options)) {
     stop("Expecting options as an R list of values")
+  }
 
   # Fill options that are left out
   defaultOpts <- default_opts()
@@ -336,8 +372,9 @@ write_opts <- function(options, project = NULL, persist = TRUE) {
   assign("options", options, envir = .packrat)
 
   # Write options to disk
-  if (!persist)
+  if (!persist) {
     return(invisible(TRUE))
+  }
 
   sep <- ifelse(
     unlist(lapply(options, length)) > 1,
@@ -345,9 +382,13 @@ write_opts <- function(options, project = NULL, persist = TRUE) {
     ": "
   )
   options[] <- lapply(options, function(x) {
-    if (length(x) == 0) ""
-    else if (length(x) == 1) as.character(x)
-    else paste("    ", x, sep = "", collapse = "\n")
+    if (length(x) == 0) {
+      ""
+    } else if (length(x) == 1) {
+      as.character(x)
+    } else {
+      paste("    ", x, sep = "", collapse = "\n")
+    }
   })
   output <- character(length(labels))
   for (i in seq_along(labels)) {

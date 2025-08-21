@@ -16,31 +16,39 @@ git_prune <- function(project = NULL, prune.lib = TRUE, prune.src = FALSE) {
   owd <- getwd()
   setwd(project)
   on.exit(setwd(owd))
-  if (!isGitProject(project))
+  if (!isGitProject(project)) {
     stop("Not a git project (no .git/ directory found)", call. = FALSE)
+  }
 
   localBranches <- system("git branch", intern = TRUE)
   localBranches <- gsub("^[[:blank:]]*", "", localBranches)
-  allBranches <- system("git branch -a | grep remotes | grep -v HEAD | grep -v master",
-                        intern = TRUE)
+  allBranches <- system(
+    "git branch -a | grep remotes | grep -v HEAD | grep -v master",
+    intern = TRUE
+  )
   allBranches <- gsub("^[[:blank:]]*", "", allBranches)
   needsClone <- allBranches[!(gsub(".*/", "", allBranches) %in% localBranches)]
 
   if (length(needsClone)) {
     message("Deep-cloning Git repository...")
-    for (branch in needsClone)
-      system(paste("git branch --track",
-                   gsub(".*/", "", branch),
-                   branch), ignore.stdout = TRUE, ignore.stderr = TRUE)
+    for (branch in needsClone) {
+      system(
+        paste("git branch --track", gsub(".*/", "", branch), branch),
+        ignore.stdout = TRUE,
+        ignore.stderr = TRUE
+      )
+    }
     message("Done!")
   }
 
   allFiles <- git_files()
   toRemove <- character()
-  if (prune.lib)
+  if (prune.lib) {
     toRemove <- c(toRemove, grep("^packrat/lib*/", allFiles, value = TRUE))
-  if (prune.src)
+  }
+  if (prune.src) {
     toRemove <- c(toRemove, grep("^packrat/src/", allFiles, value = TRUE))
+  }
 
   n <- length(toRemove)
   if (!n) {
@@ -51,10 +59,12 @@ git_prune <- function(project = NULL, prune.lib = TRUE, prune.src = FALSE) {
   for (i in seq_along(toRemove)) {
     file <- toRemove[[i]]
     message("Removing file ", i, " of ", n, "...")
-    cmd <- paste("git filter-branch --tag-name-filter cat --index-filter",
-                 "'git rm -r --cached --ignore-unmatch",
-                 file,
-                 "' --prune-empty -f -- --all")
+    cmd <- paste(
+      "git filter-branch --tag-name-filter cat --index-filter",
+      "'git rm -r --cached --ignore-unmatch",
+      file,
+      "' --prune-empty -f -- --all"
+    )
     system(cmd, ignore.stdout = TRUE, ignore.stderr = TRUE)
   }
 
@@ -64,5 +74,4 @@ git_prune <- function(project = NULL, prune.lib = TRUE, prune.src = FALSE) {
   system("git gc --aggressive --prune=now")
   message("Done!")
   return(invisible(toRemove))
-
 }

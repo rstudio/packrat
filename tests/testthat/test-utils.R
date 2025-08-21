@@ -1,7 +1,6 @@
 emit <- function(x) cat(x, sep = "\n")
 
 test_that("dir_copy copies directories", {
-
   # Work in temporary directory
   owd <- getwd()
   on.exit(setwd(owd))
@@ -21,15 +20,13 @@ test_that("dir_copy copies directories", {
     list.files("bar")
   )
   expect_error(dir_copy("foo", "bar"))
-
 })
 
 test_that("defer evaluates in appropriate environment", {
-
   foo <- function() {
     emit("+ foo")
-    defer(emit("> foo"),              environment())
-    defer(emit("> foo.parent"),        parent.frame(1))
+    defer(emit("> foo"), environment())
+    defer(emit("> foo.parent"), parent.frame(1))
     defer(emit("> foo.parent.parent"), parent.frame(2))
     emit("- foo")
   }
@@ -60,11 +57,9 @@ test_that("defer evaluates in appropriate environment", {
   )
 
   expect_identical(output, expected)
-
 })
 
 test_that("defer captures arguments properly", {
-
   foo <- function(x) {
     defer(emit(x), envir = parent.frame())
   }
@@ -78,16 +73,17 @@ test_that("defer captures arguments properly", {
   output <- capture.output(bar("> foo"))
   expected <- c("+ bar", "- bar", "> foo")
   expect_identical(output, expected)
-
 })
 
 test_that("defer works with arbitrary expressions", {
-
   foo <- function(x) {
-    defer({
-      x + 1
-      emit("> foo")
-    }, envir = parent.frame())
+    defer(
+      {
+        x + 1
+        emit("> foo")
+      },
+      envir = parent.frame()
+    )
   }
 
   bar <- function() {
@@ -99,5 +95,4 @@ test_that("defer works with arbitrary expressions", {
   output <- capture.output(bar())
   expected <- c("+ bar", "- bar", "> foo")
   expect_identical(output, expected)
-
 })

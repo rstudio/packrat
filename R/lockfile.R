@@ -1,8 +1,9 @@
 # Given a list of named lists, return a list of all the names used
 collectFieldNames <- function(lists) {
   allFieldNames <- character(0)
-  for (lst in lists)
+  for (lst in lists) {
     allFieldNames <- union(allFieldNames, unique(names(lst)))
+  }
   return(allFieldNames)
 }
 
@@ -29,7 +30,6 @@ rbind2 <- function(df1, df2) {
 }
 
 writeLockFile <- function(file, lockinfo) {
-
   rver <- as.character(getRversion())
 
   # Construct Repos as a key-value pair to write into the lock file
@@ -37,7 +37,12 @@ writeLockFile <- function(file, lockinfo) {
 
   # Windows automatically transforms \n to \r\n on write through write.dcf
   separator <- ",\n"
-  reposString <- paste(names(repos), unname(repos), sep = "=", collapse = separator)
+  reposString <- paste(
+    names(repos),
+    unname(repos),
+    sep = "=",
+    collapse = separator
+  )
 
   # The first record contains metadata about the project and lockfile
   preamble <- data.frame(
@@ -51,15 +56,25 @@ writeLockFile <- function(file, lockinfo) {
 
   # Remaining records are about the packages
   if (length(lockinfo)) {
-    packages <- flattenPackageRecords(lockinfo, depInfo = TRUE, sourcePath = TRUE)
+    packages <- flattenPackageRecords(
+      lockinfo,
+      depInfo = TRUE,
+      sourcePath = TRUE
+    )
     fieldNames <- collectFieldNames(packages)
     packageInfo <- lapply(fieldNames, function(fieldName) {
-      values <- data.frame(vapply(packages, function(pkg) {
-        if (length(pkg[[fieldName]]))
-          pkg[[fieldName]]
-        else
-          NA_character_
-      }, character(1), USE.NAMES = FALSE))
+      values <- data.frame(vapply(
+        packages,
+        function(pkg) {
+          if (length(pkg[[fieldName]])) {
+            pkg[[fieldName]]
+          } else {
+            NA_character_
+          }
+        },
+        character(1),
+        USE.NAMES = FALSE
+      ))
       names(values) <- fieldName
       return(values)
     })
@@ -75,7 +90,6 @@ writeLockFile <- function(file, lockinfo) {
 }
 
 readLockFile <- function(file) {
-
   df <- as.data.frame(readDcf(file), stringsAsFactors = FALSE)
   df <- cleanupWhitespace(df)
 
@@ -87,7 +101,11 @@ readLockFile <- function(file) {
 
   # Split the repos
   repos <- gsub("[\r\n]", " ", df[1, 'Repos'])
-  repos <- strsplit(unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE)), "=", fixed = TRUE)
+  repos <- strsplit(
+    unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE)),
+    "=",
+    fixed = TRUE
+  )
 
   # Support older-style lockfiles containing unnamed repositories
   repoLens <- vapply(repos, length, numeric(1))
@@ -97,9 +115,11 @@ readLockFile <- function(file) {
     if (length(repoLens) > 1) {
       # We warn if there were multiple repositories (if there was only one, we
       # can safely assume it was CRAN)
-      warning("Old-style repository format detected; bumped to new version\n",
-              "Please re-set the repositories with options(repos = ...)\n",
-              "and call packrat::snapshot() to update the lock file.")
+      warning(
+        "Old-style repository format detected; bumped to new version\n",
+        "Please re-set the repositories with options(repos = ...)\n",
+        "and call packrat::snapshot() to update the lock file."
+      )
     }
     repos <- c(CRAN = repos[[1]])
   } else if (all(repoLens == 2)) {
@@ -109,10 +129,11 @@ readLockFile <- function(file) {
     )
   }
 
-  packages <- if (nrow(df) > 1)
+  packages <- if (nrow(df) > 1) {
     deserializePackages(utils::tail(df, -1))
-  else
+  } else {
     list()
+  }
 
   list(
     packrat_format = df[1, 'PackratFormat'],
@@ -127,8 +148,9 @@ readLockFile <- function(file) {
 # in the dataframe, and return the modified dataframe
 cleanupWhitespace <- function(df) {
   for (i in seq_along(df)) {
-    if (is.character(df[[i]]))
+    if (is.character(df[[i]])) {
       df[[i]] <- sub('^\\s*(.*?)\\s*$', '\\1', df[[i]])
+    }
   }
   return(df)
 }
@@ -142,12 +164,19 @@ topoSort <- function(graph) {
 
   # Key: dependency, Value: dependent
   # Use this to answer: What things depend on this key?
-  dependents <- new.env(parent = emptyenv(), size = as.integer(length(packageNames) * 1.3))
+  dependents <- new.env(
+    parent = emptyenv(),
+    size = as.integer(length(packageNames) * 1.3)
+  )
   # Key: dependent, Value: Number of dependencies
   # Use this to answer: How many things does this key depend on?
-  dependencyCount <- new.env(parent = emptyenv(), size = as.integer(length(packageNames) * 1.3))
-  for (packageName in packageNames)
+  dependencyCount <- new.env(
+    parent = emptyenv(),
+    size = as.integer(length(packageNames) * 1.3)
+  )
+  for (packageName in packageNames) {
     dependencyCount[[packageName]] <- 0
+  }
 
   # Initialize dependents and dependencyCount
   for (pkgName in packageNames) {
@@ -157,14 +186,19 @@ topoSort <- function(graph) {
     }
   }
 
-  if (length(setdiff(ls(dependents), packageNames)) > 0)
-    stop("Corrupted lockfile: missing dependencies") # TODO: better message
+  if (length(setdiff(ls(dependents), packageNames)) > 0) {
+    stop("Corrupted lockfile: missing dependencies")
+  } # TODO: better message
 
   # Do topo sort
   sortedNames <- character(0)
-  leaves <- packageNames[vapply(packageNames, function(pkgName) {
-    identical(dependencyCount[[pkgName]], 0)
-  }, logical(1))]
+  leaves <- packageNames[vapply(
+    packageNames,
+    function(pkgName) {
+      identical(dependencyCount[[pkgName]], 0)
+    },
+    logical(1)
+  )]
 
   while (length(leaves) > 0) {
     leaf <- leaves[[1]]
@@ -182,12 +216,14 @@ topoSort <- function(graph) {
         do.call(rm, list(dependent, envir = dependencyCount))
       }
     }
-    if (exists(leaf, where = dependents))
+    if (exists(leaf, where = dependents)) {
       do.call(rm, list(leaf, envir = dependents))
+    }
   }
 
-  if (!setequal(sortedNames, packageNames))
+  if (!setequal(sortedNames, packageNames)) {
     stop("Corrupt lockfile: circular package dependencies detected")
+  }
 
   sortedNames
 }
@@ -198,13 +234,16 @@ deserializePackages <- function(df) {
   ## Begin validation
 
   # Test for package records without names
-  if (any(is.na(packageNames)))
+  if (any(is.na(packageNames))) {
     stop("Invalid lockfile format: missing package name detected")
+  }
 
   dupNames <- packageNames[duplicated(packageNames)]
   if (length(dupNames) > 0) {
-    stop("The following package(s) appear in the lockfile more than once: ",
-         paste(dupNames, collapse = ", "))
+    stop(
+      "The following package(s) appear in the lockfile more than once: ",
+      paste(dupNames, collapse = ", ")
+    )
   }
 
   # TODO: Test that package names are valid (what are the rules?)
@@ -213,11 +252,13 @@ deserializePackages <- function(df) {
 
   graph <- lapply(seq.int(nrow(df)), function(i) {
     req <- df[i, 'requires']
-    if (is.null(req) || is.na(req))
+    if (is.null(req) || is.na(req)) {
       return(character(0))
+    }
     reqs <- unique(strsplit(req, '\\s*,\\s*')[[1]])
-    if (identical(reqs, ''))
+    if (identical(reqs, '')) {
       return(character(0))
+    }
     return(reqs)
   })
   names(graph) <- packageNames
@@ -225,8 +266,10 @@ deserializePackages <- function(df) {
   # Validate graph
   undeclaredDeps <- setdiff(unique(unlist(graph)), packageNames)
   if (length(undeclaredDeps) > 0) {
-    stop("The following dependencies are missing lockfile entries: ",
-         paste(undeclaredDeps, collapse = ", "))
+    stop(
+      "The following dependencies are missing lockfile entries: ",
+      paste(undeclaredDeps, collapse = ", ")
+    )
   }
 
   topoSorted <- topoSort(graph)
@@ -255,12 +298,17 @@ deserializePackages <- function(df) {
 }
 
 translate <- function(x, dict) {
-  vapply(x, function(val) {
-    if (!(val %in% names(dict)))
-      val
-    else
-      as.vector(dict[[val]])
-  }, character(1))
+  vapply(
+    x,
+    function(val) {
+      if (!(val %in% names(dict))) {
+        val
+      } else {
+        as.vector(dict[[val]])
+      }
+    },
+    character(1)
+  )
 }
 
 # Translates persistent names with in-memory names (i.e. the names are what the

@@ -44,12 +44,21 @@
 #' # Setting back old state
 #' # set_lockfile_metadata(r_version = old_rver)
 #' }
-set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL) {
+set_lockfile_metadata <- function(
+  repos = NULL,
+  r_version = NULL,
+  project = NULL
+) {
   project <- getProjectDir(project)
   lf_filepath <- lockFilePath(project)
   if (!file.exists(lf_filepath)) {
-    stop(paste(lockFilePath, " is missing. Run packrat::init('",
-                 project, "') to generate it.", sep = ""))
+    stop(paste(
+      lockFilePath,
+      " is missing. Run packrat::init('",
+      project,
+      "') to generate it.",
+      sep = ""
+    ))
   }
   lf <- as.data.frame(readDcf(lf_filepath), stringsAsFactors = FALSE)
 
@@ -57,7 +66,12 @@ set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL
   if (!is.null(repos)) {
     # Windows automatically transforms \n to \r\n on write through write.dcf
     separator <- ",\n"
-    reposString <- paste(names(repos), unname(repos), sep = "=", collapse = separator)
+    reposString <- paste(
+      names(repos),
+      unname(repos),
+      sep = "=",
+      collapse = separator
+    )
     lf[1, "Repos"] <- reposString
   }
 
@@ -79,21 +93,33 @@ set_lockfile_metadata <- function(repos = NULL, r_version = NULL, project = NULL
 #' @rdname lockfile-metadata
 #' @name lockfile-metadata
 #' @export
-get_lockfile_metadata <- function(metadata = NULL, simplify = TRUE, project = NULL) {
+get_lockfile_metadata <- function(
+  metadata = NULL,
+  simplify = TRUE,
+  project = NULL
+) {
   project <- getProjectDir(project)
   # Get and parse the lockfile
   lockFilePath <- lockFilePath(project)
   if (!file.exists(lockFilePath)) {
-      stop(paste(lockFilePath, " is missing. Run packrat::init('",
-                 project, "') to generate it.", sep = ""))
+    stop(paste(
+      lockFilePath,
+      " is missing. Run packrat::init('",
+      project,
+      "') to generate it.",
+      sep = ""
+    ))
   }
   lf_metadata <- readLockFile(lockFilePath)[names(available_metadata)]
   if (is.null(metadata)) {
     lf_metadata
   } else {
     result <- lf_metadata[names(lf_metadata) %in% metadata]
-    if (simplify) unlist(unname(result))
-    else result
+    if (simplify) {
+      unlist(unname(result))
+    } else {
+      result
+    }
   }
 }
 

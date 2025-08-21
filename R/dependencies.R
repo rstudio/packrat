@@ -33,13 +33,15 @@
 #'
 #' }
 #' @keywords internal
-appDependencies <- function(project = NULL,
-                            available.packages = NULL,
-                            fields = opts$snapshot.fields(),
-                            implicit.packrat.dependency = TRUE) {
-
-  if (is.null(available.packages))
+appDependencies <- function(
+  project = NULL,
+  available.packages = NULL,
+  fields = opts$snapshot.fields(),
+  implicit.packrat.dependency = TRUE
+) {
+  if (is.null(available.packages)) {
     available.packages <- availablePackages()
+  }
 
   project <- getProjectDir(project)
 
@@ -57,7 +59,6 @@ appDependencies <- function(project = NULL,
 
   ## For R packages, we only use the DESCRIPTION file
   if (isRPackage(project)) {
-
     ## Make sure we get records recursively from the packages in DESCRIPTION
     parentDeps <-
       pkgDescriptionDependencies(file.path(project, "DESCRIPTION"))$Package
@@ -69,19 +70,23 @@ appDependencies <- function(project = NULL,
     ## Presumedly, we can build child dependencies without vignettes, and hence
     ## do not need suggests -- for the package itself, we should make sure
     ## we grab suggests, however
-    childDeps <- recursivePackageDependencies(parentDeps,
-                                              ignores,
-                                              libPaths,
-                                              available.packages,
-                                              fields)
+    childDeps <- recursivePackageDependencies(
+      parentDeps,
+      ignores,
+      libPaths,
+      available.packages,
+      fields
+    )
   } else {
     parentDeps <- setdiff(unique(c(dirDependencies(project))), "packrat")
     parentDeps <- setdiff(parentDeps, ignores)
-    childDeps <- recursivePackageDependencies(parentDeps,
-                                              ignores,
-                                              libPaths,
-                                              available.packages,
-                                              fields)
+    childDeps <- recursivePackageDependencies(
+      parentDeps,
+      ignores,
+      libPaths,
+      available.packages,
+      fields
+    )
   }
 
   result <- unique(c(parentDeps, childDeps))
@@ -94,11 +99,13 @@ appDependencies <- function(project = NULL,
   # If this project is implicitly a shiny application, then
   # add that in as the previously run expression dependency lookup
   # won't have found it.
-  if (!("shiny" %in% result) && isShinyApp(project))
+  if (!("shiny" %in% result) && isShinyApp(project)) {
     result <- c(result, "shiny")
+  }
 
-  if (is.null(result))
+  if (is.null(result)) {
     return(character())
+  }
 
   sorted <- sort_c(result)
 
@@ -110,9 +117,16 @@ appDependencies <- function(project = NULL,
 
 # detect all package dependencies for a directory of files
 dirDependencies <- function(dir) {
-  if (as.logical(getOption("packrat.dependency.discovery.disabled", default = FALSE))) {
+  if (
+    as.logical(getOption(
+      "packrat.dependency.discovery.disabled",
+      default = FALSE
+    ))
+  ) {
     character()
-  } else if (as.logical(getOption("packrat.dependency.discovery.renv", default = TRUE))) {
+  } else if (
+    as.logical(getOption("packrat.dependency.discovery.renv", default = TRUE))
+  ) {
     dirDependenciesRenv(dir)
   } else {
     dirDependenciesBuiltIn(dir)
@@ -134,15 +148,15 @@ ignoresForRenv <- function(dir, ignoredDirectories) {
     ignores <- ignoredDirectories
     # Make sure all the directories end with a slash.
     ignores <- ifelse(
-        substr(ignores, nchar(ignores), nchar(ignores)) != "/",
-        paste0(ignores, "/"),
-        ignores
+      substr(ignores, nchar(ignores), nchar(ignores)) != "/",
+      paste0(ignores, "/"),
+      ignores
     )
     # Make sure all the directories begin with a slash.
     ignores <- ifelse(
-        substr(ignores, 1, 1) != "/",
-        paste0("/", ignores),
-        ignores
+      substr(ignores, 1, 1) != "/",
+      paste0("/", ignores),
+      ignores
     )
     # Prepend the project root and quote.
     ignores <- paste0('^\\Q', dir, '\\E\\Q', ignores, '\\E$')
@@ -170,16 +184,28 @@ dirDependenciesRenv <- function(dir) {
 
   absDir <- normalizePath(dir, winslash = "/")
 
-  old_ignored_packages <- options("renv.settings.ignored.packages" = opts$ignored.packages())
+  old_ignored_packages <- options(
+    "renv.settings.ignored.packages" = opts$ignored.packages()
+  )
   on.exit(do.call(options, old_ignored_packages), add = TRUE)
 
-  old_renv_exclude <- options("renv.renvignore.exclude" = ignoresForRenv(absDir, opts$ignored.directories()))
+  old_renv_exclude <- options(
+    "renv.renvignore.exclude" = ignoresForRenv(
+      absDir,
+      opts$ignored.directories()
+    )
+  )
   on.exit(do.call(options, old_renv_exclude), add = TRUE)
 
   # TODO: add rsconnect as an ignored directory? May not be an issue for
   # bundling, since we don't include the rsconnect directory.
 
-  deps <- renv$dependencies(path = absDir, root = absDir, progress = FALSE, errors = "ignored")
+  deps <- renv$dependencies(
+    path = absDir,
+    root = absDir,
+    progress = FALSE,
+    errors = "ignored"
+  )
   pkgs <- unique(deps$Package)
   ## Exclude recommended packages (and the artifical "R" package) if there is
   ## no package installed locally this places an implicit dependency on the
@@ -195,10 +221,11 @@ dirDependenciesBuiltIn <- function(dir) {
   # first get the packages referred to in source code
   pattern <- "[.](?:r|rmd|qmd|rnw|rpres)$"
   pkgs <- character()
-  R_files <- list.files(dir,
-                        pattern = pattern,
-                        ignore.case = TRUE,
-                        recursive = TRUE
+  R_files <- list.files(
+    dir,
+    pattern = pattern,
+    ignore.case = TRUE,
+    recursive = TRUE
   )
 
   ## Avoid anything within the packrat directory itself -- all inference
@@ -231,13 +258,11 @@ dirDependenciesBuiltIn <- function(dir) {
   sapply(R_files, function(file) {
     filePath <- file.path(dir, file)
     pkgs <<- append(pkgs, fileDependencies(file.path(dir, file)))
-
   })
 
   ## Exclude recommended packages if there is no package installed locally
   ## this places an implicit dependency on the system-installed version of a package
   dropSystemPackages(pkgs)
-
 }
 
 # detect all package dependencies for a source file (parses the file and then
@@ -247,26 +272,34 @@ dirDependenciesBuiltIn <- function(dir) {
 fileDependencies <- function(file) {
   file <- normalizePath(file, winslash = "/", mustWork = TRUE)
   fileext <- tolower(gsub(".*\\.", "", file))
-  switch(fileext,
-         r = fileDependencies.R(file),
-         rmd = fileDependencies.Rmd(file),
-         qmd = fileDependencies.Qmd(file),
-         rnw = fileDependencies.Rnw(file),
-         rpres = fileDependencies.Rpres(file),
-         stop("Unrecognized file type '", file, "'")
+  switch(
+    fileext,
+    r = fileDependencies.R(file),
+    rmd = fileDependencies.Rmd(file),
+    qmd = fileDependencies.Qmd(file),
+    rnw = fileDependencies.Rnw(file),
+    rpres = fileDependencies.Rpres(file),
+    stop("Unrecognized file type '", file, "'")
   )
 }
 
 hasYamlFrontMatter <- function(content) {
   lines <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
-  1 %in% lines && length(lines) >= 2 && grepl("^---\\s*$", content[1], perl = TRUE)
+  1 %in%
+    lines &&
+    length(lines) >= 2 &&
+    grepl("^---\\s*$", content[1], perl = TRUE)
 }
 
 yamlDeps <- function(yaml) {
   unique(c(
     "shiny"[any(grepl("runtime:[[:space:]]*shiny", yaml, perl = TRUE))],
     "shiny"[any(grepl("server:[[:space:]]*shiny", yaml, perl = TRUE))],
-    "shiny"[any(grepl("[[:space:]]+type:[[:space:]]*shiny", yaml, perl = TRUE))],
+    "shiny"[any(grepl(
+      "[[:space:]]+type:[[:space:]]*shiny",
+      yaml,
+      perl = TRUE
+    ))],
     "rticles"[any(grepl("rticles::", yaml, perl = TRUE))]
   ))
 }
@@ -280,9 +313,13 @@ stripAltEngines <- function(file, encoding) {
 
   # calculate the end of each alternate engine code block (the beginning of the
   # very next code block)
-  engineEnds <- vapply(engineHeaders, function(x) {
-    allHeaders[min(which(allHeaders > x))] - 1
-  }, 0)
+  engineEnds <- vapply(
+    engineHeaders,
+    function(x) {
+      allHeaders[min(which(allHeaders > x))] - 1
+    },
+    0
+  )
 
   # exclude the alternate engine code block lines
   regions <- rep.int(TRUE, length(contents))
@@ -309,7 +346,6 @@ fileDependencies.Rmd <- function(file) {
 }
 
 fileDependencies.Markdown <- function(file, implicit = NULL) {
-
   deps <- c()
   if (!is.null(implicit)) {
     deps <- c(deps, implicit)
@@ -317,11 +353,9 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
 
   # try using an evaluate-based approach for dependencies
   if (knitrHasEvaluateHook()) {
-
     # attempt to load rmarkdown
     isRmarkdownLoaded <- "rmarkdown" %in% loadedNamespaces()
     if (requireNamespace("rmarkdown", quietly = TRUE)) {
-
       # unload rmarkdown after we're done with it if it
       # wasn't already loaded
       if (!isRmarkdownLoaded) {
@@ -342,13 +376,16 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
 
   # check whether the default output format references a package
   if (requireNamespace("rmarkdown", quietly = TRUE)) {
-    tryCatch({
-      format <- rmarkdown::default_output_format(file)
-    }, error = function(e) {
-      # if we can't parse the YAML header with the default encoding, try UTF-8
-      encoding <<- "UTF-8"
-      format <<- rmarkdown::default_output_format(file, encoding)
-    })
+    tryCatch(
+      {
+        format <- rmarkdown::default_output_format(file)
+      },
+      error = function(e) {
+        # if we can't parse the YAML header with the default encoding, try UTF-8
+        encoding <<- "UTF-8"
+        format <<- rmarkdown::default_output_format(file, encoding)
+      }
+    )
     components <- strsplit(format$name, "::")[[1]]
     if (length(components) == 2) {
       deps <- c(deps, components[[1]])
@@ -359,7 +396,6 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
   yamlDeps <- NULL
   content <- readLines(file, encoding = encoding, warn = FALSE)
   if (hasYamlFrontMatter(content)) {
-
     # Extract the YAML frontmatter.
     tripleDashesDots <- grep("^(---|\\.\\.\\.)\\s*$", content, perl = TRUE)
     start <- tripleDashesDots[[1]]
@@ -371,9 +407,10 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
     deps <- c(deps, yamlDeps)
 
     # Extract additional dependencies from YAML parameters.
-    if (requireNamespace("knitr", quietly = TRUE) &&
-        packageVersion("knitr") >= "1.10.18")
-    {
+    if (
+      requireNamespace("knitr", quietly = TRUE) &&
+        packageVersion("knitr") >= "1.10.18"
+    ) {
       # attempt to extract knitr params from yaml
       knitParams <- tryCatch(
         knitr::knit_params_yaml(yaml, evaluate = FALSE),
@@ -388,17 +425,20 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
         for (param in knitParams) {
           if (!is.null(param$expr)) {
             parsed <- quietly(parse(text = param$expr))
-            if (!inherits(parsed, "error"))
+            if (!inherits(parsed, "error")) {
               deps <- c(deps, expressionDependencies(parsed))
+            }
           }
         }
       }
-
     }
   }
 
   # Escape hatch for empty .Rmd files
-  if (!length(content) || identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")) {
+  if (
+    !length(content) ||
+      identical(unique(gsub("[[:space:]]", "", content, perl = TRUE)), "")
+  ) {
     return(deps)
   }
 
@@ -407,11 +447,14 @@ fileDependencies.Markdown <- function(file, implicit = NULL) {
   ## a `fileDependencies.Rmd` call on Windows, where having knitr loaded
   ## would prevent an installation of knitr to succeed
   knitrIsLoaded <- "knitr" %in% loadedNamespaces()
-  on.exit({
-    if (!knitrIsLoaded && "knitr" %in% loadedNamespaces()) {
-      try(unloadNamespace("knitr"), silent = TRUE)
-    }
-  }, add = TRUE)
+  on.exit(
+    {
+      if (!knitrIsLoaded && "knitr" %in% loadedNamespaces()) {
+        try(unloadNamespace("knitr"), silent = TRUE)
+      }
+    },
+    add = TRUE
+  )
 
   if (requireNamespace("knitr", quietly = TRUE)) {
     deps <- c(
@@ -436,16 +479,18 @@ fileDependencies.Rpres <- function(...) {
 fileDependencies.Rnw <- function(file) {
   tempfile <- tempfile()
   on.exit(unlink(tempfile))
-  tryCatch(silent({
-    utils::Stangle(file, output = tempfile)
-    fileDependencies.R(tempfile)
-  }), error = function(e) {
-    fileDependencies.knitr(file)
-  })
+  tryCatch(
+    silent({
+      utils::Stangle(file, output = tempfile)
+      fileDependencies.R(tempfile)
+    }),
+    error = function(e) {
+      fileDependencies.knitr(file)
+    }
+  )
 }
 
 fileDependencies.R <- function(file) {
-
   if (!file.exists(file)) {
     warning("No file at path '", file, "'.")
     return(character())
@@ -457,19 +502,25 @@ fileDependencies.R <- function(file) {
   # parse file and examine expressions -- first attempt to
   # parse in system encoding, then try again with UTF-8
   exprs <- quietly(parse(file, n = -1L))
-  if (inherits(exprs, "error"))
+  if (inherits(exprs, "error")) {
     exprs <- quietly(parse(file, n = -1L, encoding = "UTF-8"))
+  }
 
   # report parse errors to the user
   if (inherits(exprs, "error")) {
-    warning(paste("Failed to parse", file, "; dependencies in this file will",
-                  "not be discovered."))
+    warning(paste(
+      "Failed to parse",
+      file,
+      "; dependencies in this file will",
+      "not be discovered."
+    ))
     exprs <- NULL
   }
 
   # extract expression dependencies
-  for (i in seq_along(exprs))
+  for (i in seq_along(exprs)) {
     pkgs <- append(pkgs, expressionDependencies(exprs[[i]]))
+  }
 
   # return packages
   setdiff(unique(pkgs), "")
@@ -477,17 +528,21 @@ fileDependencies.R <- function(file) {
 
 anyOf <- function(object, ...) {
   predicates <- list(...)
-  for (predicate in predicates)
-    if (predicate(object))
+  for (predicate in predicates) {
+    if (predicate(object)) {
       return(TRUE)
+    }
+  }
   FALSE
 }
 
 allOf <- function(object, ...) {
   predicates <- list(...)
-  for (predicate in predicates)
-    if (!predicate(object))
+  for (predicate in predicates) {
+    if (!predicate(object)) {
       return(FALSE)
+    }
+  }
   TRUE
 }
 
@@ -502,13 +557,14 @@ recursiveWalk <- function(`_node`, fn, ...) {
 
 # Fills 'env' as a side effect
 identifyPackagesUsed <- function(call, env) {
-
-  if (!is.call(call))
+  if (!is.call(call)) {
     return()
+  }
 
   fn <- call[[1]]
-  if (!anyOf(fn, is.character, is.symbol))
+  if (!anyOf(fn, is.character, is.symbol)) {
     return()
+  }
 
   fnString <- as.character(fn)
 
@@ -522,7 +578,10 @@ identifyPackagesUsed <- function(call, env) {
   }
 
   # Check for S4-related function calls (implying a dependency on methods)
-  if (fnString %in% c("setClass", "setMethod", "setRefClass", "setGeneric", "setGroupGeneric")) {
+  if (
+    fnString %in%
+      c("setClass", "setMethod", "setRefClass", "setGeneric", "setGroupGeneric")
+  ) {
     env[["methods"]] <- TRUE
     return()
   }
@@ -534,8 +593,9 @@ identifyPackagesUsed <- function(call, env) {
   liberalLoaders <- c("library", "require")
   strictLoaders <- c("loadNamespace", "requireNamespace")
   pkgLoaders <- c(strictLoaders, liberalLoaders)
-  if (!fnString %in% pkgLoaders)
+  if (!fnString %in% pkgLoaders) {
     return()
+  }
 
   # Try matching the call.
   loader <- tryCatch(
@@ -543,12 +603,14 @@ identifyPackagesUsed <- function(call, env) {
     error = function(e) NULL
   )
 
-  if (!is.function(loader))
+  if (!is.function(loader)) {
     return()
+  }
 
   matched <- match.call(loader, call)
-  if (!"package" %in% names(matched))
+  if (!"package" %in% names(matched)) {
     return()
+  }
 
   if (fnString %in% liberalLoaders) {
     # Protect against 'character.only = TRUE' + symbols.
@@ -578,23 +640,20 @@ expressionDependencies <- function(e) {
     return(unlist(lapply(e, function(call) {
       expressionDependencies(call)
     })))
-  }
-
-  else if (is.call(e)) {
+  } else if (is.call(e)) {
     env <- new.env(parent = emptyenv())
     recursiveWalk(e, identifyPackagesUsed, env)
     return(ls(env, all.names = TRUE))
+  } else {
+    character()
   }
-
-  else character()
-
 }
 
 # Read a DESCRIPTION file into a data.frame
 readDESCRIPTION <- function(path) {
-
-  if (!file.exists(path))
+  if (!file.exists(path)) {
     stop("No DESCRIPTION file at path '", path, "'")
+  }
 
   tryCatch(
     readDcf(file = path, all = TRUE),
@@ -605,53 +664,56 @@ readDESCRIPTION <- function(path) {
 }
 
 isRPackage <- function(project) {
-
   descriptionPath <- file.path(project, "DESCRIPTION")
-  if (!file.exists(descriptionPath))
+  if (!file.exists(descriptionPath)) {
     return(FALSE)
+  }
 
   DESCRIPTION <- readDESCRIPTION(descriptionPath)
 
   # If 'Type' is in the DESCRIPTION, ensure it's equal to 'Package'.
-  if ("Type" %in% names(DESCRIPTION))
+  if ("Type" %in% names(DESCRIPTION)) {
     return(identical(DESCRIPTION$Type, "Package"))
+  }
 
   # Some packages will have a DESCRIPTION file without the 'Type' field.
   # Check that these still declare themselves with the 'Package' field.
-  if ("Package" %in% names(DESCRIPTION))
+  if ("Package" %in% names(DESCRIPTION)) {
     return(TRUE)
+  }
 
   # DESCRIPTION for a non-R package (e.g. Shiny application?)
   FALSE
-
 }
 
 # Infer whether a project is (implicitly) a Shiny application,
 # in the absence of explicit `library()` statements.
 isShinyApp <- function(project) {
-
   # Check for a DESCRIPTION file with 'Type: Shiny'
   descriptionPath <- file.path(project, "DESCRIPTION")
   if (file.exists(descriptionPath)) {
     DESCRIPTION <- readDESCRIPTION(descriptionPath)
-    if (length(DESCRIPTION$Type) && tolower(DESCRIPTION$Type) == "shiny")
+    if (length(DESCRIPTION$Type) && tolower(DESCRIPTION$Type) == "shiny") {
       return(TRUE)
+    }
   }
 
   # Check for a server.r with a 'shinyServer' call
   serverPath <- file.path(project, "server.R")
   if (file.exists(file.path(project, "server.R"))) {
     contents <- paste(readLines(serverPath), collapse = "\n")
-    if (grepl("shinyServer\\s*\\(", contents, perl = TRUE))
+    if (grepl("shinyServer\\s*\\(", contents, perl = TRUE)) {
       return(TRUE)
+    }
   }
 
   # Check for a single-file application with 'app.R'
   appPath <- file.path(project, "app.R")
   if (file.exists(appPath)) {
     contents <- paste(readLines(appPath), collapse = "\n")
-    if (grepl("shinyApp\\s*\\(", contents, perl = TRUE))
+    if (grepl("shinyApp\\s*\\(", contents, perl = TRUE)) {
       return(TRUE)
+    }
   }
 
   return(FALSE)
@@ -659,8 +721,9 @@ isShinyApp <- function(project) {
 
 knitrHasEvaluateHook <- function() {
   isKnitrLoaded <- "knitr" %in% loadedNamespaces()
-  if (!requireNamespace("knitr", quietly = TRUE))
+  if (!requireNamespace("knitr", quietly = TRUE)) {
     return(FALSE)
+  }
 
   if (!isKnitrLoaded) {
     on.exit(
@@ -675,7 +738,6 @@ knitrHasEvaluateHook <- function() {
 
 
 fileDependencies.evaluate <- function(file) {
-
   # discovered packages (to be updated by evaluate hook)
   deps <- list()
 
@@ -712,28 +774,31 @@ fileDependencies.evaluate <- function(file) {
   # that we can detect dependencies within inline chunks
   knitr <- asNamespace("knitr")
   if (exists("inline_exec", envir = knitr)) {
-
     inline_exec <- yoink("knitr", "inline_exec")
     do.call("unlockBinding", list("inline_exec", knitr))
-    assign("inline_exec", function(block, ...) {
+    assign(
+      "inline_exec",
+      function(block, ...) {
+        # do our own special stuff
+        try(silent = TRUE, {
+          code <- paste(block$code, collapse = "\n")
+          parsed <- parse(text = code, encoding = "UTF-8")
+          deps <<- c(deps, expressionDependencies(parsed))
+        })
 
-      # do our own special stuff
-      try(silent = TRUE, {
-        code <- paste(block$code, collapse = "\n")
-        parsed <- parse(text = code, encoding = "UTF-8")
-        deps <<- c(deps, expressionDependencies(parsed))
-      })
+        # return block input without evaluating anything
+        block$input
+      },
+      envir = knitr
+    )
 
-      # return block input without evaluating anything
-      block$input
-
-    }, envir = knitr)
-
-    on.exit({
-      assign("inline_exec", inline_exec, envir = knitr)
-      do.call("lockBinding", list("inline_exec", knitr))
-    }, add = TRUE)
-
+    on.exit(
+      {
+        assign("inline_exec", inline_exec, envir = knitr)
+        do.call("lockBinding", list("inline_exec", knitr))
+      },
+      add = TRUE
+    )
   }
 
   # attempt to render document with our custom hook active
@@ -746,15 +811,14 @@ fileDependencies.evaluate <- function(file) {
     withCallingHandlers(
       rmarkdown::render(file, output_file = outfile, quiet = TRUE),
       warning = function(w) {
-
         # ignore warnings emitted by knitr::get_engine()
         get_engine <- yoink("knitr", "get_engine")
         for (i in seq_len(sys.nframe())) {
           fn <- sys.function(i)
-          if (identical(fn, get_engine))
+          if (identical(fn, get_engine)) {
             invokeRestart("muffleWarning")
+          }
         }
-
       }
     ),
     error = identity
@@ -764,18 +828,19 @@ fileDependencies.evaluate <- function(file) {
 }
 
 
-
-
 # Extract dependencies per chunk rather than per file.
 # Packages like learnr have special R code chunks that are not evaluated at run time.
 # While the .Rmd file can be rendered with rmarkdown, a raw tangled R file may not be able to be processed.
 fileDependencies.tangle <- function(file, encoding = "UTF-8") {
-
   # discovered packages
   deps <- list()
 
   # unique key (line) to split R code with
-  key <- paste0("###--packrat-", paste0(sample(letters, 10, replace = TRUE), collapse = ""), "\n")
+  key <- paste0(
+    "###--packrat-",
+    paste0(sample(letters, 10, replace = TRUE), collapse = ""),
+    "\n"
+  )
 
   # rudely override knitr's 'label_code' function so
   # that we can detect dependencies within inline chunks
@@ -783,40 +848,53 @@ fileDependencies.tangle <- function(file, encoding = "UTF-8") {
   if (exists("label_code", envir = knitr)) {
     label_code <- yoink("knitr", "label_code")
     do.call("unlockBinding", list("label_code", knitr))
-    assign("label_code", function(...) {
-      # paste a known key to split the code chunks by
-      paste0(key, label_code(...))
-    }, envir = knitr)
+    assign(
+      "label_code",
+      function(...) {
+        # paste a known key to split the code chunks by
+        paste0(key, label_code(...))
+      },
+      envir = knitr
+    )
 
-    on.exit({
-      assign("label_code", label_code, envir = knitr)
-      do.call("lockBinding", list("label_code", knitr))
-    }, add = TRUE)
+    on.exit(
+      {
+        assign("label_code", label_code, envir = knitr)
+        do.call("lockBinding", list("label_code", knitr))
+      },
+      add = TRUE
+    )
   }
 
   # tangle out file
   outfile <- tempfile()
-  on.exit({
-    unlink(outfile)
-  }, add = TRUE)
+  on.exit(
+    {
+      unlink(outfile)
+    },
+    add = TRUE
+  )
 
   # attempt to tangle document with our custom hook active
-  tryCatch(silent(
-    knitr::purl(
-      file,
-      output = outfile, # tangled file location
-      quiet = TRUE,
+  tryCatch(
+    silent(
+      knitr::purl(
+        file,
+        output = outfile, # tangled file location
+        quiet = TRUE,
 
-      # `An integer specifying the level of documentation to add
-      # to the tangled script. 1L (the default) means to add
-      # the chunk headers to the code`
-      documentation = 1L,
-      encoding = encoding
-    )
- ), error = function(e) {
-   message("Unable to tangle file '", file, "'; cannot parse dependencies")
-   character()
- })
+        # `An integer specifying the level of documentation to add
+        # to the tangled script. 1L (the default) means to add
+        # the chunk headers to the code`
+        documentation = 1L,
+        encoding = encoding
+      )
+    ),
+    error = function(e) {
+      message("Unable to tangle file '", file, "'; cannot parse dependencies")
+      character()
+    }
+  )
 
   if (!file.exists(outfile)) {
     # nothing was created

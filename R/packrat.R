@@ -129,15 +129,19 @@
 #'
 #' }
 #' @export
-init <- function(project = '.',
-                 options = NULL,
-                 enter = TRUE,
-                 restart = enter,
-                 infer.dependencies = TRUE)
-{
+init <- function(
+  project = '.',
+  options = NULL,
+  enter = TRUE,
+  restart = enter,
+  infer.dependencies = TRUE
+) {
   ## Get the initial directory structure, so we can rewind if necessary
   project <- normalizePath(project, winslash = '/', mustWork = TRUE)
-  message("Initializing packrat project in directory:\n- ", surround(prettyDir(project), "\""))
+  message(
+    "Initializing packrat project in directory:\n- ",
+    surround(prettyDir(project), "\"")
+  )
 
   ## A set of files that packrat might generate as part of init -- we
   ## enumerate them here to assist with later cleanup
@@ -171,23 +175,23 @@ init <- function(project = '.',
       }
     }
   )
-
 }
 
-initImpl <- function(project = getwd(),
-                     options = NULL,
-                     enter = TRUE,
-                     restart = enter,
-                     infer.dependencies = TRUE)
-{
+initImpl <- function(
+  project = getwd(),
+  options = NULL,
+  enter = TRUE,
+  restart = enter,
+  infer.dependencies = TRUE
+) {
   opts <- get_opts(project = project)
-  if (is.null(opts))
+  if (is.null(opts)) {
     opts <- default_opts()
+  }
 
   # Read custom Packrat options and apply them
   customDefaultOptions <- getOption("packrat.default.project.options")
   if (!is.null(customDefaultOptions)) {
-
     # Validate the options (will stop on failure)
     validateOptions(customDefaultOptions)
 
@@ -208,8 +212,9 @@ initImpl <- function(project = getwd(),
   }
 
   # Force packrat mode off
-  if (isPackratModeOn())
+  if (isPackratModeOn()) {
     off()
+  }
 
   # We always re-packify so that the current version of packrat present can
   # insert the appropriate auto-loaders
@@ -221,15 +226,15 @@ initImpl <- function(project = getwd(),
 
   # If we don't yet have a lockfile, take a snapshot and then build the Packrat library.
   if (!file.exists(lockFilePath(project = project))) {
-
-    snapshotImpl(project,
-                 lib.loc = NULL,
-                 ignore.stale = TRUE,
-                 fallback.ok = TRUE,
-                 infer.dependencies = infer.dependencies)
+    snapshotImpl(
+      project,
+      lib.loc = NULL,
+      ignore.stale = TRUE,
+      fallback.ok = TRUE,
+      infer.dependencies = infer.dependencies
+    )
 
     restore(project, overwrite.dirty = TRUE, restart = FALSE)
-
   }
 
   # Copy init.R so a user can 'start from zero' with a project
@@ -248,12 +253,12 @@ initImpl <- function(project = getwd(),
   message("Initialization complete!")
 
   if (enter) {
-
     setwd(project)
 
     # Restart R if the environment is capable of it (otherwise enter packrat mode)
-    if (!restart || !attemptRestart())
+    if (!restart || !attemptRestart()) {
       on(project = project, clean.search.path = FALSE)
+    }
   }
 
   invisible()
@@ -341,12 +346,13 @@ initImpl <- function(project = getwd(),
 #'   snapshot and the library.
 #'
 #' @export
-restore <- function(project = NULL,
-                    overwrite.dirty = FALSE,
-                    prompt = interactive(),
-                    dry.run = FALSE,
-                    restart = !dry.run) {
-
+restore <- function(
+  project = NULL,
+  overwrite.dirty = FALSE,
+  prompt = interactive(),
+  dry.run = FALSE,
+  restart = !dry.run
+) {
   project <- getProjectDir(project)
   stopIfNoLockfile(project)
 
@@ -362,8 +368,9 @@ restore <- function(project = NULL,
   # of the restore. This is done to ensure downstream calls to e.g.
   # `system.file()` are successful.
   libDir <- libDir(project)
-  if (!file.exists(libDir(project)))
+  if (!file.exists(libDir(project))) {
     dir.create(libDir(project), recursive = TRUE)
+  }
 
   oldLibPaths <- .libPaths()
   .libPaths(c(libDir(project), oldLibPaths))
@@ -374,7 +381,10 @@ restore <- function(project = NULL,
   # Unfortunately, R's implementation of tar treats this warning output as
   # though it were part of the list of files in the archive.
   cygwin <- Sys.getenv("CYGWIN", unset = NA)
-  if (Sys.info()["sysname"] == "Windows" && length(grep("nodosfilewarning", cygwin)) == 0) {
+  if (
+    Sys.info()["sysname"] == "Windows" &&
+      length(grep("nodosfilewarning", cygwin)) == 0
+  ) {
     Sys.setenv("CYGWIN" = paste(cygwin, "nodosfilewarning"))
     on.exit(Sys.setenv("CYGWIN" = cygwin), add = TRUE)
   }
@@ -385,7 +395,8 @@ restore <- function(project = NULL,
   r_version <- lockInfo(project, 'r_version')
   if (!identical(as.character(getRversion()), r_version)) {
     warning(
-      'The most recent snapshot was generated using R version ', r_version,
+      'The most recent snapshot was generated using R version ',
+      r_version,
       immediate. = TRUE
     )
   }
@@ -412,7 +423,9 @@ restore <- function(project = NULL,
     # Even if overwrite.dirty is TRUE, we still want to keep packages that are
     # dirty and NOT represented in the list of packages to install (this is akin
     # to "untracked" files in git).
-    pkgsToIgnore <- dirtyPackageNames[!dirtyPackageNames %in% pkgNames(packages)]
+    pkgsToIgnore <- dirtyPackageNames[
+      !dirtyPackageNames %in% pkgNames(packages)
+    ]
   }
 
   # Configure repos globally to avoid explicitly passing the repos list to all
@@ -420,16 +433,25 @@ restore <- function(project = NULL,
   repos <- lockInfo(project, 'repos')
   externalRepos <- getOption('repos')
   options(repos = repos)
-  on.exit({
-    options(repos = externalRepos)
-  }, add = TRUE)
+  on.exit(
+    {
+      options(repos = externalRepos)
+    },
+    add = TRUE
+  )
 
   # Install each package from CRAN or github/bitbucket/gitlab, from binaries when available and
   # then from sources.
-  restoreImpl(project, repos, packages, libDir,
-              pkgsToIgnore = pkgsToIgnore, prompt = prompt,
-              dry.run = dry.run,
-              restart = restart)
+  restoreImpl(
+    project,
+    repos,
+    packages,
+    libDir,
+    pkgsToIgnore = pkgsToIgnore,
+    prompt = prompt,
+    dry.run = dry.run,
+    restart = restart
+  )
 }
 
 #' Remove Packages from the Library
@@ -460,12 +482,13 @@ restore <- function(project = NULL,
 #'
 #' }
 #' @export
-clean <- function(packages = NULL,
-                  project = NULL,
-                  lib.loc = libDir(project),
-                  dry.run = FALSE,
-                  force = FALSE) {
-
+clean <- function(
+  packages = NULL,
+  project = NULL,
+  lib.loc = libDir(project),
+  dry.run = FALSE,
+  force = FALSE
+) {
   project <- getProjectDir(project)
 
   callHook(project, "clean", TRUE)
@@ -480,43 +503,46 @@ clean <- function(packages = NULL,
 
   pkgsUnsafeToRemove <- setdiff(packages, cleanable)
   if (length(pkgsUnsafeToRemove) && !force && !dry.run) {
-    stop("The following packages are in use in your project and are unsafe to remove:\n- ",
-         paste(shQuote(pkgsUnsafeToRemove), collapse = ", "),
-         "\nUse clean(..., force = TRUE) to force removal")
+    stop(
+      "The following packages are in use in your project and are unsafe to remove:\n- ",
+      paste(shQuote(pkgsUnsafeToRemove), collapse = ", "),
+      "\nUse clean(..., force = TRUE) to force removal"
+    )
   }
 
   if (dry.run) {
-
     if (identical(packages, cleanable)) {
       pkgRecords <- cleanableRecords
     } else {
-      pkgRecords <- getPackageRecords(packages,
-                                      project = project,
-                                      available = NULL,
-                                      recursive = FALSE,
-                                      lib.loc = lib.loc)
+      pkgRecords <- getPackageRecords(
+        packages,
+        project = project,
+        available = NULL,
+        recursive = FALSE,
+        lib.loc = lib.loc
+      )
     }
     actions <- rep("remove", length(packages))
     names(actions) <- packages
-    invisible(list(pkgRecords = pkgRecords,
-                   actions = actions))
+    invisible(list(pkgRecords = pkgRecords, actions = actions))
   } else {
-
-    result <- removePkgs(project = project,
-                         pkgNames = packages,
-                         lib.loc = lib.loc)
+    result <- removePkgs(
+      project = project,
+      pkgNames = packages,
+      lib.loc = lib.loc
+    )
 
     if (length(result)) {
-      message("The following packages have been removed:\n- ",
-              paste(shQuote(result), collapse = ", "))
+      message(
+        "The following packages have been removed:\n- ",
+        paste(shQuote(result), collapse = ", ")
+      )
     } else {
       message("The packrat private library is already clean.")
     }
 
     invisible(result)
-
   }
-
 }
 
 ##' Find Unused Packages in a Project
@@ -527,29 +553,31 @@ clean <- function(packages = NULL,
 ##' @param project The project directory.
 ##' @param lib.loc The library to check.
 ##' @export
-unused_packages <- function(project = NULL,
-                            lib.loc = libDir(project)) {
-
+unused_packages <- function(project = NULL, lib.loc = libDir(project)) {
   project <- getProjectDir(project)
   packagesInUse <- appDependencies(project)
 
   installedPkgNames <- row.names(installed.packages(
     lib.loc = lib.loc,
-    priority = c('NA', 'recommended'), noCache = TRUE
+    priority = c('NA', 'recommended'),
+    noCache = TRUE
   ))
 
-  orphans <- setdiff(installedPkgNames,
-                     packagesInUse)
+  orphans <- setdiff(installedPkgNames, packagesInUse)
 
   ## Exclude 'manipulate', 'rstudio', and ignored packages
-  orphans <- setdiff(orphans, c("manipulate", "rstudio", opts$ignored.packages()))
-  orphanRecs <- getPackageRecords(orphans,
-                                  project = project,
-                                  available = NULL,
-                                  recursive = FALSE,
-                                  lib.loc = lib.loc)
+  orphans <- setdiff(
+    orphans,
+    c("manipulate", "rstudio", opts$ignored.packages())
+  )
+  orphanRecs <- getPackageRecords(
+    orphans,
+    project = project,
+    available = NULL,
+    recursive = FALSE,
+    lib.loc = lib.loc
+  )
   orphanRecs
-
 }
 
 #' Automatically Enter Packrat Mode on Startup
@@ -570,7 +598,6 @@ unused_packages <- function(project = NULL,
 #' @param quiet Be chatty?
 #' @export
 packify <- function(project = NULL, quiet = FALSE) {
-
   project <- getProjectDir(project)
   packratDir <- getPackratDir(project)
 
@@ -602,15 +629,19 @@ packify <- function(project = NULL, quiet = FALSE) {
 }
 
 lockInfo <- function(project, property = 'packages', fatal = TRUE) {
-
   project <- getProjectDir(project)
 
   # Get and parse the lockfile
   lockFilePath <- lockFilePath(project)
   if (!file.exists(lockFilePath)) {
     if (fatal) {
-      stop(paste(lockFilePath, " is missing. Run packrat::init('",
-                 project, "') to generate it.", sep = ""))
+      stop(paste(
+        lockFilePath,
+        " is missing. Run packrat::init('",
+        project,
+        "') to generate it.",
+        sep = ""
+      ))
     } else {
       return(list())
     }

@@ -6,7 +6,12 @@ source("../helper-scenarios.R")
 if (!grepl("scenarios/git", getwd(), fixed = TRUE)) {
   stop("Enter the 'scenarios/git/' directory before running this script")
 }
-projDir <- path.expand(file.path(packratHome, "scenarios", "git", "packrat-scenario-git-1"))
+projDir <- path.expand(file.path(
+  packratHome,
+  "scenarios",
+  "git",
+  "packrat-scenario-git-1"
+))
 mkdir(projDir)
 adamDir <- file.path(projDir, "adam")
 bettyDir <- file.path(projDir, "betty")

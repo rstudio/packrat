@@ -33,18 +33,21 @@
 #          "downloader.zip", mode = "wb")
 # }
 #
-download <- function(url,
-                     destfile,
-                     method = inferAppropriateDownloadMethod(url),
-                     ...)
-{
+download <- function(
+  url,
+  destfile,
+  method = inferAppropriateDownloadMethod(url),
+  ...
+) {
   # download to temporary file, then attempt to move to required location
   tempfile <- tempfile(tmpdir = dirname(destfile))
   on.exit(unlink(tempfile))
 
   # call downloadImpl -- returns '0' on success
   status <- downloadImpl(url, destfile = tempfile, method = method, ...)
-  if (status) return(status)
+  if (status) {
+    return(status)
+  }
 
   # attempt to rename the downloaded file, and return 0 on success
   success <- file.rename(tempfile, destfile)
@@ -55,7 +58,6 @@ downloadImpl <- function(url, method, ...) {
   # When on Windows using an 'internal' method, we need to call
   # 'setInternet2' to set some appropriate state.
   if (is.windows() && method == "internal") {
-
     # If we directly use setInternet2, R CMD CHECK gives a Note on Mac/Linux
     seti2 <- `::`(utils, 'setInternet2')
 
@@ -64,7 +66,6 @@ downloadImpl <- function(url, method, ...) {
 
     # If not then temporarily set it
     if (!usingInternet2) {
-
       # Store initial settings, and restore on exit
       on.exit(suppressWarnings(seti2(usingInternet2)), add = TRUE)
 
@@ -77,47 +78,54 @@ downloadImpl <- function(url, method, ...) {
   downloadFile(url, method, ...)
 }
 
-downloadFile <- function(url,
-                         method = inferAppropriateDownloadMethod(url),
-                         extra = "",
-                         ...)
-{
+downloadFile <- function(
+  url,
+  method = inferAppropriateDownloadMethod(url),
+  extra = "",
+  ...
+) {
   # If the download method we're using matches the current option for
   # 'download.file.method', then propagate 'extra' options.
-  if (!nzchar(extra) && identical(getOption("download.file.method"), method))
+  if (!nzchar(extra) && identical(getOption("download.file.method"), method)) {
     extra <- getOption("download.file.extra", default = "")
+  }
 
   # ensure 'extra' is a string
   extra <- paste(extra, collapse = " ")
 
   # pass extra arguments for 'curl' downloader
   if (method == "curl") {
-
     # use '-L' to follow redirects
-    if (!grepl("\\b-L\\b", extra))
+    if (!grepl("\\b-L\\b", extra)) {
       extra <- paste(extra, "-L")
+    }
 
     # switch off the curl globbing parser
-    if (!grepl("\\b-g\\b", extra))
+    if (!grepl("\\b-g\\b", extra)) {
       extra <- paste(extra, "-g")
+    }
 
     # use '-f' to ensure we fail on server errors
-    if (!grepl("\\b-f\\b", extra))
+    if (!grepl("\\b-f\\b", extra)) {
       extra <- paste(extra, "-f")
+    }
 
     # make curl quiet -- avoid polluting console with e.g.
     # curl: (22) The requested URL returned error: 404 Not Found
-    if (!grepl("\\b-s\\b", extra))
+    if (!grepl("\\b-s\\b", extra)) {
       extra <- paste(extra, "-s")
+    }
 
     # lower connection timeout
     connect.timeout <- getOption("packrat.connect.timeout")
-    if (!is.null(connect.timeout) && !grepl("\\b--connect-timeout\\b", extra))
+    if (!is.null(connect.timeout) && !grepl("\\b--connect-timeout\\b", extra)) {
       extra <- paste(extra, "--connect-timeout", connect.timeout)
+    }
 
     # redirect stderr to stdout, for nicer output in RStudio
-    if (!grepl("\\b--stderr -\\b", extra))
+    if (!grepl("\\b--stderr -\\b", extra)) {
       extra <- paste(extra, "--stderr -")
+    }
   }
 
   # catch warnings in the call
@@ -132,32 +140,41 @@ downloadFile <- function(url,
 
   # If we're using 'wget' or 'curl', upgrade the warning to an error.
   if (method %in% c("curl", "wget") && length(caughtWarning)) {
-    msg <- sprintf("Failed to download '%s' ('%s' had status code '%s')",
-                   url,
-                   method,
-                   result)
+    msg <- sprintf(
+      "Failed to download '%s' ('%s' had status code '%s')",
+      url,
+      method,
+      result
+    )
     stop(msg)
   }
 
   return(result)
-
 }
 
 # Attempt download.packages multiple times.
 #
 # Assumes we are downloading a single package.
-downloadPackagesWithRetries <- function(name, destdir, repos, type, maxTries = 2L) {
+downloadPackagesWithRetries <- function(
+  name,
+  destdir,
+  repos,
+  type,
+  maxTries = 2L
+) {
   maxTries <- as.integer(maxTries)
   stopifnot(maxTries > 0L)
   stopifnot(length(name) > 0L)
 
   fileLoc <- matrix(character(), 0L, 2L)
   for (i in 1:maxTries) {
-    fileLoc <- download.packages(name,
-                                 destdir = destdir,
-                                 repos = repos,
-                                 type = type,
-                                 quiet = TRUE)
+    fileLoc <- download.packages(
+      name,
+      destdir = destdir,
+      repos = repos,
+      type = type,
+      quiet = TRUE
+    )
     if (nrow(fileLoc)) {
       break
     }
@@ -185,10 +202,11 @@ downloadWithRetries <- function(url, ..., maxTries = 2L) {
     tryCatch(
       expr = {
         result <- suppressWarnings(download(url, ...))
-        if (result %in% c(0, 200))
+        if (result %in% c(0, 200)) {
           success <- TRUE
-        else
+        } else {
           Sys.sleep(1)
+        }
       },
       error = function(e) {
         Sys.sleep(1)
@@ -220,7 +238,13 @@ canUseRenvDownload <- function() {
 # - `renv$download` writes to `destfile`. The lifecycle of this function is
 #   managed by `getSourceForPkgRecord`. `renv` writes to another temporary file
 #   internally in some instances, but we don't need to worry about that.
-renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(url), type = NULL, ...) {
+renvDownload <- function(
+  url,
+  destfile,
+  method = inferAppropriateDownloadMethod(url),
+  type = NULL,
+  ...
+) {
   if (identical(type, "bitbucket")) {
     # We temporarily set our user agent to "curl" so that Bitbucket will treat us
     # like a command line and not a browser. Otherwise, if we make unauthorized
@@ -240,29 +264,31 @@ renvDownload <- function(url, destfile, method = inferAppropriateDownloadMethod(
 }
 
 inferAppropriateDownloadMethod <- function(url) {
-
   ## If the user wants to explicitly use their own download method,
   ## they can set 'packrat.download.method' and we'll honor that.
   packrat.download.method <- getOption("packrat.download.method")
-  if (is.function(packrat.download.method))
+  if (is.function(packrat.download.method)) {
     return(packrat.download.method(url))
+  }
 
   # If the user has already opted into using a certain download method,
   # don't stomp on that.
   download.file.method <- getOption("download.file.method")
-  if (!is.null(download.file.method))
+  if (!is.null(download.file.method)) {
     return(download.file.method)
+  }
 
   # Prefer using external programs (they can better handle redirects
   # than R's internal downloader, or so it seems)
   isSecureWebProtocol <- grepl("^(?:ht|f)tps://", url, perl = TRUE)
-  if (is.linux() || is.mac() || isSecureWebProtocol)
+  if (is.linux() || is.mac() || isSecureWebProtocol) {
     return(secureDownloadMethod())
-
+  }
 
   # Use "wininet" as default for R >= 3.2
-  if (is.windows() && getRversion() >= "3.2")
+  if (is.windows() && getRversion() >= "3.2") {
     return("wininet")
+  }
 
   # default
   return("internal")
@@ -272,12 +298,10 @@ inferAppropriateDownloadMethod <- function(url) {
 # platform/configuration. Returns NULL if no such method can
 # be ascertained.
 secureDownloadMethod <- function() {
-
   # Check whether we are running R 3.2 and whether we have libcurl
   isR32 <- getRversion() >= "3.2"
 
   if (is.windows()) {
-
     # For windows we prefer binding directly to wininet if we can (since
     # that doesn't rely on the value of setInternet2). If it's R <= 3.1
     # then we can use "internal" for https so long as internet2 is enabled
@@ -296,9 +320,11 @@ secureDownloadMethod <- function() {
 
   # Otherwise, fall back to 'wget' or 'curl' (preferring 'curl')
   candidates <- c("curl", "wget")
-  for (candidate in candidates)
-    if (isProgramOnPath(candidate))
+  for (candidate in candidates) {
+    if (isProgramOnPath(candidate)) {
       return(candidate)
+    }
+  }
 
   stop("Failed to discover a secure download method.")
 }
@@ -340,16 +366,25 @@ authDownloadAdvice <- function(type, authenticated, downloader) {
 
     # Info on configuration
     if (identical(downloader, "renv")) {
-      advice <- c(advice, "Packrat is configured to use internal renv for authenticated downloads.")
+      advice <- c(
+        advice,
+        "Packrat is configured to use internal renv for authenticated downloads."
+      )
     } else if (identical(downloader, "httr")) {
-      advice <- c(advice, "Packrat will use the httr package for authenticated downloads.")
+      advice <- c(
+        advice,
+        "Packrat will use the httr package for authenticated downloads."
+      )
     } else {
-      advice <- c(advice, paste0(
-        "Packrat is not configured to use an auth-capable download ",
-        "method. Try setting the option ",
-        "packrat.authenticated.downloads.use.renv to TRUE, or installing the ",
-        "httr package."
-      ))
+      advice <- c(
+        advice,
+        paste0(
+          "Packrat is not configured to use an auth-capable download ",
+          "method. Try setting the option ",
+          "packrat.authenticated.downloads.use.renv to TRUE, or installing the ",
+          "httr package."
+        )
+      )
     }
     advice <- paste(advice, collapse = " ")
 

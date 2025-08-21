@@ -27,16 +27,17 @@
 #' @param ... Optional arguments passed to \code{\link{tar}}.
 #' @export
 #' @return The path (invisibly) to the bundled project.
-bundle <- function(project = NULL,
-                   file = NULL,
-                   include.src = TRUE,
-                   include.lib = FALSE,
-                   include.bundles = TRUE,
-                   include.vcs.history = FALSE,
-                   overwrite = FALSE,
-                   omit.cran.src = FALSE,
-                   ...) {
-
+bundle <- function(
+  project = NULL,
+  file = NULL,
+  include.src = TRUE,
+  include.lib = FALSE,
+  include.bundles = TRUE,
+  include.vcs.history = FALSE,
+  overwrite = FALSE,
+  omit.cran.src = FALSE,
+  ...
+) {
   project <- getProjectDir(project)
   stopIfNotPackified(project)
 
@@ -97,7 +98,13 @@ bundle <- function(project = NULL,
   ## Remove any CRAN packages if 'omit.cran.src' was specified.
   if (omit.cran.src) {
     lockfile <- readLockFilePackages(lockFilePath(project))
-    pkgs <- vapply(lockfile, `[[`, FUN.VALUE = character(1), "name", USE.NAMES = FALSE)
+    pkgs <- vapply(
+      lockfile,
+      `[[`,
+      FUN.VALUE = character(1),
+      "name",
+      USE.NAMES = FALSE
+    )
     isCRAN <- vapply(lockfile, FUN.VALUE = logical(1), function(x) {
       x[["source"]] == "CRAN"
     })
@@ -109,7 +116,6 @@ bundle <- function(project = NULL,
     )
 
     for (srcPkg in srcPkgs) {
-
       isPathToCranPkg <- any(unlist(lapply(cranPkgs, function(cranPkg) {
         grepl(cranPkg, basename(srcPkg))
       })))
@@ -117,9 +123,7 @@ bundle <- function(project = NULL,
       if (isPathToCranPkg) {
         unlink(srcPkg)
       }
-
     }
-
   }
 
   ## Now bundle up that copied directory, from the tempdir path
@@ -142,8 +146,9 @@ bundle <- function(project = NULL,
 extractProjectNameFromBundlePath <- function(bundlePath) {
   bundleBasename <- basename(bundlePath)
   reDate <- "^(.*?)-\\d{4}-\\d{2}-\\d{2}\\.tar\\.gz$"
-  if (grepl(reDate, bundleBasename, perl = TRUE))
+  if (grepl(reDate, bundleBasename, perl = TRUE)) {
     gsub(reDate, "\\1", bundleBasename, perl = TRUE)
+  }
 }
 
 ##' Unbundle a Packrat Project
@@ -157,7 +162,6 @@ extractProjectNameFromBundlePath <- function(bundlePath) {
 ##'   after \code{unbundle}-ing the project?
 ##' @export
 unbundle <- function(bundle, where, ..., restore = TRUE) {
-
   bundle <- normalizePath(bundle, winslash = "/", mustWork = TRUE)
   if (!file.exists(where) && is_dir(where)) {
     dir.create(where, recursive = TRUE)
@@ -174,28 +178,42 @@ unbundle <- function(bundle, where, ..., restore = TRUE) {
   # It's possible that people will have renamed the bundles, so make
   # this a no-op on error.
   projectName <- extractProjectNameFromBundlePath(bundle)
-  if (!is.null(projectName) && file.exists(file.path(where, projectName)))
+  if (!is.null(projectName) && file.exists(file.path(where, projectName))) {
     stop("Path '", file.path(where, projectName), "' already exists!")
+  }
 
   whereFiles <- list.files()
   message("- Untarring '", basename(bundle), "' in directory '", where, "'...")
   untar(bundle, exdir = where, tar = tar_binary(), ...)
-  dirName <- normalizePath(setdiff(list.files(), whereFiles), winslash = "/", mustWork = TRUE)
+  dirName <- normalizePath(
+    setdiff(list.files(), whereFiles),
+    winslash = "/",
+    mustWork = TRUE
+  )
 
   if (restore) {
     if (length(dirName) != 1) {
-      stop("Couldn't infer top-level directory name; cannot perform automatic restore")
+      stop(
+        "Couldn't infer top-level directory name; cannot perform automatic restore"
+      )
     }
     setwd(dirName)
     ## Ensure the (empty) library directory is present before restoring
     dir.create(libDir(getwd()), recursive = TRUE, showWarnings = FALSE)
     message("- Restoring project library...")
     restore(project = getwd(), restart = FALSE)
-    message("Done! The project has been unbundled and restored at:\n- \"", dirName, "\"")
+    message(
+      "Done! The project has been unbundled and restored at:\n- \"",
+      dirName,
+      "\""
+    )
   } else {
-    message("Done! The packrat project has been unbundled at:\n- \"", dirName, "\"")
+    message(
+      "Done! The packrat project has been unbundled at:\n- \"",
+      dirName,
+      "\""
+    )
   }
 
   invisible(dirName)
-
 }

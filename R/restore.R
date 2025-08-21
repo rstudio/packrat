@@ -1,27 +1,29 @@
 # Given a package record, indicate the name we expect its source archive to have.
 pkgSrcFilename <- function(pkgRecord) {
-  if (identical(pkgRecord$source, "github"))
+  if (identical(pkgRecord$source, "github")) {
     paste(pkgRecord$gh_sha1, ".tar.gz", sep = "")
-  else if (pkgRecord$source %in% c("bitbucket", "gitlab"))
+  } else if (pkgRecord$source %in% c("bitbucket", "gitlab")) {
     paste(pkgRecord$remote_sha, ".tar.gz", sep = "")
-  else
+  } else {
     paste(pkgRecord$name, "_", pkgRecord$version, ".tar.gz", sep = "")
+  }
 }
 
 # Given a package record and a set of known repositories, indicate whether the
 # package exists on a CRAN-like repository.
 isFromCranlikeRepo <- function(pkgRecord, repos) {
-
   # for package records inferred from a DESCRIPTION file, we know
   # whether a package came from a CRAN-like repository
-  if (inherits(pkgRecord, "CustomCRANLikeRepository"))
+  if (inherits(pkgRecord, "CustomCRANLikeRepository")) {
     return(TRUE)
+  }
 
   # TODO: this shouldn't happen, but if it does we'll assume the package
   # can be obtained from CRAN
   source <- pkgRecord$source
-  if (!length(source))
+  if (!length(source)) {
     return(TRUE)
+  }
 
   # for records that do declare a source, ensure it's not 'source', 'github', 'bitbucket', or 'gitlab'.
   # in previous releases of packrat, we attempted to match the repository name
@@ -43,14 +45,15 @@ versionMatchesDb <- function(pkgRecord, db) {
     pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
     installedPkgRecord <-
       inferPackageRecord(as.data.frame(readDcf(pkgDescFile)))
-    versionMatch <- identical(pkgRecord$gh_sha1,
-                              installedPkgRecord$gh_sha1)
+    versionMatch <- identical(pkgRecord$gh_sha1, installedPkgRecord$gh_sha1)
   } else if (versionMatch && pkgRecord$source %in% c("gitlab", "bitbucket")) {
     pkgDescFile <- system.file('DESCRIPTION', package = pkgRecord$name)
     installedPkgRecord <-
       inferPackageRecord(as.data.frame(readDcf(pkgDescFile)))
-    versionMatch <- identical(pkgRecord$remote_sha,
-                              installedPkgRecord$remote_sha)
+    versionMatch <- identical(
+      pkgRecord$remote_sha,
+      installedPkgRecord$remote_sha
+    )
   }
   versionMatch
 }
@@ -62,55 +65,74 @@ versionMatchesDb <- function(pkgRecord, db) {
 # - Creates the path for the temporary destination file, named `srczip` at this
 #   level. It doesn't create the file itself — download functions do that — but
 #   handles its cleanup if it exists when the function exits.
-getSourceForPkgRecord <- function(pkgRecord,
-                                  sourceDir,
-                                  availablePkgs,
-                                  repos,
-                                  quiet = FALSE) {
-
+getSourceForPkgRecord <- function(
+  pkgRecord,
+  sourceDir,
+  availablePkgs,
+  repos,
+  quiet = FALSE
+) {
   # Skip packages for which we can't find sources
-  if (is.null(pkgRecord$source) ||
-        is.na(pkgRecord$source)) {
+  if (
+    is.null(pkgRecord$source) ||
+      is.na(pkgRecord$source)
+  ) {
     if (!quiet) {
-      warning("Couldn't determine source for ", pkgRecord$name, " (",
-              pkgRecord$version, ")")
+      warning(
+        "Couldn't determine source for ",
+        pkgRecord$name,
+        " (",
+        pkgRecord$version,
+        ")"
+      )
     }
     return(NULL)
   }
 
   # If we don't know where this package's source resides, give up
   if (identical(pkgRecord$source, "unknown") && !quiet) {
-    stop("No sources available for package ", pkgRecord$name, ". Packrat can ",
-         "find sources for packages on CRAN-like repositories and packages ",
-         "installed using devtools::install_github, devtools::install_gitlab",
-         "devtools::install_bitbucket. TODO: local repo")
+    stop(
+      "No sources available for package ",
+      pkgRecord$name,
+      ". Packrat can ",
+      "find sources for packages on CRAN-like repositories and packages ",
+      "installed using devtools::install_github, devtools::install_gitlab",
+      "devtools::install_bitbucket. TODO: local repo"
+    )
   }
 
   # Create the directory in which to place this package's sources
   pkgSrcDir <- file.path(sourceDir, pkgRecord$name)
-  if (!file.exists(pkgSrcDir))
+  if (!file.exists(pkgSrcDir)) {
     dir.create(pkgSrcDir, recursive = TRUE)
+  }
 
   # If the file we want to download already exists, skip it
   pkgSrcFile <- pkgSrcFilename(pkgRecord)
-  if (file.exists(file.path(pkgSrcDir, pkgSrcFile)))
+  if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
     return(NULL)
+  }
 
   if (!quiet) {
-    message("Fetching sources for ", pkgRecord$name, " (", pkgRecord$version,
-            ") ... ", appendLF = FALSE)
+    message(
+      "Fetching sources for ",
+      pkgRecord$name,
+      " (",
+      pkgRecord$version,
+      ") ... ",
+      appendLF = FALSE
+    )
   }
 
   type <- pkgRecord$source
-  if (identical(type, "CustomCRANLikeRepository"))
+  if (identical(type, "CustomCRANLikeRepository")) {
     type <- "CRAN"
+  }
 
   # If this is a local source path, compress the local sources rather than
   # trying to download from an external source
   if (identical(pkgRecord$source, "source")) {
-
     local({
-
       if (file.exists(file.path(pkgRecord$source_path, "DESCRIPTION"))) {
         ## If the path supplied is the directory of a source package,
         ## build it
@@ -122,15 +144,14 @@ getSourceForPkgRecord <- function(pkgRecord,
           vignettes = FALSE,
           quiet = TRUE
         )
-
       } else if (endswith(pkgRecord$source_path, ".tar.gz")) {
-
         ## We assume it's a package already generated by R CMD build -- just
         ## copy the tarball over
-        file.copy(pkgRecord$source_path, file.path(pkgSrcDir, basename(pkgRecord$source_path)))
-
+        file.copy(
+          pkgRecord$source_path,
+          file.path(pkgSrcDir, basename(pkgRecord$source_path))
+        )
       } else {
-
         # R's tar command preserves paths relative to the current directory in
         # the archive, so temporarily set the working directory there while
         # we create the tarball
@@ -139,19 +160,23 @@ getSourceForPkgRecord <- function(pkgRecord,
         on.exit(setwd(wd), add = TRUE)
         setwd(file.path(pkgRecord$source_path, ".."))
 
-        tar(file.path(pkgSrcDir, pkgSrcFile), files = pkgRecord$name,
-            compression = "gzip", tar = tar_binary())
+        tar(
+          file.path(pkgSrcDir, pkgSrcFile),
+          files = pkgRecord$name,
+          compression = "gzip",
+          tar = tar_binary()
+        )
       }
     })
     type <- "local"
   } else if (isFromCranlikeRepo(pkgRecord, repos)) {
-
     # Attempt to detect if this is the current version of a package
     # on a CRAN-like repository
-    currentVersion <- if (pkgRecord$name %in% availablePkgs[, "Package"])
+    currentVersion <- if (pkgRecord$name %in% availablePkgs[, "Package"]) {
       availablePkgs[pkgRecord$name, "Version"]
-    else
+    } else {
       NA
+    }
 
     # Is the reported package version from 'available.packages()'
     # newer than that reported from CRAN? If so, we may be attempting
@@ -177,14 +202,21 @@ getSourceForPkgRecord <- function(pkgRecord,
       # generate an available package listing for _binary_ packages,
       # rather than source packages. Leave it NULL and let R do the
       # right thing
-      fileLoc <- downloadPackagesWithRetries(pkgRecord$name,
-                                             destdir = pkgSrcDir,
-                                             repos = repos,
-                                             type = "source")
+      fileLoc <- downloadPackagesWithRetries(
+        pkgRecord$name,
+        destdir = pkgSrcDir,
+        repos = repos,
+        type = "source"
+      )
       if (!nrow(fileLoc)) {
-        stop("Failed to download current version of ", pkgRecord$name,
-             "(", pkgRecord$version, ")")
-        }
+        stop(
+          "Failed to download current version of ",
+          pkgRecord$name,
+          "(",
+          pkgRecord$version,
+          ")"
+        )
+      }
 
       downloadedFile <- fileLoc[1, 2]
       if (identical(dirname(downloadedFile), pkgSrcDir)) {
@@ -206,9 +238,11 @@ getSourceForPkgRecord <- function(pkgRecord,
       foundVersion <- downloadArchiveWithRetries(repos, pkgRecord, destFile)
       if (!foundVersion) {
         message("FAILED")
-        stop(sprintf("Failed to retrieve package sources for %s %s from a package repository archive (internet connectivity issue?)",
-                     pkgRecord$name,
-                     pkgRecord$version))
+        stop(sprintf(
+          "Failed to retrieve package sources for %s %s from a package repository archive (internet connectivity issue?)",
+          pkgRecord$name,
+          pkgRecord$version
+        ))
       }
       type <- paste(type, "archived")
     }
@@ -221,32 +255,48 @@ getSourceForPkgRecord <- function(pkgRecord,
       add = TRUE
     )
 
-    tryCatch({
-      githubDownload(archiveUrl, srczip)
-    }, error = function(e) {
-      message("FAILED")
-      e$message <- sprintf("Failed to download package from GitHub URL: '%s'\n%s", archiveUrl, e$message)
-      stop(e)
-    })
+    tryCatch(
+      {
+        githubDownload(archiveUrl, srczip)
+      },
+      error = function(e) {
+        message("FAILED")
+        e$message <- sprintf(
+          "Failed to download package from GitHub URL: '%s'\n%s",
+          archiveUrl,
+          e$message
+        )
+        stop(e)
+      }
+    )
 
     remote_info <- getRemoteInfo(pkgRecord)
 
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
+    dest <- normalizePath(
+      file.path(pkgSrcDir, pkgSrcFile),
+      winslash = "/",
+      mustWork = FALSE
+    )
 
-    tryCatch({
-      success <- appendRemoteInfoToDescription(
-        src = srczip,
-        dest = dest,
-        remote_info = remote_info
-      )
-    }, error = function(e) {
-      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
-           pkgRecord$name, e)
-      stop(e)
-    })
+    tryCatch(
+      {
+        success <- appendRemoteInfoToDescription(
+          src = srczip,
+          dest = dest,
+          remote_info = remote_info
+        )
+      },
+      error = function(e) {
+        e$message <- sprintf(
+          "Could not update 'DESCRIPTION' file for package %s:\n%s",
+          pkgRecord$name,
+          e
+        )
+        stop(e)
+      }
+    )
 
     type <- "GitHub"
-
   } else if (identical(pkgRecord$source, "bitbucket")) {
     archiveUrl <- bitbucketArchiveUrl(pkgRecord)
 
@@ -256,33 +306,48 @@ getSourceForPkgRecord <- function(pkgRecord,
       add = TRUE
     )
 
-    tryCatch({
-      bitbucketDownload(archiveUrl, srczip)
-    }, error = function(e) {
-      message("FAILED")
-      e$message <- sprintf("Failed to download package from Bitbucket URL: '%s'\n%s", archiveUrl, e$message)
-      stop(e)
-    })
+    tryCatch(
+      {
+        bitbucketDownload(archiveUrl, srczip)
+      },
+      error = function(e) {
+        message("FAILED")
+        e$message <- sprintf(
+          "Failed to download package from Bitbucket URL: '%s'\n%s",
+          archiveUrl,
+          e$message
+        )
+        stop(e)
+      }
+    )
 
     remote_info <- getRemoteInfo(pkgRecord)
 
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
+    dest <- normalizePath(
+      file.path(pkgSrcDir, pkgSrcFile),
+      winslash = "/",
+      mustWork = FALSE
+    )
 
-    tryCatch({
-      success <- appendRemoteInfoToDescription(
-        src = srczip,
-        dest = dest,
-        remote_info = remote_info
-      )
-    }, error = function(e) {
-      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
-           pkgRecord$name, e)
-      stop(e)
-    })
+    tryCatch(
+      {
+        success <- appendRemoteInfoToDescription(
+          src = srczip,
+          dest = dest,
+          remote_info = remote_info
+        )
+      },
+      error = function(e) {
+        e$message <- sprintf(
+          "Could not update 'DESCRIPTION' file for package %s:\n%s",
+          pkgRecord$name,
+          e
+        )
+        stop(e)
+      }
+    )
 
     type <- "Bitbucket"
-
-
   } else if (identical(pkgRecord$source, "gitlab")) {
     archiveUrl <- gitlabArchiveUrl(pkgRecord)
 
@@ -292,39 +357,62 @@ getSourceForPkgRecord <- function(pkgRecord,
       add = TRUE
     )
 
-    tryCatch({
-      gitlabDownload(archiveUrl, srczip)
-    }, error = function(e) {
-      message("FAILED")
-      e$message <- sprintf("Failed to download package from GitLab URL: '%s'\n%s", archiveUrl, e$message)
-      stop(e)
-    })
+    tryCatch(
+      {
+        gitlabDownload(archiveUrl, srczip)
+      },
+      error = function(e) {
+        message("FAILED")
+        e$message <- sprintf(
+          "Failed to download package from GitLab URL: '%s'\n%s",
+          archiveUrl,
+          e$message
+        )
+        stop(e)
+      }
+    )
 
     remote_info <- getRemoteInfo(pkgRecord)
 
-    dest <- normalizePath(file.path(pkgSrcDir, pkgSrcFile), winslash = "/", mustWork = FALSE)
+    dest <- normalizePath(
+      file.path(pkgSrcDir, pkgSrcFile),
+      winslash = "/",
+      mustWork = FALSE
+    )
 
-    tryCatch({
-      success <- appendRemoteInfoToDescription(
-        src = srczip,
-        dest = dest,
-        remote_info = remote_info
-      )
-    }, error = function(e) {
-      e$message <- sprintf("Could not update 'DESCRIPTION' file for package %s:\n%s",
-           pkgRecord$name, e)
-      stop(e)
-    })
+    tryCatch(
+      {
+        success <- appendRemoteInfoToDescription(
+          src = srczip,
+          dest = dest,
+          remote_info = remote_info
+        )
+      },
+      error = function(e) {
+        e$message <- sprintf(
+          "Could not update 'DESCRIPTION' file for package %s:\n%s",
+          pkgRecord$name,
+          e
+        )
+        stop(e)
+      }
+    )
 
     type <- "GitLab"
   }
-  if (!quiet) { # TODO: Does turning on (quiet) prevent it from failing on error here
+  if (!quiet) {
+    # TODO: Does turning on (quiet) prevent it from failing on error here
     if (file.exists(file.path(pkgSrcDir, pkgSrcFile))) {
       message("OK (", type, ")")
     } else {
       message("FAILED")
-      stop("Could not find sources for ", pkgRecord$name, " (",
-           pkgRecord$version, ").")
+      stop(
+        "Could not find sources for ",
+        pkgRecord$name,
+        " (",
+        pkgRecord$version,
+        ")."
+      )
     }
   }
 }
@@ -356,7 +444,13 @@ downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
       formatters,
       # Artifactory (old versions / configurations)
       function(repo) {
-        file.path(repo, "src/contrib/Archive", pkgRecord$name, pkgRecord$version, pkgSrcFile)
+        file.path(
+          repo,
+          "src/contrib/Archive",
+          pkgRecord$name,
+          pkgRecord$version,
+          pkgSrcFile
+        )
       },
 
       # Nexus
@@ -370,43 +464,51 @@ downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
   for (formatter in formatters) {
     for (repo in repos) {
       archiveUrl <- formatter(repo)
-      tryCatch({
-        downloadWithRetries(archiveUrl,
-                            destfile = destFile,
-                            mode = "wb", quiet = TRUE)
-        return(TRUE)
-      }, error = function(e) {
-        # ignore error and try next repo/archive path.
-      })
+      tryCatch(
+        {
+          downloadWithRetries(
+            archiveUrl,
+            destfile = destFile,
+            mode = "wb",
+            quiet = TRUE
+          )
+          return(TRUE)
+        },
+        error = function(e) {
+          # ignore error and try next repo/archive path.
+        }
+      )
     }
   }
   return(FALSE)
 }
 
 snapshotSources <- function(project, repos, pkgRecords) {
-
   # Don't snapshot packages included in external.packages
   external.packages <- opts$external.packages()
-  pkgRecords <- Filter(function(x) !(x$name %in% external.packages),
-                       pkgRecords)
+  pkgRecords <- Filter(function(x) !(x$name %in% external.packages), pkgRecords)
 
   # Get a list of source packages available on the repositories
   availablePkgs <- availablePackagesSource(repos = repos)
 
   # Find the source directory (create it if necessary)
   sourceDir <- srcDir(project)
-  if (!file.exists(sourceDir))
+  if (!file.exists(sourceDir)) {
     dir.create(sourceDir, recursive = TRUE)
+  }
 
   # Get the sources for each package
   results <- lapply(pkgRecords, function(pkgRecord) {
-    try(getSourceForPkgRecord(pkgRecord, sourceDir, availablePkgs, repos),
-        silent = TRUE)
+    try(
+      getSourceForPkgRecord(pkgRecord, sourceDir, availablePkgs, repos),
+      silent = TRUE
+    )
   })
 
   errors <- results[sapply(results, function(x) inherits(x, "try-error"))]
-  if (length(errors) > 0)
+  if (length(errors) > 0) {
     stop("Errors occurred when fetching source files:\n", errors)
+  }
 
   invisible(NULL)
 }
@@ -448,11 +550,13 @@ installedByPackrat <- function(pkgNames, lib.loc, default = NA) {
   # the DESCRIPTION file.
   return(as.logical(sapply(pkgNames, function(pkg) {
     descFile <- file.path(lib.loc, pkg, 'DESCRIPTION')
-    if (!file.exists(descFile))
+    if (!file.exists(descFile)) {
       return(default)
+    }
     ia <- as.character(as.data.frame(readDcf(descFile))$InstallAgent)
-    if (length(ia) == 0)
+    if (length(ia) == 0) {
       return(FALSE)
+    }
     return(grepl('^packrat\\b', ia)[1])
   })))
 }
@@ -465,11 +569,7 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
 
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
-installPkg <- function(pkgRecord,
-                       project,
-                       repos,
-                       lib = libDir(project))
-{
+installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
   # If we're trying to install a package that overwrites a symlink, e.g. for a
   # cached package, we need to move that symlink out of the way (otherwise
   # `install.packages()` or `R CMD INSTALL` will fail with surprising errors,
@@ -486,24 +586,35 @@ installPkg <- function(pkgRecord,
   if (file.exists(pkgInstallPath) || is.symlink(pkgInstallPath)) {
     temp <- tempfile(tmpdir = lib)
     file.rename(pkgInstallPath, temp)
-    on.exit({
-      if (file.exists(pkgInstallPath))
-        unlink(temp, recursive = !is.symlink(temp))
-      else
-        file.rename(temp, pkgInstallPath)
-    }, add = TRUE)
-
+    on.exit(
+      {
+        if (file.exists(pkgInstallPath)) {
+          unlink(temp, recursive = !is.symlink(temp))
+        } else {
+          file.rename(temp, pkgInstallPath)
+        }
+      },
+      add = TRUE
+    )
   }
 
   # Try restoring the package from the global cache.
   cacheCopyStatus <- new.env(parent = emptyenv())
-  copiedFromCache <- restoreWithCopyFromCache(project, pkgRecord, cacheCopyStatus)
+  copiedFromCache <- restoreWithCopyFromCache(
+    project,
+    pkgRecord,
+    cacheCopyStatus
+  )
   if (copiedFromCache) {
     return(cacheCopyStatus$type)
   }
 
   # Try restoring the package from the 'unsafe' cache, if applicable.
-  copiedFromUntrustedCache <- restoreWithCopyFromUntrustedCache(project, pkgRecord, cacheCopyStatus)
+  copiedFromUntrustedCache <- restoreWithCopyFromUntrustedCache(
+    project,
+    pkgRecord,
+    cacheCopyStatus
+  )
   if (copiedFromUntrustedCache) {
     return(cacheCopyStatus$type)
   }
@@ -512,59 +623,77 @@ installPkg <- function(pkgRecord,
   needsInstall <- TRUE
 
   # Try downloading a binary (when appropriate).
-  if (hasBinaryRepositories() &&
+  if (
+    hasBinaryRepositories() &&
       binaryRepositoriesEnabled() &&
       isFromCranlikeRepo(pkgRecord, repos) &&
       pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
-      versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos)))
-  {
+      versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
+  ) {
     tempdir <- tempdir()
-    tryCatch({
-      # install.packages emits both messages and standard output; redirect these
-      # streams to keep our own output clean.
+    tryCatch(
+      {
+        # install.packages emits both messages and standard output; redirect these
+        # streams to keep our own output clean.
 
-      # on windows, we need to detach the package before installation
-      detachPackageForInstallationIfNecessary(pkgRecord$name)
+        # on windows, we need to detach the package before installation
+        detachPackageForInstallationIfNecessary(pkgRecord$name)
 
-      suppressMessages(
-        capture.output(
-          utils::install.packages(pkgRecord$name,
-                                  lib = lib,
-                                  repos = repos,
-                                  type = .Platform$pkgType,
-                                  available = availablePackagesBinary(repos = repos),
-                                  quiet = TRUE,
-                                  dependencies = FALSE,
-                                  verbose = FALSE)
+        suppressMessages(
+          capture.output(
+            utils::install.packages(
+              pkgRecord$name,
+              lib = lib,
+              repos = repos,
+              type = .Platform$pkgType,
+              available = availablePackagesBinary(repos = repos),
+              quiet = TRUE,
+              dependencies = FALSE,
+              verbose = FALSE
+            )
+          )
         )
-      )
 
-      type <- "downloaded binary"
-      needsInstall <- FALSE
-    }, error = function(e) {
-      # Do nothing here, we'll try local sources if we fail to download from
-      # the repo
-    })
+        type <- "downloaded binary"
+        needsInstall <- FALSE
+      },
+      error = function(e) {
+        # Do nothing here, we'll try local sources if we fail to download from
+        # the repo
+      }
+    )
   }
 
   if (needsInstall) {
     # When installing from github/bitbucket/gitlab or an older version, use the cached source
     # tarball or zip created in snapshotSources
-    pkgSrc <- file.path(srcDir(project), pkgRecord$name,
-                        pkgSrcFilename(pkgRecord))
+    pkgSrc <- file.path(
+      srcDir(project),
+      pkgRecord$name,
+      pkgSrcFilename(pkgRecord)
+    )
 
     if (!file.exists(pkgSrc)) {
       # If the source file is missing, try to download it. (Could happen in the
       # case where the packrat lockfile is present but cached sources are
       # missing.)
-      getSourceForPkgRecord(pkgRecord,
-                            srcDir(project),
-                            availablePackagesSource(repos = repos),
-                            repos,
-                            quiet = TRUE)
+      getSourceForPkgRecord(
+        pkgRecord,
+        srcDir(project),
+        availablePackagesSource(repos = repos),
+        repos,
+        quiet = TRUE
+      )
       if (!file.exists(pkgSrc)) {
-        stop("Failed to install ", pkgRecord$name, " (", pkgRecord$version, ")",
-             ": sources missing at ", pkgSrc)
+        stop(
+          "Failed to install ",
+          pkgRecord$name,
+          " (",
+          pkgRecord$version,
+          ")",
+          ": sources missing at ",
+          pkgSrc
+        )
       }
     }
 
@@ -575,8 +704,9 @@ installPkg <- function(pkgRecord,
       error = identity
     )
 
-    if (identical(pkgType, "binary"))
+    if (identical(pkgType, "binary")) {
       type <- "downloaded binary"
+    }
 
     local({
       # devtools does not install to any libraries other than the default, so
@@ -587,7 +717,9 @@ installPkg <- function(pkgRecord,
         on.exit(setLibPaths(oldLibPaths), add = TRUE)
         # Make sure the library actually exists, otherwise setLibPaths will silently
         # fail
-        if (!file.exists(lib)) dir.create(lib, recursive = TRUE)
+        if (!file.exists(lib)) {
+          dir.create(lib, recursive = TRUE)
+        }
         setLibPaths(lib)
       }
 
@@ -595,8 +727,13 @@ installPkg <- function(pkgRecord,
       detachPackageForInstallationIfNecessary(pkgRecord$name)
 
       quiet <- isTRUE(packrat::opts$quiet.package.installation())
-      install_local_path(path = pkgSrc, reload = FALSE,
-                         dependencies = FALSE, quick = TRUE, quiet = quiet)
+      install_local_path(
+        path = pkgSrc,
+        reload = FALSE,
+        dependencies = FALSE,
+        quick = TRUE,
+        quiet = quiet
+      )
       # if we just installed a binary package, check that it can be loaded
       # (source packages are checked by default on install)
       if (identical(pkgType, "binary")) {
@@ -624,7 +761,11 @@ installPkg <- function(pkgRecord,
     if (isTrustedPackage(pkgRecord$name)) {
       descPath <- file.path(pkgInstallPath, "DESCRIPTION")
       if (!file.exists(descPath)) {
-        warning("cannot cache package: no DESCRIPTION file at path '", descPath, "'")
+        warning(
+          "cannot cache package: no DESCRIPTION file at path '",
+          descPath,
+          "'"
+        )
       } else {
         hash <- hash(descPath)
         moveInstalledPackageToCache(
@@ -653,7 +794,6 @@ installPkg <- function(pkgRecord,
 }
 
 playActions <- function(pkgRecords, actions, repos, project, lib) {
-
   installedPkgs <- installed.packages(priority = c("NA", "recommended"))
   targetPkgs <- searchPackages(pkgRecords, names(actions))
 
@@ -661,28 +801,54 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
     action <- as.character(actions[i])
     pkgRecord <- targetPkgs[i][[1]]
     if (is.null(pkgRecord) && !identical(action, "remove")) {
-      warning("Can't ", action, " ", names(actions[i]),
-              ": missing from lockfile")
+      warning(
+        "Can't ",
+        action,
+        " ",
+        names(actions[i]),
+        ": missing from lockfile"
+      )
       next
     }
     if (action %in% c("upgrade", "downgrade", "crossgrade")) {
       # Changing package type or version: Remove the old one now (we'll write
       # a new one in a moment)
-      message("Replacing ", pkgRecord$name, " (", action, " ",
-              installedPkgs[pkgRecord$name, "Version"], " to ",
-              pkgRecord$version, ") ... ", appendLF = FALSE)
+      message(
+        "Replacing ",
+        pkgRecord$name,
+        " (",
+        action,
+        " ",
+        installedPkgs[pkgRecord$name, "Version"],
+        " to ",
+        pkgRecord$version,
+        ") ... ",
+        appendLF = FALSE
+      )
       removePkgs(project, pkgRecord$name, lib)
     } else if (identical(action, "add")) {
       # Insert newline to show progress on consoles that buffer to newlines.
-      message("Installing ", pkgRecord$name, " (", pkgRecord$version, ") ... ",
-              appendLF = TRUE)
+      message(
+        "Installing ",
+        pkgRecord$name,
+        " (",
+        pkgRecord$version,
+        ") ... ",
+        appendLF = TRUE
+      )
     } else if (identical(action, "remove")) {
       if (is.null(pkgRecord)) {
         message("Removing ", names(actions[i]), " ... ", appendLF = FALSE)
         removePkgs(project, names(actions[i]), lib)
       } else {
-        message("Removing ", pkgRecord$name, "( ", pkgRecord$version, ") ... ",
-                appendLF = FALSE)
+        message(
+          "Removing ",
+          pkgRecord$name,
+          "( ",
+          pkgRecord$version,
+          ") ... ",
+          appendLF = FALSE
+        )
         removePkgs(project, pkgRecord$name, lib)
       }
       message("OK")
@@ -694,15 +860,16 @@ playActions <- function(pkgRecords, actions, repos, project, lib) {
   invisible()
 }
 
-restoreImpl <- function(project,
-                        repos,
-                        pkgRecords,
-                        lib,
-                        pkgsToIgnore = character(),
-                        prompt = interactive(),
-                        dry.run = FALSE,
-                        restart = TRUE)
-{
+restoreImpl <- function(
+  project,
+  repos,
+  pkgRecords,
+  lib,
+  pkgsToIgnore = character(),
+  prompt = interactive(),
+  dry.run = FALSE,
+  restart = TRUE
+) {
   # optionally overlay the 'src' directory from a custom location
   overlaySourcePackages(srcDir(project))
 
@@ -718,11 +885,11 @@ restoreImpl <- function(project,
   installedPkgs <- rownames(installed.packages(lib.loc = lib))
   installedPkgs <- setdiff(installedPkgs, c("manipulate", "rstudio"))
   installedPkgRecords <- getPackageRecords(
-      installedPkgs,
-      project = project,
-      recursive = FALSE,
-      lib.loc = lib
-    )
+    installedPkgs,
+    project = project,
+    recursive = FALSE,
+    lib.loc = lib
+  )
   actions <- diff(installedPkgRecords, pkgRecords)
   actions[names(actions) %in% pkgsToIgnore] <- NA
   restartNeeded <- FALSE
@@ -737,12 +904,16 @@ restoreImpl <- function(project,
   # Since we print actions as we do them, there's no need to do a summary
   # print first unless we need the user to confirm.
   if (prompt && mustConfirm && !dry.run) {
-    summarizeDiffs(actions, installedPkgRecords, pkgRecords,
-                   'Adding these packages to your library:',
-                   'Removing these packages from your library:',
-                   'Upgrading these packages in your library:',
-                   'Downgrading these packages in your library:',
-                   'Modifying these packages in your library:')
+    summarizeDiffs(
+      actions,
+      installedPkgRecords,
+      pkgRecords,
+      'Adding these packages to your library:',
+      'Removing these packages from your library:',
+      'Upgrading these packages in your library:',
+      'Downgrading these packages in your library:',
+      'Modifying these packages in your library:'
+    )
 
     answer <- readline('Do you want to continue? [Y/n]: ')
     answer <- gsub('^\\s*(.*?)\\s*$', '\\1', answer)
@@ -756,8 +927,12 @@ restoreImpl <- function(project,
   # since they don't exist in the lockfile-generated list; extract them and
   # combine afterwards.
   removeActions <- actions[actions == "remove"]
-  actions <- c(removeActions,
-               unlist(lapply(pkgRecords, function(p) { actions[p$name] })))
+  actions <- c(
+    removeActions,
+    unlist(lapply(pkgRecords, function(p) {
+      actions[p$name]
+    }))
+  )
 
   # If any of the packages to be mutated are loaded, and the library we're
   # installing to is the default library, make a copy of the library and perform
@@ -769,10 +944,11 @@ restoreImpl <- function(project,
   # return "" -- this will fail the equality checks later
   loadedNamespaces <- loadedNamespaces()
   packageLoadPaths <- sapply(names(actions), function(x) {
-    if (x %in% loadedNamespaces)
+    if (x %in% loadedNamespaces) {
       getNamespaceInfo(x, "path")
-    else
+    } else {
       ""
+    }
   })
 
   loadedFromPrivateLibrary <- names(actions)[
@@ -792,30 +968,34 @@ restoreImpl <- function(project,
   if (!dry.run) {
     playActions(pkgRecords, actions, repos, project, targetLib)
     if (restartNeeded) {
-      if (!restart || !attemptRestart())
+      if (!restart || !attemptRestart()) {
         message("You must restart R to finish applying these changes.")
+      }
     }
   } else {
-    list(pkgRecords = pkgRecords,
-         actions = actions,
-         repos = repos,
-         project = project,
-         targetLib = targetLib)
+    list(
+      pkgRecords = pkgRecords,
+      actions = actions,
+      repos = repos,
+      project = project,
+      targetLib = targetLib
+    )
   }
 }
 
 detachPackageForInstallationIfNecessary <- function(pkg) {
-
   # no need to detach if not actually attached
   searchPathName <- paste("package", pkg, sep = ":")
-  if (!searchPathName %in% search())
+  if (!searchPathName %in% search()) {
     return(FALSE)
+  }
 
   # get the library the package was actually loaded from
   location <- which(search() == searchPathName)
   pkgPath <- attr(as.environment(location), "path")
-  if (!is.character(pkgPath))
+  if (!is.character(pkgPath)) {
     return(FALSE)
+  }
 
   # got the package path; detach and reload on exit of parent.
   # when running tests, we want to reload packrat from the same
@@ -823,9 +1003,11 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
   # we install a dummy version of packrat that doesn't actually export
   # the functions we need
   libPaths <- if (pkg == "packrat" && isTestingPackrat()) {
-    strsplit(Sys.getenv("R_PACKRAT_LIBPATHS"),
-             .Platform$path.sep,
-             fixed = TRUE)[[1]]
+    strsplit(
+      Sys.getenv("R_PACKRAT_LIBPATHS"),
+      .Platform$path.sep,
+      fixed = TRUE
+    )[[1]]
   } else {
     dirname(pkgPath)
   }
@@ -839,21 +1021,25 @@ detachPackageForInstallationIfNecessary <- function(pkg) {
 }
 
 discoverUntrustedPackages <- function(srcDir) {
-  if (is.na(Sys.getenv("POSIT_CONNECT", unset = NA)))
+  if (is.na(Sys.getenv("POSIT_CONNECT", unset = NA))) {
     return()
+  }
 
   # set the 'packrat.untrusted.packages' option if
   # it has not yet been specified
-  if (is.null(getOption("packrat.untrusted.packages")))
+  if (is.null(getOption("packrat.untrusted.packages"))) {
     options("packrat.untrusted.packages" = list.files(srcDir))
+  }
 }
 
 overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
-  if (is.null(overlayDir))
+  if (is.null(overlayDir)) {
     overlayDir <- Sys.getenv("R_PACKRAT_SRC_OVERLAY")
+  }
 
-  if (!is.character(overlayDir) || !is.directory(overlayDir))
+  if (!is.character(overlayDir) || !is.directory(overlayDir)) {
     return()
+  }
 
   overlayDir <- normalizePath(overlayDir, winslash = "/", mustWork = TRUE)
   sources <- list.files(
@@ -870,13 +1056,15 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
     source <- file.path(overlayDir, source)
 
     # skip if this tarball already exists in the target directory
-    if (file.exists(target))
+    if (file.exists(target)) {
       return(NULL)
+    }
 
     # attempt to symlink source to target
     dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
-    if (!is.directory(dirname(target)))
+    if (!is.directory(dirname(target))) {
       stop("failed to create directory '", dirname(target), "'")
+    }
 
     # generate symlink
     symlink(source, target)
@@ -887,10 +1075,10 @@ overlaySourcePackages <- function(srcDir, overlayDir = NULL) {
 }
 
 archivePackageType <- function(path, quiet = FALSE, default = "source") {
-
   info <- file.info(path, extra_cols = FALSE)
-  if (is.na(info$isdir))
+  if (is.na(info$isdir)) {
     stopf("no package at path %s", shQuote(path, type = "cmd"))
+  }
 
   # for directories, check for Meta
   if (info$isdir) {
@@ -907,19 +1095,19 @@ archivePackageType <- function(path, quiet = FALSE, default = "source") {
 
   # try zip first for files ending with '.zip'
   # (but attempt to be robust against mis-named files)
-  if (endswith(path, ".zip"))
+  if (endswith(path, ".zip")) {
     methods <- methods[c("zip", "tar")]
+  }
 
   for (method in methods) {
-
     files <- tryCatch(method(path), error = identity)
-    if (inherits(files, "error"))
+    if (inherits(files, "error")) {
       next
+    }
 
     hasmeta <- any(grepl("^[^/]+/Meta/?$", files))
     type <- if (hasmeta) "binary" else "source"
     return(type)
-
   }
 
   if (!quiet) {
@@ -928,7 +1116,6 @@ archivePackageType <- function(path, quiet = FALSE, default = "source") {
   }
 
   default
-
 }
 
 
@@ -945,8 +1132,9 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   # `DESCRIPTION` with the remote info.
   scratchDir <- tempfile()
   on.exit({
-    if (file.exists(scratchDir))
+    if (file.exists(scratchDir)) {
       unlink(scratchDir, recursive = TRUE)
+    }
   })
   # untar can emit noisy warnings (e.g. "skipping pax global extended
   # headers"); hide those
@@ -955,8 +1143,10 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   # Determine the untarred base directory. We're looking to see if the untarred
   # directory contains only a single directory and if so, we treat that as our
   # base directory.
-  if (length(dir(scratchDir)) == 1 &&
-      is.directory(file.path(scratchDir, dir(scratchDir)))) {
+  if (
+    length(dir(scratchDir)) == 1 &&
+      is.directory(file.path(scratchDir, dir(scratchDir)))
+  ) {
     basedir <- file.path(scratchDir, dir(scratchDir))
   } else {
     basedir <- scratchDir
@@ -988,9 +1178,14 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
   # relevant for our purposes, so suppress the warning.
   # tryCatch here so we can unlink the file if tar fails.
   tryCatch(
-    in_dir(dirname(basedir),
-            suppressWarnings(tar(tarfile = dest, files = basename(basedir),
-                                compression = "gzip", tar = tar_binary()))
+    in_dir(
+      dirname(basedir),
+      suppressWarnings(tar(
+        tarfile = dest,
+        files = basename(basedir),
+        compression = "gzip",
+        tar = tar_binary()
+      ))
     ),
     error = function(e) {
       unlink(dest)

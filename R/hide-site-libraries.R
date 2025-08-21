@@ -1,5 +1,4 @@
 replaceLibrary <- function(lib, value) {
-
   ## Need to clobber in package:base, namespace:base
   envs <- c(
     as.environment("package:base"),
@@ -11,7 +10,6 @@ replaceLibrary <- function(lib, value) {
     assign(lib, value, envir = env)
     do.call("lockBinding", list(lib, env))
   }
-
 }
 
 
@@ -20,11 +18,11 @@ hideLibrary <- function(lib) {
 }
 
 restoreLibrary <- function(lib) {
-
-  cachedLib <- if (lib == ".Library")
+  cachedLib <- if (lib == ".Library") {
     getenv("R_PACKRAT_SYSTEM_LIBRARY")
-  else if (lib == ".Library.site")
+  } else if (lib == ".Library.site") {
     getenv("R_PACKRAT_SITE_LIBRARY")
+  }
 
   if (is.null(cachedLib)) {
     warning("packrat did not properly save the library state; cannot restore")
@@ -32,7 +30,6 @@ restoreLibrary <- function(lib) {
   }
 
   replaceLibrary(lib, cachedLib)
-
 }
 
 ## Remove the site-library libraries from unix-alikes

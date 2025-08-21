@@ -23,9 +23,14 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION file", {
   basedir <- test_path("packages/toast")
 
   tryCatch(
-    in_dir(dirname(basedir),
-           suppressWarnings(tar(tarfile = src_tmp, files = basename(basedir),
-                                compression = "gzip", tar = tar_binary()))
+    in_dir(
+      dirname(basedir),
+      suppressWarnings(tar(
+        tarfile = src_tmp,
+        files = basename(basedir),
+        compression = "gzip",
+        tar = tar_binary()
+      ))
     ),
     error = function(e) {
       unlink(src_tmp)
@@ -48,8 +53,10 @@ test_that("appendRemoteInfoToDescription modifies DESCRIPTION file", {
   )
 
   untar(dest_tmp, exdir = untarred_tmp, tar = tar_binary())
-    if (length(dir(untarred_tmp)) == 1 &&
-      dir.exists(file.path(untarred_tmp, dir(untarred_tmp)))) {
+  if (
+    length(dir(untarred_tmp)) == 1 &&
+      dir.exists(file.path(untarred_tmp, dir(untarred_tmp)))
+  ) {
     basedir <- file.path(untarred_tmp, dir(untarred_tmp))
   } else {
     basedir <- untarred_tmp

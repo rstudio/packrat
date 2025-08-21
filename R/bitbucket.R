@@ -13,11 +13,20 @@
 #   cause of the error.
 bitbucketDownload <- function(url, destfile, ...) {
   if (bitbucketAuthenticated() && canUseRenvDownload()) {
-    tryCatch(renvDownload(url, destfile, type = "bitbucket"), error = authDownloadAdvice("bitbucket", TRUE, "renv"))
+    tryCatch(
+      renvDownload(url, destfile, type = "bitbucket"),
+      error = authDownloadAdvice("bitbucket", TRUE, "renv")
+    )
   } else if (bitbucketAuthenticated() && canUseHttr()) {
-    tryCatch(bitbucketDownloadHttr(url, destfile), error = authDownloadAdvice("bitbucket", TRUE, "httr"))
+    tryCatch(
+      bitbucketDownloadHttr(url, destfile),
+      error = authDownloadAdvice("bitbucket", TRUE, "httr")
+    )
   } else {
-    tryCatch(downloadWithRetries(url, destfile = destfile), error = authDownloadAdvice("bitbucket", FALSE, "internal"))
+    tryCatch(
+      downloadWithRetries(url, destfile = destfile),
+      error = authDownloadAdvice("bitbucket", FALSE, "internal")
+    )
   }
 }
 
@@ -27,9 +36,9 @@ bitbucketDownload <- function(url, destfile, ...) {
 # - Returns `TRUE` if it succeeds. Calls `stop()` if any errors are encountered.
 # - Writes to `destfile`, whose lifecycle is managed by `getSourceForPkgRecord`.
 bitbucketDownloadHttr <- function(url, destfile, ...) {
-  authenticate    <- yoink("httr", "authenticate")
-  GET             <- yoink("httr", "GET")
-  content         <- yoink("httr", "content")
+  authenticate <- yoink("httr", "authenticate")
+  GET <- yoink("httr", "GET")
+  content <- yoink("httr", "content")
 
   user <- bitbucket_user(quiet = TRUE)
   pwd <- bitbucket_pwd(quiet = TRUE)
@@ -55,17 +64,21 @@ bitbucketArchiveUrl <- function(pkgRecord) {
   # API URLs get recorded when packages are downloaded with devtools /
   # remotes, but Packrat just wants to use 'plain' URLs when downloading
   # package sources.
-  remoteHost <- sub("api.bitbucket.org/2.0",
-                                "bitbucket.org",
-                                pkgRecord$remote_host,
-                                fixed = TRUE)
+  remoteHost <- sub(
+    "api.bitbucket.org/2.0",
+    "bitbucket.org",
+    pkgRecord$remote_host,
+    fixed = TRUE
+  )
 
   fmt <- "%s/%s/%s/get/%s.tar.gz"
-  archiveUrl <- sprintf(fmt,
-                        remoteHost,
-                        pkgRecord$remote_username,
-                        pkgRecord$remote_repo,
-                        pkgRecord$remote_sha)
+  archiveUrl <- sprintf(
+    fmt,
+    remoteHost,
+    pkgRecord$remote_username,
+    pkgRecord$remote_repo,
+    pkgRecord$remote_sha
+  )
 
   # Ensure the protocol is prepended. We prefer using https if possible. Note
   # that 'wininet' can fail if attempting to download from an 'http' URL that
@@ -82,12 +95,13 @@ bitbucketArchiveUrl <- function(pkgRecord) {
 }
 
 isBitbucketURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://(?:www|api).bitbucket.(org|com)", url, perl = TRUE)
+  is.string(url) &&
+    grepl("^http(?:s)?://(?:www|api).bitbucket.(org|com)", url, perl = TRUE)
 }
 
 bitbucketAuthenticated <- function() {
   !is.null(bitbucket_user(quiet = TRUE)) &&
-  !is.null(bitbucket_pwd(quiet = TRUE))
+    !is.null(bitbucket_pwd(quiet = TRUE))
 }
 
 bitbucket_user <- function(quiet = TRUE) {
