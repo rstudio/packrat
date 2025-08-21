@@ -93,6 +93,10 @@ withTestContext({
     skip_on_cran()
     projRoot <- cloneTestProject("carbs")
     lib <- libDir(projRoot)
+
+    # ensure that "Repos: ..." stays all on one line
+    local_mocked_bindings(write_dcf = function(...) write.dcf(width = Inf, ...))
+
     init(enter = FALSE, projRoot)
 
     # remove repos
