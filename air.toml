@@ -1,3 +1,3 @@
 # Code is not air-formatted; prevent IDE integrations from attempting to format-on-save.
 [format]
-exclude = [ "*.R" ]
+exclude = [ "inst/vendor/renv.R" ]
