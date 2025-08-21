@@ -1,7 +1,6 @@
 library(packrat)
 
 (function() {
-
   # Disable R_TESTS within this scope (we don't want the R
   # subprocess to attempt to call startup.Rs)
   R_TESTS <- Sys.getenv("R_TESTS", unset = NA)
@@ -52,12 +51,11 @@ library(packrat)
   packrat::repos_upload(file.path(dir, "sashimi"), "sushi")
 
   # Try building and uploading a tarball
-  system2(file.path(R.home("bin"), "R"),
-          c("--vanilla",
-            "CMD",
-            "build",
-            file.path(dir, "sashimi")),
-          env = c(COPYFILE_DISABLE = "1"))
+  system2(
+    file.path(R.home("bin"), "R"),
+    c("--vanilla", "CMD", "build", file.path(dir, "sashimi")),
+    env = c(COPYFILE_DISABLE = "1")
+  )
   tarball <- list.files(dir, pattern = "\\.tar\\.gz$")[[1]]
   packrat::repos_upload(file.path(dir, tarball), "sushi")
 
@@ -72,5 +70,4 @@ library(packrat)
   # avoid bogus warning from R CMD check
   eval(call("library", "sashimi", lib.loc = tempLib))
   detach("package:sashimi", unload = TRUE)
-
 })()

@@ -4,10 +4,10 @@ isTrustedPackage <- function(package) {
 }
 
 isCorruptPackageCacheEntry <- function(path) {
-
   # if we don't have a cache entry, it's not corrupt
-  if (!file.exists(path))
+  if (!file.exists(path)) {
     return(FALSE)
+  }
 
   # check for missing DESCRIPTION file
   desc <- file.path(path, "DESCRIPTION")
@@ -29,7 +29,6 @@ isCorruptPackageCacheEntry <- function(path) {
 
   # okay, everything looks good
   return(FALSE)
-
 }
 
 hashTarball <- function(path) {
@@ -38,32 +37,34 @@ hashTarball <- function(path) {
   tools::md5sum(files = normalizePath(path, mustWork = TRUE))
 }
 
-restoreWithCopyFromCache <- function(project,
-                                     pkgRecord,
-                                     cacheCopyStatus)
-{
+restoreWithCopyFromCache <- function(project, pkgRecord, cacheCopyStatus) {
   # don't copy from cache if disabled for this project
-  if (!isUsingCache(project))
+  if (!isUsingCache(project)) {
     return(FALSE)
+  }
 
   # don't try to use cache if we don't have a hash
-  if (!length(pkgRecord$hash))
+  if (!length(pkgRecord$hash)) {
     return(FALSE)
+  }
 
   # don't try to cache uncacheable packages (ie, packages that
   # need to be reinstalled each time for whatever reason)
-  if (!isCacheable(pkgRecord$name))
+  if (!isCacheable(pkgRecord$name)) {
     return(FALSE)
+  }
 
   # ensure that the cache package path exists
   source <- cacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
-  if (!file_test("-d", source))
+  if (!file_test("-d", source)) {
     return(FALSE)
+  }
 
   # sanity check for cache corruption -- we've seen some cases where
   # a cache entry exists, but it's just an empty folder
-  if (isCorruptPackageCacheEntry(source))
+  if (isCorruptPackageCacheEntry(source)) {
     return(FALSE)
+  }
 
   # attempt to form a symlink to the packrat library
   # (remove stale file if one exists)
@@ -76,12 +77,16 @@ restoreWithCopyFromCache <- function(project,
   if (file.exists(target)) {
     temp <- tempfile(tmpdir = lib)
     file.rename(target, temp)
-    on.exit({
-      if (file.exists(target))
-        unlink(temp, recursive = !is.symlink(temp))
-      else
-        file.rename(temp, target)
-    }, add = TRUE)
+    on.exit(
+      {
+        if (file.exists(target)) {
+          unlink(temp, recursive = !is.symlink(temp))
+        } else {
+          file.rename(temp, target)
+        }
+      },
+      add = TRUE
+    )
   }
 
   # attempt the symlink
@@ -108,35 +113,41 @@ restoreWithCopyFromCache <- function(project,
   return(FALSE)
 }
 
-restoreWithCopyFromUntrustedCache <- function(project,
-                                              pkgRecord,
-                                              cacheCopyStatus)
-{
+restoreWithCopyFromUntrustedCache <- function(
+  project,
+  pkgRecord,
+  cacheCopyStatus
+) {
   # don't copy from cache if disabled for this project
-  if (!isUsingCache(project))
+  if (!isUsingCache(project)) {
     return(FALSE)
+  }
 
   # don't try to cache uncacheable packages (ie, packages that
   # need to be reinstalled each time for whatever reason)
-  if (!isCacheable(pkgRecord$name))
+  if (!isCacheable(pkgRecord$name)) {
     return(FALSE)
+  }
 
   # attempt to find source tarball associated with passed-in
   # package record
   tarballName <- pkgSrcFilename(pkgRecord)
   tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
-  if (!file.exists(tarballPath))
+  if (!file.exists(tarballPath)) {
     return(FALSE)
+  }
 
   # attempt to hash tarball
   hash <- hashTarball(tarballPath)
-  if (!is.character(hash))
+  if (!is.character(hash)) {
     return(FALSE)
+  }
 
   # attempt to discover cached package in untrusted cache
   source <- untrustedCacheLibDir(pkgRecord$name, hash, pkgRecord$name)
-  if (!file.exists(source))
+  if (!file.exists(source)) {
     return(FALSE)
+  }
 
   # attempt to form a symlink to the packrat library
   # (remove stale file if one exists)
@@ -145,12 +156,16 @@ restoreWithCopyFromUntrustedCache <- function(project,
   if (file.exists(target)) {
     temp <- tempfile(tmpdir = lib)
     file.rename(target, temp)
-    on.exit({
-      if (file.exists(target))
-        unlink(temp, recursive = !is.symlink(temp))
-      else
-        file.rename(temp, target)
-    }, add = TRUE)
+    on.exit(
+      {
+        if (file.exists(target)) {
+          unlink(temp, recursive = !is.symlink(temp))
+        } else {
+          file.rename(temp, target)
+        }
+      },
+      add = TRUE
+    )
   }
 
   suppressWarnings(symlink(source, target))
@@ -172,6 +187,10 @@ restoreWithCopyFromUntrustedCache <- function(project,
   }
 
   # failed to copy or symlink from cache; report warning and return false
-  warning("failed to symlink or copy package '", pkgRecord$name, "' from user cache")
+  warning(
+    "failed to symlink or copy package '",
+    pkgRecord$name,
+    "' from user cache"
+  )
   return(FALSE)
 }

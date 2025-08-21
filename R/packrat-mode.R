@@ -8,23 +8,25 @@ setPackratModeEnvironmentVar <- function() {
 
 ensurePkgTypeNotBoth <- function() {
   oldPkgType <- getOption("pkgType")
-  if (identical(oldPkgType, "both"))
+  if (identical(oldPkgType, "both")) {
     options(pkgType = .Platform$pkgType)
+  }
   oldPkgType
 }
 
 beforePackratModeOn <- function(project) {
-
   # Ensure that we leave packrat mode before transfering
   # to a new project.
-  if (isPackratModeOn())
+  if (isPackratModeOn()) {
     off(print.banner = FALSE)
+  }
 
   project <- getProjectDir(project)
 
   ## Check and see if we need to generate default options
-  if (!file.exists(packratOptionsFilePath(project = project)))
+  if (!file.exists(packratOptionsFilePath(project = project))) {
     initOptions(project = project)
+  }
 
   # Ensure that 'pkgType' is not set to 'both', since its defaults are
   # confusing and set up in such a way that packrat just breaks.
@@ -47,15 +49,15 @@ beforePackratModeOn <- function(project) {
   }
 
   state
-
 }
 
-afterPackratModeOn <- function(project,
-                               auto.snapshot,
-                               clean.search.path,
-                               state,
-                               print.banner) {
-
+afterPackratModeOn <- function(
+  project,
+  auto.snapshot,
+  clean.search.path,
+  state,
+  print.banner
+) {
   project <- getProjectDir(project)
   libRoot <- libraryRootDir(project)
   localLib <- libDir(project)
@@ -92,9 +94,13 @@ afterPackratModeOn <- function(project,
       message("OK")
     } else {
       message("FAILED")
-      cat("Packrat was not able to make changes to its local library at\n",
-          localLib, ". Check this directory's permissions and run\n",
-          "packrat::restore() to try again.\n", sep = "")
+      cat(
+        "Packrat was not able to make changes to its local library at\n",
+        localLib,
+        ". Check this directory's permissions and run\n",
+        "packrat::restore() to try again.\n",
+        sep = ""
+      )
     }
   }
 
@@ -132,8 +138,9 @@ afterPackratModeOn <- function(project,
   symlinkExternalPackages(project = project)
 
   # Set the library
-  if (!file.exists(libExtDir(project)))
+  if (!file.exists(libExtDir(project))) {
     dir.create(libExtDir(project), recursive = TRUE)
+  }
   setLibPaths(c(localLib, libExtDir(project)))
 
   # Load any packages specified in external.packages
@@ -161,7 +168,12 @@ afterPackratModeOn <- function(project,
 
   # Give the user some visual indication that they're starting a packrat project
   if (interactive() && print.banner) {
-    msg <- paste("Packrat mode on. Using library in directory:\n- \"", prettyLibDir(project), "\"", sep = "")
+    msg <- paste(
+      "Packrat mode on. Using library in directory:\n- \"",
+      prettyLibDir(project),
+      "\"",
+      sep = ""
+    )
     message(msg)
   }
 
@@ -170,7 +182,9 @@ afterPackratModeOn <- function(project,
     if (file.exists(getPackratDir(project))) {
       addTaskCallback(snapshotHook, name = "packrat.snapshotHook")
     } else {
-      warning("this project has not been packified; cannot activate automatic snapshotting")
+      warning(
+        "this project has not been packified; cannot activate automatic snapshotting"
+      )
     }
   }
 
@@ -199,8 +213,11 @@ afterPackratModeOn <- function(project,
       if (is.null(method)) {
         secureRepos <- grep("^https", repos, value = TRUE)
         pasted <- paste("-", shQuote(secureRepos), collapse = "\n")
-        warning("The following repositories require a secure download method, but ",
-                "no such method could be selected:\n", pasted)
+        warning(
+          "The following repositories require a secure download method, but ",
+          "no such method could be selected:\n",
+          pasted
+        )
       }
       options(download.file.method = method)
     }
@@ -210,27 +227,26 @@ afterPackratModeOn <- function(project,
   updateSettings(project = project)
 
   invisible(getLibPaths())
-
 }
 
-setPackratModeOn <- function(project = NULL,
-                             auto.snapshot = get_opts("auto.snapshot"),
-                             clean.search.path = TRUE,
-                             print.banner = TRUE) {
-
+setPackratModeOn <- function(
+  project = NULL,
+  auto.snapshot = get_opts("auto.snapshot"),
+  clean.search.path = TRUE,
+  print.banner = TRUE
+) {
   state <- beforePackratModeOn(project = project)
   setPackratModeEnvironmentVar()
-  afterPackratModeOn(project = project,
-                     auto.snapshot = auto.snapshot,
-                     clean.search.path = clean.search.path,
-                     state = state,
-                     print.banner = print.banner)
-
+  afterPackratModeOn(
+    project = project,
+    auto.snapshot = auto.snapshot,
+    clean.search.path = clean.search.path,
+    state = state,
+    print.banner = print.banner
+  )
 }
 
-setPackratModeOff <- function(project = NULL,
-                              print.banner = TRUE) {
-
+setPackratModeOff <- function(project = NULL, print.banner = TRUE) {
   # Restore .Library.site
   if (isPackratModeOn()) {
     restoreSiteLibraries()
@@ -244,23 +260,28 @@ setPackratModeOff <- function(project = NULL,
 
   # Reset the library paths
   libPaths <- .packrat_mutables$get("origLibPaths")
-  if (is.null(libPaths))
+  if (is.null(libPaths)) {
     libPaths <- getDefaultLibPaths()
+  }
 
-  if (length(libPaths))
+  if (length(libPaths)) {
     setLibPaths(libPaths)
+  }
 
   # Reset 'pkgType'
   oldPkgType <- .packrat_mutables$get("oldPkgType")
-  if (!is.null(oldPkgType))
+  if (!is.null(oldPkgType)) {
     options(pkgType = oldPkgType)
+  }
 
   # Turn off packrat mode
   if (interactive() && print.banner) {
-    msg <- paste(collapse = "\n",
-                 c("Packrat mode off. Resetting library paths to:",
-                   paste("- \"", getLibPaths(), "\"", sep = "")
-                 )
+    msg <- paste(
+      collapse = "\n",
+      c(
+        "Packrat mode off. Resetting library paths to:",
+        paste("- \"", getLibPaths(), "\"", sep = "")
+      )
     )
     message(msg)
   }
@@ -273,24 +294,27 @@ setPackratModeOff <- function(project = NULL,
 }
 
 checkPackified <- function(project = NULL, quiet = FALSE) {
-
   project <- getProjectDir(project)
 
   # Check for a lockfile.
   lockPath <- lockFilePath(project)
   if (!file.exists(lockPath)) {
-    if (!quiet) message("The packrat lock file does not exist.")
+    if (!quiet) {
+      message("The packrat lock file does not exist.")
+    }
     return(FALSE)
   }
 
   # Check for the Packrat autoloader.
   profile <- file.path(project, ".Rprofile")
-  if (!file.exists(profile))
+  if (!file.exists(profile)) {
     return(FALSE)
+  }
 
   contents <- readLines(profile)
-  if (!any(grepl("#### -- Packrat Autoloader", contents)))
+  if (!any(grepl("#### -- Packrat Autoloader", contents))) {
     return(FALSE)
+  }
 
   TRUE
 }
@@ -314,48 +338,55 @@ checkPackified <- function(project = NULL, quiet = FALSE) {
 ##' @name packrat-mode
 ##' @rdname packrat-mode
 ##' @export
-packrat_mode <- function(on = NULL,
-                         project = NULL,
-                         auto.snapshot = get_opts("auto.snapshot"),
-                         clean.search.path = FALSE) {
-
+packrat_mode <- function(
+  on = NULL,
+  project = NULL,
+  auto.snapshot = get_opts("auto.snapshot"),
+  clean.search.path = FALSE
+) {
   project <- getProjectDir(project)
 
   if (is.null(on)) {
-    togglePackratMode(project = project,
-                      auto.snapshot = auto.snapshot,
-                      clean.search.path = clean.search.path)
+    togglePackratMode(
+      project = project,
+      auto.snapshot = auto.snapshot,
+      clean.search.path = clean.search.path
+    )
   } else if (identical(on, TRUE)) {
-    setPackratModeOn(project = project,
-                     auto.snapshot = auto.snapshot,
-                     clean.search.path = clean.search.path)
+    setPackratModeOn(
+      project = project,
+      auto.snapshot = auto.snapshot,
+      clean.search.path = clean.search.path
+    )
   } else if (identical(on, FALSE)) {
     setPackratModeOff(project = project)
   } else {
     stop("'on' must be one of TRUE, FALSE or NULL, was '", on, "'")
   }
-
 }
 
 ##' @rdname packrat-mode
 ##' @name packrat-mode
 ##' @export
-on <- function(project = NULL,
-               auto.snapshot = get_opts("auto.snapshot"),
-               clean.search.path = TRUE,
-               print.banner = TRUE) {
-
+on <- function(
+  project = NULL,
+  auto.snapshot = get_opts("auto.snapshot"),
+  clean.search.path = TRUE,
+  print.banner = TRUE
+) {
   project <- getProjectDir(project)
 
   # If there is no lockfile already, perform an init
-  if (!file.exists(lockFilePath(project = project)))
+  if (!file.exists(lockFilePath(project = project))) {
     return(init(project = project))
+  }
 
-  setPackratModeOn(project = project,
-                   auto.snapshot = auto.snapshot,
-                   clean.search.path = clean.search.path,
-                   print.banner = print.banner)
-
+  setPackratModeOn(
+    project = project,
+    auto.snapshot = auto.snapshot,
+    clean.search.path = clean.search.path,
+    print.banner = print.banner
+  )
 }
 
 ##' @rdname packrat-mode
@@ -363,17 +394,18 @@ on <- function(project = NULL,
 ##' @export
 off <- function(project = NULL, print.banner = TRUE) {
   project <- getProjectDir(project)
-  setPackratModeOff(project = project,
-                    print.banner = print.banner)
+  setPackratModeOff(project = project, print.banner = print.banner)
 }
 
 togglePackratMode <- function(project, auto.snapshot, clean.search.path) {
   if (isPackratModeOn(project = project)) {
     setPackratModeOff(project)
   } else {
-    setPackratModeOn(project = project,
-                     auto.snapshot = auto.snapshot,
-                     clean.search.path)
+    setPackratModeOn(
+      project = project,
+      auto.snapshot = auto.snapshot,
+      clean.search.path
+    )
   }
 }
 

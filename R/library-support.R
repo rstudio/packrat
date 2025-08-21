@@ -4,11 +4,16 @@ symlinkSystemPackages <- function(project = NULL) {
   project <- getProjectDir(project)
 
   # skip symlinking if requested by user
-  if (identical(opts$symlink.system.packages(), FALSE))
+  if (identical(opts$symlink.system.packages(), FALSE)) {
     return(FALSE)
+  }
 
   # Get the path to the base R library installation
-  sysLibPath <- normalizePath(R.home("library"), winslash = "/", mustWork = TRUE)
+  sysLibPath <- normalizePath(
+    R.home("library"),
+    winslash = "/",
+    mustWork = TRUE
+  )
 
   ## Get the system packages
   sysPkgs <- utils::installed.packages(sysLibPath)
@@ -17,27 +22,30 @@ symlinkSystemPackages <- function(project = NULL) {
 
   ## Make a directory where we can symlink these libraries
   libRdir <- libRdir(project = project)
-  if (!file.exists(libRdir))
-    if (!dir.create(libRdir, recursive = TRUE))
+  if (!file.exists(libRdir)) {
+    if (!dir.create(libRdir, recursive = TRUE)) {
       return(FALSE)
+    }
+  }
 
   ## Generate symlinks for each package
   for (pkg in sysPkgNames) {
     source <- file.path(sysLibPath, pkg)
     target <- file.path(libRdir, pkg)
-    if (!ensurePackageSymlink(source, target))
+    if (!ensurePackageSymlink(source, target)) {
       return(FALSE)
+    }
   }
 
   TRUE
 }
 
 isPathToSamePackage <- function(source, target) {
-
   # When not on Windows, we can just check that the normalized
   # paths resolve to the same location.
-  if (!is.windows())
+  if (!is.windows()) {
     return(normalizePath(source) == normalizePath(target))
+  }
 
   # On Windows, junction points are not resolved by 'normalizePath()',
   # so we need an alternate strategy for determining if the junction
@@ -47,8 +55,9 @@ isPathToSamePackage <- function(source, target) {
   rhsPath <- file.path(target, "DESCRIPTION")
 
   # If either of these files do not exist, bail
-  if (!(file.exists(lhsPath) && file.exists(rhsPath)))
+  if (!(file.exists(lhsPath) && file.exists(rhsPath))) {
     return(FALSE)
+  }
 
   lhsContents <- readChar(lhsPath, file.info(lhsPath)$size, TRUE)
   rhsContents <- readChar(rhsPath, file.info(rhsPath)$size, TRUE)
@@ -64,13 +73,13 @@ cleanRecursivePackageSymlinks <- function(source) {
   if (file.exists(target)) {
     sourceFiles <- list.files(source)
     targetFiles <- list.files(target)
-    if (identical(sourceFiles, targetFiles))
+    if (identical(sourceFiles, targetFiles)) {
       unlink(target)
+    }
   }
 }
 
 ensurePackageSymlink <- function(source, target) {
-
   cleanRecursivePackageSymlinks(source)
 
   # If we have a symlink already active in the
@@ -78,9 +87,9 @@ ensurePackageSymlink <- function(source, target) {
   # library corresponding to the current running
   # R session.
   if (file.exists(target)) {
-
-    if (isPathToSamePackage(source, target))
+    if (isPathToSamePackage(source, target)) {
       return(TRUE)
+    }
 
     # Remove the old symlink target (swallowing errors)
     tryCatch(
@@ -90,11 +99,13 @@ ensurePackageSymlink <- function(source, target) {
 
     # Check if the file still exists and warn if so
     if (file.exists(target)) {
-
       # request information on the existing file
       info <- paste(capture.output(print(file.info(target))), collapse = "\n")
       msg <- c(
-        sprintf("Packrat failed to remove a pre-existing file at '%s'.", target),
+        sprintf(
+          "Packrat failed to remove a pre-existing file at '%s'.",
+          target
+        ),
         "Please report this issue at 'https://github.com/rstudio/packrat/issues'.",
         "File info:",
         info
@@ -107,8 +118,9 @@ ensurePackageSymlink <- function(source, target) {
   # If, for some reason, the target directory
   # still exists, bail as otherwise symlinking
   # will not work as desired.
-  if (file.exists(target))
+  if (file.exists(target)) {
     stop("Target '", target, "' already exists and is not a symlink")
+  }
 
   # Perform the symlink.
   symlink(source, target)
@@ -118,15 +130,17 @@ ensurePackageSymlink <- function(source, target) {
 }
 
 symlinkExternalPackages <- function(project = NULL) {
-
   external.packages <- opts$external.packages()
-  if (!length(external.packages))
+  if (!length(external.packages)) {
     return(invisible(NULL))
+  }
 
   project <- getProjectDir(project)
-  if (!file.exists(libExtDir(project)))
-    if (!dir.create(libExtDir(project), recursive = TRUE))
+  if (!file.exists(libExtDir(project))) {
+    if (!dir.create(libExtDir(project), recursive = TRUE)) {
       stop("Failed to create 'lib-ext' packrat directory")
+    }
+  }
 
   # Get the default (non-packrat) library paths
   lib.loc <- getDefaultLibPaths()
@@ -150,8 +164,10 @@ symlinkExternalPackages <- function(project = NULL) {
   })]
 
   if (length(notFound)) {
-    warning("The following external packages could not be located:\n- ",
-            paste(shQuote(names(notFound)), collapse = ", "))
+    warning(
+      "The following external packages could not be located:\n- ",
+      paste(shQuote(names(notFound)), collapse = ", ")
+    )
   }
 
   # Symlink the packages that were found
@@ -164,23 +180,26 @@ symlinkExternalPackages <- function(project = NULL) {
 
   failedSymlinks <- results[sapply(results, Negate(isTRUE))]
   if (length(failedSymlinks)) {
-    warning("The following external packages could not be linked into ",
-            "the packrat private library:\n- ",
-            paste(shQuote(names(failedSymlinks)), collapse = ", "))
+    warning(
+      "The following external packages could not be linked into ",
+      "the packrat private library:\n- ",
+      paste(shQuote(names(failedSymlinks)), collapse = ", ")
+    )
   }
 }
 
 is.symlink <- function(path) {
-
   ## Strip trailing '/'
   path <- gsub("/*$", "", path)
 
   ## Sys.readlink returns NA for error, "" for 'not a symlink', and <path> for symlink
   ## return false for first two cases, true for second
   result <- Sys.readlink(path)
-  if (is.na(result)) FALSE
-  else nzchar(result)
-
+  if (is.na(result)) {
+    FALSE
+  } else {
+    nzchar(result)
+  }
 }
 
 useSymlinkedSystemLibrary <- function(project = NULL) {

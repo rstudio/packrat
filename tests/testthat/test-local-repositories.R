@@ -1,5 +1,4 @@
 withTestContext({
-
   test_that("init fails when package not found in any repo", {
     projRoot <- cloneTestProject("sated")
     repos <- getOption("repos")
@@ -15,7 +14,6 @@ withTestContext({
   })
 
   test_that("packrat::get_opts can read / write atrocious paths", {
-
     path <- list.files(pattern = "^Ugly")
     with_dir(tempdir(), {
       opts$local.repos(path)
@@ -23,5 +21,4 @@ withTestContext({
       expect_identical(path, readPath)
     })
   })
-
 })

@@ -1,10 +1,9 @@
 test_that("packrat_mode successfully sets the library paths when turned on and off", {
-
   with_dir(tempdir(), {
-
     ## Make sure packrat mode is off
-    if (packrat:::isPackratModeOn())
+    if (packrat:::isPackratModeOn()) {
       packrat::off()
+    }
 
     orig_libs <- getLibPaths()
 
@@ -14,7 +13,5 @@ test_that("packrat_mode successfully sets the library paths when turned on and o
     packrat::off()
 
     expect_identical(orig_libs, getLibPaths())
-
   })
-
 })

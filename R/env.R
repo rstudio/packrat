@@ -28,7 +28,9 @@ tar_binary <- function() {
   }
 
   # Return internal only as a fallback with a warning.
-  warning("No external tar binary found. Using R's internal TAR, which may cause failures with long filenames.")
+  warning(
+    "No external tar binary found. Using R's internal TAR, which may cause failures with long filenames."
+  )
   return("internal")
 }
 
@@ -42,8 +44,9 @@ setenv <- function(...) {
 
   # validate argument length
   n <- length(dots)
-  if (n %% 2 != 0)
+  if (n %% 2 != 0) {
     stop("expected even number of arguments to 'setenv'")
+  }
 
   # extract keys, values from '...'
   indices <- seq(1, length(dots), by = 2)

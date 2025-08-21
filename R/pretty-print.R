@@ -20,10 +20,16 @@ prettyPrint <- function(packages, header, footer = NULL) {
   }
 }
 
-summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage,
-                           removeMessage, upgradeMessage, downgradeMessage,
-                           crossgradeMessage)
-{
+summarizeDiffs <- function(
+  diffs,
+  pkgsA,
+  pkgsB,
+  addMessage,
+  removeMessage,
+  upgradeMessage,
+  downgradeMessage,
+  crossgradeMessage
+) {
   prettyPrint(
     searchPackages(pkgsB, names(diffs)[!is.na(diffs) & diffs == 'add']),
     addMessage
@@ -49,9 +55,14 @@ summarizeDiffs <- function(diffs, pkgsA, pkgsB, addMessage,
   )
 }
 
-prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
-                            fromLabel = 'from', toLabel = 'to') {
-
+prettyPrintPair <- function(
+  packagesFrom,
+  packagesTo,
+  header,
+  footer = NULL,
+  fromLabel = 'from',
+  toLabel = 'to'
+) {
   if (length(packagesFrom) != length(packagesTo)) {
     stop('Invalid arguments--package record lengths mismatch')
   }
@@ -75,8 +86,10 @@ prettyPrintPair <- function(packagesFrom, packagesTo, header, footer = NULL,
     }
 
     pickVersion <- pick("version", defaultValue = "NA")
-    df <- data.frame(paste(" ", sapply(packagesFrom, pickVersion)),
-                     paste(" ", sapply(packagesTo, pickVersion)))
+    df <- data.frame(
+      paste(" ", sapply(packagesFrom, pickVersion)),
+      paste(" ", sapply(packagesTo, pickVersion))
+    )
     names(df) <- c(paste(" ", fromLabel), paste(" ", toLabel))
     row.names(df) <- paste("   ", pkgNames(packagesFrom))
     print(df)

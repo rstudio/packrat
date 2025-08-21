@@ -65,7 +65,12 @@ test_that("githubDownload calls githubDownloadHttr in the expected context", {
   mockery::stub(githubDownload, "canUseRenvDownload", FALSE)
   mockery::stub(githubDownload, "canUseHttr", TRUE)
   httr_download_mock <- mockery::mock(TRUE)
-  mockery::stub(githubDownload, "githubDownloadHttr", httr_download_mock, depth = 5)
+  mockery::stub(
+    githubDownload,
+    "githubDownloadHttr",
+    httr_download_mock,
+    depth = 5
+  )
 
   githubDownload(url, destfile)
 
@@ -83,7 +88,12 @@ test_that("githubDownload calls downloadWithRetries in the expected contexts", {
   mockery::stub(githubDownload, "canUseRenvDownload", FALSE)
   mockery::stub(githubDownload, "canUseHttr", FALSE)
   download_with_retries_mock <- mockery::mock(TRUE)
-  mockery::stub(githubDownload, "downloadWithRetries", download_with_retries_mock, depth = 5)
+  mockery::stub(
+    githubDownload,
+    "downloadWithRetries",
+    download_with_retries_mock,
+    depth = 5
+  )
 
   githubDownload(url, destfile)
 
@@ -96,7 +106,12 @@ test_that("githubDownload calls downloadWithRetries in the expected contexts", {
   mockery::stub(githubDownload, "canUseRenvDownload", TRUE)
   mockery::stub(githubDownload, "canUseHttr", TRUE)
   download_with_retries_mock <- mockery::mock(TRUE)
-  mockery::stub(githubDownload, "downloadWithRetries", download_with_retries_mock, depth = 5)
+  mockery::stub(
+    githubDownload,
+    "downloadWithRetries",
+    download_with_retries_mock,
+    depth = 5
+  )
 
   githubDownload(url, destfile)
 

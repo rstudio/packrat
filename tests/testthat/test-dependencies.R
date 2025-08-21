@@ -1,4 +1,3 @@
-
 # Dependency analysis needs rmarkdown+knitr and rmarkdown needs pandoc.
 test_that("we have pandoc", {
   skip_on_cran()
@@ -15,8 +14,9 @@ test_that("dependencies are properly resolved in expressions", {
     requireNamespace(quietly = TRUE, package = "knitr")
 
     # Don't trip up on 'library(x, character.only = TRUE)'
-    for (x in 1:10)
+    for (x in 1:10) {
       library(x, character.only = TRUE)
+    }
 
     "stats"::rnorm(1)
     setRefClass("foo", "bar")
@@ -27,7 +27,6 @@ test_that("dependencies are properly resolved in expressions", {
     c("tools", "utils", "stats", "knitr", "methods"),
     dependencies
   ))
-
 })
 
 
@@ -118,7 +117,6 @@ test_that("knitr doesn't warn about unknown engines in dependency discovery", {
 
   expect_null(caughtWarning)
   expect_equal(deps, "rmarkdown")
-
 })
 
 withTestContext({
@@ -136,8 +134,19 @@ withTestContext({
   test_that("project dependencies can ignore top-level dependencies", {
     skip_on_cran()
 
-    packrat:::set_opts(ignored.packages = c("bread"), local.repos = "packages", persist = FALSE)
-    on.exit(packrat:::set_opts(ignored.packages = NULL, local.repos = NULL, persist = FALSE), add = TRUE)
+    packrat:::set_opts(
+      ignored.packages = c("bread"),
+      local.repos = "packages",
+      persist = FALSE
+    )
+    on.exit(
+      packrat:::set_opts(
+        ignored.packages = NULL,
+        local.repos = NULL,
+        persist = FALSE
+      ),
+      add = TRUE
+    )
 
     projRoot <- cloneTestProject("smallbreakfast")
     deps <- packrat:::appDependencies(projRoot)
@@ -147,8 +156,19 @@ withTestContext({
   test_that("project dependencies can ignore lower-level dependencies", {
     skip_on_cran()
 
-    packrat:::set_opts(ignored.packages = c("toast"), local.repos = "packages", persist = FALSE)
-    on.exit(packrat:::set_opts(ignored.packages = NULL, local.repos = NULL, persist = FALSE), add = TRUE)
+    packrat:::set_opts(
+      ignored.packages = c("toast"),
+      local.repos = "packages",
+      persist = FALSE
+    )
+    on.exit(
+      packrat:::set_opts(
+        ignored.packages = NULL,
+        local.repos = NULL,
+        persist = FALSE
+      ),
+      add = TRUE
+    )
 
     projRoot <- cloneTestProject("sated")
     deps <- packrat:::appDependencies(projRoot)
@@ -166,7 +186,10 @@ withTestContext({
     data.dir <- file.path(project.dir, "data")
     dir.create(data.dir)
     writeLines("library(bread)", file.path(data.dir, "test.R"))
-    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    deps <- packrat:::appDependencies(
+      project.dir,
+      implicit.packrat.dependency = FALSE
+    )
     expect_equal(deps, c("oatmeal"))
   })
 
@@ -179,7 +202,10 @@ withTestContext({
     project.dir <- file.path(base.dir, "data", "project")
     dir.create(project.dir, recursive = TRUE)
     writeLines("library('oatmeal')", file.path(project.dir, "code.R"))
-    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    deps <- packrat:::appDependencies(
+      project.dir,
+      implicit.packrat.dependency = FALSE
+    )
     expect_equal(deps, c("oatmeal"))
   })
 
@@ -194,7 +220,10 @@ withTestContext({
     data.dir <- file.path(project.dir, "data")
     dir.create(data.dir)
     writeLines("library(bread)", file.path(data.dir, "test.R"))
-    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    deps <- packrat:::appDependencies(
+      project.dir,
+      implicit.packrat.dependency = FALSE
+    )
     expect_equal(deps, c("oatmeal"))
   })
 
@@ -207,7 +236,10 @@ withTestContext({
     project.dir <- file.path(base.dir, "data", "project")
     dir.create(project.dir, recursive = TRUE)
     writeLines("library('oatmeal')", file.path(project.dir, "code.R"))
-    deps <- packrat:::appDependencies(project.dir, implicit.packrat.dependency = FALSE)
+    deps <- packrat:::appDependencies(
+      project.dir,
+      implicit.packrat.dependency = FALSE
+    )
     expect_equal(deps, c("oatmeal"))
   })
 })

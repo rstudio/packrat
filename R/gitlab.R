@@ -1,4 +1,3 @@
-
 # - Equivalent to other git provider download functions.
 # - Called by `getSourceForPkgRecord` (which manages the lifecycle of
 #   `destfile`). Responsible for dispatching different download implementations
@@ -14,11 +13,20 @@
 #   cause of the error.
 gitlabDownload <- function(url, destfile, ...) {
   if (gitlabAuthenticated() && canUseRenvDownload()) {
-    tryCatch(renvDownload(url, destfile, type = "gitlab"), error = authDownloadAdvice("gitlab", TRUE, "renv"))
+    tryCatch(
+      renvDownload(url, destfile, type = "gitlab"),
+      error = authDownloadAdvice("gitlab", TRUE, "renv")
+    )
   } else if (gitlabAuthenticated() && canUseHttr()) {
-    tryCatch(gitlabDownloadHttr(url, destfile), error = authDownloadAdvice("gitlab", TRUE, "httr"))
+    tryCatch(
+      gitlabDownloadHttr(url, destfile),
+      error = authDownloadAdvice("gitlab", TRUE, "httr")
+    )
   } else {
-    tryCatch(downloadWithRetries(url, destfile = destfile), error = authDownloadAdvice("gitlab", FALSE, "internal"))
+    tryCatch(
+      downloadWithRetries(url, destfile = destfile),
+      error = authDownloadAdvice("gitlab", FALSE, "internal")
+    )
   }
 }
 
@@ -28,10 +36,10 @@ gitlabDownload <- function(url, destfile, ...) {
 # - Returns `TRUE` if it succeeds. Calls `stop()` if any errors are encountered.
 # - Writes to `destfile`, whose lifecycle is managed by `getSourceForPkgRecord`.
 gitlabDownloadHttr <- function(url, destfile, ...) {
-  authenticate   <- yoink("httr", "authenticate")
-  add_headers    <- yoink("httr", "add_headers")
-  GET            <- yoink("httr", "GET")
-  content        <- yoink("httr", "content")
+  authenticate <- yoink("httr", "authenticate")
+  add_headers <- yoink("httr", "add_headers")
+  GET <- yoink("httr", "GET")
+  content <- yoink("httr", "content")
 
   token <- gitlab_pat(quiet = TRUE)
 
@@ -69,10 +77,15 @@ gitlabArchiveUrl <- function(pkgRecord) {
   }
 
   fmt <- "%s/api/v4/projects/%s/repository/archive?sha=%s"
-  archiveUrl <- sprintf(fmt,
-                        pkgRecord$remote_host,
-                        URLencode(paste0(pkgRecord$remote_username, "/", pkgRecord$remote_repo), reserved = TRUE),
-                        pkgRecord$remote_sha)
+  archiveUrl <- sprintf(
+    fmt,
+    pkgRecord$remote_host,
+    URLencode(
+      paste0(pkgRecord$remote_username, "/", pkgRecord$remote_repo),
+      reserved = TRUE
+    ),
+    pkgRecord$remote_sha
+  )
 
   protocol <- if (identical(method, "internal")) "http" else "https"
   if (!grepl("^http", archiveUrl)) {
@@ -82,7 +95,8 @@ gitlabArchiveUrl <- function(pkgRecord) {
 }
 
 isGitlabURL <- function(url) {
-  is.string(url) && grepl("^http(?:s)?://(?:www|api).gitlab.(org|com)", url, perl = TRUE)
+  is.string(url) &&
+    grepl("^http(?:s)?://(?:www|api).gitlab.(org|com)", url, perl = TRUE)
 }
 
 gitlabAuthenticated <- function() {

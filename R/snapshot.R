@@ -50,22 +50,22 @@
 #'
 #' }
 #' @export
-snapshot <- function(project = NULL,
-                     available = NULL,
-                     lib.loc = libDir(project),
-                     ignore.stale = FALSE,
-                     dry.run = FALSE,
-                     prompt = interactive(),
-                     snapshot.sources = TRUE,
-                     infer.dependencies = TRUE)
-{
-
-  if (is.null(available))
-  {
-    available <- if (dry.run)
+snapshot <- function(
+  project = NULL,
+  available = NULL,
+  lib.loc = libDir(project),
+  ignore.stale = FALSE,
+  dry.run = FALSE,
+  prompt = interactive(),
+  snapshot.sources = TRUE,
+  infer.dependencies = TRUE
+) {
+  if (is.null(available)) {
+    available <- if (dry.run) {
       availablePackagesSkeleton()
-    else
+    } else {
       availablePackages()
+    }
   }
 
   project <- getProjectDir(project)
@@ -78,18 +78,20 @@ snapshot <- function(project = NULL,
     on.exit(callHook(project, "snapshot", FALSE), add = TRUE)
   }
 
-  snapshotResult <- snapshotImpl(project,
-                                 available,
-                                 lib.loc,
-                                 dry.run,
-                                 ignore.stale = ignore.stale,
-                                 prompt = prompt && !dry.run,
-                                 snapshot.sources = snapshot.sources,
-                                 infer.dependencies = infer.dependencies)
+  snapshotResult <- snapshotImpl(
+    project,
+    available,
+    lib.loc,
+    dry.run,
+    ignore.stale = ignore.stale,
+    prompt = prompt && !dry.run,
+    snapshot.sources = snapshot.sources,
+    infer.dependencies = infer.dependencies
+  )
 
-  if (dry.run)
+  if (dry.run) {
     return(invisible(snapshotResult))
-
+  }
 }
 
 #' Internal Snapshot Implementation
@@ -114,34 +116,38 @@ snapshot <- function(project = NULL,
 #' @keywords internal
 #' @rdname snapshotImpl
 #' @export
-.snapshotImpl <- function(project,
-                          available = NULL,
-                          lib.loc = libDir(project),
-                          dry.run = FALSE,
-                          ignore.stale = FALSE,
-                          prompt = interactive(),
-                          auto.snapshot = FALSE,
-                          verbose = TRUE,
-                          fallback.ok = FALSE,
-                          snapshot.sources = TRUE,
-                          implicit.packrat.dependency = TRUE,
-                          infer.dependencies = TRUE) {
-
-  verboseDependencies <- isTRUE(getOption("packrat.verbose.snapshot.dependencies"))
+.snapshotImpl <- function(
+  project,
+  available = NULL,
+  lib.loc = libDir(project),
+  dry.run = FALSE,
+  ignore.stale = FALSE,
+  prompt = interactive(),
+  auto.snapshot = FALSE,
+  verbose = TRUE,
+  fallback.ok = FALSE,
+  snapshot.sources = TRUE,
+  implicit.packrat.dependency = TRUE,
+  infer.dependencies = TRUE
+) {
+  verboseDependencies <- isTRUE(getOption(
+    "packrat.verbose.snapshot.dependencies"
+  ))
   dependencyLogger <- verboseLogger(verboseDependencies)
 
-  if (is.null(available))
-  {
-    available <- if (dry.run)
+  if (is.null(available)) {
+    available <- if (dry.run) {
       availablePackagesSkeleton()
-    else
+    } else {
       availablePackages()
+    }
   }
 
   # ensure packrat directory available
   packratDir <- getPackratDir(project)
-  if (!file.exists(packratDir))
+  if (!file.exists(packratDir)) {
     dir.create(packratDir, recursive = TRUE)
+  }
 
   # When snapshotting, we take the union of:
   #
@@ -172,9 +178,11 @@ snapshot <- function(project = NULL,
 
   if (infer.dependencies) {
     dependencyLogger("Detecting project dependencies")
-    inferredPkgs <- sort_c(appDependencies(project,
-                                           available.packages = available,
-                                           implicit.packrat.dependency = implicit.packrat.dependency))
+    inferredPkgs <- sort_c(appDependencies(
+      project,
+      available.packages = available,
+      implicit.packrat.dependency = implicit.packrat.dependency
+    ))
   } else {
     # packrat is always a dependency
     inferredPkgs <- 'packrat'
@@ -186,24 +194,28 @@ snapshot <- function(project = NULL,
   # available, so we don't overload the missing.package argument of
   # getPackageRecords and let it fail if something goes wrong
   dependencyLogger("Getting package records")
-  libPkgRecords <- getPackageRecords(libPkgs,
-                                     project = project,
-                                     available = available,
-                                     lib.loc = lib.loc,
-                                     recursive = TRUE,
-                                     verbose = verboseDependencies)
+  libPkgRecords <- getPackageRecords(
+    libPkgs,
+    project = project,
+    available = available,
+    lib.loc = lib.loc,
+    recursive = TRUE,
+    verbose = verboseDependencies
+  )
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
   # (CRAN, GitHub, Bitbucket, gitlab, source repository)
   dependencyLogger("Getting inferred package records")
-  inferredPkgRecords <- getPackageRecords(inferredPkgsNotInLib,
-                                          project = project,
-                                          available = available,
-                                          check.lockfile = TRUE,
-                                          fallback.ok = fallback.ok,
-                                          recursive = getOption("packrat.RecursiveInference", default = TRUE),
-                                          verbose = verboseDependencies)
+  inferredPkgRecords <- getPackageRecords(
+    inferredPkgsNotInLib,
+    project = project,
+    available = available,
+    check.lockfile = TRUE,
+    fallback.ok = fallback.ok,
+    recursive = getOption("packrat.RecursiveInference", default = TRUE),
+    verbose = verboseDependencies
+  )
 
   allRecords <- c(
     libPkgRecords,
@@ -232,20 +244,26 @@ snapshot <- function(project = NULL,
     # If any packages are installed, different from what's in the lockfile, and
     # were installed by packrat, that means they are stale.
     dependencyLogger("Getting stale package records")
-    stale <- names(diffs)[!is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)]
+    stale <- names(diffs)[
+      !is.na(diffs) & installedByPackrat(names(diffs), lib.loc, FALSE)
+    ]
     if (length(stale) > 0 && verbose) {
       prettyPrint(
-        getPackageRecords(stale,
-                          project = project,
-                          NULL,
-                          lib.loc = lib.loc,
-                          recursive = FALSE,
-                          verbose = verboseDependencies),
+        getPackageRecords(
+          stale,
+          project = project,
+          NULL,
+          lib.loc = lib.loc,
+          recursive = FALSE,
+          verbose = verboseDependencies
+        ),
         'The following packages are stale:',
-        c('These packages must be updated by calling packrat::restore() before\n',
+        c(
+          'These packages must be updated by calling packrat::restore() before\n',
           'snapshotting. If you are sure you want the installed versions of these\n',
           'packages to be snapshotted, call packrat::snapshot() again with\n',
-          'ignore.stale=TRUE.')
+          'ignore.stale=TRUE.'
+        )
       )
       message('--\nSnapshot operation was cancelled, no changes were made.')
       return(invisible())
@@ -253,47 +271,48 @@ snapshot <- function(project = NULL,
   }
 
   if (verbose) {
-    summarizeDiffs(diffs, lockPackages, allRecords,
-                   'Adding these packages to packrat:',
-                   'Removing these packages from packrat:',
-                   'Upgrading these packages already present in packrat:',
-                   'Downgrading these packages already present in packrat:',
-                   'Modifying these packages already present in packrat:')
+    summarizeDiffs(
+      diffs,
+      lockPackages,
+      allRecords,
+      'Adding these packages to packrat:',
+      'Removing these packages from packrat:',
+      'Upgrading these packages already present in packrat:',
+      'Downgrading these packages already present in packrat:',
+      'Modifying these packages already present in packrat:'
+    )
   }
 
   ## For use by automatic snapshotting -- only perform the automatic snapshot
   ## if it's a 'safe' action; ie, escape early if we would have prompted
-  if (mustConfirm && isTRUE(auto.snapshot))
+  if (mustConfirm && isTRUE(auto.snapshot)) {
     return(invisible())
+  }
 
   ## Short-circuit if we know that there is nothing to be updated.
   if (file.exists(lockFilePath(project)) && all(is.na(diffs))) {
-
     # Check to see if the current repositories + the snapshotted
     # repositories are in sync.
     lockfile <- readLockFile(lockFilePath(project))
     lockfileRepos <- lockfile$repos
-    reposInSync <- identical(sort_c(getOption("repos")),
-                             sort_c(lockfileRepos))
+    reposInSync <- identical(sort_c(getOption("repos")), sort_c(lockfileRepos))
 
     # Check to see whether all of the installed packages are currently
     # tracked by packrat.
     if (!reposInSync) {
-
       allTracked <-
         is.null(lib.loc) ||
         all(installedByPackrat(pkgNames(allRecordsFlat), lib.loc, FALSE))
 
       if (allTracked) {
-
         # Ensure a packrat lockfile is available
-        if (!file.exists(lockFilePath(project)))
+        if (!file.exists(lockFilePath(project))) {
           writeLockFile(lockFilePath(project), allRecords)
-        else if (verbose)
+        } else if (verbose) {
           message("Already up to date.")
+        }
 
         return()
-
       }
     }
   }
@@ -307,7 +326,6 @@ snapshot <- function(project = NULL,
   }
 
   if (!dry.run) {
-
     # allow user to configure snapshot.sources through env / R option
     if (missing(snapshot.sources)) {
       snapshot.sources <- packratOptionBoolean(
@@ -317,8 +335,9 @@ snapshot <- function(project = NULL,
       )
     }
 
-    if (snapshot.sources)
+    if (snapshot.sources) {
       snapshotSources(project, activeRepos(project), allRecordsFlat)
+    }
 
     writeLockFile(
       lockFilePath(project),
@@ -334,15 +353,18 @@ snapshot <- function(project = NULL,
     }
 
     if (verbose) {
-      message('Snapshot written to ',
-              shQuote(normalizePath(lockFilePath(project), winslash = '/'))
+      message(
+        'Snapshot written to ',
+        shQuote(normalizePath(lockFilePath(project), winslash = '/'))
       )
     }
   }
 
-  return(invisible(list(pkgRecords = lockPackages,
-                        actions = diffs[!is.na(diffs)],
-                        pkgsSnapshot = allRecords)))
+  return(invisible(list(
+    pkgRecords = lockPackages,
+    actions = diffs[!is.na(diffs)],
+    pkgsSnapshot = allRecords
+  )))
 }
 
 # NOTE: `.snapshotImpl` is exported as an 'internal' function that may be
@@ -351,14 +373,15 @@ snapshot <- function(project = NULL,
 snapshotImpl <- .snapshotImpl
 
 getBiocRepos <- function() {
-
   BiocManager <- tryCatch(asNamespace("BiocManager"), error = identity)
-  if (!inherits(BiocManager, "error"))
+  if (!inherits(BiocManager, "error")) {
     return(BiocManager$repositories())
+  }
 
   BiocInstaller <- tryCatch(asNamespace("BiocInstaller"), error = identity)
-  if (!inherits(BiocInstaller, "error"))
+  if (!inherits(BiocInstaller, "error")) {
     return(BiocInstaller$biocinstallRepos())
+  }
 
   msg <- paste(
     "Neither BiocManager nor BiocInstaller are installed;",
@@ -378,9 +401,18 @@ activeRepos <- function(project) {
   # Check for installation of BiocManager or BiocInstaller in the private
   # library. If either exists, then conclude this is a Bioconductor Packrat
   # project and add the Bioconductor repositories to the lockfile.
-  location <- find.package("BiocManager", lib.loc = libDir(project), quiet = TRUE)
-  if (!length(location))
-    location <- find.package("BiocInstaller", lib.loc = libDir(project), quiet = TRUE)
+  location <- find.package(
+    "BiocManager",
+    lib.loc = libDir(project),
+    quiet = TRUE
+  )
+  if (!length(location)) {
+    location <- find.package(
+      "BiocInstaller",
+      lib.loc = libDir(project),
+      quiet = TRUE
+    )
+  }
 
   if (length(location) == 1 && file.exists(location)) {
     biocRepos <- getBiocRepos()

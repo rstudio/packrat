@@ -60,14 +60,18 @@ bundles_dir <- function(project = NULL) {
 # Internal Implementations ----
 
 getProjectDir <- function(project = NULL) {
-
-  if (!is.null(project) && length(project) > 0)
+  if (!is.null(project) && length(project) > 0) {
     return(normalizePath(project, winslash = "/", mustWork = TRUE))
+  }
 
   packratOption(
     "R_PACKRAT_PROJECT_DIR",
     "packrat.project.dir",
-    if (length(getwd()) > 0) normalizePath(getwd(), winslash = "/", mustWork = TRUE) else ""
+    if (length(getwd()) > 0) {
+      normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+    } else {
+      ""
+    }
   )
 }
 
@@ -198,8 +202,9 @@ startsWithBytes <- function(x, y) {
 prettyDir <- function(project = NULL, ...) {
   project <- getProjectDir(project)
   homeDir <- path.expand("~/")
-  if (startsWithBytes(project, homeDir))
+  if (startsWithBytes(project, homeDir)) {
     project <- gsub(homeDir, "~/", project, fixed = TRUE)
+  }
   file.path(project, ...)
 }
 
@@ -215,7 +220,11 @@ prettyLibDir <- function(project = NULL) {
 #' @name packrat-external
 #' @export
 user_lib <- function() {
-  libraries <- unlist(strsplit(Sys.getenv("R_LIBS_USER"), .Platform$path.sep, fixed = TRUE))
+  libraries <- unlist(strsplit(
+    Sys.getenv("R_LIBS_USER"),
+    .Platform$path.sep,
+    fixed = TRUE
+  ))
   normalizePath(libraries, winslash = "/", mustWork = FALSE)
 }
 
@@ -231,19 +240,18 @@ packrat_lib <- function() {
 
 ## A location where "global" packrat data is stored, e.g. the library cache
 appDataDir <- function() {
-
   # Root directory
-  rootDir <- packratOption("R_PACKRAT_CACHE_DIR",
-                           "packrat.cache.dir",
-                           defaultAppDataDir())
+  rootDir <- packratOption(
+    "R_PACKRAT_CACHE_DIR",
+    "packrat.cache.dir",
+    defaultAppDataDir()
+  )
 
   # R Version specific sub folder
   file.path(rootDir, getRversion())
-
 }
 
 defaultAppDataDir <- function() {
-
   # borrowed and modified from shinyapps
 
   # get the home directory from the operating system (in case
@@ -252,20 +260,25 @@ defaultAppDataDir <- function() {
   homeDir <- Sys.getenv("HOME", unset = "~")
 
   # determine application config dir (platform specific)
-  if (is.windows())
+  if (is.windows()) {
     appDataDirBase <- Sys.getenv("APPDATA")
-  else if (is.mac())
+  } else if (is.mac()) {
     appDataDirBase <- file.path(homeDir, "Library/Application Support")
-  else
-    appDataDirBase <- Sys.getenv("XDG_CONFIG_HOME", file.path(homeDir, ".config"))
+  } else {
+    appDataDirBase <- Sys.getenv(
+      "XDG_CONFIG_HOME",
+      file.path(homeDir, ".config")
+    )
+  }
 
   # normalize path
-  appDataDir <- normalizePath(file.path(appDataDirBase, "packrat"),
-                              mustWork = FALSE)
+  appDataDir <- normalizePath(
+    file.path(appDataDirBase, "packrat"),
+    mustWork = FALSE
+  )
 
   # return it
   appDataDir
-
 }
 
 packratCacheVersion <- function() {

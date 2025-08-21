@@ -2,8 +2,9 @@
 callHook <- function(project, action, running) {
   project <- normalizePath(project, winslash = '/')
   for (fun in getHooksList("packrat.onAction")) {
-    if (is.character(fun))
+    if (is.character(fun)) {
       fun <- get(fun)
+    }
     try(fun(project, action, running))
   }
 }
@@ -12,7 +13,8 @@ callHook <- function(project, action, running) {
 # This function ensures that the result can always be processed as a list
 getHooksList <- function(name) {
   hooks <- getHook(name)
-  if (!is.list(hooks))
+  if (!is.list(hooks)) {
     hooks <- list(hooks)
+  }
   hooks
 }

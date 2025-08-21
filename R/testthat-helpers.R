@@ -12,7 +12,6 @@ cloneTestProject <- function(projectName) {
 
 # "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
 rebuildTestRepo <- function(testroot = getwd()) {
-
   # Try to guess where the DESCRIPTION file lives (for R CMD check
   # and for interactive testing)
   candidates <- c(
@@ -42,10 +41,12 @@ rebuildTestRepo <- function(testroot = getwd()) {
 
   # Force Packrat tests to believe the currently installed / tested
   # version of Packrat is on CRAN.
-  cat("Repository: CRAN",
-      file = "packrat/DESCRIPTION",
-      sep = "\n",
-      append = TRUE)
+  cat(
+    "Repository: CRAN",
+    file = "packrat/DESCRIPTION",
+    sep = "\n",
+    append = TRUE
+  )
 
   # Copy in the dummy folders.
   target <- file.path(testroot, "repo", "src", "contrib")
@@ -54,8 +55,13 @@ rebuildTestRepo <- function(testroot = getwd()) {
   pkgs <- list.files(source)
   for (pkg in pkgs) {
     descfile <- as.data.frame(read.dcf(file.path(source, pkg, "DESCRIPTION")))
-    tarball <- paste(pkg, "_", as.character(descfile$Version), ".tar.gz",
-                     sep = "")
+    tarball <- paste(
+      pkg,
+      "_",
+      as.character(descfile$Version),
+      ".tar.gz",
+      sep = ""
+    )
     tar(tarball, pkg, compression = "gzip", tar = tar_binary())
     dir.create(file.path(target, pkg))
     file.rename(file.path(source, tarball), file.path(target, pkg, tarball))
@@ -64,12 +70,16 @@ rebuildTestRepo <- function(testroot = getwd()) {
   # Force usage of version 2 of .rds files.
   version <- Sys.getenv("R_DEFAULT_SERIALIZE_VERSION", unset = NA)
   Sys.setenv(R_DEFAULT_SERIALIZE_VERSION = "2")
-  on.exit({
-    if (is.na(version))
-      Sys.unsetenv("R_DEFAULT_SERIALIZE_VERSION")
-    else
-      Sys.setenv(R_DEFAULT_SERIALIZE_VERSION = version)
-  }, add = TRUE)
+  on.exit(
+    {
+      if (is.na(version)) {
+        Sys.unsetenv("R_DEFAULT_SERIALIZE_VERSION")
+      } else {
+        Sys.setenv(R_DEFAULT_SERIALIZE_VERSION = version)
+      }
+    },
+    add = TRUE
+  )
 
   tools::write_PACKAGES(target, type = "source", subdirs = TRUE)
 }
@@ -84,18 +94,30 @@ rebuildEmptyTestRepo <- function(testroot = getwd()) {
 # Installs a test package from source. Necessary because install.packages
 # fails under R CMD CHECK.
 installTestPkg <- function(pkg, ver, lib) {
-  pkgSrc <- file.path("repo", "src", "contrib", pkg,
-                      paste(pkg, "_", ver, ".tar.gz", sep = ""))
-  install_local_path(path = pkgSrc, reload = FALSE,
-                     args = paste("-l", lib), dependencies = FALSE,
-                     quick = TRUE, quiet = TRUE)
+  pkgSrc <- file.path(
+    "repo",
+    "src",
+    "contrib",
+    pkg,
+    paste(pkg, "_", ver, ".tar.gz", sep = "")
+  )
+  install_local_path(
+    path = pkgSrc,
+    reload = FALSE,
+    args = paste("-l", lib),
+    dependencies = FALSE,
+    quick = TRUE,
+    quiet = TRUE
+  )
 }
 
 # Adds a dependency on a package to a test project
 addTestDependency <- function(projRoot, pkg) {
-  write(paste("library(", pkg, ")", sep = ""),
-        file = file.path(projRoot, "deps.R"),
-        append = TRUE)
+  write(
+    paste("library(", pkg, ")", sep = ""),
+    file = file.path(projRoot, "deps.R"),
+    append = TRUE
+  )
 }
 
 # Removes a dependency from a test project (by deleting a file... fancy!)
@@ -104,14 +126,18 @@ removeTestDependencyFile <- function(projRoot, file) {
 }
 
 verifyTopoSort <- function(graph, sorted) {
-  if (length(graph) != length(sorted))
+  if (length(graph) != length(sorted)) {
     return(FALSE)
-  if (length(sorted) < 2)
+  }
+  if (length(sorted) < 2) {
     return(TRUE)
-  if (!identical(unique(sorted), sorted))
+  }
+  if (!identical(unique(sorted), sorted)) {
     return(FALSE)
-  if (any(is.na(sorted)) || any(is.na(names(graph))))
+  }
+  if (any(is.na(sorted)) || any(is.na(names(graph)))) {
     return(FALSE)
+  }
   for (i in seq_along(sorted)) {
     deps <- graph[[sorted[[i]]]]
     if (length(setdiff(deps, head(sorted, i - 1))) > 0) {
@@ -125,7 +151,9 @@ verifyTopoSort <- function(graph, sorted) {
 # packrat controlled libraries are ignored
 makeLibrariesProject <- function() {
   if (basename(getwd()) != "testthat") {
-    warning("This function is only used to build a sample 'libraries' project in the testthat dir")
+    warning(
+      "This function is only used to build a sample 'libraries' project in the testthat dir"
+    )
     return(NULL)
   }
   project <- file.path("projects", "libraries")
@@ -139,24 +167,38 @@ makeLibrariesProject <- function() {
   dir.create(libraryRootDir(project), recursive = TRUE)
 
   # Some files within depending on oatmeal
-  cat("library(oatmeal)", file = file.path(libraryRootDir(project), "lib-current.R"), sep = "\n")
-  cat("library(oatmeal)", file = file.path(oldLibraryDir(project), "lib-old.R"), sep = "\n")
-  cat("library(oatmeal)", file = file.path(newLibraryDir(project), "lib-new.R"), sep = "\n")
+  cat(
+    "library(oatmeal)",
+    file = file.path(libraryRootDir(project), "lib-current.R"),
+    sep = "\n"
+  )
+  cat(
+    "library(oatmeal)",
+    file = file.path(oldLibraryDir(project), "lib-old.R"),
+    sep = "\n"
+  )
+  cat(
+    "library(oatmeal)",
+    file = file.path(newLibraryDir(project), "lib-new.R"),
+    sep = "\n"
+  )
   project
 }
 
 # Sets up repositories etc. for a test context, and restores them when done.
 beginTestContext <- function() {
-
   # lazy
-  if (interactive() && file.exists("tests/testthat"))
+  if (interactive() && file.exists("tests/testthat")) {
     setwd("tests/testthat")
+  }
 
   fields <- c("repos", "pkgType", "warn")
   options <- setNames(lapply(fields, getOption), fields)
 
   Sys.setenv(R_PACKRAT_TESTING = "yes")
-  Sys.setenv(R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep))
+  Sys.setenv(
+    R_PACKRAT_LIBPATHS = paste(.libPaths(), collapse = .Platform$path.sep)
+  )
 
   normalizedRepoPath <- normalizePath("repo", winslash = "/")
   CRAN <- paste(filePrefix(), normalizedRepoPath, sep = "")
@@ -184,7 +226,6 @@ scopeTestContext <- function() {
 }
 
 bundle_test <- function(bundler, checker, ...) {
-
   # set and restore directory
   owd <- setwd(tempdir())
   on.exit(setwd(owd), add = TRUE)
@@ -202,5 +243,4 @@ bundle_test <- function(bundler, checker, ...) {
 
   # run checker
   checker()
-
 }

@@ -1,5 +1,4 @@
 test_that("Bundle works when using R's internal tar", {
-
   skip_on_cran()
   skip_on_travis()
   skip_on_ci()
@@ -17,11 +16,9 @@ test_that("Bundle works when using R's internal tar", {
       list.files("untarred/packrat-test-bundle/packrat/")
     )
   })
-
 })
 
 test_that("Bundle works when omitting CRAN packages", {
-
   skip_on_cran()
   skip_on_travis()
   skip_on_ci()
@@ -31,9 +28,11 @@ test_that("Bundle works when omitting CRAN packages", {
     # we shouldn't see any CRAN packages in the unbundled sources other than Packrat
     srcDir <- "untarred/packrat-test-bundle/packrat/src"
     srcFiles <- list.files(srcDir, pattern = "tar.gz$", recursive = TRUE)
-    expect_true(length(srcFiles) == 1, "src dir should be empty (other than Packrat)")
+    expect_true(
+      length(srcFiles) == 1,
+      "src dir should be empty (other than Packrat)"
+    )
   }
 
   bundle_test(packrat:::bundle, checker, omit.cran.src = TRUE)
-
 })

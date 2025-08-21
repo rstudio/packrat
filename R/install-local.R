@@ -16,19 +16,25 @@ findPackageDirectoriesAndTarballs <- function(dir) {
 ##' @param repos The local repositories to search for the package names specified.
 ##' @param ... Optional arguments passed to \code{\link[packrat]{install}}.
 ##' @export
-install_local <- function(pkgs,
-                          ...,
-                          lib = .libPaths()[1],
-                          repos = get_opts("local.repos")) {
+install_local <- function(
+  pkgs,
+  ...,
+  lib = .libPaths()[1],
+  repos = get_opts("local.repos")
+) {
   for (pkg in pkgs) {
     install_local_single(pkg, lib = lib, repos = repos, ...)
   }
 }
 
-findLocalRepoForPkg <- function(pkg,
-                                repos = get_opts("local.repos"),
-                                fatal = TRUE) {
-  if (!length(repos) || identical(repos, "")) return(character())
+findLocalRepoForPkg <- function(
+  pkg,
+  repos = get_opts("local.repos"),
+  fatal = TRUE
+) {
+  if (!length(repos) || identical(repos, "")) {
+    return(character())
+  }
   # Search through the local repositories for a suitable package
   hasPackage <- unlist(lapply(repos, function(repo) {
     file.exists(file.path(repo, pkg))
@@ -43,26 +49,33 @@ findLocalRepoForPkg <- function(pkg,
     }
   }
 
-  if (numFound > 1)
-    warning("Package '", pkg, "' found in multiple local repositories:\n- ",
-            paste(shQuote(file.path(repos[hasPackage], pkg)), collapse = ", "))
+  if (numFound > 1) {
+    warning(
+      "Package '",
+      pkg,
+      "' found in multiple local repositories:\n- ",
+      paste(shQuote(file.path(repos[hasPackage], pkg)), collapse = ", ")
+    )
+  }
 
   repos[hasPackage][1]
-
 }
 
-install_local_single <- function(pkg,
-                                 lib = .libPaths()[1],
-                                 repos = get_opts("local.repos"),
-                                 fatal = TRUE,
-                                 ...) {
-
-  if (!length(repos) || identical(repos, ""))
-    stop("No local repositories have been defined. ",
-         "Use 'packrat::set_opts(local.repos = ...)' to add local repositories.",
-         call. = FALSE)
+install_local_single <- function(
+  pkg,
+  lib = .libPaths()[1],
+  repos = get_opts("local.repos"),
+  fatal = TRUE,
+  ...
+) {
+  if (!length(repos) || identical(repos, "")) {
+    stop(
+      "No local repositories have been defined. ",
+      "Use 'packrat::set_opts(local.repos = ...)' to add local repositories.",
+      call. = FALSE
+    )
+  }
   repoToUse <- findLocalRepoForPkg(pkg, repos, fatal = fatal)
   path <- file.path(repoToUse, pkg)
   with_libpaths(lib, install_local_path(path = path, ...))
-
 }

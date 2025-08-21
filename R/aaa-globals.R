@@ -14,18 +14,27 @@ new_defaults <- function(value = list()) {
   defaults <- value
 
   get <- function(name, default = FALSE, drop = TRUE) {
-    if (default) defaults <- value  # this is only a local version
-    if (missing(name)) defaults else {
-      if (drop && length(name) == 1) defaults[[name]] else {
+    if (default) {
+      defaults <- value
+    } # this is only a local version
+    if (missing(name)) {
+      defaults
+    } else {
+      if (drop && length(name) == 1) {
+        defaults[[name]]
+      } else {
         setNames(defaults[name], name)
       }
     }
   }
   set <- function(...) {
     dots <- list(...)
-    if (length(dots) == 0) return()
-    if (is.null(names(dots)) && length(dots) == 1 && is.list(dots[[1]]))
+    if (length(dots) == 0) {
+      return()
+    }
+    if (is.null(names(dots)) && length(dots) == 1 && is.list(dots[[1]])) {
       if (length(dots <- dots[[1]]) == 0) return()
+    }
     defaults <<- merge(dots)
     invisible(NULL)
   }

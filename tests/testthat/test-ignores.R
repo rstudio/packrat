@@ -13,12 +13,14 @@ test_that("updateRBuildIgnore preserves content in ignore file", {
   cat(c("foo", "bar", "baz"), file = path, sep = "\n")
   updateRBuildIgnore(project = tempdir())
   content <- readLines(path)
-  expect_identical(content, c("foo", "bar", "baz", "^packrat/", "^\\.Rprofile$"))
+  expect_identical(
+    content,
+    c("foo", "bar", "baz", "^packrat/", "^\\.Rprofile$")
+  )
   unlink(path)
 })
 
 test_that("updateGitIgnore works", {
-
   options <- list(
     vcs.ignore.lib = TRUE,
     vcs.ignore.src = FALSE
@@ -46,7 +48,9 @@ test_that("updateGitIgnore works", {
   options$vcs.ignore.src <- TRUE
   updateGitIgnore(project = dir, options = options)
   content <- readLines(.gitignore)
-  expect_true(all(c("foo", "bar", "baz", "packrat/lib*/", "packrat/src/") %in% content))
+  expect_true(all(
+    c("foo", "bar", "baz", "packrat/lib*/", "packrat/src/") %in% content
+  ))
 
   ## remove all options
   options[] <- FALSE
@@ -63,11 +67,9 @@ test_that("updateGitIgnore works", {
   expect_false(file.exists(.gitignore))
 
   unlink(dir, recursive = TRUE)
-
 })
 
 test_that("updateIgnoreFile preserves old structure of file", {
-
   contents <- c(
     "# This is a comment.",
     "ignore/path",
@@ -80,8 +82,11 @@ test_that("updateIgnoreFile preserves old structure of file", {
   on.exit(unlink(file))
   cat(contents, file = file, sep = "\n")
 
-  updateIgnoreFile(project = tempdir(), file = basename(file), add = c("packrat/lib*/"))
+  updateIgnoreFile(
+    project = tempdir(),
+    file = basename(file),
+    add = c("packrat/lib*/")
+  )
   updated <- readLines(file)
   expect_identical(updated, c(contents, "packrat/lib*/"))
-
 })

@@ -5,7 +5,6 @@
 ##'
 ##' @export
 search_path <- function() {
-
   ## NOTE: We cannot use searchpaths() here because it follows symlinks --
   ## for consistency, we want to use the symlink, not the actual path
 
@@ -43,5 +42,4 @@ search_path <- function() {
   rownames(pkgs) <- NULL
 
   pkgs
-
 }

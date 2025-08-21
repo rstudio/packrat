@@ -31,10 +31,7 @@ test_that("package installation when configured with a a cache uses the cache", 
   # Initial restore. Populates the cache and creates a symlink into it.
   unlink(libRoot, recursive = TRUE)
   unlink(srcRoot, recursive = TRUE)
-  restore(projRoot,
-          overwrite.dirty = TRUE,
-          prompt = FALSE,
-          restart = FALSE)
+  restore(projRoot, overwrite.dirty = TRUE, prompt = FALSE, restart = FALSE)
 
   expect_true(file.exists(packageDir), packageDir)
   expect_true(is.symlink(packageDir), packageDir)
@@ -42,10 +39,7 @@ test_that("package installation when configured with a a cache uses the cache", 
   # Subsequent restore. Uses the cache.
   unlink(libRoot, recursive = TRUE)
   unlink(srcRoot, recursive = TRUE)
-  restore(projRoot,
-          overwrite.dirty = TRUE,
-          prompt = FALSE,
-          restart = FALSE)
+  restore(projRoot, overwrite.dirty = TRUE, prompt = FALSE, restart = FALSE)
 
   # Daisy-chain a test where we attempt to recover when
   # a cache entry is corrupt. This test models some real-life
@@ -61,10 +55,7 @@ test_that("package installation when configured with a a cache uses the cache", 
   unlink(srcRoot, recursive = TRUE)
 
   suppressWarnings(
-    restore(projRoot,
-            overwrite.dirty = TRUE,
-            prompt = FALSE,
-            restart = FALSE)
+    restore(projRoot, overwrite.dirty = TRUE, prompt = FALSE, restart = FALSE)
   )
 
   expect_true(file.exists(packageDir), packageDir)
@@ -106,20 +97,14 @@ test_that("packrat uses the untrusted cache when instructed", {
 
   # Initial restore. Populates the cache and creates a symlink into it.
   unlink(libRoot, recursive = TRUE)
-  restore(projRoot,
-          overwrite.dirty = TRUE,
-          prompt = FALSE,
-          restart = FALSE)
+  restore(projRoot, overwrite.dirty = TRUE, prompt = FALSE, restart = FALSE)
 
   expect_true(file.exists(packageDir), packageDir)
   expect_true(is.symlink(packageDir), packageDir)
 
   # Subsequent restore. Uses the cache.
   unlink(libRoot, recursive = TRUE)
-  restore(projRoot,
-          overwrite.dirty = TRUE,
-          prompt = FALSE,
-          restart = FALSE)
+  restore(projRoot, overwrite.dirty = TRUE, prompt = FALSE, restart = FALSE)
 
   expect_true(file.exists(packageDir), packageDir)
   expect_true(is.symlink(packageDir), packageDir)

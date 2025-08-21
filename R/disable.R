@@ -21,7 +21,6 @@
 #'
 #' @export
 disable <- function(project = NULL, restart = TRUE) {
-
   # get the project
   project <- getProjectDir(project)
 
@@ -29,12 +28,14 @@ disable <- function(project = NULL, restart = TRUE) {
   editRprofileAutoloader(project, "remove")
 
   # turn packrat mode off
-  if (isPackratModeOn())
+  if (isPackratModeOn()) {
     off(project)
+  }
 
   # restart if requested
-  if (restart)
+  if (restart) {
     attemptRestart(restore.packrat.mode = FALSE)
+  }
 
   invisible()
 }

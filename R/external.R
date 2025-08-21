@@ -27,7 +27,6 @@
 ##' }
 ##' @export
 with_extlib <- function(packages = NULL, expr, envir = parent.frame()) {
-
   # need to force this promise now otherwise it will get evaluated
   # in the wrong context later on
   force(envir)
@@ -39,49 +38,48 @@ with_extlib <- function(packages = NULL, expr, envir = parent.frame()) {
   call <- match.call()
 
   local({
+    tryCatch(
+      {
+        ## Record the search path, then load the libraries
+        oldSearch <- search()
 
-    tryCatch({
-      ## Record the search path, then load the libraries
-      oldSearch <- search()
+        libPaths <- .packrat_mutables$get("origLibPaths")
+        oldLibPaths <- .libPaths()
+        if (!length(libPaths)) {
+          libPaths <- getDefaultLibPaths()
+        }
+        .libPaths(libPaths)
 
-      libPaths <- .packrat_mutables$get("origLibPaths")
-      oldLibPaths <- .libPaths()
-      if (!length(libPaths))
-        libPaths <- getDefaultLibPaths()
-      .libPaths(libPaths)
+        for (package in packages) {
+          library(package, character.only = TRUE, warn.conflicts = FALSE)
+        }
 
-      for (package in packages) {
-        library(package, character.only = TRUE, warn.conflicts = FALSE)
+        ## Evaluate the call
+        error <- try(res <- eval(call$expr, envir = envir), silent = TRUE)
+
+        ## Now, propagate the error / result
+        if (exists("res", envir = environment(), inherits = FALSE)) {
+          res
+        } else {
+          stop(attr(error, "condition")$message, call. = FALSE)
+        }
+      },
+
+      finally = {
+        newSearch <- search()
+        for (path in setdiff(newSearch, oldSearch)) {
+          try(forceUnload(path))
+        }
+        .libPaths(oldLibPaths)
       }
-
-      ## Evaluate the call
-      error <- try(res <- eval(call$expr, envir = envir), silent = TRUE)
-
-      ## Now, propagate the error / result
-      if (exists("res", envir = environment(), inherits = FALSE)) {
-        res
-      } else {
-        stop(attr(error, "condition")$message, call. = FALSE)
-      }
-    },
-
-    finally = {
-      newSearch <- search()
-      for (path in setdiff(newSearch, oldSearch)) {
-        try(forceUnload(path))
-      }
-      .libPaths(oldLibPaths)
-    })
-
+    )
   })
-
 }
 
 ##' @name packrat-external
 ##' @rdname packrat-external
 ##' @export
 extlib <- function(packages) {
-
   # place user library at front of library paths (we want to
   # include both the user library and the packrat library just
   # so that external packaegs can still load and depend on
@@ -92,9 +90,9 @@ extlib <- function(packages) {
   .libPaths(newLibPaths)
   on.exit(.libPaths(oldLibPaths), add = TRUE)
 
-  for (package in packages)
+  for (package in packages) {
     library(package, character.only = TRUE)
-
+  }
 }
 
 loadExternalPackages <- function() {
@@ -111,8 +109,10 @@ loadExternalPackages <- function() {
     }))
     if (length(failures)) {
       failures <- as.character(unlist(failures))
-      message("Warning: failed to load the following external packages:\n- ",
-              paste(shQuote(failures), collapse = ", "))
+      message(
+        "Warning: failed to load the following external packages:\n- ",
+        paste(shQuote(failures), collapse = ", ")
+      )
     }
     return(length(failures) > 0)
   }
