@@ -89,6 +89,28 @@ withTestContext({
     expect_true(file.exists(file.path(lib, "bread")))
   })
 
+  test_that("restore errors if repos are missing", {
+    skip_on_cran()
+    projRoot <- cloneTestProject("carbs")
+    lib <- libDir(projRoot)
+
+    # ensure that "Repos: ..." stays all on one line
+    local_mocked_bindings(write_dcf = function(...) write.dcf(width = Inf, ...))
+
+    init(enter = FALSE, projRoot)
+
+    # remove repos
+    lockFile <- file.path(projRoot, "packrat", "packrat.lock")
+    lockContent <- readLines(lockFile)
+    lockContent <- gsub("^Repos: .*$", "Repos: ", lockContent)
+    writeLines(lockContent, lockFile)
+
+    expect_error(
+      restore(projRoot, prompt = FALSE, restart = FALSE),
+      "Packrat lockfile is missing repository URLs"
+    )
+  })
+
   test_that("snapshot captures new dependencies", {
     skip_on_cran()
     skip_on_travis()

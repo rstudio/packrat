@@ -99,34 +99,40 @@ readLockFile <- function(file) {
   # Translate the names according to the aliases we maintain
   names(df) <- translate(names(df), aliases)
 
-  # Split the repos
-  repos <- gsub("[\r\n]", " ", df[1, 'Repos'])
-  repos <- strsplit(
-    unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE)),
-    "=",
-    fixed = TRUE
-  )
+  repos <- df[1, "Repos"]
 
-  # Support older-style lockfiles containing unnamed repositories
-  repoLens <- vapply(repos, length, numeric(1))
-  if (all(repoLens == 1)) {
-    # Support for old (unnamed) repositories
+  if (is.null(repos) || is.na(repos) || repos == "") {
+    repos <- NULL
+  } else {
+    # Split the repos
+    repos <- gsub("[\r\n]", " ", repos)
+    repos <- strsplit(
+      unlist(strsplit(repos, "\\s*,\\s*", perl = TRUE)),
+      "=",
+      fixed = TRUE
+    )
 
-    if (length(repoLens) > 1) {
-      # We warn if there were multiple repositories (if there was only one, we
-      # can safely assume it was CRAN)
-      warning(
-        "Old-style repository format detected; bumped to new version\n",
-        "Please re-set the repositories with options(repos = ...)\n",
-        "and call packrat::snapshot() to update the lock file."
+    # Support older-style lockfiles containing unnamed repositories
+    repoLens <- vapply(repos, length, numeric(1))
+    if (all(repoLens == 1)) {
+      # Support for old (unnamed) repositories
+
+      if (length(repoLens) > 1) {
+        # We warn if there were multiple repositories (if there was only one, we
+        # can safely assume it was CRAN)
+        warning(
+          "Old-style repository format detected; bumped to new version\n",
+          "Please re-set the repositories with options(repos = ...)\n",
+          "and call packrat::snapshot() to update the lock file."
+        )
+      }
+      repos <- c(CRAN = repos[[1]])
+    } else if (all(repoLens == 2)) {
+      repos <- setNames(
+        sapply(repos, "[[", 2),
+        sapply(repos, "[[", 1)
       )
     }
-    repos <- c(CRAN = repos[[1]])
-  } else if (all(repoLens == 2)) {
-    repos <- setNames(
-      sapply(repos, "[[", 2),
-      sapply(repos, "[[", 1)
-    )
   }
 
   packages <- if (nrow(df) > 1) {
@@ -136,9 +142,9 @@ readLockFile <- function(file) {
   }
 
   list(
-    packrat_format = df[1, 'PackratFormat'],
-    packrat_version = df[1, 'PackratVersion'],
-    r_version = df[1, 'RVersion'],
+    packrat_format = df[1, "PackratFormat"],
+    packrat_version = df[1, "PackratVersion"],
+    r_version = df[1, "RVersion"],
     repos = repos,
     packages = packages
   )
@@ -149,7 +155,7 @@ readLockFile <- function(file) {
 cleanupWhitespace <- function(df) {
   for (i in seq_along(df)) {
     if (is.character(df[[i]])) {
-      df[[i]] <- sub('^\\s*(.*?)\\s*$', '\\1', df[[i]])
+      df[[i]] <- sub("^\\s*(.*?)\\s*$", "\\1", df[[i]])
     }
   }
   return(df)
@@ -229,7 +235,7 @@ topoSort <- function(graph) {
 }
 
 deserializePackages <- function(df) {
-  packageNames <- df[, 'name']
+  packageNames <- df[, "name"]
 
   ## Begin validation
 
@@ -251,12 +257,12 @@ deserializePackages <- function(df) {
   ## End validation
 
   graph <- lapply(seq.int(nrow(df)), function(i) {
-    req <- df[i, 'requires']
+    req <- df[i, "requires"]
     if (is.null(req) || is.na(req)) {
       return(character(0))
     }
-    reqs <- unique(strsplit(req, '\\s*,\\s*')[[1]])
-    if (identical(reqs, '')) {
+    reqs <- unique(strsplit(req, "\\s*,\\s*")[[1]])
+    if (identical(reqs, "")) {
       return(character(0))
     }
     return(reqs)
@@ -275,7 +281,7 @@ deserializePackages <- function(df) {
   topoSorted <- topoSort(graph)
 
   # It's now safe to drop the requires info since it's encoded in the graph
-  df <- df[, names(df) != 'requires', drop = FALSE]
+  df <- df[, names(df) != "requires", drop = FALSE]
 
   sortedPackages <- lapply(topoSorted, function(pkgName) {
     pkg <- as.list(df[df$name == pkgName, ])
