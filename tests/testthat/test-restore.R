@@ -103,3 +103,50 @@ test_that("annotatePkgDesc annotates a package description", {
   expect_equal(result$InstallAgent, paste('packrat', packageVersion('packrat')))
   expect_equal(result$InstallSource, "CRAN")
 })
+
+test_that("appendRemoteInfoToDescription uses RemoteSubdir", {
+  parent_dir <- withr::local_tempdir()
+  dest_dir <- withr::local_tempdir()
+  # create package dir with subdirectory
+  src_dir <- file.path(parent_dir, "bread", "toast")
+  dir.create(src_dir, recursive = TRUE)
+
+  writeLines(
+    readLines(test_path("packages/toast/DESCRIPTION")),
+    file.path(src_dir, "DESCRIPTION")
+  )
+
+  parent_tarball <- paste0(parent_dir, ".tar.gz")
+  dest_tarball <- paste0(dest_dir, ".tar.gz")
+
+  in_dir(
+    parent_dir,
+    tar(
+      tarfile = parent_tarball,
+      files = "bread",
+      compression = "gzip",
+      tar = tar_binary()
+    )
+  )
+
+  remote_info <- data.frame(
+    RemoteType = "github",
+    RemoteHost = "github.com",
+    RemoteRepo = "bread",
+    RemoteUsername = "breakfaster",
+    RemoteRef = "HEAD",
+    RemoteSha = "abc123",
+    RemoteSubdir = "toast",
+    stringsAsFactors = FALSE
+  )
+
+  appendRemoteInfoToDescription(
+    src = parent_tarball,
+    dest = dest_tarball,
+    remote_info = remote_info
+  )
+
+  untar(dest_tarball, exdir = dest_dir, tar = tar_binary())
+  desc <- readLines(file.path(dest_dir, "toast", "DESCRIPTION"))
+  expect_true("RemoteSubdir: toast" %in% desc)
+})
