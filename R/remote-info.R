@@ -13,11 +13,11 @@ getRemoteInfo <- function(pkgRecord) {
       as.data.frame(
         as.list(c(
           RemoteType = pkgRecord$source,
-          GithubRepo = pkgRecord$gh_repo,
-          GithubUsername = pkgRecord$gh_username,
-          GithubRef = pkgRecord$gh_ref,
-          GithubSHA1 = pkgRecord$gh_sha1,
-          GithubSubdir = pkgRecord$gh_subdir
+          GithubRepo = pkgRecord$gh_repo %||% pkgRecord$remote_repo,
+          GithubUsername = pkgRecord$gh_username %||% pkgRecord$remote_username,
+          GithubRef = pkgRecord$gh_ref %||% pkgRecord$remote_ref,
+          GithubSHA1 = pkgRecord$gh_sha1 %||% pkgRecord$remote_sha,
+          GithubSubdir = pkgRecord$gh_subdir %||% pkgRecord$remote_subdir
         )),
         stringsAsFactors = FALSE
       )

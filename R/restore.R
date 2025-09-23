@@ -1152,12 +1152,15 @@ appendRemoteInfoToDescription <- function(src, dest, remote_info) {
     basedir <- scratchDir
   }
 
-  # Determine the true package root
-  if (remote_info$RemoteType == "github") {
-    remote_subdir <- remote_info$GithubSubdir
-  } else {
+  # Determine the true package root. RemoteSubDir is the more modern way of
+  # recording this info, but in some cases GithubSubDir may be used instead (or
+  # in addition). If package isn't in a subdirectory, then both should be NULL.
+  if (!is.null(remote_info$RemoteSubdir)) {
     remote_subdir <- remote_info$RemoteSubdir
+  } else {
+    remote_subdir <- remote_info$GithubSubdir
   }
+
   if (length(remote_subdir) > 0) {
     basedir <- file.path(basedir, remote_subdir)
   }

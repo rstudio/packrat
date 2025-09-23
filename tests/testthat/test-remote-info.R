@@ -90,3 +90,27 @@ test_that("remote_info is correctly generated from a GitLab pkgRecord with a sub
   )
   expect_identical(getRemoteInfo(pkgRecordGitlabSubdir), expected)
 })
+
+test_that("remote_info for a GitHub source falls back to Remote* fields if GIthub* ones are missing (but prioritize Github* ones)", {
+  pkgRecordGithubSubdir <- list(
+    name = "subadder",
+    source = "github",
+    version = "0.9.3.1",
+    gh_repo = "sub_adder",
+    remote_repo = "something_else",
+    remote_username = "my-username",
+    remote_ref = "HEAD",
+    remote_sha1 = "abc123",
+    remote_subdir = "subadder"
+  )
+  expected <- data.frame(
+    RemoteType = "github",
+    GithubRepo = "sub_adder",
+    GithubUsername = "my-username",
+    GithubRef = "HEAD",
+    GithubSHA1 = "abc123",
+    GithubSubdir = "subadder",
+    stringsAsFactors = FALSE
+  )
+  expect_identical(getRemoteInfo(pkgRecordGithubSubdir), expected)
+})

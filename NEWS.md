@@ -1,5 +1,8 @@
 # packrat (development version)
 
+- When restoring GitHub-hosted packages, packrat will now look for both
+  `Github*` and `Remote*` fields to determine where to install from. (#740)
+
 # packrat 0.9.3
 
 - Update vendored `renv` with support for additional Linux distributions when
