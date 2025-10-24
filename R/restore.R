@@ -30,7 +30,7 @@ isFromCranlikeRepo <- function(pkgRecord, repos) {
     isGitHubURL(pkgRecord$remote_host) ||
     isGitlabURL(pkgRecord$remote_host)
   if (git_remote) {
-      return(FALSE)
+    return(FALSE)
   }
 
   # for records that do declare a source, ensure it's not 'source'.
