@@ -96,7 +96,7 @@ gitlabArchiveUrl <- function(pkgRecord) {
 
 isGitlabURL <- function(url) {
   is.string(url) &&
-    grepl("^http(?:s)?://(?:www|api).gitlab.(org|com)", url, perl = TRUE)
+    grepl("^(http(?:s)?://)?(www|api)?.?gitlab.(org|com)", url, perl = TRUE)
 }
 
 gitlabAuthenticated <- function() {

@@ -96,7 +96,7 @@ bitbucketArchiveUrl <- function(pkgRecord) {
 
 isBitbucketURL <- function(url) {
   is.string(url) &&
-    grepl("^http(?:s)?://(?:www|api).bitbucket.(org|com)", url, perl = TRUE)
+    grepl("^(http(?:s)?://)?(www|api)?.?bitbucket.(org|com)", url, perl = TRUE)
 }
 
 bitbucketAuthenticated <- function() {

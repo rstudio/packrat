@@ -25,12 +25,20 @@ isFromCranlikeRepo <- function(pkgRecord, repos) {
     return(TRUE)
   }
 
-  # for records that do declare a source, ensure it's not 'source', 'github', 'bitbucket', or 'gitlab'.
+  # check if there's a remote host for github, bitbucket, or gitlab
+  git_remote <- isBitbucketURL(pkgRecord$remote_host) ||
+  isGitHubURL(pkgRecord$remote_host) ||
+  isGitlabURL(pkgRecord$remote_host)
+  if (git_remote) {
+      return(FALSE)
+  }
+
+  # for records that do declare a source, ensure it's not 'source'.
   # in previous releases of packrat, we attempted to match the repository name
   # with one of the existing repositories; however, this caused issues in
   # certain environments (the names declared repositories in the lockfile, and
   # the the names of the active repositories in the R session, may not match)
-  !tolower(source) %in% c("source", "github", "bitbucket", "gitlab")
+  !tolower(source) %in% c("source")
 }
 
 # Given a package record and a database of packages, check to see if
