@@ -190,6 +190,20 @@ test_that("isFromCranlikeRepo returns FALSE for source package", {
   expect_false(isFromCranlikeRepo(pkgRecord, repos))
 })
 
+test_that("isFromCranlikeRepo returns FALSE if remote_repo/remote_host are present", {
+  pkgRecord <- list(
+    name = "mypackage",
+    source = "GitHub",
+    version = "1.0.0",
+    remote_host = "github.com",
+    remote_repo = "mypackage"
+  )
+
+  repos <- c(GitHub = "https://github.com/me/mypackage")
+
+  expect_false(isFromCranlikeRepo(pkgRecord, repos))
+})
+
 test_that("isFromCranlikeRepo returns TRUE for BioConductor source", {
   pkgRecord <- list(
     name = "GenomicRanges",
