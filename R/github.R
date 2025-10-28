@@ -103,7 +103,7 @@ githubArchiveUrl <- function(pkgRecord) {
 
 isGitHubURL <- function(url) {
   is.string(url) &&
-    grepl("^(http(?:s)?://)?((www|api)\\.)?github.com", url, perl = TRUE)
+    grepl("^http(?:s)?://(?:www|api).github.com", url, perl = TRUE)
 }
 
 githubAuthenticated <- function() {

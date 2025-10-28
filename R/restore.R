@@ -25,11 +25,8 @@ isFromCranlikeRepo <- function(pkgRecord, repos) {
     return(TRUE)
   }
 
-  # check if there's a remote host for github, bitbucket, or gitlab
-  git_remote <- isBitbucketURL(pkgRecord$remote_host) ||
-    isGitHubURL(pkgRecord$remote_host) ||
-    isGitlabURL(pkgRecord$remote_host)
-  if (git_remote) {
+  # check if there's a remote host and repo for github, bitbucket, or gitlab
+  if (!is.null(pkgRecord$remote_host) && !is.null(pkgRecord$remote_repo)) {
     return(FALSE)
   }
 
