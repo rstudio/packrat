@@ -3,6 +3,10 @@
 - When restoring GitHub-hosted packages, packrat will now look for both
   `Github*` and `Remote*` fields to determine where to install from. (#740)
 
+- When restoring packages from CRAN-like repositories, names are no 
+  longer used to detect if these are actually git-like. This prevents
+  issues if you name a CRAN-like repository something like "GitHub". (#747)
+
 # packrat 0.9.3
 
 - Update vendored `renv` with support for additional Linux distributions when
