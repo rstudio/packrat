@@ -150,3 +150,92 @@ test_that("appendRemoteInfoToDescription uses RemoteSubdir", {
   desc <- readLines(file.path(dest_dir, "toast", "DESCRIPTION"))
   expect_true("RemoteSubdir: toast" %in% desc)
 })
+
+test_that("isFromCranlikeRepo returns TRUE for CRAN source", {
+  pkgRecord <- list(
+    name = "ggplot2",
+    source = "CRAN",
+    version = "3.4.0"
+  )
+
+  repos <- c(CRAN = "https://cran.r-project.org")
+
+  expect_true(isFromCranlikeRepo(pkgRecord, repos))
+})
+
+test_that("isFromCranlikeRepo returns TRUE for CustomCRANLikeRepository class", {
+  pkgRecord <- structure(
+    list(
+      name = "ggplot2",
+      source = "CRAN",
+      version = "3.4.0"
+    ),
+    class = c("packageRecord", "CustomCRANLikeRepository")
+  )
+
+  repos <- c(CRAN = "https://cran.r-project.org")
+
+  expect_true(isFromCranlikeRepo(pkgRecord, repos))
+})
+
+test_that("isFromCranlikeRepo returns FALSE for source package", {
+  pkgRecord <- list(
+    name = "mypackage",
+    source = "source",
+    version = "1.0.0"
+  )
+
+  repos <- c(CRAN = "https://cran.r-project.org")
+
+  expect_false(isFromCranlikeRepo(pkgRecord, repos))
+})
+
+test_that("isFromCranlikeRepo returns FALSE if remote_repo/remote_host are present", {
+  pkgRecord <- list(
+    name = "mypackage",
+    source = "GitHub",
+    version = "1.0.0",
+    remote_host = "github.com",
+    remote_repo = "mypackage"
+  )
+
+  repos <- c(GitHub = "https://github.com/me/mypackage")
+
+  expect_false(isFromCranlikeRepo(pkgRecord, repos))
+})
+
+test_that("isFromCranlikeRepo returns TRUE for BioConductor source", {
+  pkgRecord <- list(
+    name = "GenomicRanges",
+    source = "Bioconductor",
+    version = "1.50.0"
+  )
+
+  repos <- c(BioCsoft = "https://bioconductor.org/packages/3.16/bioc")
+
+  expect_true(isFromCranlikeRepo(pkgRecord, repos))
+})
+
+test_that("isFromCranlikeRepo returns TRUE for custom repository source", {
+  pkgRecord <- list(
+    name = "mypackage",
+    source = "MyRepo",
+    version = "1.0.0"
+  )
+
+  repos <- c(MyRepo = "https://example.com/repo")
+
+  expect_true(isFromCranlikeRepo(pkgRecord, repos))
+})
+
+test_that("isFromCranlikeRepo returns TRUE for a CRAN-like source named Github", {
+  pkgRecord <- list(
+    name = "mypackage",
+    source = "GitHub",
+    version = "1.0.0"
+  )
+
+  repos <- c(GitHub = "https://example.com/repo")
+
+  expect_true(isFromCranlikeRepo(pkgRecord, repos))
+})
