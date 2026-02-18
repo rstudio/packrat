@@ -1,9 +1,12 @@
 # packrat (development version)
 
+- Update vendored `renv` to support recognition of Posit Package Manager
+  support for manylinux binaries.
+
 - When restoring GitHub-hosted packages, packrat will now look for both
   `Github*` and `Remote*` fields to determine where to install from. (#740)
 
-- When restoring packages from CRAN-like repositories, names are no 
+- When restoring packages from CRAN-like repositories, names are no
   longer used to detect if these are actually git-like. This prevents
   issues if you name a CRAN-like repository something like "GitHub". (#747)
 
@@ -105,7 +108,7 @@
 - The 'packrat::opts$ignored.packages()' project option ignores recursive
   package dependencies in addition to direct package dependencies. (#654)
 
-- Use a bundled `renv` to perform dependency detection. Avoids a number of 
+- Use a bundled `renv` to perform dependency detection. Avoids a number of
   evaluation issues and side-effects. (#644)
 
 - Take an `renv` update to avoid an implicit dependency on the `quarto` package for all `*.qmd` content.
@@ -150,7 +153,7 @@
 - Added support for GitLab: packages downloaded from GitLab can now be
   restored by Packrat. (#562, @akgold)
 
-- Fixed an issue where tangled R code chunks containing invalid R code prevented 
+- Fixed an issue where tangled R code chunks containing invalid R code prevented
   Packrat from finding any dependencies.  Packrat will now look for package
   dependencies within each code chunk independently. (#551)
 
@@ -163,7 +166,7 @@
 
 - Fixed an issue where newly-added project options did not get their correct
   default value when no entry existed within the `packrat.opts` file. (#496)
-  
+
 - Improve performance of dependency processing. (#615)
 
 - Infer package dependencies from `requireNamespace()` and `loadNamespace()`
@@ -179,7 +182,7 @@
   disable dependency discovery in projects. This can be useful if you find
   Packrat's dependency discovery is slow (as it can be in projects containing
   a large number of R Markdown files). (#513, @ras44)
-  
+
 - The scheme used for hashing packages that enter the Packrat cache has
   changed -- now, a defined ordering of fields is used when hashing a
   package's DESCRIPTION file. Note that this implies a package may need to be
@@ -258,7 +261,7 @@
 
 - Packrat now screens out empty package names discovered during package
   dependency discovery. (#314)
-  
+
 - The Packrat global cache is now enabled on Windows. Junction points
   (rather than symbolic links) are used to populate entries in the
   private Packrat library.
@@ -301,12 +304,12 @@
 
 - Packrat now provides APIs for accessing the active paths to resource
   directories, with:
-  
+
   - `packrat::project_dir(project)`
   - `packrat::src_dir(project)`
   - `packrat::lib_dir(project)`
   - `packrat::bundles_dir(project)`
-  
+
   See `?packrat-resources` for more details.
 
 - Packrat better preserves the pre-existing contents of ignore files. (#332)
@@ -384,38 +387,38 @@
   in the future once we have a reliable mechanism for detecting whether
   a particular directory is a reparse point without the use of compiled
   code within packrat.
-  
+
 - Packrat uses `devtools` + `httr` (when available) to download files and
   directories from GitHub URLs. This should enable users to allow packrat
   to access private GitHub repositories as long as the `GITHUB_PAT`
   environment variable is set to an appropriate private access token.
   See `?devtools::install_github` for more details on setting up a private
   access token.
-  
+
 - The `install_github()` shim from packrat has been removed -- please
   use `devtools::install_github()`, either by taking an explicit dependency
   on the `devtools` package, or by loading it from the user library with
   the packrat option `packrat::opts$external.packages("devtools")`.
-  
+
 - Packrat is now smarter when managing symlinks within the project library
   (when package caching is enabled). This should allow multiple R processes
   to use the same packrat project at the same time. (Previously, there was
   risk that one R session might clear / refresh symlinks while another process
   attempted to access them).
-  
+
 - Packrat no longer erroneously generates recursive symlinks (and attempts
   to clean up any recursive symlinks discovered as appropriate).
-  
+
 - Packrat now records the original library paths within its `.onLoad()`
   handler, and uses these library paths when attempting to load packages
   from the user library.
-  
+
 - Fixed a bug where recursive hashing of a package's LinkingTo dependencies
   could fail.
 
 - Fixed a bug where `with_extlib()` could force a promise in the wrong
   environment.
-  
+
 # Packrat 0.4.6
 
 - Packrat gains the option `snapshot.recommended.packages()`, to control
@@ -452,7 +455,7 @@
 
 - Packrat now understands the `pkgType = "both"` option and can properly
   restore projects when that option is set.
-  
+
 - The `ignored.packages` option has been added, allowing users to specify
   packages that should not be tracked by packrat. Such packaes will not
   enter the lockfile on `packrat::snapshot()` calls; nor will they be
@@ -460,7 +463,7 @@
 
 - Simple functions for interacting with the set of available repositories
   have been added. See `?repository-management` for more details.
-  
+
 - Facilities for interacting with local CRAN-like repositories have been added.
   This feature will eventually supersede the functionality offered by packrat's
   'ad-hoc' local repositories. The functions `packrat::repos_create()` and
@@ -473,7 +476,7 @@
 - The cache directory layout has been modified to ensure help (`?`) calls
   succeed. This is a breaking change with older versions of Packrat, and so
   newer versions of Packrat will use a new cache folder. (#194)
-  
+
 - Packrat issues a warning on `packrat::init()` if it was unable to infer the
   source of a particular package on initialization and instead uses the latest
   CRAN version.
@@ -502,7 +505,7 @@
 - Packrat properly infers whether a project is an R package. A project
   with a `DESCRIPTION` file that has no `Type:` field, or has the
   `Type: Package` field, will be considered as an `R` package.
-  
+
 - Custom library paths can be set through the `R_PACKRAT_LIB_DIR` environment
   variable, which can be useful when using Packrat for non-local dependency
   management or deployment.
@@ -512,7 +515,7 @@
 - Symlinks to `R` packages are created and destroyed more conservatively; this
   should help prevent problems where multiple `R` processes are acting within
   a single Packrat project.
-  
+
 - The autoloader was not properly created in rare cases (thanks, @krlmlr!)
 
 - `install_local()` now forces `lib` and `repos` to be passed as named arguments,
@@ -679,25 +682,25 @@
   have been `dot.cased`. We apologize for any broken workflows here; but we
   imagine that most of use of packrat is done through calls to exported
   functions with no arguments passed, so this shouldn't disrupt most workflows.
-  
+
 - Packrat has introduced support for R packages -- you should now be able to
   develop R packages using packrat to manage your dependencies. Work here is
   on-going and feedback is appreciated.
-  
+
 - `search_path()` allows you to discover which packages are currently
   `attach`ed, and from which library each package has been loaded from.
-  
+
 - `status()` now (invisibly) returns a `data.frame` outlining the current
   status of your project, in addition to printing information to the console.
-  
+
 - `packrat::on` now attempts to clean the search path when entering packrat mode.
   Any packages loaded from the user library will be unloaded before entering
   packrat mode.
-  
+
 - The `init.R` script has been updated to work better with `bundle` / `unbundle`:
   after `bundle`ing a packrat project, one should be able to initialize a new
   project using a combination of `unbundle` and `source('packrat/init.R')`.
-  
+
 - Migration scripts for Windows users have been added to packrat, to migrate
   user libraries away from the system library, to provide the library separation
   that Packrat requires.
