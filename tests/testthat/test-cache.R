@@ -62,6 +62,49 @@ test_that("package installation when configured with a a cache uses the cache", 
   expect_true(is.symlink(packageDir), packageDir)
 })
 
+test_that("packrat warns when lockfile hash does not match installed hash", {
+  skip_on_cran()
+  skip_on_os("windows")
+
+  scopeTestContext()
+
+  projRoot <- cloneTestProject("healthy")
+  libRoot <- file.path(projRoot, "packrat", "lib")
+  srcRoot <- file.path(projRoot, "packrat", "src")
+
+  theCache <- tempfile("packrat-cache-")
+  ensureDirectory(theCache)
+  Sys.setenv(R_PACKRAT_CACHE_DIR = theCache)
+  on.exit(
+    {
+      Sys.unsetenv("R_PACKRAT_CACHE_DIR")
+      unlink(theCache, recursive = TRUE)
+    },
+    add = TRUE
+  )
+  init(projRoot, options = list(local.repos = "packages"), enter = FALSE)
+
+  set_opts(project = projRoot, use.cache = TRUE)
+  on.exit(set_opts(use.cache = FALSE, project = projRoot), add = TRUE)
+
+  # Replace one package's hash in the lockfile with a bogus value
+  lockfilePath <- file.path(projRoot, "packrat", "packrat.lock")
+  lockfileContent <- readLines(lockfilePath)
+  hashLines <- grep("^Hash:", lockfileContent)
+  lockfileContent[hashLines[1]] <- "Hash: 00000000000000000000000000000000"
+  writeLines(lockfileContent, lockfilePath)
+
+  # Remove lib and src so restore must reinstall
+  unlink(libRoot, recursive = TRUE)
+  unlink(srcRoot, recursive = TRUE)
+
+  # Restore should warn about the hash mismatch
+  expect_warning(
+    restore(projRoot, overwrite.dirty = TRUE, prompt = FALSE, restart = FALSE),
+    "expected hash.*after installation"
+  )
+})
+
 test_that("packrat uses the untrusted cache when instructed", {
   skip_on_cran()
   skip_on_os("windows")
