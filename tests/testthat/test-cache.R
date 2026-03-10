@@ -113,7 +113,13 @@ test_that("packrat uses the untrusted cache when instructed", {
 
   # pretend that we're Posit Connect
   Sys.setenv(POSIT_CONNECT = 1)
-  on.exit(Sys.unsetenv("POSIT_CONNECT"), add = TRUE)
+  on.exit(
+    {
+      Sys.unsetenv("POSIT_CONNECT")
+      options(packrat.untrusted.packages = NULL)
+    },
+    add = TRUE
+  )
 
   projRoot <- cloneTestProject("healthy")
   libRoot <- file.path(projRoot, "packrat", "lib")
