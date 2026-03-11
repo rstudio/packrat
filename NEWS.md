@@ -10,6 +10,11 @@
   longer used to detect if these are actually git-like. This prevents
   issues if you name a CRAN-like repository something like "GitHub". (#747)
 
+- `restore()` will warn when a package's lockfile hash does not match the hash
+  computed from the installed DESCRIPTION file, which indicates the lockfile was
+  generated from inaccurate package metadata and will cause repeated cache
+  misses. (#750)
+
 # packrat 0.9.3
 
 - Update vendored `renv` with support for additional Linux distributions when

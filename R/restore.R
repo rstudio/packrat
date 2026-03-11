@@ -773,6 +773,21 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
         )
       } else {
         hash <- hash(descPath)
+        if (!isTRUE(pkgRecord$hash == hash)) {
+          warning(
+            "Package '",
+            pkgRecord$name,
+            "': expected hash ",
+            pkgRecord$hash,
+            " but got ",
+            hash,
+            " after installation. The DESCRIPTION fields used for hashing ",
+            "(Package, Version, Depends, Imports, Suggests, LinkingTo, and ",
+            "Remote fields such as GithubSHA1, RemoteType, RemoteHost, ",
+            "RemoteRepo, RemoteUsername, RemoteRef, RemoteSha, RemoteSubdir) ",
+            "may differ from what was recorded in the lockfile."
+          )
+        }
         moveInstalledPackageToCache(
           packagePath = pkgInstallPath,
           hash = hash,
