@@ -614,6 +614,17 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
     return(cacheCopyStatus$type)
   }
 
+  # Try restoring the package from the global cache fallback
+  # (when using group cache isolation via R_PACKRAT_GLOBAL_CACHE_DIR).
+  copiedFromGlobalCache <- restoreWithCopyFromGlobalCache(
+    project,
+    pkgRecord,
+    cacheCopyStatus
+  )
+  if (copiedFromGlobalCache) {
+    return(cacheCopyStatus$type)
+  }
+
   # Try restoring the package from the 'unsafe' cache, if applicable.
   copiedFromUntrustedCache <- restoreWithCopyFromUntrustedCache(
     project,
