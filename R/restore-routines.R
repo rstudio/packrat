@@ -113,6 +113,87 @@ restoreWithCopyFromCache <- function(project, pkgRecord, cacheCopyStatus) {
   return(FALSE)
 }
 
+restoreWithCopyFromGlobalCache <- function(project, pkgRecord, cacheCopyStatus) {
+  # Only applies when a global cache fallback is configured
+  globalSource <- globalCacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
+  if (is.null(globalSource)) {
+    return(FALSE)
+  }
+
+  # don't copy from cache if disabled for this project
+  if (!isUsingCache(project)) {
+    return(FALSE)
+  }
+
+  # don't try to use cache if we don't have a hash
+  if (!length(pkgRecord$hash)) {
+    return(FALSE)
+  }
+
+  # don't try to cache uncacheable packages (ie, packages that
+  # need to be reinstalled each time for whatever reason)
+  if (!isCacheable(pkgRecord$name)) {
+    return(FALSE)
+  }
+
+  # ensure that the global cache package path exists
+  if (!file_test("-d", globalSource)) {
+    return(FALSE)
+  }
+
+  # sanity check for cache corruption -- we've seen some cases where
+  # a cache entry exists, but it's just an empty folder
+  if (isCorruptPackageCacheEntry(globalSource)) {
+    return(FALSE)
+  }
+
+  # attempt to form a symlink to the packrat library
+  # (remove stale file if one exists)
+  lib <- libDir(project)
+  target <- file.path(lib, pkgRecord$name)
+
+  # if we already have a directory at the target location, back it up
+  # and attempt to restore it if something goes wrong and we fail to
+  # copy from the global cache
+  if (file.exists(target)) {
+    temp <- tempfile(tmpdir = lib)
+    file.rename(target, temp)
+    on.exit(
+      {
+        if (file.exists(target)) {
+          unlink(temp, recursive = !is.symlink(temp))
+        } else {
+          file.rename(temp, target)
+        }
+      },
+      add = TRUE
+    )
+  }
+
+  # attempt the symlink
+  suppressWarnings(symlink(globalSource, target))
+  success <- file.exists(target)
+  if (success) {
+    cacheCopyStatus$type <- "symlinked global cache"
+    return(TRUE)
+  }
+
+  # symlinking failed; attempt a copy from the global cache to the target directory
+  success <- all(dir_copy(
+    globalCacheLibDir(pkgRecord$name, pkgRecord$hash),
+    file.path(libDir(project), pkgRecord$name)
+  ))
+
+  if (success) {
+    cacheCopyStatus$type <- "copied global cache"
+    return(TRUE)
+  }
+
+  # failed to copy or symlink from global cache; report warning and return false
+  warning("failed to symlink or copy package '", pkgRecord$name, "' from global cache")
+  return(FALSE)
+}
+
 restoreWithCopyFromUntrustedCache <- function(
   project,
   pkgRecord,
