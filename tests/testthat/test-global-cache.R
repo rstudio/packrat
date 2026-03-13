@@ -23,8 +23,12 @@ make_fake_cached_pkg <- function(base_dir, pkg_name, hash) {
 }
 
 # Build a pkgRecord list (mimics the structure used by packrat internals).
-make_pkg_record <- function(name = "mypkg", hash = "abc123", version = "1.0.0",
-                            source = "CRAN") {
+make_pkg_record <- function(
+  name = "mypkg",
+  hash = "abc123",
+  version = "1.0.0",
+  source = "CRAN"
+) {
   list(name = name, hash = hash, version = version, source = source)
 }
 
@@ -54,7 +58,6 @@ test_that("globalAppDataDir returns correct path when env var is set", {
 })
 
 test_that("globalAppDataDir uses R.Version() major.minor, not getRversion()", {
-
   # Verify the version string format matches R.Version() output
 
   withr::with_envvar(c(R_PACKRAT_GLOBAL_CACHE_DIR = "/cache"), {
@@ -100,8 +103,15 @@ test_that("globalCacheLibDir passes variadic args to build full path", {
     version_str <- paste(rv$major, rv$minor, sep = ".")
     expect_equal(
       result,
-      file.path("/tmp/global", version_str, "v2", "library",
-                "mypkg", "abc123", "mypkg")
+      file.path(
+        "/tmp/global",
+        version_str,
+        "v2",
+        "library",
+        "mypkg",
+        "abc123",
+        "mypkg"
+      )
     )
   })
 })
@@ -125,7 +135,11 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when env var is not set"
     pkgRecord <- make_pkg_record()
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_false(result)
     expect_null(cacheCopyStatus$type)
@@ -144,7 +158,11 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when cache disabled for 
     pkgRecord <- make_pkg_record()
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_false(result)
   })
@@ -162,7 +180,11 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when pkgRecord has no ha
     pkgRecord <- make_pkg_record(hash = NULL)
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_false(result)
   })
@@ -182,7 +204,11 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when pkgRecord hash is e
     pkgRecord$hash <- character(0)
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_false(result)
   })
@@ -201,7 +227,11 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when global cache entry 
     cacheCopyStatus <- new.env(parent = emptyenv())
 
     # The directory for this package/hash does not exist in globalCacheDir
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_false(result)
   })
@@ -222,8 +252,13 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when cache entry is corr
     rv <- R.Version()
     version_str <- paste(rv$major, rv$minor, sep = ".")
     corrupt_path <- file.path(
-      globalCacheDir, version_str, "v2", "library",
-      "badpkg", "badhash", "badpkg"
+      globalCacheDir,
+      version_str,
+      "v2",
+      "library",
+      "badpkg",
+      "badhash",
+      "badpkg"
     )
     dir.create(corrupt_path, recursive = TRUE)
     # No DESCRIPTION file created -- this is the corruption
@@ -231,7 +266,11 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when cache entry is corr
     cacheCopyStatus <- new.env(parent = emptyenv())
 
     expect_warning(
-      result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus),
+      result <- restoreWithCopyFromGlobalCache(
+        project,
+        pkgRecord,
+        cacheCopyStatus
+      ),
       "corrupt"
     )
 
@@ -253,16 +292,25 @@ test_that("restoreWithCopyFromGlobalCache returns FALSE when DESCRIPTION is empt
     rv <- R.Version()
     version_str <- paste(rv$major, rv$minor, sep = ".")
     pkg_path <- file.path(
-      globalCacheDir, version_str, "v2", "library",
-      "emptydesc", "ehash", "emptydesc"
+      globalCacheDir,
+      version_str,
+      "v2",
+      "library",
+      "emptydesc",
+      "ehash",
+      "emptydesc"
     )
     dir.create(pkg_path, recursive = TRUE)
-    file.create(file.path(pkg_path, "DESCRIPTION"))  # empty file
+    file.create(file.path(pkg_path, "DESCRIPTION")) # empty file
 
     cacheCopyStatus <- new.env(parent = emptyenv())
 
     expect_warning(
-      result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus),
+      result <- restoreWithCopyFromGlobalCache(
+        project,
+        pkgRecord,
+        cacheCopyStatus
+      ),
       "corrupt"
     )
 
@@ -286,8 +334,13 @@ test_that("restoreWithCopyFromGlobalCache symlinks on success and sets status", 
     rv <- R.Version()
     version_str <- paste(rv$major, rv$minor, sep = ".")
     pkg_path <- file.path(
-      globalCacheDir, version_str, "v2", "library",
-      "goodpkg", "goodhash", "goodpkg"
+      globalCacheDir,
+      version_str,
+      "v2",
+      "library",
+      "goodpkg",
+      "goodhash",
+      "goodpkg"
     )
     dir.create(pkg_path, recursive = TRUE)
     writeLines(
@@ -301,7 +354,11 @@ test_that("restoreWithCopyFromGlobalCache symlinks on success and sets status", 
 
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_true(result)
     expect_equal(cacheCopyStatus$type, "symlinked global cache")
@@ -336,7 +393,11 @@ test_that("restoreWithCopyFromGlobalCache backs up and restores existing target 
 
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     # Should return FALSE because cache entry doesn't exist
     expect_false(result)
@@ -363,8 +424,13 @@ test_that("restoreWithCopyFromGlobalCache overwrites pre-existing target on succ
     rv <- R.Version()
     version_str <- paste(rv$major, rv$minor, sep = ".")
     pkg_path <- file.path(
-      globalCacheDir, version_str, "v2", "library",
-      "replaceme", "newhash", "replaceme"
+      globalCacheDir,
+      version_str,
+      "v2",
+      "library",
+      "replaceme",
+      "newhash",
+      "replaceme"
     )
     dir.create(pkg_path, recursive = TRUE)
     writeLines(
@@ -380,7 +446,11 @@ test_that("restoreWithCopyFromGlobalCache overwrites pre-existing target on succ
 
     cacheCopyStatus <- new.env(parent = emptyenv())
 
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_true(result)
     expect_equal(cacheCopyStatus$type, "symlinked global cache")
@@ -422,8 +492,13 @@ test_that("installPkg tries global cache fallback after primary cache miss", {
 
   rv <- R.Version()
   primary_pkg_path <- file.path(
-    primaryCacheDir, getRversion(), "v2", "library",
-    "fromprimary", "hash1", "fromprimary"
+    primaryCacheDir,
+    getRversion(),
+    "v2",
+    "library",
+    "fromprimary",
+    "hash1",
+    "fromprimary"
   )
   dir.create(primary_pkg_path, recursive = TRUE)
   writeLines(
@@ -467,8 +542,13 @@ test_that("installPkg falls through to global cache when primary cache misses", 
   rv <- R.Version()
   version_str <- paste(rv$major, rv$minor, sep = ".")
   global_pkg_path <- file.path(
-    globalCacheDir, version_str, "v2", "library",
-    "fromglobal", "ghash", "fromglobal"
+    globalCacheDir,
+    version_str,
+    "v2",
+    "library",
+    "fromglobal",
+    "ghash",
+    "fromglobal"
   )
   dir.create(global_pkg_path, recursive = TRUE)
   writeLines(
@@ -508,8 +588,13 @@ test_that("installPkg skips global cache fallback when env var is unset", {
 
   # Populate primary cache
   primary_pkg_path <- file.path(
-    primaryCacheDir, getRversion(), "v2", "library",
-    "testpkg", "thash", "testpkg"
+    primaryCacheDir,
+    getRversion(),
+    "v2",
+    "library",
+    "testpkg",
+    "thash",
+    "testpkg"
   )
   dir.create(primary_pkg_path, recursive = TRUE)
   writeLines(
@@ -549,8 +634,13 @@ test_that("restoreWithCopyFromGlobalCache is independent of primary cache state"
     rv <- R.Version()
     version_str <- paste(rv$major, rv$minor, sep = ".")
     pkg_path <- file.path(
-      globalCacheDir, version_str, "v2", "library",
-      "indep", "ihash", "indep"
+      globalCacheDir,
+      version_str,
+      "v2",
+      "library",
+      "indep",
+      "ihash",
+      "indep"
     )
     dir.create(pkg_path, recursive = TRUE)
     writeLines(
@@ -562,7 +652,11 @@ test_that("restoreWithCopyFromGlobalCache is independent of primary cache state"
     dir.create(lib, recursive = TRUE)
 
     cacheCopyStatus <- new.env(parent = emptyenv())
-    result <- restoreWithCopyFromGlobalCache(project, pkgRecord, cacheCopyStatus)
+    result <- restoreWithCopyFromGlobalCache(
+      project,
+      pkgRecord,
+      cacheCopyStatus
+    )
 
     expect_true(result)
     expect_equal(cacheCopyStatus$type, "symlinked global cache")
@@ -580,13 +674,25 @@ test_that("globalCacheLibDir path structure matches what restoreWithCopyFromGlob
 
     expect_equal(
       lib_path,
-      file.path("/test/cache", version_str, "v2", "library", "pkg", "hash", "pkg")
+      file.path(
+        "/test/cache",
+        version_str,
+        "v2",
+        "library",
+        "pkg",
+        "hash",
+        "pkg"
+      )
     )
 
     # This is exactly the pattern used in restoreWithCopyFromGlobalCache:
     #   globalCacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
     pkgRecord <- make_pkg_record(name = "pkg", hash = "hash")
-    source_path <- globalCacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
+    source_path <- globalCacheLibDir(
+      pkgRecord$name,
+      pkgRecord$hash,
+      pkgRecord$name
+    )
     expect_equal(lib_path, source_path)
   })
 })

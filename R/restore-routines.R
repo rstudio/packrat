@@ -113,9 +113,17 @@ restoreWithCopyFromCache <- function(project, pkgRecord, cacheCopyStatus) {
   return(FALSE)
 }
 
-restoreWithCopyFromGlobalCache <- function(project, pkgRecord, cacheCopyStatus) {
+restoreWithCopyFromGlobalCache <- function(
+  project,
+  pkgRecord,
+  cacheCopyStatus
+) {
   # Only applies when a global cache fallback is configured
-  globalSource <- globalCacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
+  globalSource <- globalCacheLibDir(
+    pkgRecord$name,
+    pkgRecord$hash,
+    pkgRecord$name
+  )
   if (is.null(globalSource)) {
     return(FALSE)
   }
@@ -190,7 +198,11 @@ restoreWithCopyFromGlobalCache <- function(project, pkgRecord, cacheCopyStatus) 
   }
 
   # failed to copy or symlink from global cache; report warning and return false
-  warning("failed to symlink or copy package '", pkgRecord$name, "' from global cache")
+  warning(
+    "failed to symlink or copy package '",
+    pkgRecord$name,
+    "' from global cache"
+  )
   return(FALSE)
 }
 

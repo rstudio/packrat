@@ -291,7 +291,9 @@ cacheLibDir <- function(...) {
 
 globalAppDataDir <- function() {
   globalCacheDir <- Sys.getenv("R_PACKRAT_GLOBAL_CACHE_DIR", unset = "")
-  if (!nzchar(globalCacheDir)) return(NULL)
+  if (!nzchar(globalCacheDir)) {
+    return(NULL)
+  }
   rVersion <- R.Version()
   rVersionString <- paste(rVersion$major, rVersion$minor, sep = ".")
   file.path(globalCacheDir, rVersionString)
@@ -299,7 +301,9 @@ globalAppDataDir <- function() {
 
 globalCacheLibDir <- function(...) {
   globalDir <- globalAppDataDir()
-  if (is.null(globalDir)) return(NULL)
+  if (is.null(globalDir)) {
+    return(NULL)
+  }
   file.path(globalDir, "v2", "library", ...)
 }
 
