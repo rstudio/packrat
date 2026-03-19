@@ -778,7 +778,7 @@ ensureDirectory <- function(path) {
     stop("path '", path, "' exists but is not a directory")
   } else {
     dir.create(path, recursive = TRUE, showWarnings = FALSE)
-    if (!dir.exists(path)) {
+    if (!file.info(path)$isdir) {
       stop("failed to create directory at path '", path, "'")
     }
   }
