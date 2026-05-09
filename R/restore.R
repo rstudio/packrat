@@ -572,6 +572,24 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
   pkgNames
 }
 
+extractBinaryWithoutHtml <- function(tarball) {
+  allFiles <- untar(tarball, list = TRUE)
+  htmlFiles <- grep("(/help/|/html/).*\\.html$", allFiles, value = TRUE)
+
+  extractDir <- tempfile("packrat-no-html-")
+  dir.create(extractDir)
+
+  if (length(htmlFiles) > 0) {
+    keepFiles <- setdiff(allFiles, htmlFiles)
+    suppressWarnings(untar(tarball, files = keepFiles, exdir = extractDir))
+  } else {
+    suppressWarnings(untar(tarball, exdir = extractDir))
+  }
+
+  extractedDirs <- list.dirs(extractDir, recursive = FALSE, full.names = TRUE)
+  if (length(extractedDirs) == 1) extractedDirs else extractDir
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
@@ -635,29 +653,53 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
       pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
       versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
   ) {
-    tempdir <- tempdir()
     tryCatch(
       {
-        # install.packages emits both messages and standard output; redirect these
-        # streams to keep our own output clean.
-
         # on windows, we need to detach the package before installation
         detachPackageForInstallationIfNecessary(pkgRecord$name)
 
-        suppressMessages(
-          capture.output(
-            utils::install.packages(
-              pkgRecord$name,
-              lib = lib,
-              repos = repos,
-              type = .Platform$pkgType,
-              available = availablePackagesBinary(repos = repos),
-              quiet = TRUE,
-              dependencies = FALSE,
-              verbose = FALSE
-            )
+        fileLoc <- suppressMessages(
+          utils::download.packages(
+            pkgRecord$name,
+            destdir = tempdir(),
+            repos = repos,
+            type = .Platform$pkgType,
+            available = availablePackagesBinary(repos = repos),
+            quiet = TRUE
           )
         )
+
+        if (!nrow(fileLoc)) {
+          stop("Failed to download binary for ", pkgRecord$name)
+        }
+
+        downloadedBinary <- fileLoc[1, 2]
+
+        local({
+          if (!isPathToSameFile(getLibPaths()[1], lib)) {
+            oldLibPaths <- getLibPaths()
+            on.exit(setLibPaths(oldLibPaths), add = TRUE)
+            if (!file.exists(lib)) {
+              dir.create(lib, recursive = TRUE)
+            }
+            setLibPaths(lib)
+          }
+
+          pkgDir <- extractBinaryWithoutHtml(downloadedBinary)
+
+          suppressMessages(
+            capture.output(
+              install_local_path(
+                path = pkgDir,
+                reload = FALSE,
+                dependencies = FALSE,
+                quick = TRUE,
+                quiet = TRUE,
+                args = "--no-html"
+              )
+            )
+          )
+        })
 
         type <- "downloaded binary"
         needsInstall <- FALSE
@@ -732,12 +774,19 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
       detachPackageForInstallationIfNecessary(pkgRecord$name)
 
       quiet <- isTRUE(packrat::opts$quiet.package.installation())
+
+      installPath <- pkgSrc
+      if (identical(pkgType, "binary")) {
+        installPath <- extractBinaryWithoutHtml(pkgSrc)
+      }
+
       install_local_path(
-        path = pkgSrc,
+        path = installPath,
         reload = FALSE,
         dependencies = FALSE,
         quick = TRUE,
-        quiet = quiet
+        quiet = quiet,
+        args = "--no-html"
       )
       # if we just installed a binary package, check that it can be loaded
       # (source packages are checked by default on install)
