@@ -573,18 +573,17 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
 }
 
 extractBinaryWithoutHtml <- function(tarball) {
-  allFiles <- untar(tarball, list = TRUE)
-  htmlFiles <- grep("(/help/|/html/).*\\.html$", allFiles, value = TRUE)
-
   extractDir <- tempfile("packrat-no-html-")
   dir.create(extractDir)
 
-  if (length(htmlFiles) > 0) {
-    keepFiles <- setdiff(allFiles, htmlFiles)
-    suppressWarnings(untar(tarball, files = keepFiles, exdir = extractDir))
-  } else {
-    suppressWarnings(untar(tarball, exdir = extractDir))
-  }
+  suppressWarnings(
+    untar(
+      tarball,
+      exdir = extractDir,
+      tar = tar_binary(),
+      extras = "--exclude='*/help/*.html' --exclude='*/html/*.html'"
+    )
+  )
 
   extractedDirs <- list.dirs(extractDir, recursive = FALSE, full.names = TRUE)
   if (length(extractedDirs) == 1) extractedDirs else extractDir
