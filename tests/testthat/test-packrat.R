@@ -373,13 +373,20 @@ withTestContext({
 
   test_that("Packages restored from BitBucket have RemoteType+RemoteHost in their DESCRIPTION", {
     skip_on_cran()
-    projRoot <- cloneTestProject("falsy-bitbucket")
+    skip_if_offline()
+    projRoot <- cloneTestProject("skeleton-bitbucket")
 
     # ignore R version warnings
     suppressWarnings(restore(projRoot))
 
+    lib <- libDir(projRoot)
+
+    # verify the package was installed and can be loaded
+    expect_true(file.exists(file.path(lib, "skeleton")))
+    expect_true(requireNamespace("skeleton", lib.loc = lib))
+
     # validate the installed package has properly annotated DESCRIPTION
-    descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
+    descpath <- file.path(lib, "skeleton/DESCRIPTION")
     desc <- as.data.frame(readDcf(descpath))
     expect_true(desc$RemoteType == "bitbucket")
     expect_true(desc$RemoteHost == "api.bitbucket.org/2.0")
