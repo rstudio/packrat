@@ -366,6 +366,7 @@ withTestContext({
     # verify the package was installed and can be loaded
     expect_true(file.exists(file.path(lib, "falsy")))
     expect_true(requireNamespace("falsy", lib.loc = lib))
+    on.exit(unloadNamespace("falsy"), add = TRUE)
 
     # validate the installed package has properly annotated DESCRIPTION
     descpath <- file.path(lib, "falsy/DESCRIPTION")
@@ -391,6 +392,7 @@ withTestContext({
     # verify the package was installed and can be loaded
     expect_true(file.exists(file.path(lib, "skeleton")))
     expect_true(requireNamespace("skeleton", lib.loc = lib))
+    on.exit(unloadNamespace("skeleton"), add = TRUE)
 
     # validate the installed package has properly annotated DESCRIPTION
     descpath <- file.path(lib, "skeleton/DESCRIPTION")
@@ -418,6 +420,7 @@ withTestContext({
     # verify the package was installed and can be loaded
     expect_true(file.exists(file.path(lib, "falsy")))
     expect_true(requireNamespace("falsy", lib.loc = lib))
+    on.exit(unloadNamespace("falsy"), add = TRUE)
 
     # validate the installed package has properly annotated DESCRIPTION
     descpath <- file.path(lib, "falsy/DESCRIPTION")
