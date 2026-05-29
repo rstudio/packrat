@@ -354,14 +354,21 @@ withTestContext({
 
   test_that("Packages restored from GitLab have RemoteType+RemoteHost in their DESCRIPTION", {
     skip_on_cran()
+    skip_if_offline()
     skip_on_os("windows") # Windows tar.exe fails to extract the archive received here.
     projRoot <- cloneTestProject("falsy-gitlab")
 
     # ignore R version warnings
     suppressWarnings(restore(projRoot))
 
+    lib <- libDir(projRoot)
+
+    # verify the package was installed and can be loaded
+    expect_true(file.exists(file.path(lib, "falsy")))
+    expect_true(requireNamespace("falsy", lib.loc = lib))
+
     # validate the installed package has properly annotated DESCRIPTION
-    descpath <- file.path(libDir(projRoot), "falsy/DESCRIPTION")
+    descpath <- file.path(lib, "falsy/DESCRIPTION")
     desc <- as.data.frame(readDcf(descpath))
     expect_true(desc$RemoteType == "gitlab")
     expect_true(desc$RemoteHost == "gitlab.com")
@@ -397,6 +404,32 @@ withTestContext({
 
     # confirm remote subdir is not in the record (unused by this lockfile)
     expect_false("remote_subdir" %in% names(record))
+  })
+
+  test_that("Packages restored from GitHub have GithubRepo+GithubSHA1 in their DESCRIPTION", {
+    skip_on_cran()
+    skip_if_offline()
+    projRoot <- cloneTestProject("falsy-github")
+
+    suppressWarnings(restore(projRoot))
+
+    lib <- libDir(projRoot)
+
+    # verify the package was installed and can be loaded
+    expect_true(file.exists(file.path(lib, "falsy")))
+    expect_true(requireNamespace("falsy", lib.loc = lib))
+
+    # validate the installed package has properly annotated DESCRIPTION
+    descpath <- file.path(lib, "falsy/DESCRIPTION")
+    desc <- as.data.frame(readDcf(descpath))
+    expect_equal(desc$RemoteType, "github")
+    expect_equal(desc$GithubRepo, "falsy")
+    expect_equal(desc$GithubUsername, "cran")
+    expect_equal(desc$GithubSHA1, "26a36cf957a18569e311ef75b6f61f822de945ef")
+
+    # confirm that packrat interprets this package as coming from github
+    record <- inferPackageRecord(desc)
+    expect_equal(record$source, "github")
   })
 
   test_that("packrat and remotes annotated descriptions are comparable", {
