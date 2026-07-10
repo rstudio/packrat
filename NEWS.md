@@ -1,5 +1,8 @@
 # packrat (development version)
 
+- Fixed a race condition where concurrent R processes installing the same
+  package could fail while inserting it into the package cache.
+
 - Update vendored `renv` to support recognition of Posit Package Manager
   support for manylinux binaries.
 
