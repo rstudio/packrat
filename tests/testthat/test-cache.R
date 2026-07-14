@@ -105,6 +105,163 @@ test_that("packrat warns when lockfile hash does not match installed hash", {
   )
 })
 
+test_that("moveInstalledPackageToCache caches a fresh package", {
+  skip_on_os("windows")
+
+  packagePath <- makeTestPackage("oatmeal")
+  cacheDir <- tempfile("packrat-cache-")
+  on.exit(
+    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
+    add = TRUE
+  )
+
+  hash <- strrep("a", 32)
+  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
+
+  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+
+  expect_identical(result, cachedPackagePath)
+  expect_true(is.symlink(packagePath))
+  expect_true(file.exists(file.path(cachedPackagePath, "DESCRIPTION")))
+})
+
+test_that("moveInstalledPackageToCache adopts a competing process's copy", {
+  skip_on_os("windows")
+
+  packagePath <- makeTestPackage("oatmeal")
+  cacheDir <- tempfile("packrat-cache-")
+  on.exit(
+    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
+    add = TRUE
+  )
+
+  hash <- strrep("a", 32)
+  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
+
+  # Simulate losing the race to populate the cache: renames into the final
+  # cache location fail (as when a competing process created the destination
+  # first), and the competitor's byte-identical copy appears between the
+  # file.exists() check and the second rename.
+  realRename <- base::file.rename
+  renamesToCache <- 0
+  local_mocked_bindings(
+    file.rename = function(from, to) {
+      if (!identical(to, cachedPackagePath)) {
+        return(realRename(from, to))
+      }
+      renamesToCache <<- renamesToCache + 1
+      if (renamesToCache == 2) {
+        dir.create(cachedPackagePath, recursive = TRUE)
+        writeLines(
+          c("Package: oatmeal", "Version: 1.0"),
+          file.path(cachedPackagePath, "DESCRIPTION")
+        )
+      }
+      FALSE
+    },
+    .package = "base"
+  )
+
+  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+
+  expect_identical(result, cachedPackagePath)
+  expect_true(is.symlink(packagePath))
+  expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
+})
+
+test_that("moveInstalledPackageToCache reports a fresh-package cache failure", {
+  skip_on_os("windows")
+
+  packagePath <- makeTestPackage("oatmeal")
+  cacheDir <- tempfile("packrat-cache-")
+  on.exit(
+    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
+    add = TRUE
+  )
+
+  hash <- strrep("a", 32)
+  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
+
+  # All renames into the final cache location fail and no competing process
+  # populates the cache. With no pre-existing cache entry there is nothing to
+  # roll back, so the error should report the copy failure rather than a
+  # bogus "package may be lost from cache".
+  realRename <- base::file.rename
+  local_mocked_bindings(
+    file.rename = function(from, to) {
+      if (!identical(to, cachedPackagePath)) {
+        return(realRename(from, to))
+      }
+      FALSE
+    },
+    .package = "base"
+  )
+
+  expect_error(
+    moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir),
+    "failed to copy package 'oatmeal' to cache"
+  )
+
+  # the original installation is untouched
+  expect_false(is.symlink(packagePath))
+  expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
+})
+
+test_that("moveInstalledPackageToCache restores a backed-up cache entry", {
+  skip_on_os("windows")
+
+  packagePath <- makeTestPackage("oatmeal", version = "2.0")
+  cacheDir <- tempfile("packrat-cache-")
+  on.exit(
+    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
+    add = TRUE
+  )
+
+  hash <- strrep("a", 32)
+  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
+
+  # a pre-existing cache entry that overwrite = TRUE will back up
+  dir.create(cachedPackagePath, recursive = TRUE)
+  writeLines(
+    c("Package: oatmeal", "Version: 1.0"),
+    file.path(cachedPackagePath, "DESCRIPTION")
+  )
+
+  # the first two renames into the final cache location (direct rename, then
+  # rename of the temporary copy) fail; the third is the rollback of the
+  # backup, which must be allowed through
+  realRename <- base::file.rename
+  renamesToCache <- 0
+  local_mocked_bindings(
+    file.rename = function(from, to) {
+      if (!identical(to, cachedPackagePath)) {
+        return(realRename(from, to))
+      }
+      renamesToCache <<- renamesToCache + 1
+      if (renamesToCache <= 2) {
+        return(FALSE)
+      }
+      realRename(from, to)
+    },
+    .package = "base"
+  )
+
+  expect_error(
+    moveInstalledPackageToCache(
+      packagePath,
+      hash,
+      overwrite = TRUE,
+      fatal = TRUE,
+      cacheDir = cacheDir
+    ),
+    "failed to copy package 'oatmeal' to cache"
+  )
+
+  # the pre-existing cache entry was restored from backup
+  desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
+  expect_true("Version: 1.0" %in% desc)
+})
+
 test_that("packrat uses the untrusted cache when instructed", {
   skip_on_cran()
   skip_on_os("windows")

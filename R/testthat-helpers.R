@@ -10,6 +10,19 @@ cloneTestProject <- function(projectName) {
   return(file.path(target, projectName))
 }
 
+# Create a minimal fake installed package in its own temporary library;
+# returns the path to the package directory.
+makeTestPackage <- function(packageName, version = "1.0") {
+  libRoot <- tempfile("packrat-lib-")
+  packagePath <- file.path(libRoot, packageName)
+  dir.create(packagePath, recursive = TRUE)
+  writeLines(
+    c(paste("Package:", packageName), paste("Version:", version)),
+    file.path(packagePath, "DESCRIPTION")
+  )
+  packagePath
+}
+
 # "Rebuilds" the test repo from its package "sources" (just DESCRIPTION files).
 rebuildTestRepo <- function(testroot = getwd()) {
   # Try to guess where the DESCRIPTION file lives (for R CMD check
