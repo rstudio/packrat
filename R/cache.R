@@ -198,13 +198,12 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
 # package into the cache and replace the original directory with a symbolic
 # link into the package cache.
 #
-# If the package already exists inside the cache, fatal=FALSE (the default)
-# adopts the cached content as-is, while fatal=TRUE errs. This function never
-# overwrites an existing cache entry.
+# If the package already exists inside the cache, its content is adopted
+# as-is and the freshly-built package at packagePath is discarded. This
+# function never overwrites an existing cache entry.
 moveInstalledPackageToCache <- function(
   packagePath,
   hash,
-  fatal = FALSE,
   cacheDir = cacheLibDir()
 ) {
   ensureDirectory(cacheDir)
@@ -214,10 +213,6 @@ moveInstalledPackageToCache <- function(
 
   # check for existence of package in cache
   if (file.exists(cachedPackagePath)) {
-    if (fatal) {
-      stop("cached package already exists at path '", cachedPackagePath, "'")
-    }
-
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 

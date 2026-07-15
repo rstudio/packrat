@@ -125,6 +125,36 @@ test_that("moveInstalledPackageToCache caches a fresh package", {
   expect_true(file.exists(file.path(cachedPackagePath, "DESCRIPTION")))
 })
 
+test_that("moveInstalledPackageToCache adopts a pre-existing cache entry", {
+  skip_on_os("windows")
+
+  packagePath <- makeTestPackage("oatmeal", version = "2.0")
+  cacheDir <- tempfile("packrat-cache-")
+  on.exit(
+    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
+    add = TRUE
+  )
+
+  hash <- strrep("a", 32)
+  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
+
+  dir.create(cachedPackagePath, recursive = TRUE)
+  writeLines(
+    c("Package: oatmeal", "Version: 1.0"),
+    file.path(cachedPackagePath, "DESCRIPTION")
+  )
+
+  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+
+  expect_identical(result, cachedPackagePath)
+  expect_true(is.symlink(packagePath))
+
+  # the pre-existing cache entry is untouched; the freshly-built package
+  # (version 2.0) was discarded in favor of it
+  desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
+  expect_true("Version: 1.0" %in% desc)
+})
+
 test_that("moveInstalledPackageToCache adopts a competing process's copy", {
   skip_on_os("windows")
 
@@ -205,40 +235,6 @@ test_that("moveInstalledPackageToCache reports a fresh-package cache failure", {
   # the original installation is untouched
   expect_false(is.symlink(packagePath))
   expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
-})
-
-test_that("moveInstalledPackageToCache errs when fatal and the entry exists", {
-  skip_on_os("windows")
-
-  packagePath <- makeTestPackage("oatmeal", version = "2.0")
-  cacheDir <- tempfile("packrat-cache-")
-  on.exit(
-    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
-    add = TRUE
-  )
-
-  hash <- strrep("a", 32)
-  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
-
-  dir.create(cachedPackagePath, recursive = TRUE)
-  writeLines(
-    c("Package: oatmeal", "Version: 1.0"),
-    file.path(cachedPackagePath, "DESCRIPTION")
-  )
-
-  expect_error(
-    moveInstalledPackageToCache(
-      packagePath,
-      hash,
-      fatal = TRUE,
-      cacheDir = cacheDir
-    ),
-    "cached package already exists"
-  )
-
-  # the pre-existing cache entry is untouched
-  desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
-  expect_true("Version: 1.0" %in% desc)
 })
 
 test_that("packrat uses the untrusted cache when instructed", {
