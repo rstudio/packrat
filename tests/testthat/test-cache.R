@@ -207,7 +207,7 @@ test_that("moveInstalledPackageToCache reports a fresh-package cache failure", {
   expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
 })
 
-test_that("moveInstalledPackageToCache restores a backed-up cache entry", {
+test_that("moveInstalledPackageToCache errs when fatal and the entry exists", {
   skip_on_os("windows")
 
   packagePath <- makeTestPackage("oatmeal", version = "2.0")
@@ -220,44 +220,23 @@ test_that("moveInstalledPackageToCache restores a backed-up cache entry", {
   hash <- strrep("a", 32)
   cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
 
-  # a pre-existing cache entry that overwrite = TRUE will back up
   dir.create(cachedPackagePath, recursive = TRUE)
   writeLines(
     c("Package: oatmeal", "Version: 1.0"),
     file.path(cachedPackagePath, "DESCRIPTION")
   )
 
-  # the first two renames into the final cache location (direct rename, then
-  # rename of the temporary copy) fail; the third is the rollback of the
-  # backup, which must be allowed through
-  realRename <- base::file.rename
-  renamesToCache <- 0
-  local_mocked_bindings(
-    file.rename = function(from, to) {
-      if (!identical(to, cachedPackagePath)) {
-        return(realRename(from, to))
-      }
-      renamesToCache <<- renamesToCache + 1
-      if (renamesToCache <= 2) {
-        return(FALSE)
-      }
-      realRename(from, to)
-    },
-    .package = "base"
-  )
-
   expect_error(
     moveInstalledPackageToCache(
       packagePath,
       hash,
-      overwrite = TRUE,
       fatal = TRUE,
       cacheDir = cacheDir
     ),
-    "failed to copy package 'oatmeal' to cache"
+    "cached package already exists"
   )
 
-  # the pre-existing cache entry was restored from backup
+  # the pre-existing cache entry is untouched
   desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
   expect_true("Version: 1.0" %in% desc)
 })

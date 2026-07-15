@@ -198,13 +198,12 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
 # package into the cache and replace the original directory with a symbolic
 # link into the package cache.
 #
-# If the package already exists inside the cache, overwrite=TRUE causes
-# replacement of the cached content while overwrite=FALSE with fatal=FALSE
-# uses the cached package. Using overwrite=TRUE with fatal=TRUE will err.
+# If the package already exists inside the cache, fatal=FALSE (the default)
+# adopts the cached content as-is, while fatal=TRUE errs. This function never
+# overwrites an existing cache entry.
 moveInstalledPackageToCache <- function(
   packagePath,
   hash,
-  overwrite = TRUE,
   fatal = FALSE,
   cacheDir = cacheLibDir()
 ) {
@@ -212,29 +211,14 @@ moveInstalledPackageToCache <- function(
 
   packageName <- basename(packagePath)
   cachedPackagePath <- file.path(cacheDir, packageName, hash, packageName)
-  backupPackagePath <- tempfile(tmpdir = dirname(cachedPackagePath))
 
   # check for existence of package in cache
   if (file.exists(cachedPackagePath)) {
-    if (fatal && !overwrite) {
+    if (fatal) {
       stop("cached package already exists at path '", cachedPackagePath, "'")
     }
 
-    if (!fatal) {
-      return(symlinkPackageToCache(packagePath, cachedPackagePath))
-    }
-  }
-
-  # back up a pre-existing cached package (restore on failure)
-  if (file.exists(cachedPackagePath)) {
-    if (!file.rename(cachedPackagePath, backupPackagePath)) {
-      stop(
-        "failed to back up package '",
-        packageName,
-        "'; cannot safely copy to cache"
-      )
-    }
-    on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
+    return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 
   if (isVerboseCache()) {
@@ -261,18 +245,6 @@ moveInstalledPackageToCache <- function(
   # entry in the meantime, use it
   if (file.exists(cachedPackagePath)) {
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
-  }
-
-  # failed to insert package into cache -- restore any backed-up cache entry
-  # and return error
-  if (file.exists(backupPackagePath)) {
-    if (!file.rename(backupPackagePath, cachedPackagePath)) {
-      stop(
-        "failed to restore package '",
-        packageName,
-        "' in cache; package may be lost from cache"
-      )
-    }
   }
 
   # return failure
