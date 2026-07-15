@@ -118,11 +118,20 @@ test_that("moveInstalledPackageToCache caches a fresh package", {
   hash <- strrep("a", 32)
   cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
 
-  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+  cacheCopyStatus <- new.env(parent = emptyenv())
+  result <- moveInstalledPackageToCache(
+    packagePath,
+    hash,
+    cacheDir = cacheDir,
+    cacheCopyStatus = cacheCopyStatus
+  )
 
   expect_identical(result, cachedPackagePath)
   expect_true(is.symlink(packagePath))
   expect_true(file.exists(file.path(cachedPackagePath, "DESCRIPTION")))
+
+  # a fresh insert isn't a discard, so no status is reported
+  expect_null(cacheCopyStatus$type)
 })
 
 test_that("moveInstalledPackageToCache adopts a pre-existing cache entry", {
@@ -144,7 +153,13 @@ test_that("moveInstalledPackageToCache adopts a pre-existing cache entry", {
     file.path(cachedPackagePath, "DESCRIPTION")
   )
 
-  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+  cacheCopyStatus <- new.env(parent = emptyenv())
+  result <- moveInstalledPackageToCache(
+    packagePath,
+    hash,
+    cacheDir = cacheDir,
+    cacheCopyStatus = cacheCopyStatus
+  )
 
   expect_identical(result, cachedPackagePath)
   expect_true(is.symlink(packagePath))
@@ -153,6 +168,7 @@ test_that("moveInstalledPackageToCache adopts a pre-existing cache entry", {
   # (version 2.0) was discarded in favor of it
   desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
   expect_true("Version: 1.0" %in% desc)
+  expect_identical(cacheCopyStatus$type, "symlinked cache")
 })
 
 test_that("moveInstalledPackageToCache adopts a competing process's copy", {
@@ -192,11 +208,18 @@ test_that("moveInstalledPackageToCache adopts a competing process's copy", {
     .package = "base"
   )
 
-  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+  cacheCopyStatus <- new.env(parent = emptyenv())
+  result <- moveInstalledPackageToCache(
+    packagePath,
+    hash,
+    cacheDir = cacheDir,
+    cacheCopyStatus = cacheCopyStatus
+  )
 
   expect_identical(result, cachedPackagePath)
   expect_true(is.symlink(packagePath))
   expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
+  expect_identical(cacheCopyStatus$type, "symlinked cache")
 })
 
 test_that("moveInstalledPackageToCache reports a fresh-package cache failure", {

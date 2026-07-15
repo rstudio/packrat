@@ -194,6 +194,27 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
   return(cachedPackagePath)
 }
 
+# Record that the freshly-built package at packagePath is being discarded in
+# favor of an existing cache entry (either one that predates this call, or one
+# a competing process just won the race to populate). Logs the reason when
+# cache verbosity is on, and if cacheCopyStatus is supplied, sets its $type
+# field so callers can report what actually happened instead of the outcome
+# they expected before caching was attempted.
+discardBuildForCacheEntry <- function(packageName, reason, cacheCopyStatus) {
+  if (isVerboseCache()) {
+    message(
+      "Discarding freshly-built ",
+      packageName,
+      "; ",
+      reason,
+      "."
+    )
+  }
+  if (!is.null(cacheCopyStatus)) {
+    cacheCopyStatus$type <- "symlinked cache"
+  }
+}
+
 # Given a path to an installed package (outside the packrat cache), move that
 # package into the cache and replace the original directory with a symbolic
 # link into the package cache.
@@ -201,10 +222,16 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
 # If the package already exists inside the cache, its content is adopted
 # as-is and the freshly-built package at packagePath is discarded. This
 # function never overwrites an existing cache entry.
+#
+# cacheCopyStatus, if supplied, is an environment that gets a $type field set
+# to "symlinked cache" whenever a freshly-built package is discarded in favor
+# of an existing cache entry, so callers can report what actually happened
+# instead of the outcome they expected before caching was attempted.
 moveInstalledPackageToCache <- function(
   packagePath,
   hash,
-  cacheDir = cacheLibDir()
+  cacheDir = cacheLibDir(),
+  cacheCopyStatus = NULL
 ) {
   ensureDirectory(cacheDir)
 
@@ -213,6 +240,11 @@ moveInstalledPackageToCache <- function(
 
   # check for existence of package in cache
   if (file.exists(cachedPackagePath)) {
+    discardBuildForCacheEntry(
+      packageName,
+      "already present in cache",
+      cacheCopyStatus
+    )
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 
@@ -239,6 +271,11 @@ moveInstalledPackageToCache <- function(
   # failed to insert the package; if a competing process populated the cache
   # entry in the meantime, use it
   if (file.exists(cachedPackagePath)) {
+    discardBuildForCacheEntry(
+      packageName,
+      "a competing process cached it first",
+      cacheCopyStatus
+    )
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 
