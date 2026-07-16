@@ -257,8 +257,11 @@ moveInstalledPackageToCache <- function(
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 
-  # rename failed; copy to temporary destination in same directory
-  # and then attempt to rename from there
+  # rename failed. this can happen when the library and cache live on different
+  # filesystems, when a competing process created the cache entry first, or on
+  # other OS errors (permissions, disk full). copy to a temporary destination in
+  # the same directory as the target (so the final rename stays within one
+  # filesystem) and attempt to rename from there
   tempPath <- tempfile(tmpdir = dirname(cachedPackagePath))
   on.exit(unlink(tempPath, recursive = TRUE), add = TRUE)
   if (all(dir_copy(packagePath, tempPath))) {
