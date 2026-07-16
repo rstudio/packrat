@@ -194,47 +194,58 @@ symlinkPackageToCache <- function(packagePath, cachedPackagePath) {
   return(cachedPackagePath)
 }
 
+# Record that the freshly-built package at packagePath is being discarded in
+# favor of an existing cache entry (either one that predates this call, or one
+# a competing process just won the race to populate). Logs the reason when
+# cache verbosity is on, and if cacheCopyStatus is supplied, sets its $type
+# field so callers can report what actually happened instead of the outcome
+# they expected before caching was attempted.
+discardBuildForCacheEntry <- function(packageName, reason, cacheCopyStatus) {
+  if (isVerboseCache()) {
+    message(
+      "Discarding freshly-built ",
+      packageName,
+      "; ",
+      reason,
+      "."
+    )
+  }
+  if (!is.null(cacheCopyStatus)) {
+    cacheCopyStatus$type <- "symlinked cache"
+  }
+}
+
 # Given a path to an installed package (outside the packrat cache), move that
 # package into the cache and replace the original directory with a symbolic
 # link into the package cache.
 #
-# If the package already exists inside the cache, overwrite=TRUE causes
-# replacement of the cached content while overwrite=FALSE with fatal=FALSE
-# uses the cached package. Using overwrite=TRUE with fatal=TRUE will err.
+# If the package already exists inside the cache, its content is adopted
+# as-is and the freshly-built package at packagePath is discarded. This
+# function never overwrites an existing cache entry.
+#
+# cacheCopyStatus, if supplied, is an environment that gets a $type field set
+# to "symlinked cache" whenever a freshly-built package is discarded in favor
+# of an existing cache entry, so callers can report what actually happened
+# instead of the outcome they expected before caching was attempted.
 moveInstalledPackageToCache <- function(
   packagePath,
   hash,
-  overwrite = TRUE,
-  fatal = FALSE,
-  cacheDir = cacheLibDir()
+  cacheDir = cacheLibDir(),
+  cacheCopyStatus = NULL
 ) {
   ensureDirectory(cacheDir)
 
   packageName <- basename(packagePath)
   cachedPackagePath <- file.path(cacheDir, packageName, hash, packageName)
-  backupPackagePath <- tempfile(tmpdir = dirname(cachedPackagePath))
 
   # check for existence of package in cache
   if (file.exists(cachedPackagePath)) {
-    if (fatal && !overwrite) {
-      stop("cached package already exists at path '", cachedPackagePath, "'")
-    }
-
-    if (!fatal) {
-      return(symlinkPackageToCache(packagePath, cachedPackagePath))
-    }
-  }
-
-  # back up a pre-existing cached package (restore on failure)
-  if (file.exists(cachedPackagePath)) {
-    if (!file.rename(cachedPackagePath, backupPackagePath)) {
-      stop(
-        "failed to back up package '",
-        packageName,
-        "'; cannot safely copy to cache"
-      )
-    }
-    on.exit(unlink(backupPackagePath, recursive = TRUE), add = TRUE)
+    discardBuildForCacheEntry(
+      packageName,
+      "already present in cache",
+      cacheCopyStatus
+    )
+    return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 
   if (isVerboseCache()) {
@@ -246,8 +257,11 @@ moveInstalledPackageToCache <- function(
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
   }
 
-  # rename failed; copy to temporary destination in same directory
-  # and then attempt to rename from there
+  # rename failed. this can happen when the library and cache live on different
+  # filesystems, when a competing process created the cache entry first, or on
+  # other OS errors (permissions, disk full). copy to a temporary destination in
+  # the same directory as the target (so the final rename stays within one
+  # filesystem) and attempt to rename from there
   tempPath <- tempfile(tmpdir = dirname(cachedPackagePath))
   on.exit(unlink(tempPath, recursive = TRUE), add = TRUE)
   if (all(dir_copy(packagePath, tempPath))) {
@@ -260,19 +274,12 @@ moveInstalledPackageToCache <- function(
   # failed to insert the package; if a competing process populated the cache
   # entry in the meantime, use it
   if (file.exists(cachedPackagePath)) {
+    discardBuildForCacheEntry(
+      packageName,
+      "a competing process cached it first",
+      cacheCopyStatus
+    )
     return(symlinkPackageToCache(packagePath, cachedPackagePath))
-  }
-
-  # failed to insert package into cache -- restore any backed-up cache entry
-  # and return error
-  if (file.exists(backupPackagePath)) {
-    if (!file.rename(backupPackagePath, cachedPackagePath)) {
-      stop(
-        "failed to restore package '",
-        packageName,
-        "' in cache; package may be lost from cache"
-      )
-    }
   }
 
   # return failure

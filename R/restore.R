@@ -791,8 +791,12 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
         moveInstalledPackageToCache(
           packagePath = pkgInstallPath,
           hash = hash,
-          cacheDir = cacheLibDir()
+          cacheDir = cacheLibDir(),
+          cacheCopyStatus = cacheCopyStatus
         )
+        if (!is.null(cacheCopyStatus$type)) {
+          type <- cacheCopyStatus$type
+        }
       }
     } else {
       tarballName <- pkgSrcFilename(pkgRecord)
@@ -804,8 +808,12 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
         moveInstalledPackageToCache(
           packagePath = pkgInstallPath,
           hash = hash,
-          cacheDir = untrustedCacheLibDir()
+          cacheDir = untrustedCacheLibDir(),
+          cacheCopyStatus = cacheCopyStatus
         )
+        if (!is.null(cacheCopyStatus$type)) {
+          type <- cacheCopyStatus$type
+        }
       }
     }
   }

@@ -35,11 +35,11 @@ new_defaults <- function(value = list()) {
     if (is.null(names(dots)) && length(dots) == 1 && is.list(dots[[1]])) {
       if (length(dots <- dots[[1]]) == 0) return()
     }
-    defaults <<- merge(dots)
+    defaults <<- merge(dots) # nolint
     invisible(NULL)
   }
   merge <- function(values) merge_list(defaults, values)
-  restore <- function(target = value) defaults <<- target
+  restore <- function(target = value) defaults <<- target # nolint
 
   list(get = get, set = set, merge = merge, restore = restore)
 }

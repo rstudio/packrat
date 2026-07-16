@@ -118,11 +118,57 @@ test_that("moveInstalledPackageToCache caches a fresh package", {
   hash <- strrep("a", 32)
   cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
 
-  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+  cacheCopyStatus <- new.env(parent = emptyenv())
+  result <- moveInstalledPackageToCache(
+    packagePath,
+    hash,
+    cacheDir = cacheDir,
+    cacheCopyStatus = cacheCopyStatus
+  )
 
   expect_identical(result, cachedPackagePath)
   expect_true(is.symlink(packagePath))
   expect_true(file.exists(file.path(cachedPackagePath, "DESCRIPTION")))
+
+  # a fresh insert isn't a discard, so no status is reported
+  expect_null(cacheCopyStatus$type)
+})
+
+test_that("moveInstalledPackageToCache adopts a pre-existing cache entry", {
+  skip_on_os("windows")
+
+  packagePath <- makeTestPackage("oatmeal", version = "2.0")
+  cacheDir <- tempfile("packrat-cache-")
+  on.exit(
+    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
+    add = TRUE
+  )
+
+  hash <- strrep("a", 32)
+  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
+
+  dir.create(cachedPackagePath, recursive = TRUE)
+  writeLines(
+    c("Package: oatmeal", "Version: 1.0"),
+    file.path(cachedPackagePath, "DESCRIPTION")
+  )
+
+  cacheCopyStatus <- new.env(parent = emptyenv())
+  result <- moveInstalledPackageToCache(
+    packagePath,
+    hash,
+    cacheDir = cacheDir,
+    cacheCopyStatus = cacheCopyStatus
+  )
+
+  expect_identical(result, cachedPackagePath)
+  expect_true(is.symlink(packagePath))
+
+  # the pre-existing cache entry is untouched; the freshly-built package
+  # (version 2.0) was discarded in favor of it
+  desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
+  expect_true("Version: 1.0" %in% desc)
+  expect_identical(cacheCopyStatus$type, "symlinked cache")
 })
 
 test_that("moveInstalledPackageToCache adopts a competing process's copy", {
@@ -162,11 +208,18 @@ test_that("moveInstalledPackageToCache adopts a competing process's copy", {
     .package = "base"
   )
 
-  result <- moveInstalledPackageToCache(packagePath, hash, cacheDir = cacheDir)
+  cacheCopyStatus <- new.env(parent = emptyenv())
+  result <- moveInstalledPackageToCache(
+    packagePath,
+    hash,
+    cacheDir = cacheDir,
+    cacheCopyStatus = cacheCopyStatus
+  )
 
   expect_identical(result, cachedPackagePath)
   expect_true(is.symlink(packagePath))
   expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
+  expect_identical(cacheCopyStatus$type, "symlinked cache")
 })
 
 test_that("moveInstalledPackageToCache reports a fresh-package cache failure", {
@@ -205,61 +258,6 @@ test_that("moveInstalledPackageToCache reports a fresh-package cache failure", {
   # the original installation is untouched
   expect_false(is.symlink(packagePath))
   expect_true(file.exists(file.path(packagePath, "DESCRIPTION")))
-})
-
-test_that("moveInstalledPackageToCache restores a backed-up cache entry", {
-  skip_on_os("windows")
-
-  packagePath <- makeTestPackage("oatmeal", version = "2.0")
-  cacheDir <- tempfile("packrat-cache-")
-  on.exit(
-    unlink(c(dirname(packagePath), cacheDir), recursive = TRUE),
-    add = TRUE
-  )
-
-  hash <- strrep("a", 32)
-  cachedPackagePath <- file.path(cacheDir, "oatmeal", hash, "oatmeal")
-
-  # a pre-existing cache entry that overwrite = TRUE will back up
-  dir.create(cachedPackagePath, recursive = TRUE)
-  writeLines(
-    c("Package: oatmeal", "Version: 1.0"),
-    file.path(cachedPackagePath, "DESCRIPTION")
-  )
-
-  # the first two renames into the final cache location (direct rename, then
-  # rename of the temporary copy) fail; the third is the rollback of the
-  # backup, which must be allowed through
-  realRename <- base::file.rename
-  renamesToCache <- 0
-  local_mocked_bindings(
-    file.rename = function(from, to) {
-      if (!identical(to, cachedPackagePath)) {
-        return(realRename(from, to))
-      }
-      renamesToCache <<- renamesToCache + 1
-      if (renamesToCache <= 2) {
-        return(FALSE)
-      }
-      realRename(from, to)
-    },
-    .package = "base"
-  )
-
-  expect_error(
-    moveInstalledPackageToCache(
-      packagePath,
-      hash,
-      overwrite = TRUE,
-      fatal = TRUE,
-      cacheDir = cacheDir
-    ),
-    "failed to copy package 'oatmeal' to cache"
-  )
-
-  # the pre-existing cache entry was restored from backup
-  desc <- readLines(file.path(cachedPackagePath, "DESCRIPTION"))
-  expect_true("Version: 1.0" %in% desc)
 })
 
 test_that("packrat uses the untrusted cache when instructed", {
