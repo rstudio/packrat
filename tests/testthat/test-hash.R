@@ -18,7 +18,7 @@ test_that("hash function is available and has expected arguments", {
   expect_identical(
     formals(hash),
     pairlist(
-      path = quote(expr = ), # nolint: infix_spaces_linter. r-lib/lintr#1889
+      path = quote(expr = ),
       descLookup = as.name("installedDescLookup")
     )
   )
