@@ -243,3 +243,44 @@ withTestContext({
     expect_equal(deps, c("oatmeal"))
   })
 })
+
+test_that("appDependencies searches origLibPaths when resolving dependencies", {
+  # A library holding an installed package (origlibpkg) whose dependency
+  # (origlibdep) can only be discovered by reading origlibpkg's DESCRIPTION
+  # from this library.
+  origLib <- tempfile("origlib")
+  installFakePkg <- function(name, imports = NULL) {
+    pkgDir <- file.path(origLib, name)
+    dir.create(pkgDir, recursive = TRUE)
+    desc <- c(paste("Package:", name), "Version: 1.0.0")
+    if (!is.null(imports)) {
+      desc <- c(desc, paste("Imports:", imports))
+    }
+    writeLines(desc, file.path(pkgDir, "DESCRIPTION"))
+  }
+  installFakePkg("origlibpkg", imports = "origlibdep")
+  installFakePkg("origlibdep")
+
+  # Point origLibPaths at that library, restoring afterwards.
+  oldOrigLibPaths <- packrat:::.packrat_mutables$get("origLibPaths")
+  packrat:::.packrat_mutables$set(origLibPaths = origLib)
+  on.exit(
+    packrat:::.packrat_mutables$set(origLibPaths = oldOrigLibPaths),
+    add = TRUE
+  )
+
+  # A project whose only stated dependency is origlibpkg.
+  projDir <- tempfile("proj")
+  dir.create(projDir)
+  writeLines("library(origlibpkg)", file.path(projDir, "code.R"))
+
+  # An empty package database leaves origLib as the only place origlibpkg's
+  # dependencies can be resolved.
+  deps <- packrat:::appDependencies(
+    projDir,
+    available.packages = matrix(nrow = 0, ncol = 0),
+    implicit.packrat.dependency = FALSE
+  )
+
+  expect_true("origlibdep" %in% deps)
+})
