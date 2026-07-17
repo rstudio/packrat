@@ -11,6 +11,7 @@ merge_list <- function(x, y) {
 }
 
 new_defaults <- function(value = list()) {
+  env <- environment()
   defaults <- value
 
   get <- function(name, default = FALSE, drop = TRUE) {
@@ -35,11 +36,11 @@ new_defaults <- function(value = list()) {
     if (is.null(names(dots)) && length(dots) == 1 && is.list(dots[[1]])) {
       if (length(dots <- dots[[1]]) == 0) return()
     }
-    defaults <<- merge(dots) # nolint
+    assign("defaults", merge(dots), envir = env)
     invisible(NULL)
   }
   merge <- function(values) merge_list(defaults, values)
-  restore <- function(target = value) defaults <<- target # nolint
+  restore <- function(target = value) assign("defaults", target, envir = env)
 
   list(get = get, set = set, merge = merge, restore = restore)
 }

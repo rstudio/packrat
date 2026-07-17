@@ -52,7 +52,7 @@ appDependencies <- function(
   libPaths <- c(
     libDir(project),
     .libPaths(),
-    .packrat_mutables$origLibPaths
+    .packrat_mutables$get("origLibPaths")
   )
 
   ignores <- packrat::opts$ignored.packages()
