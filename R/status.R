@@ -139,7 +139,7 @@ status <- function(project = NULL, lib.loc = libDir(project), quiet = FALSE) {
   external.packages <- opts$external.packages()
   statusTbl <- data.frame(
     stringsAsFactors = FALSE,
-    row.names = 1:length(allPkgNames),
+    row.names = seq_along(allPkgNames),
     package = allPkgNames,
     packrat.version = packrat.version,
     packrat.source = packrat.source,

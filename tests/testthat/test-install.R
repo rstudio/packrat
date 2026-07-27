@@ -131,7 +131,7 @@ test_that("Git and user-specified variables can be masked while other variables 
   on.exit(options(user_mask_option), add = TRUE, after = FALSE)
 
   # We're expecting everything but the last item to be masked.
-  masked_names <- names(new_envvars)[1:length(new_envvars) - 1]
+  masked_names <- names(new_envvars)[seq_len(length(new_envvars) - 1)]
   unmasked_name <- names(new_envvars)[length(new_envvars)]
 
   subprocess_output <- R('-e "Sys.getenv()"', return_output = TRUE)
