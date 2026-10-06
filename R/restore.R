@@ -994,6 +994,7 @@ restoreImpl <- function(
 
   # Play the list, if there's anything to play
   if (!dry.run) {
+    prefetchPackageSources(pkgRecords, actions, repos, project)
     playActions(pkgRecords, actions, repos, project, targetLib)
     if (restartNeeded) {
       if (!restart || !attemptRestart()) {

@@ -324,6 +324,15 @@ initImpl <- function(
 #'   locations, it will use R's internal \code{tar} implementation, which may
 #'   cause errors with long filenames.
 #'
+#'   When \code{curl} 7.75.0 or later is the download method, Packrat
+#'   downloads the sources of every package it needs from CRAN-like
+#'   repositories concurrently, before installing any of them. Set the option
+#'   \code{packrat.prefetch.sources} to \code{FALSE} to download each package
+#'   just before it is installed instead. The option
+#'   \code{packrat.prefetch.concurrency} sets the number of simultaneous
+#'   downloads (default 8). Packages that fail to download concurrently are
+#'   downloaded again before they are installed.
+#'
 #' @param project The project directory. When in packrat mode, if this is
 #'   \code{NULL}, then the directory associated with the current packrat project
 #'   is used. Otherwise, the project directory specified is used.
