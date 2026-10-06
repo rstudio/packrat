@@ -5,7 +5,8 @@
   download method. Restores that install many packages no longer wait on one
   download at a time. Set `options(packrat.prefetch.sources = FALSE)` to turn
   this off, and `packrat.prefetch.concurrency` to change the number of
-  simultaneous downloads (default 8).
+  simultaneous downloads (default 8). On Windows, packages are still
+  downloaded one at a time, as with renv's parallel operations.
 
 - Fixed a race condition where concurrent R processes installing the same
   package could fail while inserting it into the package cache.

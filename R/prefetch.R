@@ -182,6 +182,9 @@ prefetchDownload <- function(targets, concurrency) {
 }
 
 prefetchPackageSources <- function(pkgRecords, actions, repos, project) {
+  # On Windows, packages keep downloading one at a time, following the
+  # vendored renv, which runs its parallel work sequentially there (see
+  # renv_parallel_cores()).
   if (!prefetchEnabled() || is.windows()) {
     return(invisible())
   }

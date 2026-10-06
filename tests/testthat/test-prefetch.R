@@ -145,6 +145,7 @@ test_that("prefetchDownload moves successful downloads into place and reports fa
 
 test_that("prefetchPackageSources does nothing without a capable curl", {
   local_mocked_bindings(
+    is.windows = function() FALSE,
     hasBinaryRepositories = function() FALSE,
     availablePackagesSource = function(repos) {
       availableMatrix(c(pkg = "1.0"), "https://example.com/cran/src/contrib")
@@ -170,6 +171,7 @@ test_that("prefetchPackageSources does nothing without a capable curl", {
 
 test_that("prefetchPackageSources turns errors into a warning", {
   local_mocked_bindings(
+    is.windows = function() FALSE,
     hasBinaryRepositories = function() FALSE,
     availablePackagesSource = function(repos) {
       availableMatrix(c(pkg = "1.0"), "https://example.com/cran/src/contrib")
@@ -196,6 +198,7 @@ test_that("prefetchPackageSources turns errors into a warning", {
 
 test_that("prefetchPackageSources doesn't contact the repository when everything is cached", {
   local_mocked_bindings(
+    is.windows = function() FALSE,
     hasBinaryRepositories = function() FALSE,
     cachedPackagePath = function(project, pkgRecord) "/cache/pkg",
     availablePackagesSource = function(repos) {

@@ -331,7 +331,8 @@ initImpl <- function(
 #'   just before it is installed instead. The option
 #'   \code{packrat.prefetch.concurrency} sets the number of simultaneous
 #'   downloads (default 8). Packages that fail to download concurrently are
-#'   downloaded again before they are installed.
+#'   downloaded again before they are installed. On Windows, packages are
+#'   downloaded one at a time, as with renv's parallel operations.
 #'
 #' @param project The project directory. When in packrat mode, if this is
 #'   \code{NULL}, then the directory associated with the current packrat project
