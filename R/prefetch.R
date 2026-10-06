@@ -32,10 +32,18 @@ prefetchConcurrency <- function() {
 # Returns the curl version as a numeric_version, or NULL if curl can't be run.
 curlVersion <- function() {
   output <- tryCatch(
-    suppressWarnings(system2("curl", "--version", stdout = TRUE, stderr = FALSE)),
+    suppressWarnings(system2(
+      "curl",
+      "--version",
+      stdout = TRUE,
+      stderr = FALSE
+    )),
     error = function(e) character()
   )
-  version <- regmatches(output[1], regexpr("(?<=^curl )[0-9.]+", output[1], perl = TRUE))
+  version <- regmatches(
+    output[1],
+    regexpr("(?<=^curl )[0-9.]+", output[1], perl = TRUE)
+  )
   if (!length(version)) {
     return(NULL)
   }
@@ -76,7 +84,8 @@ prefetchDestfile <- function(pkgRecord, project) {
 prefetchTargets <- function(records, repos, project, available) {
   rows <- lapply(records, function(pkgRecord) {
     pkgSrcFile <- pkgSrcFilename(pkgRecord)
-    current <- pkgRecord$name %in% rownames(available) &&
+    current <- pkgRecord$name %in%
+      rownames(available) &&
       identical(pkgRecord$version, available[pkgRecord$name, "Version"])
     url <- if (current) {
       paste(available[pkgRecord$name, "Repository"], pkgSrcFile, sep = "/")
