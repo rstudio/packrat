@@ -100,8 +100,7 @@ will be lost.
   just before it is installed instead. The option
   \code{packrat.prefetch.concurrency} sets the number of simultaneous
   downloads (default 8). Packages that fail to download concurrently are
-  downloaded again before they are installed. On Windows, packages are
-  downloaded one at a time, as with renv's parallel operations.
+  downloaded again before they are installed.
 }
 \seealso{
 \code{\link{snapshot}}, the command that creates the snapshots

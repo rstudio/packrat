@@ -114,6 +114,20 @@ curlConfigQuote <- function(value) {
   paste0("\"", gsub("([\"\\\\])", "\\\\\\1", value), "\"")
 }
 
+# Send R's user agent unless 'extra' already sets one. Repositories such as
+# Posit Package Manager use it to decide whether to serve binaries, and a
+# single-package download (through libcurl, or through curl with a
+# download.file.extra that sets it) sends it too.
+prefetchUserAgentArgs <- function(extra) {
+  userAgent <- getOption("HTTPUserAgent")
+  setsUserAgent <- grepl("(^|\\s)(-A|--user-agent)(\\s|=|$)", extra) ||
+    grepl("user-agent:", extra, ignore.case = TRUE)
+  if (length(userAgent) != 1L || !nzchar(userAgent) || setsUserAgent) {
+    return(extra)
+  }
+  paste(extra, "-A", shQuote(userAgent))
+}
+
 # Download every target with one `curl --parallel`. Each file is written to a
 # temporary name and moved into place only when its transfer succeeded, so a
 # failed or partial download never looks like a usable source. Returns the
@@ -144,6 +158,7 @@ prefetchDownload <- function(targets, concurrency) {
   if (identical(getOption("download.file.method"), "curl")) {
     extra <- paste(getOption("download.file.extra", ""), collapse = " ")
   }
+  extra <- prefetchUserAgentArgs(extra)
   writeOut <- "packrat-prefetch %{exitcode} %{http_code} %{filename_effective}\\n"
   command <- paste(
     "curl",
@@ -182,21 +197,19 @@ prefetchDownload <- function(targets, concurrency) {
 }
 
 prefetchPackageSources <- function(pkgRecords, actions, repos, project) {
-  # On Windows, packages keep downloading one at a time, following the
-  # vendored renv, which runs its parallel work sequentially there (see
-  # renv_parallel_cores()).
-  if (!prefetchEnabled() || is.windows()) {
-    return(invisible())
-  }
-  # When binary repositories are in use, installPkg() installs binaries with
-  # install.packages() and never needs these sources.
-  if (hasBinaryRepositories() && binaryRepositoriesEnabled()) {
+  if (!prefetchEnabled()) {
     return(invisible())
   }
 
   tryCatch(
     {
       candidates <- prefetchCandidates(pkgRecords, actions, repos, project)
+      # installPkg() installs these from a binary repository and doesn't need
+      # their sources.
+      candidates <- Filter(
+        function(pkgRecord) !installsFromBinaryRepository(pkgRecord, repos),
+        candidates
+      )
       if (!length(candidates)) {
         return(invisible())
       }
