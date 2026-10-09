@@ -162,6 +162,8 @@ prefetchDownload <- function(targets, concurrency) {
   writeOut <- "packrat-prefetch %{exitcode} %{http_code} %{filename_effective}\\n"
   command <- paste(
     "curl",
+    "--speed-limit 1 --speed-time",
+    as.integer(getOption("timeout", 60)),
     curlExtraArgs(extra),
     "--parallel --parallel-max",
     concurrency,
