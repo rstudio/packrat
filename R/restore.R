@@ -572,6 +572,16 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
   pkgNames
 }
 
+# Whether installPkg() tries to install a package as a binary from a binary
+# repository, rather than from its sources.
+installsFromBinaryRepository <- function(pkgRecord, repos) {
+  hasBinaryRepositories() &&
+    binaryRepositoriesEnabled() &&
+    isFromCranlikeRepo(pkgRecord, repos) &&
+    pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
+    versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
@@ -628,13 +638,7 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
   needsInstall <- TRUE
 
   # Try downloading a binary (when appropriate).
-  if (
-    hasBinaryRepositories() &&
-      binaryRepositoriesEnabled() &&
-      isFromCranlikeRepo(pkgRecord, repos) &&
-      pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
-      versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
-  ) {
+  if (installsFromBinaryRepository(pkgRecord, repos)) {
     tempdir <- tempdir()
     tryCatch(
       {
@@ -994,6 +998,7 @@ restoreImpl <- function(
 
   # Play the list, if there's anything to play
   if (!dry.run) {
+    prefetchPackageSources(pkgRecords, actions, repos, project)
     playActions(pkgRecords, actions, repos, project, targetLib)
     if (restartNeeded) {
       if (!restart || !attemptRestart()) {

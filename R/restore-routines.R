@@ -37,32 +37,43 @@ hashTarball <- function(path) {
   tools::md5sum(files = normalizePath(path, mustWork = TRUE))
 }
 
-restoreWithCopyFromCache <- function(project, pkgRecord, cacheCopyStatus) {
+# Returns the path to a usable global cache entry for this package record, or
+# NULL when the package must be installed from somewhere else.
+cachedPackagePath <- function(project, pkgRecord) {
   # don't copy from cache if disabled for this project
   if (!isUsingCache(project)) {
-    return(FALSE)
+    return(NULL)
   }
 
   # don't try to use cache if we don't have a hash
   if (!length(pkgRecord$hash)) {
-    return(FALSE)
+    return(NULL)
   }
 
   # don't try to cache uncacheable packages (ie, packages that
   # need to be reinstalled each time for whatever reason)
   if (!isCacheable(pkgRecord$name)) {
-    return(FALSE)
+    return(NULL)
   }
 
   # ensure that the cache package path exists
   source <- cacheLibDir(pkgRecord$name, pkgRecord$hash, pkgRecord$name)
   if (!file_test("-d", source)) {
-    return(FALSE)
+    return(NULL)
   }
 
   # sanity check for cache corruption -- we've seen some cases where
   # a cache entry exists, but it's just an empty folder
   if (isCorruptPackageCacheEntry(source)) {
+    return(NULL)
+  }
+
+  source
+}
+
+restoreWithCopyFromCache <- function(project, pkgRecord, cacheCopyStatus) {
+  source <- cachedPackagePath(project, pkgRecord)
+  if (is.null(source)) {
     return(FALSE)
   }
 
