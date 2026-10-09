@@ -325,13 +325,13 @@ initImpl <- function(
 #'   cause errors with long filenames.
 #'
 #'   When \code{curl} 7.75.0 or later is the download method, Packrat
-#'   downloads the sources of every package it needs from CRAN-like
-#'   repositories concurrently, before installing any of them. Set the option
-#'   \code{packrat.prefetch.sources} to \code{FALSE} to download each package
-#'   just before it is installed instead. The option
-#'   \code{packrat.prefetch.concurrency} sets the number of simultaneous
-#'   downloads (default 8). Packages that fail to download concurrently are
-#'   downloaded again before they are installed.
+#'   downloads package files from CRAN-like repositories concurrently before
+#'   it installs them. It skips packages from the cache and, on macOS and
+#'   Windows, packages that it installs from a binary repository. On Linux and
+#'   macOS, Packrat uses curl when \code{download.file.method} is not set. Set
+#'   \code{packrat.prefetch.sources} to \code{FALSE} to turn this off, or
+#'   \code{packrat.prefetch.concurrency} to change the number of simultaneous
+#'   downloads (default 8).
 #'
 #' @param project The project directory. When in packrat mode, if this is
 #'   \code{NULL}, then the directory associated with the current packrat project
