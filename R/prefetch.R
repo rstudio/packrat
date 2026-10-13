@@ -76,27 +76,24 @@ prefetchDestfile <- function(pkgRecord, project) {
   file.path(srcDir(project), pkgRecord$name, pkgSrcFilename(pkgRecord))
 }
 
-# Download URL and destination for each candidate. Returns a data frame with
-# one row per package: name, version, url, and destfile. Mirrors the URL
-# choice in getSourceForPkgRecord(): the repository's current file when the
-# version matches available.packages(), otherwise the CRAN archive layout of
-# the first repository.
+# Download URLs and destination for each candidate. Returns a data frame with
+# one row per URL to try, in the order to try them: name, version, url, and
+# destfile. Mirrors the URL choice in getSourceForPkgRecord(): the
+# repository's current file when the version matches available.packages(),
+# otherwise each archive location downloadArchiveWithRetries() tries.
 prefetchTargets <- function(records, repos, project, available) {
   rows <- lapply(records, function(pkgRecord) {
-    pkgSrcFile <- pkgSrcFilename(pkgRecord)
     current <- pkgRecord$name %in%
       rownames(available) &&
       identical(pkgRecord$version, available[pkgRecord$name, "Version"])
     url <- if (current) {
-      paste(available[pkgRecord$name, "Repository"], pkgSrcFile, sep = "/")
-    } else {
       paste(
-        sub("/+$", "", repos[[1]]),
-        "src/contrib/Archive",
-        pkgRecord$name,
-        pkgSrcFile,
+        available[pkgRecord$name, "Repository"],
+        pkgSrcFilename(pkgRecord),
         sep = "/"
       )
+    } else {
+      archiveUrls(repos, pkgRecord)
     }
     data.frame(
       name = pkgRecord$name,
@@ -198,6 +195,32 @@ prefetchDownload <- function(targets, concurrency) {
   failed
 }
 
+# Download each package from the first of its URLs that works. Each round
+# tries the next URL of every package not yet downloaded, with one
+# prefetchDownload(). Returns the last failed attempt of each package that
+# could not be downloaded.
+prefetchWithRetries <- function(targets, concurrency) {
+  failed <- targets[0, , drop = FALSE]
+  failed$http_code <- character()
+  while (nrow(targets)) {
+    first <- !duplicated(targets$name)
+    attemptFailed <- prefetchDownload(
+      targets[first, , drop = FALSE],
+      concurrency
+    )
+    targets <- targets[
+      !first & targets$name %in% attemptFailed$name,
+      ,
+      drop = FALSE
+    ]
+    failed <- rbind(
+      failed,
+      attemptFailed[!attemptFailed$name %in% targets$name, , drop = FALSE]
+    )
+  }
+  failed
+}
+
 prefetchPackageSources <- function(pkgRecords, actions, repos, project) {
   if (!prefetchEnabled()) {
     return(invisible())
@@ -226,21 +249,22 @@ prefetchPackageSources <- function(pkgRecords, actions, repos, project) {
       }
 
       concurrency <- prefetchConcurrency()
+      packages <- length(unique(targets$name))
       message(
         "Prefetching sources for ",
-        nrow(targets),
+        packages,
         " packages (",
         concurrency,
         " at a time) ... ",
         appendLF = FALSE
       )
       start <- Sys.time()
-      failed <- prefetchDownload(targets, concurrency)
+      failed <- prefetchWithRetries(targets, concurrency)
       elapsed <- as.numeric(difftime(Sys.time(), start, units = "secs"))
       message(sprintf(
         "fetched %d of %d in %.1f seconds",
-        nrow(targets) - nrow(failed),
-        nrow(targets),
+        packages - nrow(failed),
+        packages,
         elapsed
       ))
       for (i in seq_len(nrow(failed))) {

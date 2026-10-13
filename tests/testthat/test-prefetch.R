@@ -1,6 +1,7 @@
-test_that("prefetchTargets uses the current file or the CRAN archive", {
+test_that("prefetchTargets uses the current file or the archive locations", {
   srcDir <- withr::local_tempdir()
   withr::local_envvar(R_PACKRAT_SRC_DIR = srcDir)
+  withr::local_options(packrat.alternative.archive.layouts = FALSE)
   local_mocked_bindings(cachedPackagePath = function(project, pkgRecord) NULL)
 
   repo <- "https://example.com/cran"
@@ -15,7 +16,7 @@ test_that("prefetchTargets uses the current file or the CRAN archive", {
   )
   actions <- c(current = "add", older = "downgrade", missing = "add")
 
-  repos <- c(CRAN = paste0(repo, "/"))
+  repos <- c(CRAN = paste0(repo, "/"), other = "https://example.com/other")
   targets <- prefetchTargets(
     prefetchCandidates(records, actions, repos, NULL),
     repos,
@@ -23,23 +24,102 @@ test_that("prefetchTargets uses the current file or the CRAN archive", {
     available
   )
 
-  expect_equal(targets$name, c("current", "older", "missing"))
+  expect_equal(
+    targets$name,
+    c("current", "older", "older", "missing", "missing")
+  )
   expect_equal(
     targets$url,
     c(
       "https://example.com/cran/src/contrib/current_1.0.tar.gz",
       "https://example.com/cran/src/contrib/Archive/older/older_1.5.tar.gz",
-      "https://example.com/cran/src/contrib/Archive/missing/missing_0.1.tar.gz"
+      "https://example.com/other/src/contrib/Archive/older/older_1.5.tar.gz",
+      "https://example.com/cran/src/contrib/Archive/missing/missing_0.1.tar.gz",
+      "https://example.com/other/src/contrib/Archive/missing/missing_0.1.tar.gz"
     )
   )
   expect_equal(
     targets$destfile,
     file.path(
       srcDir,
-      c("current", "older", "missing"),
-      c("current_1.0.tar.gz", "older_1.5.tar.gz", "missing_0.1.tar.gz")
+      c("current", "older", "older", "missing", "missing"),
+      c(
+        "current_1.0.tar.gz",
+        "older_1.5.tar.gz",
+        "older_1.5.tar.gz",
+        "missing_0.1.tar.gz",
+        "missing_0.1.tar.gz"
+      )
     )
   )
+})
+
+test_that("archiveUrls tries every repository with each archive layout", {
+  repos <- c(
+    CRAN = "https://example.com/cran/",
+    other = "https://example.com/other"
+  )
+  record <- pkgRecord("pkg", "1.0")
+
+  expect_equal(
+    archiveUrls(repos, record),
+    c(
+      "https://example.com/cran/src/contrib/Archive/pkg/pkg_1.0.tar.gz",
+      "https://example.com/other/src/contrib/Archive/pkg/pkg_1.0.tar.gz",
+      "https://example.com/cran/src/contrib/Archive/pkg/1.0/pkg_1.0.tar.gz",
+      "https://example.com/other/src/contrib/Archive/pkg/1.0/pkg_1.0.tar.gz",
+      "https://example.com/cran/src/contrib/pkg_1.0.tar.gz",
+      "https://example.com/other/src/contrib/pkg_1.0.tar.gz"
+    )
+  )
+
+  withr::local_options(packrat.alternative.archive.layouts = FALSE)
+  expect_equal(
+    archiveUrls(repos, record),
+    c(
+      "https://example.com/cran/src/contrib/Archive/pkg/pkg_1.0.tar.gz",
+      "https://example.com/other/src/contrib/Archive/pkg/pkg_1.0.tar.gz"
+    )
+  )
+})
+
+test_that("prefetchWithRetries tries each package's next URL until one works", {
+  attempts <- list()
+  local_mocked_bindings(
+    prefetchDownload = function(targets, concurrency) {
+      attempts[[length(attempts) + 1L]] <<- targets$url
+      failed <- targets[!grepl("good", targets$url), , drop = FALSE]
+      failed$http_code <- rep("404", nrow(failed))
+      failed
+    }
+  )
+
+  targets <- data.frame(
+    name = c("first", "second", "second", "never", "never"),
+    version = "1.0",
+    url = c(
+      "good/first",
+      "bad/second",
+      "good/second",
+      "bad/never",
+      "worse/never"
+    ),
+    destfile = "unused",
+    stringsAsFactors = FALSE
+  )
+
+  failed <- prefetchWithRetries(targets, concurrency = 2L)
+
+  expect_equal(
+    attempts,
+    list(
+      c("good/first", "bad/second", "bad/never"),
+      c("good/second", "worse/never")
+    )
+  )
+  expect_equal(failed$name, "never")
+  expect_equal(failed$url, "worse/never")
+  expect_equal(failed$http_code, "404")
 })
 
 test_that("prefetchCandidates skips packages that won't be downloaded from a repository", {

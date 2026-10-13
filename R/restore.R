@@ -426,8 +426,9 @@ useAlternativeArchiveLocations <- function() {
   getOption("packrat.alternative.archive.layouts", TRUE)
 }
 
-# Returns TRUE when the package is downloaded, FALSE otherwise.
-downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
+# The URLs where an archived version of a package may be, in the order to try
+# them.
+archiveUrls <- function(repos, pkgRecord) {
   pkgSrcFile <- pkgSrcFilename(pkgRecord)
 
   # Many repositories follow the CRAN structure, but not all. Try the CRAN
@@ -465,25 +466,29 @@ downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
     )
   }
 
-  foundVersion <- FALSE
-  for (formatter in formatters) {
-    for (repo in repos) {
-      archiveUrl <- formatter(repo)
-      tryCatch(
-        {
-          downloadWithRetries(
-            archiveUrl,
-            destfile = destFile,
-            mode = "wb",
-            quiet = TRUE
-          )
-          return(TRUE)
-        },
-        error = function(e) {
-          # ignore error and try next repo/archive path.
-        }
-      )
-    }
+  repos <- sub("/+$", "", repos)
+  unlist(lapply(formatters, function(formatter) {
+    vapply(repos, formatter, character(1), USE.NAMES = FALSE)
+  }))
+}
+
+# Returns TRUE when the package is downloaded, FALSE otherwise.
+downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
+  for (archiveUrl in archiveUrls(repos, pkgRecord)) {
+    tryCatch(
+      {
+        downloadWithRetries(
+          archiveUrl,
+          destfile = destFile,
+          mode = "wb",
+          quiet = TRUE
+        )
+        return(TRUE)
+      },
+      error = function(e) {
+        # ignore error and try next repo/archive path.
+      }
+    )
   }
   return(FALSE)
 }
