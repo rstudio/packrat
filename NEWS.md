@@ -1,5 +1,12 @@
 # packrat (development version)
 
+- `restore()` downloads the sources of packages from CRAN-like repositories
+  concurrently before installing them, when `curl` 7.75.0 or later is the
+  download method. Restores that install many packages no longer wait on one
+  download at a time. Set `options(packrat.prefetch.sources = FALSE)` to turn
+  this off, and `packrat.prefetch.concurrency` to change the number of
+  simultaneous downloads (default 8).
+
 - Fixed a race condition where concurrent R processes installing the same
   package could fail while inserting it into the package cache.
 

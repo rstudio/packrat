@@ -95,37 +95,7 @@ downloadFile <- function(
 
   # pass extra arguments for 'curl' downloader
   if (method == "curl") {
-    # use '-L' to follow redirects
-    if (!grepl("\\b-L\\b", extra)) {
-      extra <- paste(extra, "-L")
-    }
-
-    # switch off the curl globbing parser
-    if (!grepl("\\b-g\\b", extra)) {
-      extra <- paste(extra, "-g")
-    }
-
-    # use '-f' to ensure we fail on server errors
-    if (!grepl("\\b-f\\b", extra)) {
-      extra <- paste(extra, "-f")
-    }
-
-    # make curl quiet -- avoid polluting console with e.g.
-    # curl: (22) The requested URL returned error: 404 Not Found
-    if (!grepl("\\b-s\\b", extra)) {
-      extra <- paste(extra, "-s")
-    }
-
-    # lower connection timeout
-    connect.timeout <- getOption("packrat.connect.timeout")
-    if (!is.null(connect.timeout) && !grepl("\\b--connect-timeout\\b", extra)) {
-      extra <- paste(extra, "--connect-timeout", connect.timeout)
-    }
-
-    # redirect stderr to stdout, for nicer output in RStudio
-    if (!grepl("\\b--stderr -\\b", extra)) {
-      extra <- paste(extra, "--stderr -")
-    }
+    extra <- curlExtraArgs(extra)
   }
 
   # catch warnings in the call
@@ -150,6 +120,44 @@ downloadFile <- function(
   }
 
   return(result)
+}
+
+# Add the arguments packrat always passes to curl to the user's 'extra'
+# arguments, unless the user already supplied them.
+curlExtraArgs <- function(extra) {
+  # use '-L' to follow redirects
+  if (!grepl("\\b-L\\b", extra)) {
+    extra <- paste(extra, "-L")
+  }
+
+  # switch off the curl globbing parser
+  if (!grepl("\\b-g\\b", extra)) {
+    extra <- paste(extra, "-g")
+  }
+
+  # use '-f' to ensure we fail on server errors
+  if (!grepl("\\b-f\\b", extra)) {
+    extra <- paste(extra, "-f")
+  }
+
+  # make curl quiet -- avoid polluting console with e.g.
+  # curl: (22) The requested URL returned error: 404 Not Found
+  if (!grepl("\\b-s\\b", extra)) {
+    extra <- paste(extra, "-s")
+  }
+
+  # lower connection timeout
+  connect.timeout <- getOption("packrat.connect.timeout")
+  if (!is.null(connect.timeout) && !grepl("\\b--connect-timeout\\b", extra)) {
+    extra <- paste(extra, "--connect-timeout", connect.timeout)
+  }
+
+  # redirect stderr to stdout, for nicer output in RStudio
+  if (!grepl("\\b--stderr -\\b", extra)) {
+    extra <- paste(extra, "--stderr -")
+  }
+
+  extra
 }
 
 # Attempt download.packages multiple times.

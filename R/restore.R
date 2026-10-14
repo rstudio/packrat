@@ -426,8 +426,9 @@ useAlternativeArchiveLocations <- function() {
   getOption("packrat.alternative.archive.layouts", TRUE)
 }
 
-# Returns TRUE when the package is downloaded, FALSE otherwise.
-downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
+# The URLs where an archived version of a package may be, in the order to try
+# them.
+archiveUrls <- function(repos, pkgRecord) {
   pkgSrcFile <- pkgSrcFilename(pkgRecord)
 
   # Many repositories follow the CRAN structure, but not all. Try the CRAN
@@ -465,25 +466,29 @@ downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
     )
   }
 
-  foundVersion <- FALSE
-  for (formatter in formatters) {
-    for (repo in repos) {
-      archiveUrl <- formatter(repo)
-      tryCatch(
-        {
-          downloadWithRetries(
-            archiveUrl,
-            destfile = destFile,
-            mode = "wb",
-            quiet = TRUE
-          )
-          return(TRUE)
-        },
-        error = function(e) {
-          # ignore error and try next repo/archive path.
-        }
-      )
-    }
+  repos <- sub("/+$", "", repos)
+  unlist(lapply(formatters, function(formatter) {
+    vapply(repos, formatter, character(1), USE.NAMES = FALSE)
+  }))
+}
+
+# Returns TRUE when the package is downloaded, FALSE otherwise.
+downloadArchiveWithRetries <- function(repos, pkgRecord, destFile) {
+  for (archiveUrl in archiveUrls(repos, pkgRecord)) {
+    tryCatch(
+      {
+        downloadWithRetries(
+          archiveUrl,
+          destfile = destFile,
+          mode = "wb",
+          quiet = TRUE
+        )
+        return(TRUE)
+      },
+      error = function(e) {
+        # ignore error and try next repo/archive path.
+      }
+    )
   }
   return(FALSE)
 }
@@ -572,6 +577,16 @@ removePkgs <- function(project, pkgNames, lib.loc = libDir(project)) {
   pkgNames
 }
 
+# Whether installPkg() tries to install a package as a binary from a binary
+# repository, rather than from its sources.
+installsFromBinaryRepository <- function(pkgRecord, repos) {
+  hasBinaryRepositories() &&
+    binaryRepositoriesEnabled() &&
+    isFromCranlikeRepo(pkgRecord, repos) &&
+    pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
+    versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
@@ -628,13 +643,7 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
   needsInstall <- TRUE
 
   # Try downloading a binary (when appropriate).
-  if (
-    hasBinaryRepositories() &&
-      binaryRepositoriesEnabled() &&
-      isFromCranlikeRepo(pkgRecord, repos) &&
-      pkgRecord$name %in% availablePackagesBinary(repos = repos)[, "Package"] &&
-      versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
-  ) {
+  if (installsFromBinaryRepository(pkgRecord, repos)) {
     tempdir <- tempdir()
     tryCatch(
       {
@@ -994,6 +1003,7 @@ restoreImpl <- function(
 
   # Play the list, if there's anything to play
   if (!dry.run) {
+    prefetchPackageSources(pkgRecords, actions, repos, project)
     playActions(pkgRecords, actions, repos, project, targetLib)
     if (restartNeeded) {
       if (!restart || !attemptRestart()) {
