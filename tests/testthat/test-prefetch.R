@@ -390,3 +390,38 @@ test_that("installPkg uses a prefetched source without downloading it again", {
 
   expect_equal(installed, prefetched)
 })
+
+test_that("prefetchPackageSources ends the announcement line before downloading", {
+  local_mocked_bindings(
+    hasBinaryRepositories = function() FALSE,
+    availablePackagesSource = function(repos) {
+      availableMatrix(
+        c(a = "1.0", b = "1.0"),
+        "https://example.com/cran/src/contrib"
+      )
+    },
+    cachedPackagePath = function(project, pkgRecord) NULL,
+    inferAppropriateDownloadMethod = function(url) "curl",
+    curlVersion = function() numeric_version("8.5.0"),
+    prefetchDownload = function(targets, concurrency) {
+      message("<download>")
+      targets[0, , drop = FALSE]
+    }
+  )
+  withr::local_envvar(R_PACKRAT_SRC_DIR = withr::local_tempdir())
+  withr::local_options(packrat.prefetch.concurrency = 8)
+
+  messages <- capture_messages(
+    prefetchPackageSources(
+      list(pkgRecord("a", "1.0"), pkgRecord("b", "1.0")),
+      c(a = "add", b = "add"),
+      c(CRAN = "https://example.com/cran"),
+      NULL
+    )
+  )
+
+  expect_equal(
+    messages[1:2],
+    c("Prefetching sources for 2 packages (8 at a time) ...\n", "<download>\n")
+  )
+})
