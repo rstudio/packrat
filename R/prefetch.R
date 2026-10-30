@@ -255,14 +255,13 @@ prefetchPackageSources <- function(pkgRecords, actions, repos, project) {
         packages,
         " packages (",
         concurrency,
-        " at a time) ... ",
-        appendLF = FALSE
+        " at a time) ..."
       )
       start <- Sys.time()
       failed <- prefetchWithRetries(targets, concurrency)
       elapsed <- as.numeric(difftime(Sys.time(), start, units = "secs"))
       message(sprintf(
-        "fetched %d of %d in %.1f seconds",
+        "Prefetched %d of %d package sources in %.1f seconds",
         packages - nrow(failed),
         packages,
         elapsed
