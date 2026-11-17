@@ -587,6 +587,162 @@ installsFromBinaryRepository <- function(pkgRecord, repos) {
     versionMatchesDb(pkgRecord, availablePackagesBinary(repos = repos))
 }
 
+sourcePackageRecordReason <- function(pkgRecord) {
+  source <- pkgRecord$source
+  if (!length(source) || is.na(source[1]) || !nzchar(source[1])) {
+    return("the lockfile does not record a package source")
+  }
+
+  source <- tolower(source[1])
+  switch(
+    source,
+    github = "the lockfile records a GitHub source",
+    gitlab = "the lockfile records a GitLab source",
+    bitbucket = "the lockfile records a Bitbucket source",
+    source = "the lockfile records a local source package",
+    unknown = "the lockfile records an unknown package source",
+    NULL
+  )
+}
+
+binaryOnlyRestoreError <- function(packageReasons) {
+  packageLines <- paste0(
+    "  - ",
+    names(packageReasons),
+    ": ",
+    unname(unlist(packageReasons))
+  )
+  stop(
+    paste(
+      "Cannot restore with `packrat.allow.source.packages` set to FALSE.",
+      "These packages cannot be restored from binaries:",
+      paste(packageLines, collapse = "\n"),
+      paste(
+        "Use a repository that provides binary packages or set",
+        "`options(packrat.allow.source.packages = TRUE)` to allow source installs."
+      ),
+      sep = "\n"
+    ),
+    call. = FALSE
+  )
+}
+
+installPackageArchive <- function(pkgSrc, pkgName, lib) {
+  stagingDir <- tempfile("packrat-binary-", tmpdir = lib)
+  dir.create(stagingDir)
+  on.exit(unlink(stagingDir, recursive = TRUE), add = TRUE)
+
+  if (grepl("\\.zip$", pkgSrc)) {
+    utils::unzip(pkgSrc, exdir = stagingDir)
+  } else {
+    utils::untar(pkgSrc, exdir = stagingDir, tar = tar_binary())
+  }
+
+  entries <- list.dirs(stagingDir, recursive = TRUE, full.names = TRUE)
+  packageDirs <- entries[
+    file.exists(file.path(entries, "DESCRIPTION")) &
+      dir.exists(file.path(entries, "Meta"))
+  ]
+  if (length(packageDirs) != 1L) {
+    stop(
+      "Could not locate the binary package directory in '",
+      pkgSrc,
+      "'",
+      call. = FALSE
+    )
+  }
+
+  target <- file.path(lib, pkgName)
+  if (!file.rename(packageDirs, target)) {
+    stop("Could not install binary package '", pkgName, "'", call. = FALSE)
+  }
+}
+
+restoreBinaryOnlyPreflight <- function(pkgRecords, actions, repos, project) {
+  packageNames <- names(actions)[actions %in% prefetchInstallActions]
+  if (!length(packageNames)) {
+    return(invisible())
+  }
+
+  records <- Filter(
+    Negate(is.null),
+    searchPackages(pkgRecords, packageNames)
+  )
+  packageReasons <- list()
+
+  for (pkgRecord in records) {
+    if (
+      !is.null(cachedPackagePath(project, pkgRecord)) ||
+        !is.null(cachedUntrustedPackagePath(project, pkgRecord))
+    ) {
+      next
+    }
+
+    reason <- sourcePackageRecordReason(pkgRecord)
+    if (!is.null(reason)) {
+      packageReasons[[pkgRecord$name]] <- reason
+      next
+    }
+
+    if (installsFromBinaryRepository(pkgRecord, repos)) {
+      next
+    }
+
+    pkgSrc <- file.path(
+      srcDir(project),
+      pkgRecord$name,
+      pkgSrcFilename(pkgRecord)
+    )
+    if (!file.exists(pkgSrc)) {
+      tryCatch(
+        getSourceForPkgRecord(
+          pkgRecord,
+          srcDir(project),
+          availablePackagesSource(repos = repos),
+          repos,
+          quiet = TRUE
+        ),
+        error = function(e) {
+          packageReasons[[pkgRecord$name]] <<- paste(
+            "a binary archive could not be confirmed:",
+            conditionMessage(e)
+          )
+        }
+      )
+    }
+
+    if (!is.null(packageReasons[[pkgRecord$name]])) {
+      next
+    }
+
+    if (!file.exists(pkgSrc)) {
+      packageReasons[[pkgRecord$name]] <-
+        "no binary archive is available from the configured repositories"
+      next
+    }
+
+    pkgType <- tryCatch(
+      archivePackageType(pkgSrc, quiet = TRUE),
+      error = identity
+    )
+    if (inherits(pkgType, "error")) {
+      packageReasons[[pkgRecord$name]] <- paste(
+        "the package archive could not be inspected:",
+        conditionMessage(pkgType)
+      )
+    } else if (!identical(pkgType, "binary")) {
+      packageReasons[[pkgRecord$name]] <-
+        "no binary package is available from the configured repositories"
+    }
+  }
+
+  if (length(packageReasons)) {
+    binaryOnlyRestoreError(packageReasons)
+  }
+
+  invisible()
+}
+
 # Installs a single package from its record. Returns the method used to install
 # the package (built source, downloaded binary, etc.)
 installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
@@ -637,6 +793,14 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
   )
   if (copiedFromUntrustedCache) {
     return(cacheCopyStatus$type)
+  }
+
+  allowSourcePackages <- getOption("packrat.allow.source.packages", TRUE)
+  if (identical(allowSourcePackages, FALSE)) {
+    reason <- sourcePackageRecordReason(pkgRecord)
+    if (!is.null(reason)) {
+      binaryOnlyRestoreError(setNames(list(reason), pkgRecord$name))
+    }
   }
 
   type <- "built source"
@@ -718,6 +882,21 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
       error = identity
     )
 
+    if (
+      identical(allowSourcePackages, FALSE) &&
+        !identical(pkgType, "binary")
+    ) {
+      reason <- if (inherits(pkgType, "error")) {
+        paste(
+          "the package archive could not be inspected:",
+          conditionMessage(pkgType)
+        )
+      } else {
+        "no binary package is available from the configured repositories"
+      }
+      binaryOnlyRestoreError(setNames(list(reason), pkgRecord$name))
+    }
+
     if (identical(pkgType, "binary")) {
       type <- "downloaded binary"
     }
@@ -740,14 +919,22 @@ installPkg <- function(pkgRecord, project, repos, lib = libDir(project)) {
       # on windows, we need to detach the package before installation
       detachPackageForInstallationIfNecessary(pkgRecord$name)
 
-      quiet <- isTRUE(packrat::opts$quiet.package.installation())
-      install_local_path(
-        path = pkgSrc,
-        reload = FALSE,
-        dependencies = FALSE,
-        quick = TRUE,
-        quiet = quiet
-      )
+      if (
+        identical(allowSourcePackages, FALSE) &&
+          identical(pkgType, "binary")
+      ) {
+        installPackageArchive(pkgSrc, pkgRecord$name, lib)
+      } else {
+        quiet <- isTRUE(packrat::opts$quiet.package.installation())
+        install_local_path(
+          path = pkgSrc,
+          reload = FALSE,
+          dependencies = FALSE,
+          quick = TRUE,
+          quiet = quiet
+        )
+      }
+
       # if we just installed a binary package, check that it can be loaded
       # (source packages are checked by default on install)
       if (identical(pkgType, "binary")) {
@@ -975,6 +1162,13 @@ restoreImpl <- function(
   # installing to is the default library, make a copy of the library and perform
   # the changes on the copy.
   actions <- actions[!is.na(actions)]
+
+  if (
+    !dry.run &&
+      identical(getOption("packrat.allow.source.packages", TRUE), FALSE)
+  ) {
+    restoreBinaryOnlyPreflight(pkgRecords, actions, repos, project)
+  }
 
   # Assign targetLib based on whether the namespace of a package within the
   # packrat directory is loaded -- packages that don't exist can just

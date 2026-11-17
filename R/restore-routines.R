@@ -71,6 +71,34 @@ cachedPackagePath <- function(project, pkgRecord) {
   source
 }
 
+cachedUntrustedPackagePath <- function(project, pkgRecord) {
+  if (!isUsingCache(project)) {
+    return(NULL)
+  }
+
+  if (!isCacheable(pkgRecord$name)) {
+    return(NULL)
+  }
+
+  tarballName <- pkgSrcFilename(pkgRecord)
+  tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
+  if (!file.exists(tarballPath)) {
+    return(NULL)
+  }
+
+  hash <- hashTarball(tarballPath)
+  if (!is.character(hash)) {
+    return(NULL)
+  }
+
+  source <- untrustedCacheLibDir(pkgRecord$name, hash, pkgRecord$name)
+  if (!file.exists(source)) {
+    return(NULL)
+  }
+
+  source
+}
+
 restoreWithCopyFromCache <- function(project, pkgRecord, cacheCopyStatus) {
   source <- cachedPackagePath(project, pkgRecord)
   if (is.null(source)) {
@@ -129,34 +157,8 @@ restoreWithCopyFromUntrustedCache <- function(
   pkgRecord,
   cacheCopyStatus
 ) {
-  # don't copy from cache if disabled for this project
-  if (!isUsingCache(project)) {
-    return(FALSE)
-  }
-
-  # don't try to cache uncacheable packages (ie, packages that
-  # need to be reinstalled each time for whatever reason)
-  if (!isCacheable(pkgRecord$name)) {
-    return(FALSE)
-  }
-
-  # attempt to find source tarball associated with passed-in
-  # package record
-  tarballName <- pkgSrcFilename(pkgRecord)
-  tarballPath <- file.path(srcDir(project), pkgRecord$name, tarballName)
-  if (!file.exists(tarballPath)) {
-    return(FALSE)
-  }
-
-  # attempt to hash tarball
-  hash <- hashTarball(tarballPath)
-  if (!is.character(hash)) {
-    return(FALSE)
-  }
-
-  # attempt to discover cached package in untrusted cache
-  source <- untrustedCacheLibDir(pkgRecord$name, hash, pkgRecord$name)
-  if (!file.exists(source)) {
+  source <- cachedUntrustedPackagePath(project, pkgRecord)
+  if (is.null(source)) {
     return(FALSE)
   }
 
