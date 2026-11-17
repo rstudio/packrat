@@ -21,3 +21,6 @@
 ^tests/testthat/packrat/lib-ext$
 ^tests/testthat/repo$
 ^tests/testthat/repo-empty$
+^AGENTS\.md$
+^CLAUDE\.md$
+^docs$
