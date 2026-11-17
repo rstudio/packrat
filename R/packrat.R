@@ -333,6 +333,12 @@ initImpl <- function(
 #'   \code{packrat.prefetch.concurrency} to change the number of simultaneous
 #'   downloads (default 8).
 #'
+#'   Set the \code{packrat.allow.source.packages} option to \code{FALSE} to
+#'   require binary packages. Before installing anything, \code{restore} checks
+#'   that each package to install is available as a binary. Packages already in
+#'   the packrat cache are restored as usual. This option defaults to
+#'   \code{TRUE}.
+#'
 #' @param project The project directory. When in packrat mode, if this is
 #'   \code{NULL}, then the directory associated with the current packrat project
 #'   is used. Otherwise, the project directory specified is used.
