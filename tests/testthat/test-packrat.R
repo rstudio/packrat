@@ -139,7 +139,7 @@ withTestContext({
     expect_true("toast" %in% pkgs, msg)
   })
 
-  test_that("snapshot captures only installed dependecies when infer.dependencies is FALSE", {
+  test_that("snapshot captures only installed dependencies when infer.dependencies is FALSE", {
     skip_on_cran()
     skip_on_travis()
     skip_on_ci()

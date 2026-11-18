@@ -4857,7 +4857,7 @@ renv_clean_unused_packages <- function(project, prompt) {
   installed <- list.files(library, pattern = renv_regexps_package_name())
   if (empty(installed))
     return(ntd())
-  
+
   # ignore 'pak' if we're configured to use it
   installed <- setdiff(installed, if (config$pak.enabled()) "pak")
 
@@ -11606,7 +11606,7 @@ renv_extsoft_manifest_path <- function(file) {
 `__ffi__enumerate` <- function(x, f, ..., FUN.VALUE = NULL) {
 
   f <- match.fun(f)
-  
+
   .Call(
     "renv_ffi__enumerate",
     x,
@@ -11618,9 +11618,9 @@ renv_extsoft_manifest_path <- function(file) {
 }
 
 `__ffi__recurse` <- function(object, callback, ...) {
-  
+
   callback <- match.fun(callback)
-  
+
   .Call(
     "renv_ffi__recurse",
     object,
@@ -11628,11 +11628,11 @@ renv_extsoft_manifest_path <- function(file) {
     environment(),
     PACKAGE = "renv"
   )
-  
+
 }
 
 `__ffi__renv_call_expect` <- function(node, package, methods) {
-  
+
   .Call(
     "renv_ffi__renv_call_expect",
     node,
@@ -11640,15 +11640,15 @@ renv_extsoft_manifest_path <- function(file) {
     as.character(methods),
     PACKAGE = "renv"
   )
-  
+
 }
 
 `__ffi__renv_dependencies_recurse` <- function(object, callback) {
-  
+
   symbol <- as.symbol(names(formals(args(callback)))[[1L]])
   expr <- body(callback)
   envir <- new.env(parent = environment(callback))
-  
+
   .Call(
     "renv_ffi__renv_dependencies_recurse",
     object,
@@ -11657,7 +11657,7 @@ renv_extsoft_manifest_path <- function(file) {
     envir,
     PACKAGE = "renv"
   )
-  
+
 }
 
 
@@ -14462,7 +14462,7 @@ init <- function(project = NULL,
     # retrieve bioconductor repositories appropriate for this project
     repos <- renv_bioconductor_repos(project = project, version = biocver)
     renv_scope_options(repos = repos)
-  
+
     # notify user
     writef("- Using Bioconductor version '%s'.", biocver)
     settings[["bioconductor.version"]] <- biocver
@@ -17673,9 +17673,9 @@ renv_lockfile_api <- function(lockfile = NULL) {
 
 #' Programmatically Create and Modify a Lockfile
 #'
-#' **NOTE: `lockfile()` is now internal, please use the \link{lockfiles} 
+#' **NOTE: `lockfile()` is now internal, please use the \link{lockfiles}
 #' API.**
-#' 
+#'
 #' This function provides an API for creating and modifying `renv` lockfiles.
 #' This can be useful when you'd like to programmatically generate or modify
 #' a lockfile -- for example, because you want to update or change a package
@@ -17914,26 +17914,26 @@ renv_lockfile_read_finish_impl <- function(key, val) {
 }
 
 renv_lockfile_read_finish <- function(data) {
-  
+
   # create lockfile
   lockfile <- enumerate(data, renv_lockfile_read_finish_impl)
   class(lockfile) <- "renv_lockfile"
-  
+
   # compute hashes for records if possible
   renv_lockfile_records(lockfile) <-
     renv_lockfile_records(lockfile) %>%
     map(function(record) {
-      
+
       record$Hash <- record$Hash %||% {
         fields <- renv_hash_fields_remotes(record)
         if (all(names(record) %in% fields))
           renv_hash_record(record)
       }
-      
+
       record
-      
+
     })
-  
+
   # return lockfile
   lockfile
 }
@@ -18172,7 +18172,7 @@ renv_lockfile_write_json <- function(lockfile, file = stdout()) {
 
   box <- c("Requirements")
   config <- list(box = box)
-  
+
   json <- renv_json_convert(prepared, config)
   if (is.null(file))
     return(json)
@@ -18371,7 +18371,7 @@ renv_lockfile_save <- function(lockfile, project) {
 }
 
 renv_lockfile_load <- function(project, strict = FALSE) {
-  
+
   path <- renv_lockfile_path(project)
   if (file.exists(path))
     return(renv_lockfile_read(path))
@@ -19186,7 +19186,7 @@ renv_methods_init <- function() {
   # determine appropriate lookup key for finding alternative
   key <- if (renv_platform_windows()) "win32" else "unix"
   alts <- map(methods, `[[`, key)
-  
+
   # update methods in namespace
   envir <- renv_envir_self()
   enumerate(alts, function(name, alt) {
@@ -20173,7 +20173,7 @@ renv_p3m_database_sync_all_impl <- function() {
   renv_p3m_database_sync("windows", "4.3")
   renv_p3m_database_sync("macosx", "4.3")
   renv_p3m_database_sync("macosx/big-sur-arm64", "4.3")
-  
+
   # R 4.4
   renv_p3m_database_sync("windows", "4.4")
   renv_p3m_database_sync("macosx", "4.4")
@@ -20799,22 +20799,22 @@ renv_pak_init_impl <- function(stream) {
 }
 
 renv_pak_update <- function(project, library, prompt) {
-  
+
   pak <- renv_namespace_load("pak")
 
   # if this project contains a DESCRIPTION file, use it when
   # determining which packages to update
   if (file.exists(file.path(project, "DESCRIPTION"))) {
-    
+
     result <- pak$local_install_dev_deps(
       root = project,
       lib  = library[[1L]],
       ask  = prompt
     )
-    
+
     return(result)
   }
-  
+
   # read description files for all installed packages
   # TODO: do we want to also update packages in other library paths,
   # or just packages installed in the project library?
@@ -20824,7 +20824,7 @@ renv_pak_update <- function(project, library, prompt) {
     caution("- There are no packages to update.")
     return(invisible(NULL))
   }
-  
+
   # update those packages
   pak$pkg_install(
     pkg = unname(remotes),
@@ -20866,13 +20866,13 @@ renv_pak_install <- function(packages,
   # install / update packages used in the project
   if (length(packages) == 0L)
     return(renv_pak_update(project, library, prompt))
-  
+
   # pak doesn't support ':' as a sub-directory separator, so try to
   # repair that here
   # https://github.com/rstudio/renv/issues/2011
   pattern <- "(?<!:):([^/#@:]+)"
   packages <- gsub(pattern, "/\\1", packages, perl = TRUE)
-  
+
   # build parameters
   packages <- map_chr(packages, function(package) {
 
@@ -26022,7 +26022,7 @@ renv_remove_impl <- function(package, library) {
 #' Each project using renv will share package installations from a global
 #' cache of packages, helping to avoid wasting disk space on multiple
 #' installations of a package that might otherwise be shared across projects.
-#' 
+#'
 "_PACKAGE"
 
 
@@ -33663,7 +33663,7 @@ renv_task_unload <- function() {
 
 
 renv_tempdir_init <- function() {
-  
+
   # only check on linux
   if (!renv_platform_linux())
     return()
@@ -33672,29 +33672,29 @@ renv_tempdir_init <- function() {
   check <- Sys.getenv("RENV_TEMPDIR_NOEXEC_CHECK", unset = "TRUE")
   if (not(check))
     return()
-    
+
   # check that scripts within the R temporary directory can be executed
   script <- tempfile("renv-script-", fileext = ".sh")
   writeLines("#!/usr/bin/env sh", con = script)
   Sys.chmod(script, mode = "0755")
   on.exit(unlink(script), add = TRUE)
-  
+
   status <- system(script, ignore.stdout = TRUE, ignore.stderr = TRUE)
   if (identical(status, 0L))
     return()
-  
+
   fmt <- heredoc("
-  
+
     The R temporary directory appears to be within a folder mounted as 'noexec'.
     Installation of R packages from sources may fail.
     See the section **Note** within `?INSTALL` for more details.
-    
+
     tempdir(): %s
-    
+
   ")
-  
+
   caution(fmt, tempdir(), con = stderr())
-  
+
 }
 
 
@@ -35246,7 +35246,7 @@ renv_python_deactivate <- function(project) {
 
   lockfile$Python <- NULL
   renv_lockfile_write(lockfile, file = file)
-  writef("- Deactived Python -- the lockfile has been updated.")
+  writef("- Deactivated Python -- the lockfile has been updated.")
   TRUE
 
 }
@@ -37155,25 +37155,25 @@ renv_yaml_load <- function(text) {
 
 
 renv_zzz_libs <- function() {
- 
+
   status <- tryCatch(
     renv_zzz_libs_impl(),
     error = identity
   )
-  
+
 }
 
 renv_zzz_libs_impl <- function() {
-  
+
   if (!installing() || !renv_ext_enabled())
     return(FALSE)
-  
+
   message("** libs")
   package <- Sys.getenv("R_PACKAGE_DIR", unset = getwd())
   renv_ext_compile(package)
-  
+
   TRUE
-  
+
 }
 
 renv_zzz_libs()
@@ -37452,5 +37452,3 @@ renv_zzz_repos <- function() {
 if (identical(.packageName, "renv")) {
   renv_zzz_run()
 }
-
-

@@ -5,7 +5,7 @@
 #'
 #' @param path Path to a local CRAN-like repository.
 #' @param name The name to assign to the repository. Defaults to the
-#'   directory name in which the reopsitory is created.
+#'   directory name in which the repository is created.
 #' @param add Add this new repository to the current set of repositories?
 #'
 #' @export
