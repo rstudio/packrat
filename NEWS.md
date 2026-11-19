@@ -472,7 +472,7 @@
   restore projects when that option is set.
 
 - The `ignored.packages` option has been added, allowing users to specify
-  packages that should not be tracked by packrat. Such packaes will not
+  packages that should not be tracked by packrat. Such packages will not
   enter the lockfile on `packrat::snapshot()` calls; nor will they be
   cleaned out on `packrat::restore()` calls.
 
@@ -737,7 +737,7 @@ the following:
 After this, you can restart your R session, and you should be good to go!
 
 - **`packrat_mode`** allows you to seamlessly step in and out of packrat mode,
-  for when you would would like to manage or use external projects while
+  for when you would like to manage or use external projects while
   working with a packrat project. In addition, once you have entered packrat
   mode, the project directory is remembered for all later calls to packrat
   functions, e.g. `snapshot`, `clean`, `restore`, and so on -- so calling these

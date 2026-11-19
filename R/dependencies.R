@@ -207,7 +207,7 @@ dirDependenciesRenv <- function(dir) {
     errors = "ignored"
   )
   pkgs <- unique(deps$Package)
-  ## Exclude recommended packages (and the artifical "R" package) if there is
+  ## Exclude recommended packages (and the artificial "R" package) if there is
   ## no package installed locally this places an implicit dependency on the
   ## system-installed version of a package
   pkgs <- dropSystemPackages(pkgs)

@@ -18,7 +18,7 @@ init(
 \item{options}{An \R \code{list} of options, as specified in
 \code{\link{packrat-options}}.}
 
-\item{enter}{Boolean, enter packrat mode for this project after finishing a init?}
+\item{enter}{Boolean, enter packrat mode for this project after finishing an init?}
 
 \item{restart}{If \code{TRUE}, restart the R session after init.}
 

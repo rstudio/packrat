@@ -34,7 +34,7 @@ isFromCranlikeRepo <- function(pkgRecord, repos) {
   # in previous releases of packrat, we attempted to match the repository name
   # with one of the existing repositories; however, this caused issues in
   # certain environments (the names declared repositories in the lockfile, and
-  # the the names of the active repositories in the R session, may not match)
+  # the names of the active repositories in the R session, may not match)
   !tolower(source) %in% c("source")
 }
 

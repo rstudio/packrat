@@ -15,7 +15,7 @@ ensurePkgTypeNotBoth <- function() {
 }
 
 beforePackratModeOn <- function(project) {
-  # Ensure that we leave packrat mode before transfering
+  # Ensure that we leave packrat mode before transferring
   # to a new project.
   if (isPackratModeOn()) {
     off(print.banner = FALSE)

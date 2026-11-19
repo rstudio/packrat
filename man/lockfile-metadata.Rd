@@ -27,11 +27,11 @@ otherwise, defaults to the current working directory.}
 Get and set metadata in the current packrat-managed project lockfile \code{packrat.lock}
 }
 \details{
-Project's \code{packrat.lock} contains some metadata before packages
-dependencies informations. The project's lockfile is created and updated
+The \code{packrat.lock} contains project metadata followed by information
+about each package dependency. The project's lockfile is created and updated
 programmatically by \code{\link{snapshot}}. However it could be necessary sometimes to
 modify manually some of those values. For example, it could be useful to set another repository
-CRAN url when deploying to a offline environnement.
+CRAN url when deploying to an offline environment.
 }
 \section{available metadata }{
 
