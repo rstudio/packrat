@@ -163,7 +163,7 @@ snapshot <- function(
   if (isRPackage(project = project)) {
     desc <- readDcf(file.path(project, "DESCRIPTION"))
     if ("Package" %in% colnames(desc)) {
-      # R packages are not guaranteed to have a "Package" field (see isRPackge)
+      # R packages are not guaranteed to have a "Package" field (see isRPackage)
       ignore <- unname(desc[, "Package"])
     }
   }

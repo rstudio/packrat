@@ -82,7 +82,7 @@ with_extlib <- function(packages = NULL, expr, envir = parent.frame()) {
 extlib <- function(packages) {
   # place user library at front of library paths (we want to
   # include both the user library and the packrat library just
-  # so that external packaegs can still load and depend on
+  # so that external packages can still load and depend on
   # packages only installed within the private library as well)
   oldLibPaths <- .libPaths()
   newLibPaths <- c(getDefaultLibPaths(), .libPaths())

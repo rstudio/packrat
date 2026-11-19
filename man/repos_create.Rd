@@ -10,7 +10,7 @@ repos_create(path, name = basename(path), add = TRUE)
 \item{path}{Path to a local CRAN-like repository.}
 
 \item{name}{The name to assign to the repository. Defaults to the
-directory name in which the reopsitory is created.}
+directory name in which the repository is created.}
 
 \item{add}{Add this new repository to the current set of repositories?}
 }

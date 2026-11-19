@@ -109,7 +109,7 @@
 #' @param project The directory that contains the \R project.
 #' @param options An \R \code{list} of options, as specified in
 #'   \code{\link{packrat-options}}.
-#' @param enter Boolean, enter packrat mode for this project after finishing a init?
+#' @param enter Boolean, enter packrat mode for this project after finishing an init?
 #' @param restart If \code{TRUE}, restart the R session after init.
 #' @param infer.dependencies If \code{TRUE}, infer package dependencies by
 #'   examining the \R code.

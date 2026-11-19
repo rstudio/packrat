@@ -35246,7 +35246,7 @@ renv_python_deactivate <- function(project) {
 
   lockfile$Python <- NULL
   renv_lockfile_write(lockfile, file = file)
-  writef("- Deactived Python -- the lockfile has been updated.")
+  writef("- Deactivated Python -- the lockfile has been updated.")
   TRUE
 
 }

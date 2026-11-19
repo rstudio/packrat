@@ -109,7 +109,7 @@ excludeBasePackages <- function(packages) {
 }
 
 excludeRecommendedPackages <- function(packages) {
-  # NOTE: becase utils::installed.packages() can fail in some
+  # NOTE: because utils::installed.packages() can fail in some
   # scenarios, e.g. when libraries live on networked drives,
   # we fall back to a simple listing of files in the associated
   # library paths

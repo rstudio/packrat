@@ -172,7 +172,7 @@ r_env_vars <- function() {
     "R_LIBS" = paste(getLibPaths(), collapse = .Platform$path.sep),
     "CYGWIN" = "nodosfilewarning",
     # When R CMD check runs tests, it sets R_TESTS. When the tests
-    # themeselves run R CMD xxxx, as is the case with the tests in
+    # themselves run R CMD xxxx, as is the case with the tests in
     # devtools, having R_TESTS set causes errors because it confuses
     # the R subprocesses. Unsetting it here avoids those problems.
     "R_TESTS" = "",
@@ -478,7 +478,7 @@ find_rtools <- function(debug = FALSE) {
   registry_candidates <- scan_registry_for_rtools(debug)
 
   if (length(registry_candidates) == 0) {
-    # Not on path or in registry, so not installled
+    # Not on path or in registry, so not installed
     message(
       "WARNING: Rtools is required to build R packages, but is not ",
       "currently installed.\n\n",

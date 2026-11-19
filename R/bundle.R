@@ -76,7 +76,7 @@ bundle <- function(
     if (!include.vcs.history) "^(?!\\.(git|svn))"
   )
 
-  ## Make sure the base folder name is inheritted from the project name
+  ## Make sure the base folder name is inherited from the project name
   ##
   ## The internal version of 'tar' used by R on Windows fails if one tries to include
   ## a file in a sub-directory, without actually including that subdirectory.
